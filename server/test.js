@@ -21,6 +21,10 @@ const typeDefs = gql`
   type Query {
     clients: [Client]
   }
+
+  type Mutation{
+      createclient(name: String!, phonenumber: String!): Client
+  }
 `
 
 
@@ -53,6 +57,36 @@ const resolvers = {
             return results
         },
     },
+    Mutation: {
+        createclient: async (parent, args)=>{
+            console.log(args)
+
+            let ret = await pgclient.query("insert into pilates.client (name, phonenumber) values ($1, $2) returning id,name,phonenumber", [args.name, args.phonenumber]).then(res=>{
+                console.log(res)
+                return res.rows[0]
+            }).catch(err=>{
+                return {}
+            })
+
+            // let user = await pgclient.query("select * from pilates.client where")
+            console.log("ret:")
+            console.log(ret)
+
+            return ret
+            // if(!ret){
+            //     return {}
+            // }
+            // if(ret.rows){
+            //     console.log('returning ret.rows')
+            //     console.log(ret.rows[0])
+            //     return ret.rows[0]
+            // }
+            // else{
+            //     return {}
+            // }
+            
+        }
+    }
 };
 
 const server = new ApolloServer({ typeDefs, resolvers });

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState} from 'react'
 import ReactDOM from 'react-dom'
 import { Button, Form, Table } from 'react-bootstrap'
 
@@ -76,18 +76,20 @@ class CreateClientPage extends React.Component {
 
 
 function Listup() {
+    // const [init_loading_done, set_init_loading_done] = useState(false)
+    
+    const { loading, error, data } = useQuery(QUERY, {
+        fetchPolicy: "network-only"
+    });
 
-    const { loading, error, data } = useQuery(QUERY);
-
-    console.log(loading)
-    console.log(error)
-    console.log(data)
 
     if (loading) {
         return <div>loading</div>
     }
 
-    else if (data) {
+    
+
+    if (data) {
         return <Table>
             <thead>
                 <tr>
@@ -110,7 +112,12 @@ function Listup() {
 
         </Table>
     }
+
+    return <div>nothing</div>
 }
+
+
+
 
 
 class App extends React.Component {
