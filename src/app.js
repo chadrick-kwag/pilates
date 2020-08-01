@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Button, Form } from 'react-bootstrap'
+import { Button, Form, Table } from 'react-bootstrap'
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -75,12 +75,28 @@ class CreateClientPage extends React.Component {
 }
 
 
+function Listup(){
+
+    const { loading, error, data } = useQuery(QUERY);
+
+    console.log(loading)
+    console.log(error)
+    console.log(data)
+
+    return(
+        <div>
+            some list
+        </div>
+    )
+}
+
+
 class App extends React.Component {
 
     render() {
         return <div>
 
-            <CreateClientPage />
+           <Listup/>
         </div>
     }
 }
