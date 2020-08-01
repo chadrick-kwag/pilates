@@ -22,9 +22,16 @@ const typeDefs = gql`
     clients: [Client]
   }
 
+  type SuccessResult {
+      success: Boolean
+  }
+
   type Mutation{
       createclient(name: String!, phonenumber: String!): Client
+      deleteclient(id: Int!): SuccessResult
   }
+
+
 `
 
 
@@ -73,19 +80,23 @@ const resolvers = {
             console.log(ret)
 
             return ret
-            // if(!ret){
-            //     return {}
-            // }
-            // if(ret.rows){
-            //     console.log('returning ret.rows')
-            //     console.log(ret.rows[0])
-            //     return ret.rows[0]
-            // }
-            // else{
-            //     return {}
-            // }
             
+            
+        },
+        deleteclient: async (parent, args) =>{
+            console.log('delete client inside')
+            let ret = await pgclient.query('delete from pilates.client where id=$1', [args.id]).then(res=>{
+                // console.log(res)
+                if(res.rowCount>0) return true
+
+                return false
+            })
+            .catch(e=>false)
+
+            return {success: ret}
         }
+
+
     }
 };
 

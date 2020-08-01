@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Button, Form, Table } from 'react-bootstrap'
 
@@ -7,9 +7,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 // import { ApolloClient, useQuery, gql } from 'apollo-client'
 // import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
 // import { HttpLink } from 'apollo-link-http'
-import { ApolloProvider } from '@apollo/react-hooks';
+import { ApolloProvider, } from '@apollo/react-hooks';
 // import gql from 'graphql-tag';
-import { useQuery, gql, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client'
+import { useQuery, gql, ApolloClient, InMemoryCache, createHttpLink, useMutation } from '@apollo/client'
 
 
 
@@ -32,6 +32,26 @@ const QUERY = gql`{
     }
 }`
 
+
+const CREATE_CLIENT_GQL = gql`mutation  CreateClient($name: String!, $phonenumber: String!){
+    createclient(name: $name, phonenumber: $phonenumber){
+        id
+        name
+        phonenumber
+    }
+}`
+
+
+const DELETE_GQL = gql`mutation DeleteClient($id:Int!){
+    deleteclient(id: $id){
+        success
+    }
+}`
+
+
+
+console.log(CREATE_CLIENT_GQL)
+
 console.log(QUERY)
 
 class CreateClientPage extends React.Component {
@@ -49,12 +69,21 @@ class CreateClientPage extends React.Component {
 
 
     submitcallback() {
-        // send query to graphql
-        let { data, loading, error } = useQuery(QUERY)
 
-        console.log(data)
-        console.log(loading)
-        console.log(error)
+        client.mutate({
+            mutation: CREATE_CLIENT_GQL,
+            variables: {
+                name: this.state.name,
+                phonenumber: this.state.phonenumber
+            }
+        }).then(d => {
+            console.log(d)
+            this.props.changeViewMode('list')
+        })
+            .catch(e => {
+                console.log(e)
+                alert('failed to reigster client')
+            })
     }
 
 
@@ -77,8 +106,8 @@ class CreateClientPage extends React.Component {
 
 function Listup() {
     // const [init_loading_done, set_init_loading_done] = useState(false)
-    
-    const { loading, error, data } = useQuery(QUERY, {
+
+    const { loading, error, data, refetch } = useQuery(QUERY, {
         fetchPolicy: "network-only"
     });
 
@@ -87,7 +116,7 @@ function Listup() {
         return <div>loading</div>
     }
 
-    
+
 
     if (data) {
         return <Table>
@@ -105,7 +134,28 @@ function Listup() {
                     <td>{d.id}</td>
                     <td>{d.name}</td>
                     <td>{d.phonenumber}</td>
-                    <td></td>
+                    <td><Button onClick={e => {
+                        console.log('try deleting ' + d.id)
+                        client.mutate({
+                            mutation: DELETE_GQL,
+                            variables: {
+                                id: parseInt(d.id)
+                            },
+                            errorPolicy: "all"
+                        }).then(d => {
+                            console.log(d)
+                            if (d.data.deleteclient.success) {
+                                refetch()
+                            }
+                            else {
+                                console.log('failed to delete')
+                            }
+                        }).catch(e => {
+                            console.log(e)
+                            console.log(e.data)
+                            console.log(JSON.stringify(e, null, 2));
+                        })
+                    }}>delete</Button></td>
 
                 </tr>)}
             </tbody>
@@ -137,7 +187,9 @@ class App extends React.Component {
             mainview = <Listup />
         }
         else if (this.state.viewmode == "create_client") {
-            mainview = <CreateClientPage />
+            mainview = <CreateClientPage changeViewMode={v => this.setState({
+                viewmode: v
+            })} />
         }
 
         return <div>
