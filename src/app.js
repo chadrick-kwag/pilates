@@ -93,10 +93,36 @@ function Listup(){
 
 class App extends React.Component {
 
+    constructor(props){
+        super(props)
+        this.state={
+            viewmode: "list"
+        }
+    }
+
+    
+
+
     render() {
+
+        let mainview
+
+        if(this.state.viewmode=="list"){
+            mainview = <Listup/>
+        }
+        else if(this.state.viewmode=="create_client"){
+            mainview = <CreateClientPage/>
+        }
+
         return <div>
 
-           <Listup/>
+            <div style={{display: "flex", flexDirection: "row"}}>
+                <Button onClick={e=>this.setState({viewmode: "list"})}>listview</Button>
+                <Button onClick={e=>this.setState({viewmode: "create_client"})} >create client</Button>
+            </div>
+
+            {mainview}
+
         </div>
     }
 }
