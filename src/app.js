@@ -11,7 +11,8 @@ import { ApolloProvider, } from '@apollo/react-hooks';
 // import gql from 'graphql-tag';
 import { useQuery, gql, ApolloClient, InMemoryCache, createHttpLink, useMutation } from '@apollo/client'
 
-
+import CreateInstructorPage from './CreateInstructorPage'
+import ListInstructorPage from './ListInstructorPage'
 
 
 const cache = new InMemoryCache();
@@ -78,7 +79,7 @@ class CreateClientPage extends React.Component {
             }
         }).then(d => {
             console.log(d)
-            this.props.changeViewMode('list')
+            this.props.changeViewMode('list_client')
         })
             .catch(e => {
                 console.log(e)
@@ -175,7 +176,7 @@ class App extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            viewmode: "list"
+            viewmode: "list_client"
         }
     }
 
@@ -183,7 +184,7 @@ class App extends React.Component {
 
         let mainview
 
-        if (this.state.viewmode == "list") {
+        if (this.state.viewmode == "list_client") {
             mainview = <Listup />
         }
         else if (this.state.viewmode == "create_client") {
@@ -191,12 +192,24 @@ class App extends React.Component {
                 viewmode: v
             })} />
         }
+        else if(this.state.viewmode == 'create_instructor'){
+            mainview = <CreateInstructorPage apolloclient={client} success_callback={()=>{
+                console.log("inside success callback")
+                this.setState({viewmode: "list_instructor"})}}/>
+        }
+        else if(this.state.viewmode == 'list_instructor'){
+            mainview = <ListInstructorPage apolloclient={client} success_callback={()=>this.setState({
+                viewmode: "list_instructor"
+            })}/>
+        }
 
         return <div>
 
             <div style={{ display: "flex", flexDirection: "row" }}>
-                <Button onClick={e => this.setState({ viewmode: "list" })}>listview</Button>
+                <Button onClick={e => this.setState({ viewmode: "list_client" })}>view clients</Button>
+                <Button onClick={e => this.setState({ viewmode: "list_instructor" })}>view instructors</Button>
                 <Button onClick={e => this.setState({ viewmode: "create_client" })} >create client</Button>
+                <Button onClick={e => this.setState({ viewmode: "create_instructor" })} >create instructor</Button>
             </div>
 
             {mainview}

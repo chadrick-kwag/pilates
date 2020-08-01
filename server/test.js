@@ -15,11 +15,18 @@ const typeDefs = gql`
     phonenumber: String
   }
 
+  type Instructor {
+      id: String
+      name: String
+      phonenumber: String
+  }
+
   # The "Query" type is special: it lists all of the available queries that
   # clients can execute, along with the return type for each. In this
   # case, the "books" query returns an array of zero or more Books (defined above).
   type Query {
     clients: [Client]
+    instructors: [Instructor]
   }
 
   type SuccessResult {
@@ -29,6 +36,7 @@ const typeDefs = gql`
   type Mutation{
       createclient(name: String!, phonenumber: String!): Client
       deleteclient(id: Int!): SuccessResult
+      createinstructor(name: String!, phonenumber: String!): SuccessResult
   }
 
 
@@ -63,6 +71,13 @@ const resolvers = {
 
             return results
         },
+        instructors: async () => {
+            let results = await pgclient.query("select * from pilates.instructor").then(res=>{
+                return res.rows
+            }).catch(e=>[])
+
+            return results
+        }
     },
     Mutation: {
         createclient: async (parent, args)=>{
@@ -94,6 +109,17 @@ const resolvers = {
             .catch(e=>false)
 
             return {success: ret}
+        },
+        createinstructor: async (parent, args)=>{
+            console.log('inside create instructor')
+            let ret = await pgclient.query('insert into pilates.instructor (name, phonenumber) values ($1, $2)',[args.name, args.phonenumber]).then(res=>{
+                if(res.rowCount>0) return true
+
+                return false
+            }).catch(e=>false)
+
+            return {success: ret}
+
         }
 
 
