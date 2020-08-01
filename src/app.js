@@ -9,7 +9,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 // import { HttpLink } from 'apollo-link-http'
 import { ApolloProvider } from '@apollo/react-hooks';
 // import gql from 'graphql-tag';
-import {useQuery, gql, ApolloClient, InMemoryCache, createHttpLink} from '@apollo/client' 
+import { useQuery, gql, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client'
 
 
 
@@ -50,7 +50,7 @@ class CreateClientPage extends React.Component {
 
     submitcallback() {
         // send query to graphql
-        let {data, loading, error} = useQuery(QUERY)
+        let { data, loading, error } = useQuery(QUERY)
 
         console.log(data)
         console.log(loading)
@@ -75,7 +75,7 @@ class CreateClientPage extends React.Component {
 }
 
 
-function Listup(){
+function Listup() {
 
     const { loading, error, data } = useQuery(QUERY);
 
@@ -83,42 +83,61 @@ function Listup(){
     console.log(error)
     console.log(data)
 
-    return(
-        <div>
-            some list
-        </div>
-    )
+    if (loading) {
+        return <div>loading</div>
+    }
+
+    else if (data) {
+        return <Table>
+            <thead>
+                <tr>
+                    <td>id</td>
+                    <td>name</td>
+                    <td>phone</td>
+                    <td>action</td>
+                </tr>
+
+            </thead>
+            <tbody>
+                {data.clients.map(d => <tr>
+                    <td>{d.id}</td>
+                    <td>{d.name}</td>
+                    <td>{d.phonenumber}</td>
+                    <td></td>
+
+                </tr>)}
+            </tbody>
+
+        </Table>
+    }
 }
 
 
 class App extends React.Component {
 
-    constructor(props){
+    constructor(props) {
         super(props)
-        this.state={
+        this.state = {
             viewmode: "list"
         }
     }
-
-    
-
 
     render() {
 
         let mainview
 
-        if(this.state.viewmode=="list"){
-            mainview = <Listup/>
+        if (this.state.viewmode == "list") {
+            mainview = <Listup />
         }
-        else if(this.state.viewmode=="create_client"){
-            mainview = <CreateClientPage/>
+        else if (this.state.viewmode == "create_client") {
+            mainview = <CreateClientPage />
         }
 
         return <div>
 
-            <div style={{display: "flex", flexDirection: "row"}}>
-                <Button onClick={e=>this.setState({viewmode: "list"})}>listview</Button>
-                <Button onClick={e=>this.setState({viewmode: "create_client"})} >create client</Button>
+            <div style={{ display: "flex", flexDirection: "row" }}>
+                <Button onClick={e => this.setState({ viewmode: "list" })}>listview</Button>
+                <Button onClick={e => this.setState({ viewmode: "create_client" })} >create client</Button>
             </div>
 
             {mainview}
