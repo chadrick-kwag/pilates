@@ -37,6 +37,7 @@ const typeDefs = gql`
       createclient(name: String!, phonenumber: String!): Client
       deleteclient(id: Int!): SuccessResult
       createinstructor(name: String!, phonenumber: String!): SuccessResult
+      deleteinstructor(id: Int!): SuccessResult
   }
 
 
@@ -120,6 +121,17 @@ const resolvers = {
 
             return {success: ret}
 
+        },
+        deleteinstructor: async (parent, args)=>{
+            let ret = await pgclient.query('delete from pilates.instructor where id=$1',[args.id]).then(res=>{
+                if(res.rowCount>0){
+                    return true
+                }
+
+                return false
+            }).catch(e=>false)
+
+            return {success: ret}
         }
 
 

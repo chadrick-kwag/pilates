@@ -12,6 +12,13 @@ const LIST_INSTRUCTOR_GQL = gql`{
     }
 } `
 
+
+const DELETE_INSTRUCTOR_GQL = gql`mutation di($id: Int!){
+    deleteinstructor(id: $id){
+        success
+    }
+}`
+
 class ListInstructorPage extends React.Component {
 
 
@@ -21,9 +28,11 @@ class ListInstructorPage extends React.Component {
         this.state = {
             data: []
         }
+
+        this.fetchdata = this.fetchdata.bind(this)
     }
 
-    componentDidMount() {
+    fetchdata(){
         this.props.apolloclient.query({
             query: LIST_INSTRUCTOR_GQL,
             fetchPolicy: "network-only"
@@ -45,6 +54,10 @@ class ListInstructorPage extends React.Component {
             })
     }
 
+    componentDidMount() {
+        this.fetchdata()
+    }
+
 
     render() {
         return <div>
@@ -60,7 +73,25 @@ class ListInstructorPage extends React.Component {
                         <td>{d.id}</td>
                         <td>{d.name}</td>
                         <td>{d.phonenumber}</td>
-                        <td><Button>delete</Button></td>
+                        <td><Button onClick={e=>{
+                            this.props.apolloclient.mutate({
+                                mutation: DELETE_INSTRUCTOR_GQL,
+                                variables: {
+                                    id: parseInt(d.id)
+                                }
+                            }).then(d=>{
+                                if(d.data.deleteinstructor.success){
+                                    this.fetchdata()
+                                    return
+                                }
+
+                                console.log('failed to delete instructor')
+                            }).catch(e=>{
+                                console.log(JSON.stringify(e))
+                                console.log('error deleting instructor')
+                                
+                            })
+                        }}>delete</Button></td>
                     </tr>)}
                 </tbody>
             </Table>
