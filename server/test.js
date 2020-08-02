@@ -28,6 +28,7 @@ const typeDefs = gql`
     clients: [Client]
     instructors: [Instructor]
     search_client_with_name(name: String!): [Client]
+    search_instructor_with_name(name: String!): [Instructor]
   }
 
   type SuccessResult {
@@ -87,6 +88,14 @@ const resolvers = {
                 return res.rows
             }).catch(e=>[])
 
+
+            return results
+        },
+        search_instructor_with_name: async (parent, args, context, info) =>{
+            let results = await pgclient.query("select * from pilates.instructor where name=$1", [args.name]).then(res=>{
+                return res.rows
+            })
+            .catch(e=>[])
 
             return results
         }

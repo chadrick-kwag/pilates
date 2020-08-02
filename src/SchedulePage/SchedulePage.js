@@ -3,6 +3,7 @@ import {Button} from 'react-bootstrap'
 
 import './schedulepage.css'
 import ScheduleViewer from './ScheduleViewer'
+import CreateLessonPage from './CreateLessonPage'
 
 
 class SchedulePage extends React.Component{
@@ -12,6 +13,14 @@ class SchedulePage extends React.Component{
         this.state={
             viewmode: "all"
         }
+
+        this.createlesson = this.createlesson.bind(this)
+    }
+
+    createlesson(){
+        this.setState({
+            viewmode: "createlesson"
+        })
     }
 
     render(){
@@ -21,6 +30,10 @@ class SchedulePage extends React.Component{
 
         if(this.state.viewmode=="all"){
             mainview = <ScheduleViewer />
+        }
+
+        else if(this.state.viewmode == "createlesson"){
+            mainview = <CreateLessonPage apolloclient={this.props.apolloclient} />
         }
 
         return <div>
@@ -34,6 +47,9 @@ class SchedulePage extends React.Component{
                 <div className={this.state.viewmode=="client" ? "topbar-selected topbar-item" : "topbar-notselected topbar-item"} onClick={e=>this.setState({
                     viewmode: "client"
                 })}>회원별보기</div>
+            </div>
+            <div>
+                <Button onClick={e=>this.createlesson()}>수업등록</Button>
             </div>
 
             {mainview}
