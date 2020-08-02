@@ -11,6 +11,7 @@ import CreateInstructorPage from './CreateInstructorPage'
 import ListInstructorPage from './ListInstructorPage'
 import ListClientPage from './ListClientPage'
 import CreateClientPage from './CreateClientPage'
+import CreateSubscriptionPage from './CreateSubscriptionPage'
 
 
 const cache = new InMemoryCache();
@@ -53,6 +54,11 @@ class App extends React.Component {
         else if(this.state.viewmode == 'list_instructor'){
             mainview = <ListInstructorPage apolloclient={client} />
         }
+        else if(this.state.viewmode == 'create_subscription'){
+            mainview = <CreateSubscriptionPage apolloclient={client} success_callback={()=>this.setState({
+                viewmode: "list_client"
+            })}/>
+        }
 
         return <div>
 
@@ -61,6 +67,7 @@ class App extends React.Component {
                 <Button onClick={e => this.setState({ viewmode: "list_instructor" })}>view instructors</Button>
                 <Button onClick={e => this.setState({ viewmode: "create_client" })} >create client</Button>
                 <Button onClick={e => this.setState({ viewmode: "create_instructor" })} >create instructor</Button>
+                <Button onClick={e => this.setState({ viewmode: "create_subscription" })} >create subscription</Button>
             </div>
 
             {mainview}

@@ -27,6 +27,7 @@ const typeDefs = gql`
   type Query {
     clients: [Client]
     instructors: [Instructor]
+    search_client_with_name(name: String!): [Client]
   }
 
   type SuccessResult {
@@ -38,6 +39,7 @@ const typeDefs = gql`
       deleteclient(id: Int!): SuccessResult
       createinstructor(name: String!, phonenumber: String!): SuccessResult
       deleteinstructor(id: Int!): SuccessResult
+      createsubscription(clientid: Int!, rounds: Int!, totalcost: Int!): SuccessResult
   }
 
 
@@ -76,6 +78,15 @@ const resolvers = {
             let results = await pgclient.query("select * from pilates.instructor").then(res=>{
                 return res.rows
             }).catch(e=>[])
+
+            return results
+        },
+        search_client_with_name: async (parent, args, context, info)=>{
+            console.log(args)
+            let results = await pgclient.query("select * from pilates.client where name=$1",[args.name]).then(res=>{
+                return res.rows
+            }).catch(e=>[])
+
 
             return results
         }
@@ -130,6 +141,21 @@ const resolvers = {
 
                 return false
             }).catch(e=>false)
+
+            return {success: ret}
+        },
+        createsubscription: async (parent,args) =>{
+
+            let ret = await pgclient.query('insert into pilates.subscription(clientid, rounds, totalcost) values ($1, $2,$3)',[args.clientid, args.rounds, args.totalcost]).then(res=>{
+                if(res.rowCount >0){
+                    return true
+                }
+                else return false
+            })
+            .catch(e=>{
+                console.log(e)
+                return false
+            })
 
             return {success: ret}
         }

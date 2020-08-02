@@ -62,10 +62,10 @@ class ListClientPage extends React.Component {
         return <div>
             <Table>
                 <thead>
-                    <td>id</td>
-                    <td>name</td>
-                    <td>phone</td>
-                    <td>action</td>
+                    <th>id</th>
+                    <th>name</th>
+                    <th>phone</th>
+                    <th>action</th>
                 </thead>
                 <tbody>
                     {this.state.data.map(d => <tr>
