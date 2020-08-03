@@ -1,6 +1,7 @@
 
 const { ApolloServer, gql } = require('apollo-server');
 const { Pool, Client } = require('pg')
+const moment = require('moment-timezone')
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -41,10 +42,18 @@ const typeDefs = gql`
       createinstructor(name: String!, phonenumber: String!): SuccessResult
       deleteinstructor(id: Int!): SuccessResult
       createsubscription(clientid: Int!, rounds: Int!, totalcost: Int!): SuccessResult
+      create_lesson(clientids:[Int!], instructorid: Int!, start_time: String!, end_time: String!): SuccessResult
   }
 
 
 `
+
+function get_postgres_timestamp_format(date){
+
+    let utc_time = moment(date).utc()
+    return utc_time.format("YYYY-MM-DD HH:mm:ss")
+
+}
 
 
 const pgclient = new Client({
@@ -167,7 +176,74 @@ const resolvers = {
             })
 
             return {success: ret}
+        },
+        create_lesson: async (parent, args)=>{
+
+            console.log(args)
+
+            let start_time = args.start_time
+            let end_time = args.end_time
+
+            console.log(start_time.toString())
+            console.log(end_time.toString())
+
+            start_time = new Date(start_time)
+            console.log("raw date start_time")
+            console.log(start_time)
+            // start_time = start_time.toISOString()
+            // start_time = start_time.replace("T", " ")
+            // console.log("start_time processed")
+
+            // start_time = start_time.getUTCFullYear()+"-"+start_time.getUTCMonth()+"-" + start_time.getUTCDate() + " " + start_time.getUTCHours()+":"+start_time.getUTCMinutes()+":"+ start_time.getUTCSeconds()
+            
+
+            start_time = get_postgres_timestamp_format(start_time)
+            console.log("processed start_time")
+            console.log(start_time)
+
+
+
+            end_time = new Date(end_time)
+            // end_time = end_time.toISOString()
+            // end_time = end_time.replace('T', " ")   
+
+            end_time = get_postgres_timestamp_format(end_time)
+
+            let value_string_arr=[]
+
+            args.clientids.forEach(cid=>{
+                let value_string = "("+cid +"," + args.instructorid + ",'"+start_time + "','" + end_time+"')"
+                value_string_arr.push(value_string)
+            })
+
+            console.log(value_string_arr)
+
+            let query_str = "insert into pilates.lesson(clientid, instructorid, starttime, endtime) values "
+
+            value_string_arr.forEach(s=>{
+                query_str = query_str + s + " "
+            })
+
+            console.log(query_str)
+            
+            let ret = await pgclient.query(query_str).then(res=>{
+
+                console.log(res)
+
+                if(res.rowCount>0){
+                    return true
+                }
+
+                return false
+            }).catch(e=>{
+                console.log(e)
+                return false
+            })
+
+
+            return {success: ret}
         }
+        
 
 
     }
