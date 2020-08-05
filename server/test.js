@@ -22,6 +22,13 @@ const typeDefs = gql`
       phonenumber: String
   }
 
+  type Lesson {
+    clientid: Int,
+    instructorid: Int,
+    starttime: String,
+    endtime: String
+  }
+
   # The "Query" type is special: it lists all of the available queries that
   # clients can execute, along with the return type for each. In this
   # case, the "books" query returns an array of zero or more Books (defined above).
@@ -30,6 +37,7 @@ const typeDefs = gql`
     instructors: [Instructor]
     search_client_with_name(name: String!): [Client]
     search_instructor_with_name(name: String!): [Instructor]
+    query_all_lessons: [Lesson]
   }
 
   type SuccessResult {
@@ -105,6 +113,17 @@ const resolvers = {
                 return res.rows
             })
             .catch(e=>[])
+
+            return results
+        },
+        query_all_lessons: async (parent, args)=>{
+
+            let results = await pgclient.query("select * from pilates.lesson").then(res=>{
+                return res.rows
+            })
+            .catch(e=>[])
+
+            console.log(results)
 
             return results
         }

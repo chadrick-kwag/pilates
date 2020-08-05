@@ -29,7 +29,7 @@ class SchedulePage extends React.Component{
         let mainview = null
 
         if(this.state.viewmode=="all"){
-            mainview = <ScheduleViewer />
+            mainview = <ScheduleViewer apolloclient={this.props.apolloclient}/>
         }
 
         else if(this.state.viewmode == "createlesson"){
