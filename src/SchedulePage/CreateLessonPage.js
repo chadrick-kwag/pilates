@@ -273,6 +273,7 @@ class CreateLessonPage extends React.Component {
             </div>
 
             <div>
+                <Button onClick={e=>this.props.cancel_callback()}>취소</Button>
                 <Button onClick={e=>this.createlesson()}>create</Button>
             </div>
         </div>

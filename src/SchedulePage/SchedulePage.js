@@ -33,7 +33,11 @@ class SchedulePage extends React.Component{
         }
 
         else if(this.state.viewmode == "createlesson"){
-            mainview = <CreateLessonPage apolloclient={this.props.apolloclient} />
+            mainview = <CreateLessonPage apolloclient={this.props.apolloclient} cancel_callback={()=>{
+                this.setState({
+                    viewmode: "all"
+                })
+            }}/>
         }
 
         return <div>

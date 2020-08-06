@@ -24,7 +24,9 @@ const typeDefs = gql`
 
   type Lesson {
     clientid: Int,
+    clientname: String,
     instructorid: Int,
+    instructorname: String,
     starttime: String,
     endtime: String
   }
@@ -56,18 +58,11 @@ const typeDefs = gql`
 
 `
 
-function get_postgres_timestamp_format(date){
-
-    let utc_time = moment(date).utc()
-    return utc_time.format("YYYY-MM-DD HH:mm:ss")
-
-}
-
 
 const pgclient = new Client({
     user: 'postgres',
     host: 'localhost',
-    database: 'test',
+    database: 'test', 
     password: 'rootpw',
     port: 5432,
 })
@@ -118,10 +113,14 @@ const resolvers = {
         },
         query_all_lessons: async (parent, args)=>{
 
-            let results = await pgclient.query("select * from pilates.lesson").then(res=>{
+            let results = await pgclient.query("select  lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid").then(res=>{
                 return res.rows
             })
             .catch(e=>[])
+
+            let result = results[0]
+
+            console.log(result)
 
             console.log(results)
 
@@ -209,33 +208,23 @@ const resolvers = {
             start_time = new Date(start_time)
             console.log("raw date start_time")
             console.log(start_time)
-            // start_time = start_time.toISOString()
-            // start_time = start_time.replace("T", " ")
-            // console.log("start_time processed")
-
-            // start_time = start_time.getUTCFullYear()+"-"+start_time.getUTCMonth()+"-" + start_time.getUTCDate() + " " + start_time.getUTCHours()+":"+start_time.getUTCMinutes()+":"+ start_time.getUTCSeconds()
             
-
-            start_time = get_postgres_timestamp_format(start_time)
-            console.log("processed start_time")
-            console.log(start_time)
-
-
-
             end_time = new Date(end_time)
-            // end_time = end_time.toISOString()
-            // end_time = end_time.replace('T', " ")   
+            // end_time = get_postgres_timestamp_format(end_time)
 
-            end_time = get_postgres_timestamp_format(end_time)
+            let start_unixtime = start_time.getTime()/1000 // dict milisecond info
+            let end_unixtime = end_time.getTime()/1000
+            
 
             let value_string_arr=[]
 
             args.clientids.forEach(cid=>{
-                let value_string = "("+cid +"," + args.instructorid + ",'"+start_time + "','" + end_time+"')"
+                let value_string = "("+cid +"," + args.instructorid + ",to_timestamp("+start_unixtime + "),to_timestamp(" + end_unixtime+"))"
                 value_string_arr.push(value_string)
             })
 
             console.log(value_string_arr)
+
 
             let query_str = "insert into pilates.lesson(clientid, instructorid, starttime, endtime) values "
 

@@ -16,7 +16,9 @@ const today = new Date()
 const FETCH_LESSON_GQL = gql`query {
     query_all_lessons{
         clientid,
+        clientname,
         instructorid,
+        instructorname,
         starttime,
         endtime
     }
@@ -29,10 +31,7 @@ class ScheduleViewer extends React.Component {
         super(props)
 
         this.state = {
-            data: [
-                { startDate: '2018-11-01T09:45', endDate: '2018-11-01T11:00', title: 'Meeting' },
-                { startDate: '2018-11-01T12:00', endDate: '2018-11-01T13:30', title: 'Go to a gym' },
-            ],
+            data: [],
             currentDate: '2018-11-01'
         }
 
@@ -46,6 +45,7 @@ class ScheduleViewer extends React.Component {
             query: FETCH_LESSON_GQL,
             fetchPolicy: 'network-only'
         }).then(res=>{
+            console.log('fetch data result')
             console.log(res)
 
             if(res.data.query_all_lessons){
@@ -84,16 +84,21 @@ class ScheduleViewer extends React.Component {
             starttime = new Date(parseInt(starttime))
             endtime = new Date(parseInt(endtime))
 
+            console.log('start and end time from schedule formatted data')
+            console.log(starttime.toUTCString())
+            console.log(starttime.toLocaleString())
             console.log(starttime)
             console.log(endtime)
+
+            console.log(starttime.getTime())
 
             let clientid = d.clientid
             let instructorid = d.instructorid
 
-            let title = "client="+clientid + ", instructor=" + instructorid
+            let title = d.clientname + " 회원님 / " + d.instructorname + " 강사님"
 
             return {
-                id: i,
+                id: toString(i),
                 calendarId: '0',
                 title: title,
                 category: 'time',
@@ -103,8 +108,6 @@ class ScheduleViewer extends React.Component {
             }
         })
 
-        console.log("schedule_formatted_data:")
-        console.log(schedule_formatted_data)
 
         return <div>
 
@@ -118,15 +121,11 @@ class ScheduleViewer extends React.Component {
                         {
                             id: '0',
                             name: 'Private',
-                            bgColor: '#9e5fff',
+                            color: 'white',
+                            bgColor: '#4275ff',
                             borderColor: '#9e5fff'
-                        },
-                        {
-                            id: '1',
-                            name: 'Company',
-                            bgColor: '#00a9ff',
-                            borderColor: '#00a9ff'
                         }
+                        
                     ]}
                     disableDblClick={true}
                     disableClick={false}
@@ -156,15 +155,11 @@ class ScheduleViewer extends React.Component {
 
                     timezones={[
                         {
-                            timezoneOffset: 540,
+                            timezoneOffset: +540,
                             displayLabel: 'GMT+09:00',
                             tooltip: 'Seoul'
-                        },
-                        {
-                            timezoneOffset: -420,
-                            displayLabel: 'GMT-08:00',
-                            tooltip: 'Los Angeles'
                         }
+                        
                     ]}
                     useDetailPopup
                     useCreationPopup
