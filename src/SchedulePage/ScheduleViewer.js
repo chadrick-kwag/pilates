@@ -13,6 +13,7 @@ import 'tui-time-picker/dist/tui-time-picker.css';
 import ClientSearchComponent from '../components/ClientSearchComponent'
 import ClientSearchComponent2 from '../components/ClientSearchComponent2'
 import InstructorSearchComponent from '../components/InstructorSearchComponent'
+import InstructorSearchComponent2 from '../components/InstructorSearchComponent2'
 import moment from 'moment'
 
 const today = new Date()
@@ -248,12 +249,16 @@ class ScheduleViewer extends React.Component {
                         create_selected_client: d
                     })} />
 
-                    <InstructorSearchComponent apolloclient={this.props.apolloclient} instructorSelectedCallback={d => this.setState({
+                    <hr></hr>
+
+                    <InstructorSearchComponent2 apolloclient={this.props.apolloclient} instructorSelectedCallback={d => this.setState({
                         create_selected_instructor: d
                     })} />
 
-
-                    <div>
+                    <hr></hr>
+                    
+                    <div style={{display: "flex", flexDirection: "column"}}>
+                        <span>수업날짜: </span>
                         {datetimestr}
                     </div>
 

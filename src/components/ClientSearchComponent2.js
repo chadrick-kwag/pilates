@@ -103,7 +103,7 @@ class ClientSearchComponent2 extends React.Component {
         }
         if (searchmode) {
             return <div>
-                {this.state.selected_client==null? null : <div><Button onClick={e=>{
+                {this.state.selected_client == null ? null : <div><Button onClick={e => {
                     this.setState({
                         force_search: false
                     })
@@ -126,12 +126,12 @@ class ClientSearchComponent2 extends React.Component {
             // show selected client info
             return <div>
                 <div>
-                    <Button onClick={e=>this.setState({
+                    <Button onClick={e => this.setState({
                         force_search: true
                     })}>회원찾기</Button>
                 </div>
-                <h2>회원정보</h2>
-                <div>
+                <span>회원정보</span>
+                <div style={{display: "flex", flexDirection: "column"}}>
                     <span>id: {this.state.selected_client.id}</span>
                     <span>name: {this.state.selected_client.name}</span>
                     <span>phone: {this.state.selected_client.phonenumber}</span>
