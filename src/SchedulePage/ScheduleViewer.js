@@ -21,6 +21,7 @@ const today = new Date()
 
 const FETCH_LESSON_GQL = gql`query {
     query_all_lessons{
+        id,
         clientid,
         clientname,
         instructorid,
@@ -37,6 +38,12 @@ const CREATE_LESSON_GQL = gql`mutation createlesson($clientids:[Int!], $instruct
     }
 }`
 
+
+const DELETE_LESSON_GQL = gql`mutation deletelesson($lessonid:Int!){
+    delete_lesson(lessonid:$lessonid){
+        success
+    }
+}`
 
 class ScheduleViewer extends React.Component {
 
@@ -229,6 +236,30 @@ class ScheduleViewer extends React.Component {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
+                    <Button onClick={e=>{
+                        console.log(this.state.view_selected_lesson)
+                        this.props.apolloclient.mutate({
+                            mutation: DELETE_LESSON_GQL,
+                            variables:{
+                                lessonid: this.state.view_selected_lesson.id
+                            }
+                        }).then(d=>{
+                            console.log(d)
+                            if(d.data.delete_lesson.success){
+                                this.fetchdata()
+                                this.setState({
+                                    show_view_modal: false
+
+                                })
+                            }
+                            else{
+                                alert('failed to delete lesson')
+                            }
+                        }).catch(e=>{
+                            console.log('error deleting lesson')
+                            alert('failed to delete lesson')
+                        })
+                    }}>delete</Button>
                     <Button onClick={e => {
                         this.setState({
                             show_view_modal: false

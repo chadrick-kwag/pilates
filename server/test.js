@@ -23,6 +23,7 @@ const typeDefs = gql`
   }
 
   type Lesson {
+      id: Int,
     clientid: Int,
     clientname: String,
     instructorid: Int,
@@ -53,7 +54,9 @@ const typeDefs = gql`
       deleteinstructor(id: Int!): SuccessResult
       createsubscription(clientid: Int!, rounds: Int!, totalcost: Int!): SuccessResult
       create_lesson(clientids:[Int!], instructorid: Int!, start_time: String!, end_time: String!): SuccessResult
+      delete_lesson(lessonid:Int!): SuccessResult
   }
+
 
 
 `
@@ -113,7 +116,7 @@ const resolvers = {
         },
         query_all_lessons: async (parent, args)=>{
 
-            let results = await pgclient.query("select  lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid").then(res=>{
+            let results = await pgclient.query("select  lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid").then(res=>{
                 return res.rows
             })
             .catch(e=>[])
@@ -250,6 +253,25 @@ const resolvers = {
 
 
             return {success: ret}
+        },
+        delete_lesson: async (parent, args)=>{
+            console.log(args)
+
+            let lessonid = args.lessonid
+
+            let ret = await pgclient.query('delete from pilates.lesson where id=$1',[lessonid]).then(res=>{
+                console.log(res)
+
+                if(res.rowCount>0){
+                    return true
+                }
+
+                return false
+            }).catch(e=>false)
+
+            return {
+                success: ret
+            }
         }
         
 
