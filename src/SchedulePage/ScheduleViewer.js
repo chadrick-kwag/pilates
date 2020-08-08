@@ -172,9 +172,9 @@ class ScheduleViewer extends React.Component {
                 end: endtime
             }
         })
-        console.log("schedule_formatted_data")
-        console.log(schedule_formatted_data)
-        console.log('schedule start')
+
+
+
         let datetimestr
         try {
             console.log(this.state.modal_info.schedule.start.toString())
@@ -206,6 +206,9 @@ class ScheduleViewer extends React.Component {
         let view_modal
 
         if (this.state.show_view_modal) {
+
+
+
             view_modal = <Modal show={this.state.show_view_modal} onHide={() => this.setState({
                 show_view_modal: false
             })}>
@@ -256,8 +259,8 @@ class ScheduleViewer extends React.Component {
                     })} />
 
                     <hr></hr>
-                    
-                    <div style={{display: "flex", flexDirection: "column"}}>
+
+                    <div style={{ display: "flex", flexDirection: "column" }}>
                         <span>수업날짜: </span>
                         {datetimestr}
                     </div>
@@ -297,6 +300,11 @@ class ScheduleViewer extends React.Component {
             {view_modal}
 
             <div>
+                <Button onClick={e =>{ this.calendar.calendarInst.prev()}}>prev</Button>
+                <Button onClick={e=>{this.calendar.calendarInst.next()}}>next</Button>
+            </div>
+
+            <div>
                 <Calendar
 
                     ref={r => this.calendar = r}
@@ -316,8 +324,14 @@ class ScheduleViewer extends React.Component {
                     disableDblClick={true}
                     disableClick={false}
                     isReadOnly={false}
+
+                    getDateRangeEnd={() => new Date('2020-8-8')}
+                    getDateRangeStart={() => new Date('2020-8-1')}
+
+
                     month={{
-                        startDayOfWeek: 0
+                        startDayOfWeek: 0,
+                        daynames: ['일', '월', '화', '수', '목', '금', '토']
                     }}
                     schedules={schedule_formatted_data}
                     taskView={false}
