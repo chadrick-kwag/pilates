@@ -129,11 +129,13 @@ class ScheduleViewer extends React.Component {
             }
             else {
                 console.log('failed to create lesson')
+                alert('failed to create lesson')
             }
 
         }).catch(e => {
             console.log('error creating lesson')
             console.log(JSON.stringify(e))
+            alert('failed to create lesson')
         })
 
     }
