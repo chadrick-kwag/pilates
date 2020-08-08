@@ -11,6 +11,7 @@ import 'tui-date-picker/dist/tui-date-picker.css';
 import 'tui-time-picker/dist/tui-time-picker.css';
 
 import ClientSearchComponent from '../components/ClientSearchComponent'
+import ClientSearchComponent2 from '../components/ClientSearchComponent2'
 import InstructorSearchComponent from '../components/InstructorSearchComponent'
 import moment from 'moment'
 
@@ -243,7 +244,7 @@ class ScheduleViewer extends React.Component {
                 show_create_modal: false
             })}>
                 <Modal.Body>
-                    <ClientSearchComponent apolloclient={this.props.apolloclient} clientSelectedCallback={d => this.setState({
+                    <ClientSearchComponent2 apolloclient={this.props.apolloclient} clientSelectedCallback={d => this.setState({
                         create_selected_client: d
                     })} />
 
