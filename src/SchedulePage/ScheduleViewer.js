@@ -16,6 +16,9 @@ import InstructorSearchComponent from '../components/InstructorSearchComponent'
 import InstructorSearchComponent2 from '../components/InstructorSearchComponent2'
 import moment from 'moment'
 
+import DayPicker from 'react-day-picker';
+import 'react-day-picker/lib/style.css';
+
 const today = new Date()
 
 
@@ -59,7 +62,9 @@ class ScheduleViewer extends React.Component {
             create_selected_instructor: null,
 
 
-            view_selected_lesson: null
+            view_selected_lesson: null,
+            view_date: new Date(),
+            show_date_picker: false
 
         }
 
@@ -236,26 +241,26 @@ class ScheduleViewer extends React.Component {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={e=>{
+                    <Button onClick={e => {
                         console.log(this.state.view_selected_lesson)
                         this.props.apolloclient.mutate({
                             mutation: DELETE_LESSON_GQL,
-                            variables:{
+                            variables: {
                                 lessonid: this.state.view_selected_lesson.id
                             }
-                        }).then(d=>{
+                        }).then(d => {
                             console.log(d)
-                            if(d.data.delete_lesson.success){
+                            if (d.data.delete_lesson.success) {
                                 this.fetchdata()
                                 this.setState({
                                     show_view_modal: false
 
                                 })
                             }
-                            else{
+                            else {
                                 alert('failed to delete lesson')
                             }
-                        }).catch(e=>{
+                        }).catch(e => {
                             console.log('error deleting lesson')
                             alert('failed to delete lesson')
                         })
@@ -271,6 +276,38 @@ class ScheduleViewer extends React.Component {
         }
         else {
             view_modal = null
+        }
+
+
+        // date picker div
+
+        let date_picker_element = null
+        if (this.state.show_date_picker) {
+            console.log(this.datebutton)
+            console.log(this.datebutton.getBoundingClientRect())
+            let bbox = this.datebutton.getBoundingClientRect()
+
+            let left_offset = bbox.left + bbox.width / 2
+            let top_offset = bbox.top + bbox.height / 2
+
+            console.log(left_offset)
+            console.log(top_offset)
+
+            date_picker_element = <div style={{
+                position: "absolute", top: top_offset + "px", left: left_offset + "px",
+                backgroundColor: "white",
+                zIndex: "200"
+            }}> <DayPicker
+                    selectedDays={this.state.view_date}
+                    onDayClick={(d, m, e) => {
+                        console.log(d)
+                        console.log("picked")
+                        this.calendar.calendarInst.setDate(d)
+                        this.setState({
+                            view_date: d,
+                            show_date_picker: false
+                        })
+                    }} /> </div>
         }
 
         return <div>
@@ -331,14 +368,43 @@ class ScheduleViewer extends React.Component {
             {view_modal}
 
             <div>
-                <Button onClick={e =>{ this.calendar.calendarInst.prev()}}>prev</Button>
-                <Button onClick={e=>{this.calendar.calendarInst.next()}}>next</Button>
+                <Button onClick={e => {
+                    this.calendar.calendarInst.prev()
+                    // update current view date
+                    let new_date = new Date(this.state.view_date)
+                    new_date.setDate(this.state.view_date.getDate() - 7)
+                    console.log(new_date)
+                    this.setState({
+                        view_date: new_date
+                    })
+                }}>prev week</Button>
+                <Button ref={r => this.datebutton = r} onClick={e => {
+                    this.setState({
+                        show_date_picker: !this.state.show_date_picker
+                    })
+                }}>{moment(this.state.view_date).format('YY-MM-DD')}</Button>
+                <Button onClick={e => {
+                    this.calendar.calendarInst.next()
+                    // update current view date
+                    let new_date = new Date(this.state.view_date)
+                    new_date.setDate(this.state.view_date.getDate() + 7)
+                    console.log(new_date)
+                    this.setState({
+                        view_date: new_date
+                    })
+                }}>next week</Button>
+
+                {date_picker_element}
+
             </div>
 
             <div>
                 <Calendar
 
-                    ref={r => this.calendar = r}
+                    ref={r => {
+                        this.calendar = r
+
+                    }}
                     height="900px"
                     calendars={[
                         {
@@ -355,9 +421,6 @@ class ScheduleViewer extends React.Component {
                     disableDblClick={true}
                     disableClick={false}
                     isReadOnly={false}
-
-                    getDateRangeEnd={() => new Date('2020-8-8')}
-                    getDateRangeStart={() => new Date('2020-8-1')}
 
 
                     month={{
