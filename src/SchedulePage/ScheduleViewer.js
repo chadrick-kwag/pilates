@@ -17,90 +17,17 @@ import moment from 'moment'
 import DayPicker from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
 
+import {
+    ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
+    QUERY_LESSON_WITH_DATERANGE_GQL,
+    DELETE_LESSON_GQL,
+    CREATE_LESSON_GQL,
+    FETCH_LESSON_GQL
+} from '../common/gql_defs'
 
 
-const FETCH_LESSON_GQL = gql`query {
-    query_all_lessons{
-        id,
-        clientid,
-        clientname,
-        instructorid,
-        instructorname,
-        starttime,
-        endtime
-    }
-}`
+import {get_week_range_of_date} from '../common/date_fns'
 
-
-const CREATE_LESSON_GQL = gql`mutation createlesson($clientids:[Int!], $instructorid:Int!, $starttime: String!, $endtime:String!){
-    create_lesson(clientids: $clientids, instructorid: $instructorid, start_time: $starttime, end_time: $endtime){
-        success
-    }
-}`
-
-
-const DELETE_LESSON_GQL = gql`mutation deletelesson($lessonid:Int!){
-    delete_lesson(lessonid:$lessonid){
-        success
-    }
-}`
-
-const QUERY_LESSON_WITH_DATERANGE_GQL = gql`query($start_time: String!, $end_time: String!){
-    query_lessons_with_daterange(start_time: $start_time, end_time: $end_time){
-        id,
-        clientid,
-        clientname,
-        instructorid,
-        instructorname,
-        starttime,
-        endtime
-    }
-}`
-
-
-const ATTEMPT_UPDATE_SCHEDULE_TIME_GQL = gql`mutation blah($lessonid: Int!, $start_time: String!, $end_time: String!){
-    attempt_update_lesson_time(lessonid:$lessonid, start_time: $start_time, end_time: $end_time){
-        success,
-        msg
-    }
-}`
-
-
-function get_week_range_of_date(date) {
-    let lower_sun, higher_sat
-
-    let time_nullified_date = new Date(date)
-    time_nullified_date.setHours(0)
-    time_nullified_date.setMinutes(0)
-    time_nullified_date.setSeconds(0)
-    time_nullified_date.setMilliseconds(0)
-
-    for (let i = 0; i < 7; i++) {
-
-        let temp = new Date(time_nullified_date).setDate(time_nullified_date.getDate() - i)
-        let higher_temp = new Date(time_nullified_date).setDate(time_nullified_date.getDate() + i)
-
-
-        temp = new Date(temp)
-        higher_temp = new Date(higher_temp)
-
-        if (temp.getDay() == 0) {
-            lower_sun = temp
-        }
-
-        if (higher_temp.getDay() == 6) {
-            higher_sat = higher_temp
-        }
-    }
-
-    // for higher sat, turn it into next week sunday
-    let new_higher_sat = new Date(higher_sat)
-    new_higher_sat.setDate(higher_sat.getDate() + 1)
-    new_higher_sat = new Date(new_higher_sat)
-
-    return [lower_sun, new_higher_sat]
-
-}
 
 class ScheduleViewer extends React.Component {
 
@@ -228,11 +155,6 @@ class ScheduleViewer extends React.Component {
 
             starttime = new Date(parseInt(starttime))
             endtime = new Date(parseInt(endtime))
-
-
-
-            let clientid = d.clientid
-            let instructorid = d.instructorid
 
             let title = d.clientname + " 회원님 / " + d.instructorname + " 강사님"
             console.log(i)

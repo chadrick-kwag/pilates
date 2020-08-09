@@ -4,6 +4,7 @@ import {Button} from 'react-bootstrap'
 import './schedulepage.css'
 import ScheduleViewer from './ScheduleViewer'
 import CreateLessonPage from './CreateLessonPage'
+import ClientScheduleViewer from './ClientScheduleViewer'
 
 
 class SchedulePage extends React.Component{
@@ -30,6 +31,9 @@ class SchedulePage extends React.Component{
 
         if(this.state.viewmode=="all"){
             mainview = <ScheduleViewer apolloclient={this.props.apolloclient}/>
+        }
+        else if (this.state.viewmode =="client"){
+            mainview = <ClientScheduleViewer apolloclient={this.props.apolloclient} />
         }
 
         else if(this.state.viewmode == "createlesson"){

@@ -42,6 +42,7 @@ const typeDefs = gql`
     search_instructor_with_name(name: String!): [Instructor]
     query_all_lessons: [Lesson]
     query_lessons_with_daterange(start_time: String!, end_time: String!): [Lesson]
+    query_lesson_with_timerange_by_clientid(clientid: Int!, start_time: String!, end_time: String!): [Lesson]
   }
 
   type SuccessResult {
@@ -155,6 +156,31 @@ const resolvers = {
             return results
 
 
+        },
+        query_lesson_with_timerange_by_clientid: async (parent, args)=>{
+            console.log(args)
+
+            let clientid = args.clientid
+            let start_time = args.start_time
+            let end_time = args.end_time
+
+            start_time = new Date(start_time).getTime() /1000
+            end_time = new Date(end_time).getTime() / 1000
+
+            console.log(start_time)
+            console.log(end_time)
+
+            let lessons = await pgclient.query("select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid  where  lesson.clientid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) ", [clientid, start_time, end_time]).then(res=>{
+                console.log(res.rows)
+                return res.rows
+            }).catch(e=>{
+                console.log(e)
+                return []
+            })
+
+            console.log(lessons)
+
+            return lessons
         }
     },
     Mutation: {
