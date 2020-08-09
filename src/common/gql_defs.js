@@ -59,6 +59,22 @@ const QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL = gql`query($clientid: Int!, $
     }
 }`
 
+const QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTORID_GQL = gql`query($instructorid: Int!, $start_time: String!, $end_time: String!){
+    query_lesson_with_timerange_by_instructorid(instructorid: $instructorid, start_time: $start_time, end_time: $end_time){
+        success
+        lessons{
+            id,
+        clientid,
+        clientname,
+        instructorid,
+        instructorname,
+        starttime,
+        endtime
+        }
+        
+    }
+}`
+
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
@@ -66,5 +82,6 @@ export {
     DELETE_LESSON_GQL,
     CREATE_LESSON_GQL,
     FETCH_LESSON_GQL,
-    QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL
+    QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL,
+    QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTORID_GQL
 }

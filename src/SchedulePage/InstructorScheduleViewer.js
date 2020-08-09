@@ -19,30 +19,30 @@ import 'react-day-picker/lib/style.css';
 
 import {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
-    QUERY_LESSON_WITH_DATERANGE_GQL,
+
     DELETE_LESSON_GQL,
     CREATE_LESSON_GQL,
 
-    QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL
+    QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTORID_GQL
 } from '../common/gql_defs'
 
 
 import { get_week_range_of_date } from '../common/date_fns'
 
 
-class ClientScheduleViewer extends React.Component {
+class InstructorScheduleViewer extends React.Component {
 
     constructor(props) {
         super(props)
 
         this.state = {
-            selected_client: null,
+            selected_instructor: null,
             data: [],
             show_create_modal: false,
             modal_info: null,
             show_view_modal: false,
             create_selected_client: null,
-            create_selected_instructor: null,
+
 
 
             view_selected_lesson: null,
@@ -66,9 +66,9 @@ class ClientScheduleViewer extends React.Component {
 
 
         this.props.apolloclient.query({
-            query: QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL,
+            query: QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTORID_GQL,
             variables: {
-                clientid: parseInt(this.state.selected_client.id),
+                instructorid: parseInt(this.state.selected_instructor.id),
                 start_time: start_time.toUTCString(),
                 end_time: end_time.toUTCString()
             },
@@ -76,11 +76,14 @@ class ClientScheduleViewer extends React.Component {
 
 
         }).then(d => {
+            console.log('received result')
             console.log(d)
-            if (d.data.query_lesson_with_timerange_by_clientid != null) {
+            console.log(d.data.query_lesson_with_timerange_by_instructorid.success)
+            if (d.data.query_lesson_with_timerange_by_instructorid.success) {
                 this.setState({
-                    data: d.data.query_lesson_with_timerange_by_clientid
+                    data: d.data.query_lesson_with_timerange_by_instructorid.lessons
                 })
+                console.log('success updating data')
 
             }
             else {
@@ -99,11 +102,11 @@ class ClientScheduleViewer extends React.Component {
     }
 
     create_input_check() {
-        if (this.state.selected_client == null) {
+        if (this.state.create_selected_client == null) {
             return false
         }
 
-        if (this.state.create_selected_instructor == null) {
+        if (this.state.selected_instructor == null) {
             return false
         }
 
@@ -117,8 +120,8 @@ class ClientScheduleViewer extends React.Component {
         let endtime = this.state.modal_info.schedule.end.toDate().toUTCString()
 
         let _variables = {
-            clientids: [parseInt(this.state.selected_client.id)],
-            instructorid: parseInt(this.state.create_selected_instructor.id),
+            clientids: [parseInt(this.state.create_selected_client.id)],
+            instructorid: parseInt(this.state.selected_instructor.id),
             starttime: starttime,
             endtime: endtime
         }
@@ -218,7 +221,7 @@ class ClientScheduleViewer extends React.Component {
                         <h2>강사</h2>
 
                         <div>
-                            <span>이름: {this.state.view_selected_lesson.instructorname}</span>
+                            <span>이름: {this.state.selected_instructor.instructorname}</span>
                         </div>
                         <hr></hr>
                         <div>
@@ -270,8 +273,6 @@ class ClientScheduleViewer extends React.Component {
 
         let create_modal = null
 
-        console.log("show_create_modal")
-        console.log(this.state.show_create_modal)
 
         if (this.state.show_create_modal) {
 
@@ -279,18 +280,17 @@ class ClientScheduleViewer extends React.Component {
                 show_create_modal: false
             })}>
                 <Modal.Body>
-                    <div style={{display: "flex", flexDirection: "column"}}>
-                        <div>회원정보</div>
-                        <span>id: {this.state.selected_client.id}</span>
-                        <span>이름: {this.state.selected_client.name}</span>
-                        <span>연락처: {this.state.selected_client.phonenumber}</span>
-                    </div>
+                    <ClientSearchComponent2 apolloclient={this.props.apolloclient} clientSelectedCallback={d => this.setState({
+                        selected_client: d
+                    })} />
 
                     <hr></hr>
 
-                    <InstructorSearchComponent2 apolloclient={this.props.apolloclient} instructorSelectedCallback={d => this.setState({
-                        create_selected_instructor: d
-                    })} />
+                    <div>
+                        <span>강사정보</span>
+                        <span>이름: {this.state.selected_instructor.name}</span>
+                        <span>연락처: {this.state.selected_instructor.phonenumber}</span>
+                    </div>
 
                     <hr></hr>
 
@@ -376,16 +376,17 @@ class ClientScheduleViewer extends React.Component {
             {create_modal}
 
             <div>
-                <ClientSearchComponent2 apolloclient={this.props.apolloclient} clientSelectedCallback={d => this.setState({
-                    selected_client: d
+                <InstructorSearchComponent2 apolloclient={this.props.apolloclient} instructorSelectedCallback={d => this.setState({
+                    selected_instructor: d
                 }, () => {
                     this.fetchdata()
-                })
-                } />
+                })} />
+
             </div>
 
 
-            {this.state.selected_client == null ? null :
+
+            {this.state.selected_instructor == null ? null :
                 <div>
                     <div>
                         <Button onClick={e => {
@@ -583,4 +584,4 @@ class ClientScheduleViewer extends React.Component {
     }
 }
 
-export default ClientScheduleViewer
+export default InstructorScheduleViewer

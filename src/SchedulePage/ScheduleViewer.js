@@ -292,6 +292,8 @@ class ScheduleViewer extends React.Component {
                         this.setState({
                             view_date: d,
                             show_date_picker: false
+                        }, ()=>{
+                            this.fetchdata()
                         })
                     }} /> </div>
         }

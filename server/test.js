@@ -35,6 +35,12 @@ const typeDefs = gql`
   # The "Query" type is special: it lists all of the available queries that
   # clients can execute, along with the return type for each. In this
   # case, the "books" query returns an array of zero or more Books (defined above).
+
+  type SuccessAndLessons {
+      success: Boolean,
+      lessons: [Lesson]
+  }
+
   type Query {
     clients: [Client]
     instructors: [Instructor]
@@ -43,6 +49,7 @@ const typeDefs = gql`
     query_all_lessons: [Lesson]
     query_lessons_with_daterange(start_time: String!, end_time: String!): [Lesson]
     query_lesson_with_timerange_by_clientid(clientid: Int!, start_time: String!, end_time: String!): [Lesson]
+    query_lesson_with_timerange_by_instructorid(instructorid: Int!, start_time: String!, end_time: String!): SuccessAndLessons
   }
 
   type SuccessResult {
@@ -60,8 +67,6 @@ const typeDefs = gql`
       delete_lesson(lessonid:Int!): SuccessResult
       attempt_update_lesson_time(lessonid:Int!, start_time: String!, end_time: String!): SuccessResult
   }
-
-
 
 `
 
@@ -181,6 +186,36 @@ const resolvers = {
             console.log(lessons)
 
             return lessons
+        },
+        query_lesson_with_timerange_by_instructorid: async (parent, args)=>{
+            console.log(args)
+
+            let instructorid = args.instructorid
+            let start_time = args.start_time
+            let end_time = args.end_time
+
+            start_time = new Date(start_time).getTime() / 1000
+            end_time = new Date(end_time).getTime() / 1000
+
+            let lessons = await pgclient.query("select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid  where  lesson.instructorid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) ",  [instructorid, start_time, end_time]).then(res=>{
+                return res.rows
+            }).catch(e=>{
+                console.log(e)
+                return null
+            })
+
+            if(lessons==null){
+                return {
+                    success: false,
+                    lessons: []
+                }
+            }
+            else{
+                return {
+                    success: true,
+                    lessons: lessons
+                }
+            }
         }
     },
     Mutation: {
