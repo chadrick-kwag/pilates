@@ -102,6 +102,7 @@ class InstructorScheduleViewer extends React.Component {
     }
 
     create_input_check() {
+        console.log(this.state.create_selected_client)
         if (this.state.create_selected_client == null) {
             return false
         }
@@ -281,7 +282,7 @@ class InstructorScheduleViewer extends React.Component {
             })}>
                 <Modal.Body>
                     <ClientSearchComponent2 apolloclient={this.props.apolloclient} clientSelectedCallback={d => this.setState({
-                        selected_client: d
+                        create_selected_client: d
                     })} />
 
                     <hr></hr>
