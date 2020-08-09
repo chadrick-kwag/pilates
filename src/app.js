@@ -17,6 +17,8 @@ import SchedulePage from './SchedulePage/SchedulePage'
 import ClientManagePage from './ClientManagePage'
 import TopNavBar from './TopNavBar'
 
+import InstructorManagePage from './InstructorManagePage'
+
 
 const cache = new InMemoryCache();
 const link = createHttpLink({
@@ -34,7 +36,7 @@ class App extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            viewmode: "list_client"
+            viewmode: "client_manage"
         }
     }
 
@@ -42,19 +44,9 @@ class App extends React.Component {
 
         let mainview
 
-        if (this.state.viewmode == "list_client") {
-            mainview = <ListClientPage apolloclient={client}/>
-        }
+       
         
-        else if(this.state.viewmode == 'create_instructor'){
-            mainview = <CreateInstructorPage apolloclient={client} success_callback={()=>{
-                console.log("inside success callback")
-                this.setState({viewmode: "list_instructor"})}}/>
-        }
-        else if(this.state.viewmode == 'list_instructor'){
-            mainview = <ListInstructorPage apolloclient={client} />
-        }
-        else if(this.state.viewmode == 'create_subscription'){
+        if(this.state.viewmode == 'create_subscription'){
             mainview = <CreateSubscriptionPage apolloclient={client} success_callback={()=>this.setState({
                 viewmode: "list_client"
             })}/>
@@ -64,6 +56,9 @@ class App extends React.Component {
         }
         else if(this.state.viewmode == "client_manage"){
             mainview = <ClientManagePage apolloclient={client}/>
+        }
+        else if(this.state.viewmode == 'instructor_manage'){
+            mainview = <InstructorManagePage apolloclient={client}/>
         }
         else{
             mainview = <div>not yet implemented</div>
@@ -78,7 +73,6 @@ class App extends React.Component {
             onScheduleManageClick = {()=>this.setState({viewmode: "schedule"})}
             />
             
-
             {mainview}
 
         </div>

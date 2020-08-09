@@ -21,9 +21,30 @@ class CreateInstructorPage extends React.Component{
         }
 
         this.createcallback = this.createcallback.bind(this)
+        this.check_inputs = this.check_inputs.bind(this)
+    }
+
+
+    check_inputs(){
+
+        if(this.state.name.trim()==""){
+            return false
+        }
+
+        if(this.state.phonenumber.trim()==""){
+            return false
+        }
+
+        return true
     }
 
     createcallback(){
+
+        if(!this.check_inputs()){
+            return alert('invalid input')
+            
+        }
+
         this.props.apolloclient.mutate({
             mutation: CREATE_INSTRUCTOR_GQL,
             variables:{
@@ -34,7 +55,7 @@ class CreateInstructorPage extends React.Component{
             console.log(d)
             if(d.data.createinstructor.success){
                 console.log("create success")
-                this.props.success_callback()
+                this.props.onSubmitSuccess()
                 return
             }
 
@@ -61,6 +82,7 @@ class CreateInstructorPage extends React.Component{
             </div>
 
             <div>
+                <Button onClick={e=>this.props.onCancelClick()}>cancel</Button>
                 <Button onClick={e=>this.createcallback()}>create</Button>
             </div>
 

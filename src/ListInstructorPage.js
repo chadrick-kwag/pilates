@@ -1,23 +1,13 @@
 import React from 'react'
-import { Table, Button } from 'react-bootstrap'
-import { gql } from '@apollo/client'
+import { Table, Button, Form } from 'react-bootstrap'
 
 
 
-const LIST_INSTRUCTOR_GQL = gql`{
-    instructors{
-        id
-        name
-        phonenumber
-    }
-} `
+import {
+    LIST_INSTRUCTOR_GQL,
+    DELETE_INSTRUCTOR_GQL
+} from './common/gql_defs'
 
-
-const DELETE_INSTRUCTOR_GQL = gql`mutation di($id: Int!){
-    deleteinstructor(id: $id){
-        success
-    }
-}`
 
 class ListInstructorPage extends React.Component {
 
@@ -26,13 +16,15 @@ class ListInstructorPage extends React.Component {
         super(props)
 
         this.state = {
-            data: []
+            data: [],
+            edit_target_instructor: null,
+            search_name: ""
         }
 
         this.fetchdata = this.fetchdata.bind(this)
     }
 
-    fetchdata(){
+    fetchdata() {
         this.props.apolloclient.query({
             query: LIST_INSTRUCTOR_GQL,
             fetchPolicy: "network-only"
@@ -51,6 +43,7 @@ class ListInstructorPage extends React.Component {
         })
             .catch(e => {
                 console.log(e)
+                alert('failed to fetch data from server')
             })
     }
 
@@ -60,8 +53,21 @@ class ListInstructorPage extends React.Component {
 
 
     render() {
-        return <div>
-            <Table>
+
+
+        let visible_data
+        if(this.state.search_name.trim()==""){
+            visible_data = this.state.data
+        }
+        else{
+            visible_data = this.state.data.filter(d=>d.name==this.state.search_name)
+        }
+
+        let table_area
+
+
+        if(this.state.data!=null){
+                table_area = <Table>
                 <thead>
                     <td>id</td>
                     <td>name</td>
@@ -69,32 +75,53 @@ class ListInstructorPage extends React.Component {
                     <td>action</td>
                 </thead>
                 <tbody>
-                    {this.state.data.map(d => <tr>
+                    {visible_data.map(d => <tr>
                         <td>{d.id}</td>
                         <td>{d.name}</td>
                         <td>{d.phonenumber}</td>
-                        <td><Button onClick={e=>{
+                        <td><div>
+                            <Button onClick={e=>{
+                                this.setState({
+                                    edit_target_instructor: d
+                                })
+                            }}>edit</Button>
+                            <Button onClick={e => {
                             this.props.apolloclient.mutate({
                                 mutation: DELETE_INSTRUCTOR_GQL,
                                 variables: {
                                     id: parseInt(d.id)
                                 }
-                            }).then(d=>{
-                                if(d.data.deleteinstructor.success){
+                            }).then(d => {
+                                if (d.data.deleteinstructor.success) {
                                     this.fetchdata()
                                     return
                                 }
 
                                 console.log('failed to delete instructor')
-                            }).catch(e=>{
+                            }).catch(e => {
                                 console.log(JSON.stringify(e))
                                 console.log('error deleting instructor')
-                                
+
                             })
-                        }}>delete</Button></td>
+                        }}>delete</Button></div></td>
                     </tr>)}
                 </tbody>
             </Table>
+        }
+        else{
+            table_area = <div>no results</div>
+        }
+
+
+
+        return <div>
+            <div style={{display: "flex", flexDirection: "row"}}>
+                <span>이름검색</span>
+                <Form.Control style={{width: "200px"}} value={this.state.search_name} onChange={e=>this.setState({
+                    search_name: e.target.value
+                })}/>
+            </div>
+            {table_area}
         </div>
     }
 }
