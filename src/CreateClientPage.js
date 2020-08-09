@@ -35,17 +35,27 @@ class CreateClientPage extends React.Component {
             }
         }).then(d => {
             console.log(d)
-            this.props.changeViewMode('list_client')
+            if(d.data!=null){
+                this.props.onSubmitSuccess()
+            }
+            else{
+                this.props.onSubmitFail()
+            }
+            // this.props.changeViewMode('list_client')
         })
             .catch(e => {
                 console.log(e)
-                alert('failed to reigster client')
+                // alert('failed to reigster client')
+                this.props.onSubmitFail()
             })
     }
 
 
     render() {
         return <div>
+            <div>
+                회원생성
+            </div>
             <div>
                 <span>name</span> <Form.Control value={this.state.name} onChange={e => this.setState({ name: e.target.value })}></Form.Control>
 
@@ -54,6 +64,7 @@ class CreateClientPage extends React.Component {
                 <span>phone</span> <Form.Control value={this.state.phonenumber} onChange={e => this.setState({ phonenumber: e.target.value })}></Form.Control>
             </div>
             <div>
+                <Button onClick={e=> this.props.cancelBtnCallback()}>cancel</Button>
                 <Button onClick={e => this.submitcallback()}>submit</Button>
             </div>
         </div>

@@ -5,14 +5,17 @@ import { Button, Form, Table } from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { ApolloProvider, } from '@apollo/react-hooks';
-import { useQuery, gql, ApolloClient, InMemoryCache, createHttpLink, useMutation } from '@apollo/client'
+import { ApolloClient, InMemoryCache, createHttpLink, useMutation } from '@apollo/client'
 
 import CreateInstructorPage from './CreateInstructorPage'
 import ListInstructorPage from './ListInstructorPage'
 import ListClientPage from './ListClientPage'
-import CreateClientPage from './CreateClientPage'
+// import CreateClientPage from './CreateClientPage'
 import CreateSubscriptionPage from './CreateSubscriptionPage'
 import SchedulePage from './SchedulePage/SchedulePage'
+
+import ClientManagePage from './ClientManagePage'
+import TopNavBar from './TopNavBar'
 
 
 const cache = new InMemoryCache();
@@ -42,11 +45,7 @@ class App extends React.Component {
         if (this.state.viewmode == "list_client") {
             mainview = <ListClientPage apolloclient={client}/>
         }
-        else if (this.state.viewmode == "create_client") {
-            mainview = <CreateClientPage apolloclient={client} changeViewMode={v => this.setState({
-                viewmode: v
-            })} />
-        }
+        
         else if(this.state.viewmode == 'create_instructor'){
             mainview = <CreateInstructorPage apolloclient={client} success_callback={()=>{
                 console.log("inside success callback")
@@ -63,17 +62,22 @@ class App extends React.Component {
         else if(this.state.viewmode == "schedule"){
             mainview = <SchedulePage apolloclient={client} />
         }
+        else if(this.state.viewmode == "client_manage"){
+            mainview = <ClientManagePage apolloclient={client}/>
+        }
+        else{
+            mainview = <div>not yet implemented</div>
+        }
 
         return <div>
 
-            <div style={{ display: "flex", flexDirection: "row" }}>
-                <Button onClick={e => this.setState({ viewmode: "list_client" })}>view clients</Button>
-                <Button onClick={e => this.setState({ viewmode: "list_instructor" })}>view instructors</Button>
-                <Button onClick={e => this.setState({ viewmode: "create_client" })} >create client</Button>
-                <Button onClick={e => this.setState({ viewmode: "create_instructor" })} >create instructor</Button>
-                <Button onClick={e => this.setState({ viewmode: "create_subscription" })} >create subscription</Button>
-                <Button onClick={e => this.setState({ viewmode: "schedule" })} >schedule</Button>
-            </div>
+            <TopNavBar 
+            onClientManageClick={()=>this.setState({viewmode: "client_manage"})}
+            onInstructorManageClick={()=>this.setState({viewmode: "instructor_manage"})}
+            onPlanManageClick = {()=>this.setState({viewmode: "plan_manage"})}
+            onScheduleManageClick = {()=>this.setState({viewmode: "schedule"})}
+            />
+            
 
             {mainview}
 
