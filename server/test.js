@@ -67,6 +67,7 @@ const typeDefs = gql`
       delete_lesson(lessonid:Int!): SuccessResult
       attempt_update_lesson_time(lessonid:Int!, start_time: String!, end_time: String!): SuccessResult
       update_client(id: Int!, name: String!, phonenumber: String!): SuccessResult
+      update_instructor(id: Int!, name: String!, phonenumber: String!): SuccessResult
   }
 
 `
@@ -470,6 +471,24 @@ const resolvers = {
                 console.log(e)
                 return false
             })
+
+            return {
+                success: ret
+            }
+        },
+        update_instructor: async (parent, args)=>{
+            console.log(args)
+
+            let ret = await pgclient.query('update pilates.instructor set name=$1, phonenumber=$2 where id=$3',[args.name, args.phonenumber, args.id]).then(res=>{
+                if(res.rowCount>0){
+                    return true
+                }
+                return false
+            }).catch(e=>{
+                console.log(e)
+                return false
+            })
+
 
             return {
                 success: ret

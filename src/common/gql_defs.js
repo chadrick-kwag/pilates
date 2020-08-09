@@ -112,6 +112,12 @@ const DELETE_INSTRUCTOR_GQL = gql`mutation di($id: Int!){
     }
 }`
 
+const UPDATE_INSTRUCTOR_INFO_GQL = gql`mutation updateinstructor($id: Int!, $name: String!, $phonenumber: String!){
+    update_instructor(id: $id, name: $name, phonenumber: $phonenumber){
+        success
+    }
+}`
+
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
@@ -125,5 +131,6 @@ export {
     DELETE_CLIENT_GQL,
     UPDATE_CLIENT_INFO_GQL,
     LIST_INSTRUCTOR_GQL,
-    DELETE_INSTRUCTOR_GQL
+    DELETE_INSTRUCTOR_GQL,
+    UPDATE_INSTRUCTOR_INFO_GQL
 }

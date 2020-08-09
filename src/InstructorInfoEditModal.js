@@ -1,17 +1,17 @@
 import React from 'react'
 import { Modal, Button, Form } from 'react-bootstrap'
-import {UPDATE_CLIENT_INFO_GQL} from './common/gql_defs'
+import {UPDATE_INSTRUCTOR_INFO_GQL} from './common/gql_defs'
 
 
-class ClientInfoEditModal extends React.Component {
+class InstructorInfoEditModal extends React.Component {
 
 
     constructor(props){
         super(props)
 
         this.state={
-            name: this.props.client.name,
-            phonenumber: this.props.client.phonenumber
+            name: this.props.instructor.name,
+            phonenumber: this.props.instructor.phonenumber
         }
 
         this.is_identical_to_inital = this.is_identical_to_inital.bind(this)
@@ -21,7 +21,7 @@ class ClientInfoEditModal extends React.Component {
 
 
     is_identical_to_inital(){
-        if( (this.props.client.name== this.state.name) && (this.props.client.phonenumber == this.state.phonenumber)){
+        if( (this.props.instructor.name== this.state.name) && (this.props.instructor.phonenumber == this.state.phonenumber)){
             // no need to update since no changes are made
             return true
         }
@@ -54,9 +54,9 @@ class ClientInfoEditModal extends React.Component {
         if(this.check_inputs()){
             // if inputs are okay, then proceed with submit
             this.props.apolloclient.mutate({
-                mutation: UPDATE_CLIENT_INFO_GQL,
+                mutation: UPDATE_INSTRUCTOR_INFO_GQL,
                 variables: {
-                    id: parseInt(this.props.client.id),
+                    id: parseInt(this.props.instructor.id),
                     name: this.state.name,
                     phonenumber: this.state.phonenumber
                 }
@@ -64,7 +64,7 @@ class ClientInfoEditModal extends React.Component {
             }).then(d=>{
                 console.log(d)
 
-                if(d.data.update_client.success){
+                if(d.data.update_instructor.success){
                     this.props.onSubmitSuccess()
                 }
                 else{
@@ -112,11 +112,11 @@ class ClientInfoEditModal extends React.Component {
 }
 
 
-ClientInfoEditModal.defaultProps = {
+InstructorInfoEditModal.defaultProps = {
     onSubmitFail: ()=>{
         alert('submit failed')
     }
 
 }
 
-export default ClientInfoEditModal
+export default InstructorInfoEditModal

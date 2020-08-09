@@ -1,5 +1,6 @@
 import React from 'react'
 import { Table, Button, Form } from 'react-bootstrap'
+import InstructorInfoEditModal from './InstructorInfoEditModal'
 
 
 
@@ -56,18 +57,18 @@ class ListInstructorPage extends React.Component {
 
 
         let visible_data
-        if(this.state.search_name.trim()==""){
+        if (this.state.search_name.trim() == "") {
             visible_data = this.state.data
         }
-        else{
-            visible_data = this.state.data.filter(d=>d.name==this.state.search_name)
+        else {
+            visible_data = this.state.data.filter(d => d.name == this.state.search_name)
         }
 
         let table_area
 
 
-        if(this.state.data!=null){
-                table_area = <Table>
+        if (this.state.data != null) {
+            table_area = <Table>
                 <thead>
                     <td>id</td>
                     <td>name</td>
@@ -80,46 +81,62 @@ class ListInstructorPage extends React.Component {
                         <td>{d.name}</td>
                         <td>{d.phonenumber}</td>
                         <td><div>
-                            <Button onClick={e=>{
+                            <Button onClick={e => {
                                 this.setState({
                                     edit_target_instructor: d
                                 })
                             }}>edit</Button>
                             <Button onClick={e => {
-                            this.props.apolloclient.mutate({
-                                mutation: DELETE_INSTRUCTOR_GQL,
-                                variables: {
-                                    id: parseInt(d.id)
-                                }
-                            }).then(d => {
-                                if (d.data.deleteinstructor.success) {
-                                    this.fetchdata()
-                                    return
-                                }
+                                this.props.apolloclient.mutate({
+                                    mutation: DELETE_INSTRUCTOR_GQL,
+                                    variables: {
+                                        id: parseInt(d.id)
+                                    }
+                                }).then(d => {
+                                    if (d.data.deleteinstructor.success) {
+                                        this.fetchdata()
+                                        return
+                                    }
 
-                                console.log('failed to delete instructor')
-                            }).catch(e => {
-                                console.log(JSON.stringify(e))
-                                console.log('error deleting instructor')
+                                    console.log('failed to delete instructor')
+                                }).catch(e => {
+                                    console.log(JSON.stringify(e))
+                                    console.log('error deleting instructor')
 
-                            })
-                        }}>delete</Button></div></td>
+                                })
+                            }}>delete</Button></div></td>
                     </tr>)}
                 </tbody>
             </Table>
         }
-        else{
+        else {
             table_area = <div>no results</div>
         }
 
 
 
         return <div>
-            <div style={{display: "flex", flexDirection: "row"}}>
+            {this.state.edit_target_instructor == null ? null : <InstructorInfoEditModal
+                apolloclient={this.props.apolloclient}
+                onSubmitSuccess={() => {
+                    this.setState({
+                        edit_target_instructor: null
+                    }, ()=>{
+                        this.fetchdata()
+                    })
+                }}
+                instructor={this.state.edit_target_instructor}
+                onCancelClick={() => {
+                    this.setState({
+                        edit_target_instructor: null
+                    })
+                }}
+            />}
+            <div style={{ display: "flex", flexDirection: "row" }}>
                 <span>이름검색</span>
-                <Form.Control style={{width: "200px"}} value={this.state.search_name} onChange={e=>this.setState({
+                <Form.Control style={{ width: "200px" }} value={this.state.search_name} onChange={e => this.setState({
                     search_name: e.target.value
-                })}/>
+                })} />
             </div>
             {table_area}
         </div>
