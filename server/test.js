@@ -337,24 +337,15 @@ const resolvers = {
             let instructorid = info_res.instructorid
 
 
-            console.log("input start_time: " + args.start_time)
-            console.log("input end time: " + args.end_time)
-
             let start_time = new Date(args.start_time).getTime() / 1000
             let end_time = new Date(args.end_time).getTime() / 1000
 
-            console.log(start_time)
-            console.log(end_time)
-
-            console.log(clientid)
-            console.log(instructorid)
-            console.log(args.lessonid)
 
 
             let overlapping_lessons = await pgclient.query('select * from pilates.lesson where tstzrange(to_timestamp($1), to_timestamp($2)) && tstzrange(lesson.starttime, lesson.endtime) AND (clientid=$3 OR instructorid=$4) AND id!=$5 ', [start_time, end_time, clientid, instructorid, args.lessonid]).then(res => {
 
-                console.log("overlapping lesson search result")
-                console.log(res.rows)
+                // console.log("overlapping lesson search result")
+                // console.log(res.rows)
 
                 return res.rows
             })

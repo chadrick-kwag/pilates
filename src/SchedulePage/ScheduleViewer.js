@@ -162,30 +162,6 @@ class ScheduleViewer extends React.Component {
             console.log(e)
             alert('error fetching schedule data')
         })
-
-
-        // this.props.apolloclient.query({
-        //     query: FETCH_LESSON_GQL,
-        //     fetchPolicy: 'network-only'
-        // }).then(res => {
-        //     console.log('fetch data result')
-        //     console.log(res)
-
-        //     if (res.data.query_all_lessons) {
-        //         console.log("success fetching lesson data")
-        //         console.log("init data")
-        //         console.log(res.data.query_all_lessons)
-        //         this.setState({
-        //             data: res.data.query_all_lessons
-        //         })
-
-        //         return
-
-        //     }
-        //     console.log("failed to fetch data")
-        // }).catch(e => {
-        //     console.log("error fetching lesson data")
-        // })
     }
 
     componentDidMount() {
@@ -567,16 +543,20 @@ class ScheduleViewer extends React.Component {
                         // this.calendar.calendarInst.updateSchedule(schedule.id, schedule.calendarId, changes)
                         
                         let schedule_id = schedule.id
-                        console.log(schedule_id)
                         if(schedule_id==""|| schedule_id ==null){
                             schedule_id = 0
                         }
 
                         let selected_data = this.state.data[schedule_id]
 
-                        console.log(selected_data)
+                        let start_time, end_time
+                        if(changes.start){
+                            start_time = changes.start
+                        }
+                        else{
+                            start_time = new Date(parseInt(selected_data.starttime))
+                        }
 
-                        console.log(changes)
 
 
 
@@ -584,7 +564,7 @@ class ScheduleViewer extends React.Component {
                             mutation: ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
                             variables: {
                                 lessonid: selected_data.id,
-                                start_time: changes.start.toUTCString(),
+                                start_time: start_time.toUTCString(),
                                 end_time: changes.end.toUTCString()
                             }
                             
