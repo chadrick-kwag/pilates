@@ -10,16 +10,13 @@ import 'tui-calendar/dist/tui-calendar.css';
 import 'tui-date-picker/dist/tui-date-picker.css';
 import 'tui-time-picker/dist/tui-time-picker.css';
 
-import ClientSearchComponent from '../components/ClientSearchComponent'
 import ClientSearchComponent2 from '../components/ClientSearchComponent2'
-import InstructorSearchComponent from '../components/InstructorSearchComponent'
 import InstructorSearchComponent2 from '../components/InstructorSearchComponent2'
 import moment from 'moment'
 
 import DayPicker from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
 
-const today = new Date()
 
 
 const FETCH_LESSON_GQL = gql`query {
@@ -47,6 +44,55 @@ const DELETE_LESSON_GQL = gql`mutation deletelesson($lessonid:Int!){
         success
     }
 }`
+
+const QUERY_LESSON_WITH_DATERANGE_GQL = gql`query($start_time: String!, $end_time: String!){
+    query_lessons_with_daterange(start_time: $start_time, end_time: $end_time){
+        id,
+        clientid,
+        clientname,
+        instructorid,
+        instructorname,
+        starttime,
+        endtime
+    }
+}`
+
+
+function get_week_range_of_date(date) {
+    let lower_sun, higher_sat
+
+    let time_nullified_date = new Date(date)
+    time_nullified_date.setHours(0)
+    time_nullified_date.setMinutes(0)
+    time_nullified_date.setSeconds(0)
+    time_nullified_date.setMilliseconds(0)
+
+    for (let i = 0; i < 7; i++) {
+
+        let temp = new Date(time_nullified_date).setDate(time_nullified_date.getDate() - i)
+        let higher_temp = new Date(time_nullified_date).setDate(time_nullified_date.getDate() + i)
+
+
+        temp = new Date(temp)
+        higher_temp = new Date(higher_temp)
+
+        if (temp.getDay() == 0) {
+            lower_sun = temp
+        }
+
+        if (higher_temp.getDay() == 6) {
+            higher_sat = higher_temp
+        }
+    }
+
+    // for higher sat, turn it into next week sunday
+    let new_higher_sat = new Date(higher_sat)
+    new_higher_sat.setDate(higher_sat.getDate() + 1)
+    new_higher_sat = new Date(new_higher_sat)
+
+    return [lower_sun, new_higher_sat]
+
+}
 
 class ScheduleViewer extends React.Component {
 
@@ -76,28 +122,62 @@ class ScheduleViewer extends React.Component {
 
 
     fetchdata() {
-        this.props.apolloclient.query({
-            query: FETCH_LESSON_GQL,
-            fetchPolicy: 'network-only'
-        }).then(res => {
-            console.log('fetch data result')
-            console.log(res)
 
-            if (res.data.query_all_lessons) {
-                console.log("success fetching lesson data")
-                console.log("init data")
-                console.log(res.data.query_all_lessons)
+        // determine search date range based on view_date
+
+        let [start_time, end_time] = get_week_range_of_date(this.state.view_date)
+
+
+        this.props.apolloclient.query({
+            query: QUERY_LESSON_WITH_DATERANGE_GQL,
+            variables: {
+                start_time: start_time.toUTCString(),
+                end_time: end_time.toUTCString()
+            },
+            fetchPolicy: 'network-only'
+
+
+        }).then(d => {
+
+            if (d.data.query_lessons_with_daterange != null) {
                 this.setState({
-                    data: res.data.query_all_lessons
+                    data: d.data.query_lessons_with_daterange
                 })
 
-                return
-
             }
-            console.log("failed to fetch data")
+            else {
+                alert('failed to fetch schedule data')
+            }
         }).catch(e => {
-            console.log("error fetching lesson data")
+            console.log('error fetching scehdule data')
+            console.log(JSON.stringify(e))
+            console.log(e)
+            alert('error fetching schedule data')
         })
+
+
+        // this.props.apolloclient.query({
+        //     query: FETCH_LESSON_GQL,
+        //     fetchPolicy: 'network-only'
+        // }).then(res => {
+        //     console.log('fetch data result')
+        //     console.log(res)
+
+        //     if (res.data.query_all_lessons) {
+        //         console.log("success fetching lesson data")
+        //         console.log("init data")
+        //         console.log(res.data.query_all_lessons)
+        //         this.setState({
+        //             data: res.data.query_all_lessons
+        //         })
+
+        //         return
+
+        //     }
+        //     console.log("failed to fetch data")
+        // }).catch(e => {
+        //     console.log("error fetching lesson data")
+        // })
     }
 
     componentDidMount() {
@@ -129,8 +209,6 @@ class ScheduleViewer extends React.Component {
             endtime: endtime
         }
 
-        console.log("_variables")
-        console.log(_variables)
 
         this.props.apolloclient.mutate({
             mutation: CREATE_LESSON_GQL,
@@ -208,11 +286,6 @@ class ScheduleViewer extends React.Component {
             console.log(err)
             datetimestr = null
         }
-
-
-
-
-
 
 
         let view_modal
@@ -373,10 +446,12 @@ class ScheduleViewer extends React.Component {
                     // update current view date
                     let new_date = new Date(this.state.view_date)
                     new_date.setDate(this.state.view_date.getDate() - 7)
-                    console.log(new_date)
                     this.setState({
                         view_date: new_date
+                    }, () => {
+                        this.fetchdata()
                     })
+
                 }}>prev week</Button>
                 <Button ref={r => this.datebutton = r} onClick={e => {
                     this.setState({
@@ -388,9 +463,10 @@ class ScheduleViewer extends React.Component {
                     // update current view date
                     let new_date = new Date(this.state.view_date)
                     new_date.setDate(this.state.view_date.getDate() + 7)
-                    console.log(new_date)
                     this.setState({
                         view_date: new_date
+                    }, () => {
+                        this.fetchdata()
                     })
                 }}>next week</Button>
 
@@ -481,23 +557,18 @@ class ScheduleViewer extends React.Component {
                         this.calendar.calendarInst.updateSchedule(schedule.id, schedule.calendarId, changes)
                     }}
                     onClickSchedule={e => {
-                        console.log('schedule clicked')
-                        console.log(e)
 
                         let new_modal_info = {
                             schedule: e.schedule
                         }
 
                         let sel_id = e.schedule.id
-                        console.log(sel_id)
 
                         if (sel_id == null || sel_id == "") {
                             sel_id = 0
                         }
 
                         let sel_lesson = this.state.data[sel_id]
-                        console.log("selected lesson")
-                        console.log(sel_lesson)
 
                         this.setState({
                             modal_info: new_modal_info,
