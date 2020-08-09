@@ -288,9 +288,14 @@ class ScheduleViewer extends React.Component {
                             <span>이름: {this.state.view_selected_lesson.clientname}</span>
 
                         </div>
-                        <h2>강사</h2>
-                        <div><span>이름: {this.state.view_selected_lesson.instructorname}</span></div>
+                        <hr></hr>
 
+                        <h2>강사</h2>
+
+                        <div>
+                            <span>이름: {this.state.view_selected_lesson.instructorname}</span>
+                        </div>
+                        <hr></hr>
                         <div>
                             <span>{datetimestr}</span>
                         </div>
@@ -308,11 +313,11 @@ class ScheduleViewer extends React.Component {
                         }).then(d => {
                             console.log(d)
                             if (d.data.delete_lesson.success) {
-                                
+
                                 this.setState({
                                     show_view_modal: false
 
-                                }, ()=>{
+                                }, () => {
                                     this.fetchdata()
                                 })
                             }
@@ -541,19 +546,19 @@ class ScheduleViewer extends React.Component {
                         let { schedule, changes } = e
                         // do check if new schedule is viable
                         // this.calendar.calendarInst.updateSchedule(schedule.id, schedule.calendarId, changes)
-                        
+
                         let schedule_id = schedule.id
-                        if(schedule_id==""|| schedule_id ==null){
+                        if (schedule_id == "" || schedule_id == null) {
                             schedule_id = 0
                         }
 
                         let selected_data = this.state.data[schedule_id]
 
                         let start_time, end_time
-                        if(changes.start){
+                        if (changes.start) {
                             start_time = changes.start
                         }
-                        else{
+                        else {
                             start_time = new Date(parseInt(selected_data.starttime))
                         }
 
@@ -567,11 +572,11 @@ class ScheduleViewer extends React.Component {
                                 start_time: start_time.toUTCString(),
                                 end_time: changes.end.toUTCString()
                             }
-                            
-                        }).then(d=>{
+
+                        }).then(d => {
                             console.log(d)
 
-                            if(d.data.attempt_update_lesson_time.success){
+                            if (d.data.attempt_update_lesson_time.success) {
                                 // update success
                                 this.fetchdata()
                                 return
@@ -581,7 +586,7 @@ class ScheduleViewer extends React.Component {
 
 
 
-                        }).catch(e=>{
+                        }).catch(e => {
                             console.log(e)
                             console.log(JSON.stringify(e))
                             alert("error updating lesson")
