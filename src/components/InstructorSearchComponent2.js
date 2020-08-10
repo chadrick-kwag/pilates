@@ -42,7 +42,7 @@ class InstructorSearchComponent2 extends React.Component {
             variables: {
                 name: this.state.instructor_name
             },
-            fetchPolicy: 'network-only'
+            fetchPolicy: 'no-cache'
         }).then(d => {
             console.log(d)
             let fetched_data = d.data.search_instructor_with_name

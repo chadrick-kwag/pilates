@@ -28,7 +28,7 @@ class ListInstructorPage extends React.Component {
     fetchdata() {
         this.props.apolloclient.query({
             query: LIST_INSTRUCTOR_GQL,
-            fetchPolicy: "network-only"
+            fetchPolicy: "no-cache"
         }).then(d => {
             console.log(d)
             if (d.data.instructors) {

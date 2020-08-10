@@ -1,4 +1,4 @@
-import {gql} from '@apollo/client'
+import { gql } from '@apollo/client'
 
 
 const FETCH_LESSON_GQL = gql`query {
@@ -119,6 +119,32 @@ const UPDATE_INSTRUCTOR_INFO_GQL = gql`mutation updateinstructor($id: Int!, $nam
 }`
 
 
+const QUERY_SUBSCRIPTIONS_GQL = gql`query subscriptions{
+
+    query_subscriptions{
+        success
+        subscriptions {
+            id
+            clientid
+            clientname
+            rounds
+            totalcost
+        }
+    }
+
+}`
+
+
+const CREATE_SUBSCRIPTION_GQL = gql`mutation create_subscription($clientid: Int!, $rounds: Int!, $totalcost: Int!){
+
+    create_subscription(clientid: $clientid, rounds: $rounds, totalcost: $totalcost){
+        success
+        
+    }
+
+}`
+
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -132,5 +158,7 @@ export {
     UPDATE_CLIENT_INFO_GQL,
     LIST_INSTRUCTOR_GQL,
     DELETE_INSTRUCTOR_GQL,
-    UPDATE_INSTRUCTOR_INFO_GQL
+    UPDATE_INSTRUCTOR_INFO_GQL,
+    QUERY_SUBSCRIPTIONS_GQL,
+    CREATE_SUBSCRIPTION_GQL
 }

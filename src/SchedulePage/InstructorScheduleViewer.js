@@ -72,7 +72,7 @@ class InstructorScheduleViewer extends React.Component {
                 start_time: start_time.toUTCString(),
                 end_time: end_time.toUTCString()
             },
-            fetchPolicy: 'network-only'
+            fetchPolicy: 'no-cache'
 
 
         }).then(d => {

@@ -18,9 +18,17 @@ import ClientManagePage from './ClientManagePage'
 import TopNavBar from './TopNavBar'
 
 import InstructorManagePage from './InstructorManagePage'
+import SubscriptionManagePage from './SubscriptionManage/SubscriptionManagePage'
 
 
-const cache = new InMemoryCache();
+const cache = new InMemoryCache({
+    dataIdFromObject: o=>{
+        console.log(o)
+        let retid = o.id ? `${o.__typename}-${o.id}` : `${o.__typename}-${o.cursor}`
+        console.log(retid)
+        return o
+    }
+});
 const link = createHttpLink({
     uri: 'http://localhost:4000/'
 });
@@ -59,6 +67,9 @@ class App extends React.Component {
         }
         else if(this.state.viewmode == 'instructor_manage'){
             mainview = <InstructorManagePage apolloclient={client}/>
+        }
+        else if(this.state.viewmode === "plan_manage"){
+            mainview = <SubscriptionManagePage apolloclient={client}/>
         }
         else{
             mainview = <div>not yet implemented</div>

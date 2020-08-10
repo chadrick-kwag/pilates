@@ -16,6 +16,14 @@ const typeDefs = gql`
     phonenumber: String
   }
 
+  type Subscription {
+      id: Int
+      clientid: Int
+      clientname: String
+      rounds: Int
+      totalcost: Int
+  }
+
   type Instructor {
       id: String
       name: String
@@ -41,6 +49,12 @@ const typeDefs = gql`
       lessons: [Lesson]
   }
 
+
+  type SuccessAndSubscriptions {
+      success: Boolean,
+      subscriptions: [Subscription]
+  }
+
   type Query {
     clients: [Client]
     instructors: [Instructor]
@@ -50,6 +64,7 @@ const typeDefs = gql`
     query_lessons_with_daterange(start_time: String!, end_time: String!): [Lesson]
     query_lesson_with_timerange_by_clientid(clientid: Int!, start_time: String!, end_time: String!): [Lesson]
     query_lesson_with_timerange_by_instructorid(instructorid: Int!, start_time: String!, end_time: String!): SuccessAndLessons
+    query_subscriptions: SuccessAndSubscriptions
   }
 
   type SuccessResult {
@@ -68,6 +83,7 @@ const typeDefs = gql`
       attempt_update_lesson_time(lessonid:Int!, start_time: String!, end_time: String!): SuccessResult
       update_client(id: Int!, name: String!, phonenumber: String!): SuccessResult
       update_instructor(id: Int!, name: String!, phonenumber: String!): SuccessResult
+      create_subscription(clientid: Int!, rounds: Int!, totalcost: Int!): SuccessResult
   }
 
 `
@@ -218,6 +234,36 @@ const resolvers = {
                     lessons: lessons
                 }
             }
+        },
+        query_subscriptions: async (parent, args)=>{
+            console.log(args)
+
+            let subscriptions = await pgclient.query("select subscription.id, subscription.clientid, client.name as clientname, rounds, totalcost from pilates.subscription left join pilates.client on subscription.clientid=client.id").then(res=>{
+                console.log(res.rows)
+                return res.rows
+            }).catch(e=>{
+                console.log(e)
+                return null
+            })
+
+            console.log(subscriptions)
+
+            if(subscriptions==null){
+                return {
+                    success: false,
+                    subscriptions: []
+                }
+            }
+            else{
+
+                let retobj = {
+                    success: true,
+                    "subscriptions": subscriptions
+                }
+                console.log(retobj)
+                return retobj
+            }
+
         }
     },
     Mutation: {
@@ -489,6 +535,23 @@ const resolvers = {
                 return false
             })
 
+
+            return {
+                success: ret
+            }
+        },
+        create_subscription: async (parent, args)=>{
+            console.log(args)
+
+            let ret = await pgclient.query('insert into pilates.subscription (clientid, rounds, totalcost) values ($1,$2,$3)',[args.clientid, args.rounds, args.totalcost]).then(res=>{
+                if(res.rowCount>0){
+                    return true
+                }
+                return false
+            }).catch(e=>{
+                console.log(e)
+                return false
+            })
 
             return {
                 success: ret
