@@ -4,6 +4,7 @@ import CreateInstructorPage from './CreateInstructorPage'
 
 import {Button} from 'react-bootstrap'
 
+
 class InstructorManagePage extends React.Component{
 
     constructor(props){

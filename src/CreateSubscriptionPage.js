@@ -55,7 +55,7 @@ class CreateSubscriptionPage extends React.Component {
             variables: {
                 name: this.state.client_name
             },
-            fetchPolicy: 'network-only'
+            fetchPolicy: 'no-cache'
         }).then(d => {
             let fetched_data = d.data.search_client_with_name
 

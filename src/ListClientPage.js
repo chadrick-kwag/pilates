@@ -26,7 +26,7 @@ class ListClientPage extends React.Component {
     refetch_data() {
         this.props.apolloclient.query({
             query: LIST_CLIENT_GQL,
-            fetchPolicy: "network-only"
+            fetchPolicy: "no-cache"
         }).then(d => {
             console.log(d)
             if (d.data.clients) {
