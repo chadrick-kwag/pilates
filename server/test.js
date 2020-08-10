@@ -84,6 +84,7 @@ const typeDefs = gql`
       update_client(id: Int!, name: String!, phonenumber: String!): SuccessResult
       update_instructor(id: Int!, name: String!, phonenumber: String!): SuccessResult
       create_subscription(clientid: Int!, rounds: Int!, totalcost: Int!): SuccessResult
+      delete_subscription(id:Int!): SuccessResult
   }
 
 `
@@ -180,23 +181,23 @@ const resolvers = {
 
 
         },
-        query_lesson_with_timerange_by_clientid: async (parent, args)=>{
+        query_lesson_with_timerange_by_clientid: async (parent, args) => {
             console.log(args)
 
             let clientid = args.clientid
             let start_time = args.start_time
             let end_time = args.end_time
 
-            start_time = new Date(start_time).getTime() /1000
+            start_time = new Date(start_time).getTime() / 1000
             end_time = new Date(end_time).getTime() / 1000
 
             console.log(start_time)
             console.log(end_time)
 
-            let lessons = await pgclient.query("select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid  where  lesson.clientid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) ", [clientid, start_time, end_time]).then(res=>{
+            let lessons = await pgclient.query("select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid  where  lesson.clientid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) ", [clientid, start_time, end_time]).then(res => {
                 console.log(res.rows)
                 return res.rows
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return []
             })
@@ -205,7 +206,7 @@ const resolvers = {
 
             return lessons
         },
-        query_lesson_with_timerange_by_instructorid: async (parent, args)=>{
+        query_lesson_with_timerange_by_instructorid: async (parent, args) => {
             console.log(args)
 
             let instructorid = args.instructorid
@@ -215,46 +216,46 @@ const resolvers = {
             start_time = new Date(start_time).getTime() / 1000
             end_time = new Date(end_time).getTime() / 1000
 
-            let lessons = await pgclient.query("select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid  where  lesson.instructorid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) ",  [instructorid, start_time, end_time]).then(res=>{
+            let lessons = await pgclient.query("select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid  where  lesson.instructorid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) ", [instructorid, start_time, end_time]).then(res => {
                 return res.rows
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return null
             })
 
-            if(lessons==null){
+            if (lessons == null) {
                 return {
                     success: false,
                     lessons: []
                 }
             }
-            else{
+            else {
                 return {
                     success: true,
                     lessons: lessons
                 }
             }
         },
-        query_subscriptions: async (parent, args)=>{
+        query_subscriptions: async (parent, args) => {
             console.log(args)
 
-            let subscriptions = await pgclient.query("select subscription.id, subscription.clientid, client.name as clientname, rounds, totalcost from pilates.subscription left join pilates.client on subscription.clientid=client.id").then(res=>{
+            let subscriptions = await pgclient.query("select subscription.id, subscription.clientid, client.name as clientname, rounds, totalcost from pilates.subscription left join pilates.client on subscription.clientid=client.id").then(res => {
                 console.log(res.rows)
                 return res.rows
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return null
             })
 
             console.log(subscriptions)
 
-            if(subscriptions==null){
+            if (subscriptions == null) {
                 return {
                     success: false,
                     subscriptions: []
                 }
             }
-            else{
+            else {
 
                 let retobj = {
                     success: true,
@@ -484,7 +485,7 @@ const resolvers = {
                         success: update_res
                     }
                 }
-                else{
+                else {
                     // when failed
                     return {
                         success: update_res,
@@ -498,22 +499,22 @@ const resolvers = {
 
                 return {
                     success: false,
-                    msg : "overlapping lesson exist"
+                    msg: "overlapping lesson exist"
                 }
             }
 
 
         },
-        update_client: async (parent, args)=>{
+        update_client: async (parent, args) => {
 
             console.log(args)
 
-            let ret = await pgclient.query('update pilates.client set name=$1, phonenumber=$2 where id=$3',[args.name, args.phonenumber, args.id]).then(res=>{
-                if(res.rowCount>0){
+            let ret = await pgclient.query('update pilates.client set name=$1, phonenumber=$2 where id=$3', [args.name, args.phonenumber, args.id]).then(res => {
+                if (res.rowCount > 0) {
                     return true
                 }
                 return false
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return false
             })
@@ -522,15 +523,15 @@ const resolvers = {
                 success: ret
             }
         },
-        update_instructor: async (parent, args)=>{
+        update_instructor: async (parent, args) => {
             console.log(args)
 
-            let ret = await pgclient.query('update pilates.instructor set name=$1, phonenumber=$2 where id=$3',[args.name, args.phonenumber, args.id]).then(res=>{
-                if(res.rowCount>0){
+            let ret = await pgclient.query('update pilates.instructor set name=$1, phonenumber=$2 where id=$3', [args.name, args.phonenumber, args.id]).then(res => {
+                if (res.rowCount > 0) {
                     return true
                 }
                 return false
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return false
             })
@@ -540,25 +541,42 @@ const resolvers = {
                 success: ret
             }
         },
-        create_subscription: async (parent, args)=>{
+        create_subscription: async (parent, args) => {
             console.log(args)
 
-            let ret = await pgclient.query('insert into pilates.subscription (clientid, rounds, totalcost) values ($1,$2,$3)',[args.clientid, args.rounds, args.totalcost]).then(res=>{
-                if(res.rowCount>0){
+            let ret = await pgclient.query('insert into pilates.subscription (clientid, rounds, totalcost) values ($1,$2,$3)', [args.clientid, args.rounds, args.totalcost]).then(res => {
+                if (res.rowCount > 0) {
                     return true
                 }
                 return false
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return false
             })
+
+            return {
+                success: ret
+            }
+        },
+        delete_subscription: async (parent, args) => {
+            console.log(args)
+
+            let ret = await pgclient.query('delete from pilates.subscription where id=$1', [args.id]).then(res => {
+                if (res.rowCount > 0) {
+                    return true
+                }
+
+                return false
+            }).catch(e => {
+                console.log(e)
+                return false
+            })
+
 
             return {
                 success: ret
             }
         }
-
-
 
     }
 };

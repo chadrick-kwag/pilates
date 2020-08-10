@@ -145,6 +145,13 @@ const CREATE_SUBSCRIPTION_GQL = gql`mutation create_subscription($clientid: Int!
 }`
 
 
+const DELETE_SUBSCRITION_GQL = gql`mutation delete_subscription($id:Int!){
+    delete_subscription(id: $id){
+        success
+    }
+}`
+
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -160,5 +167,6 @@ export {
     DELETE_INSTRUCTOR_GQL,
     UPDATE_INSTRUCTOR_INFO_GQL,
     QUERY_SUBSCRIPTIONS_GQL,
-    CREATE_SUBSCRIPTION_GQL
+    CREATE_SUBSCRIPTION_GQL,
+    DELETE_SUBSCRITION_GQL
 }

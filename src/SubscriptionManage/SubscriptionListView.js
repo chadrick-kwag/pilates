@@ -1,7 +1,7 @@
 import React from 'react'
-import { Table } from 'react-bootstrap'
+import {Button, Table } from 'react-bootstrap'
 
-import { QUERY_SUBSCRIPTIONS_GQL } from '../common/gql_defs'
+import { QUERY_SUBSCRIPTIONS_GQL, DELETE_SUBSCRITION_GQL } from '../common/gql_defs'
 
 
 class SubscriptionListView extends React.Component {
@@ -10,7 +10,8 @@ class SubscriptionListView extends React.Component {
         super(props)
 
         this.state = {
-            data: null
+            data: null,
+            delete_target_subscription: null
         }
 
         this.fetchdata = this.fetchdata.bind(this)
@@ -65,6 +66,7 @@ class SubscriptionListView extends React.Component {
 
                     <th>rounds</th>
                     <th>total cost</th>
+                    <th>action</th>
                 </thead>
                 <tbody>
                     {this.state.data.map((d, i) => {
@@ -76,6 +78,31 @@ class SubscriptionListView extends React.Component {
 
                             <td>{d.rounds}</td>
                             <td>{d.totalcost}</td>
+                            <td><div>
+                                <Button onClick={e=>{
+                                    let result = confirm("delete?")
+                                    if(result){
+                                        this.props.apolloclient.mutate({
+                                            mutation: DELETE_SUBSCRITION_GQL,
+                                            variables: {
+                                                id: parseInt(d.id)
+                                            }
+                                        }).then(d=>{
+                                            console.log(d)
+
+                                            if(d.data.delete_subscription.success){
+                                                this.fetchdata()
+                                            }
+                                            else{
+                                                alert('failed to delete')
+                                            }
+                                        }).catch(e=>{
+                                            console.log(e)
+                                            alert('error while deleting')
+                                        })
+                                    }
+                                }}>delete</Button>
+                                </div></td>
                         </tr>
                     })}
                 </tbody>
