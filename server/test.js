@@ -14,6 +14,7 @@ const typeDefs = gql`
     id: String
     name: String
     phonenumber: String
+    created: String
   }
 
   type Subscription {
@@ -271,7 +272,7 @@ const resolvers = {
         createclient: async (parent, args) => {
             console.log(args)
 
-            let ret = await pgclient.query("insert into pilates.client (name, phonenumber) values ($1, $2) returning id,name,phonenumber", [args.name, args.phonenumber]).then(res => {
+            let ret = await pgclient.query("insert into pilates.client (name, phonenumber, created) values ($1, $2, now()) returning id,name,phonenumber", [args.name, args.phonenumber]).then(res => {
                 console.log(res)
                 return res.rows[0]
             }).catch(err => {

@@ -80,6 +80,7 @@ const LIST_CLIENT_GQL = gql`{
         id
         name
         phonenumber
+        created
     }
 }`
 

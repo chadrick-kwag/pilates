@@ -5,6 +5,7 @@ import { Form, Table, Button } from 'react-bootstrap'
 import { LIST_CLIENT_GQL, DELETE_CLIENT_GQL } from './common/gql_defs'
 
 import ClientInfoEditModal from './ClientInfoEditModal'
+import moment from 'moment'
 
 
 
@@ -93,6 +94,7 @@ class ListClientPage extends React.Component {
                     <th>id</th>
                     <th>name</th>
                     <th>phone</th>
+                    <th>created time</th>
                     <th>action</th>
                 </thead>
                 <tbody>
@@ -100,6 +102,7 @@ class ListClientPage extends React.Component {
                         <td>{d.id}</td>
                         <td>{d.name}</td>
                         <td>{d.phonenumber}</td>
+                    <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
                         <td>
                             <div>
                                 <Button onClick={e=>{
