@@ -355,6 +355,33 @@ const resolvers = {
             let start_unixtime = start_time.getTime() / 1000 // dict milisecond info
             let end_unixtime = end_time.getTime() / 1000
 
+            // check if no overlapping lessons exist
+            for(let i=0;i<args.clientids.length;i++){
+                let clientid = args.clientids[i]
+                let overlap_exist = await pgclient.query("select * from pilates.lesson where (clientid=$1 or instructorid=$2) AND (tstzrange(to_timestamp($3), to_timestamp($4)) && tstzrange(lesson.starttime, lesson.endtime))",[clientid, args.instructorid, start_unixtime, end_unixtime]).then(res=>{
+                    if(res.rowCount>0){
+                        return true
+                    }
+                    return false
+                }).catch(e=>{
+                    console.log(e)
+                    return null
+                })
+
+                if(overlap_exist==null){
+                    return {
+                        success: false
+                    }
+                }
+
+                if(overlap_exist){
+                    return {
+                        success: false
+                    }
+                }
+
+            }
+
 
             let value_string_arr = []
 
