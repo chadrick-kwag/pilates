@@ -23,6 +23,7 @@ const typeDefs = gql`
       clientname: String
       rounds: Int
       totalcost: Int
+      created: String
   }
 
   type Instructor {
@@ -241,7 +242,7 @@ const resolvers = {
         query_subscriptions: async (parent, args) => {
             console.log(args)
 
-            let subscriptions = await pgclient.query("select subscription.id, subscription.clientid, client.name as clientname, rounds, totalcost from pilates.subscription left join pilates.client on subscription.clientid=client.id").then(res => {
+            let subscriptions = await pgclient.query("select subscription.id, subscription.clientid, client.name as clientname, rounds, totalcost, subscription.created from pilates.subscription left join pilates.client on subscription.clientid=client.id").then(res => {
                 console.log(res.rows)
                 return res.rows
             }).catch(e => {
@@ -573,7 +574,7 @@ const resolvers = {
         create_subscription: async (parent, args) => {
             console.log(args)
 
-            let ret = await pgclient.query('insert into pilates.subscription (clientid, rounds, totalcost) values ($1,$2,$3)', [args.clientid, args.rounds, args.totalcost]).then(res => {
+            let ret = await pgclient.query('insert into pilates.subscription (clientid, rounds, totalcost, created) values ($1,$2,$3, now())', [args.clientid, args.rounds, args.totalcost]).then(res => {
                 if (res.rowCount > 0) {
                     return true
                 }

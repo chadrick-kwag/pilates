@@ -131,6 +131,7 @@ const QUERY_SUBSCRIPTIONS_GQL = gql`query subscriptions{
             clientname
             rounds
             totalcost
+            created
         }
     }
 
