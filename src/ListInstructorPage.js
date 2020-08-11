@@ -1,6 +1,7 @@
 import React from 'react'
 import { Table, Button, Form } from 'react-bootstrap'
 import InstructorInfoEditModal from './InstructorInfoEditModal'
+import moment from 'moment'
 
 
 
@@ -73,6 +74,7 @@ class ListInstructorPage extends React.Component {
                     <td>id</td>
                     <td>name</td>
                     <td>phone</td>
+                    <td>created</td>
                     <td>action</td>
                 </thead>
                 <tbody>
@@ -80,6 +82,7 @@ class ListInstructorPage extends React.Component {
                         <td>{d.id}</td>
                         <td>{d.name}</td>
                         <td>{d.phonenumber}</td>
+                        <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
                         <td><div>
                             <Button onClick={e => {
                                 this.setState({
@@ -121,7 +124,7 @@ class ListInstructorPage extends React.Component {
                 onSubmitSuccess={() => {
                     this.setState({
                         edit_target_instructor: null
-                    }, ()=>{
+                    }, () => {
                         this.fetchdata()
                     })
                 }}

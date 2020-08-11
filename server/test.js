@@ -29,6 +29,7 @@ const typeDefs = gql`
       id: String
       name: String
       phonenumber: String
+      created: String
   }
 
   type Lesson {
@@ -301,7 +302,7 @@ const resolvers = {
         },
         createinstructor: async (parent, args) => {
             console.log('inside create instructor')
-            let ret = await pgclient.query('insert into pilates.instructor (name, phonenumber) values ($1, $2)', [args.name, args.phonenumber]).then(res => {
+            let ret = await pgclient.query('insert into pilates.instructor (name, phonenumber, created) values ($1, $2, now())', [args.name, args.phonenumber]).then(res => {
                 if (res.rowCount > 0) return true
 
                 return false

@@ -103,6 +103,7 @@ const LIST_INSTRUCTOR_GQL = gql`query instructors{
         id
         name
         phonenumber
+        created
     }
 } `
 
