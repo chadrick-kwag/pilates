@@ -154,6 +154,25 @@ const DELETE_SUBSCRITION_GQL = gql`mutation delete_subscription($id:Int!){
     }
 }`
 
+//query_subscriptions_with_remainrounds_for_clientid
+const QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query query_subscriptions_with_remainrounds_for_clientid($clientid: Int!){
+    query_subscriptions_with_remainrounds_for_clientid(clientid: $clientid){
+        success
+        subscriptions {
+            subscription {
+                id
+                clientid
+                
+                rounds
+                totalcost
+                created
+                
+            }
+            remainrounds
+        }
+    }
+}`
+
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
@@ -171,5 +190,6 @@ export {
     UPDATE_INSTRUCTOR_INFO_GQL,
     QUERY_SUBSCRIPTIONS_GQL,
     CREATE_SUBSCRIPTION_GQL,
-    DELETE_SUBSCRITION_GQL
+    DELETE_SUBSCRITION_GQL,
+    QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID
 }

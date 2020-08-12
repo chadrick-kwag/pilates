@@ -31,6 +31,7 @@ const typeDefs = gql`
       clientid: Int
       rounds: Int
       totalcost: Int
+      created: String
   }
 
   type ReturnSubscriptionWithRemainRounds {

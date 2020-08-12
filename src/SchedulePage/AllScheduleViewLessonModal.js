@@ -88,7 +88,7 @@ class AllScheduleViewLessonModal extends React.Component {
                     this.delete_lesson()
                 }}>delete</Button>
                 <Button onClick={e => {
-                    this.onCancel()
+                    this.props.onCancel()
                 }
                 }>Close</Button>
             </Modal.Footer>
