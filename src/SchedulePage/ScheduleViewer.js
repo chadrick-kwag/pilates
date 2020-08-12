@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Modal } from 'react-bootstrap'
+import { Button } from 'react-bootstrap'
 
 
 
@@ -10,8 +10,7 @@ import 'tui-calendar/dist/tui-calendar.css';
 import 'tui-date-picker/dist/tui-date-picker.css';
 import 'tui-time-picker/dist/tui-time-picker.css';
 
-import ClientSearchComponent2 from '../components/ClientSearchComponent2'
-import InstructorSearchComponent2 from '../components/InstructorSearchComponent2'
+
 import moment from 'moment'
 
 import DayPicker from 'react-day-picker';
@@ -19,14 +18,14 @@ import 'react-day-picker/lib/style.css';
 
 import {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
-    QUERY_LESSON_WITH_DATERANGE_GQL,
-    DELETE_LESSON_GQL,
-    CREATE_LESSON_GQL,
-    FETCH_LESSON_GQL
+    QUERY_LESSON_WITH_DATERANGE_GQL
 } from '../common/gql_defs'
 
 
-import {get_week_range_of_date} from '../common/date_fns'
+import { get_week_range_of_date } from '../common/date_fns'
+
+import AllScheduleCreateLessonModal from './AllScheduleCreateLessonModal'
+import AllScheduleViewLessonModal from './AllScheduleViewLessonModal'
 
 
 class ScheduleViewer extends React.Component {
@@ -39,10 +38,6 @@ class ScheduleViewer extends React.Component {
             show_create_modal: false,
             modal_info: null,
             show_view_modal: false,
-            create_selected_client: null,
-            create_selected_instructor: null,
-
-
             view_selected_lesson: null,
             view_date: new Date(),
             show_date_picker: false
@@ -51,8 +46,6 @@ class ScheduleViewer extends React.Component {
 
         // this.createlesson = this.createlesson.bind(this)
         this.fetchdata = this.fetchdata.bind(this)
-        this.create_lesson = this.create_lesson.bind(this)
-        this.create_input_check = this.create_input_check.bind(this)
     }
 
 
@@ -95,53 +88,6 @@ class ScheduleViewer extends React.Component {
         this.fetchdata()
     }
 
-    create_input_check() {
-        if (this.state.create_selected_client == null) {
-            return false
-        }
-
-        if (this.state.create_selected_instructor == null) {
-            return false
-        }
-
-        return true
-    }
-
-
-    create_lesson(cb) {
-
-        let starttime = this.state.modal_info.schedule.start.toDate().toUTCString()
-        let endtime = this.state.modal_info.schedule.end.toDate().toUTCString()
-
-        let _variables = {
-            clientids: [parseInt(this.state.create_selected_client.id)],
-            instructorid: parseInt(this.state.create_selected_instructor.id),
-            starttime: starttime,
-            endtime: endtime
-        }
-
-
-        this.props.apolloclient.mutate({
-            mutation: CREATE_LESSON_GQL,
-            variables: _variables
-        }).then(d => {
-            console.log(d)
-            if (d.data.create_lesson.success) {
-                cb()
-                this.fetchdata()
-            }
-            else {
-                console.log('failed to create lesson')
-                alert('failed to create lesson')
-            }
-
-        }).catch(e => {
-            console.log('error creating lesson')
-            console.log(JSON.stringify(e))
-            alert('failed to create lesson')
-        })
-
-    }
 
     render() {
 
@@ -171,98 +117,28 @@ class ScheduleViewer extends React.Component {
 
 
 
-        let datetimestr
-        try {
-            console.log(this.state.modal_info.schedule.start.toString())
-            let date = this.state.modal_info.schedule.start.toDate()
-            let moment_date = moment(date)
 
-            let end_date = this.state.modal_info.schedule.end.toDate()
-            let end_moment = moment(end_date)
-
-
-            datetimestr = moment_date.format("MM월 DD일 hh:mm A - ")
-            let endstr = end_moment.format("hh:mm A")
-
-            datetimestr = datetimestr + endstr
-
-        }
-        catch (err) {
-            console.log('failed to create schedule start string')
-            console.log(err)
-            datetimestr = null
-        }
-
-
-        let view_modal
+        let view_modal=null
 
         if (this.state.show_view_modal) {
 
 
 
-            view_modal = <Modal show={this.state.show_view_modal} onHide={() => this.setState({
+            view_modal = <AllScheduleViewLessonModal apolloclient={this.props.apolloclient}
+            view_selected_lesson={this.state.view_selected_lesson}
+            onCancel={()=>this.setState({
                 show_view_modal: false
-            })}>
-                <Modal.Body>
-                    <div>
-                        <h2>회원</h2>
-                        <div>
-                            <span>이름: {this.state.view_selected_lesson.clientname}</span>
-
-                        </div>
-                        <hr></hr>
-
-                        <h2>강사</h2>
-
-                        <div>
-                            <span>이름: {this.state.view_selected_lesson.instructorname}</span>
-                        </div>
-                        <hr></hr>
-                        <div>
-                            <span>{datetimestr}</span>
-                        </div>
-
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={e => {
-                        console.log(this.state.view_selected_lesson)
-                        this.props.apolloclient.mutate({
-                            mutation: DELETE_LESSON_GQL,
-                            variables: {
-                                lessonid: this.state.view_selected_lesson.id
-                            }
-                        }).then(d => {
-                            console.log(d)
-                            if (d.data.delete_lesson.success) {
-
-                                this.setState({
-                                    show_view_modal: false
-
-                                }, () => {
-                                    this.fetchdata()
-                                })
-                            }
-                            else {
-                                alert('failed to delete lesson')
-                            }
-                        }).catch(e => {
-                            console.log('error deleting lesson')
-                            alert('failed to delete lesson')
-                        })
-                    }}>delete</Button>
-                    <Button onClick={e => {
-                        this.setState({
-                            show_view_modal: false
-                        })
-                    }
-                    }>Close</Button>
-                </Modal.Footer>
-            </Modal>
+            })}
+            onDeleteSuccess={()=>{
+                this.setState({
+                    show_view_modal: false
+                }, ()=>{
+                    this.fetchdata()
+                })
+            }}
+            />
         }
-        else {
-            view_modal = null
-        }
+        
 
 
         // date picker div
@@ -292,66 +168,39 @@ class ScheduleViewer extends React.Component {
                         this.setState({
                             view_date: d,
                             show_date_picker: false
-                        }, ()=>{
+                        }, () => {
                             this.fetchdata()
                         })
                     }} /> </div>
         }
 
+
+        let create_modal = null
+
+        if (this.state.show_create_modal) {
+            create_modal = <AllScheduleCreateLessonModal
+                apolloclient={this.props.apolloclient}
+                onCancel={() => {
+                    this.setState({
+                        show_create_modal: false
+                    })
+                }}
+
+                onCreateSuccess={() => {
+                    this.setState({
+                        show_create_modal: false
+                    }, () => {
+                        this.fetchdata()
+                    })
+                }}
+
+                start={this.state.modal_info.schedule.start}
+                end={this.state.modal_info.schedule.end}
+            />
+        }
+
         return <div>
-
-            <Modal show={this.state.show_create_modal} onHide={() => this.setState({
-                show_create_modal: false
-            })}>
-                <Modal.Body>
-                    <ClientSearchComponent2 apolloclient={this.props.apolloclient} clientSelectedCallback={d => this.setState({
-                        create_selected_client: d
-                    })} />
-
-                    <hr></hr>
-
-                    <InstructorSearchComponent2 apolloclient={this.props.apolloclient} instructorSelectedCallback={d => this.setState({
-                        create_selected_instructor: d
-                    })} />
-
-                    <hr></hr>
-
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span>수업날짜: </span>
-                        {datetimestr}
-                    </div>
-
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={e => {
-                        this.setState({
-                            show_create_modal: false
-                        })
-                    }}>
-                        close
-                    </Button>
-                    <Button onClick={e => {
-
-                        let check_res = this.create_input_check()
-                        if (!check_res) {
-                            alert("inputs not valid")
-                            return
-                        }
-
-                        this.create_lesson(() => {
-                            // do stuff
-                            this.setState({
-                                show_create_modal: false
-                            })
-                        })
-
-
-
-
-                    }}>OK</Button>
-                </Modal.Footer>
-
-            </Modal>
+            {create_modal}
 
             {view_modal}
 
