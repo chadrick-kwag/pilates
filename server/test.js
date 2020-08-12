@@ -26,6 +26,23 @@ const typeDefs = gql`
       created: String
   }
 
+  type RawSubscription {
+      id: Int
+      clientid: Int
+      rounds: Int
+      totalcost: Int
+  }
+
+  type ReturnSubscriptionWithRemainRounds {
+      success: Boolean
+      subscriptions: [SubscriptionWithRemainRounds]
+  }
+
+  type SubscriptionWithRemainRounds {
+      subscription: RawSubscription
+      remainrounds: Int
+  }
+
   type Instructor {
       id: String
       name: String
@@ -68,6 +85,7 @@ const typeDefs = gql`
     query_lesson_with_timerange_by_clientid(clientid: Int!, start_time: String!, end_time: String!): [Lesson]
     query_lesson_with_timerange_by_instructorid(instructorid: Int!, start_time: String!, end_time: String!): SuccessAndLessons
     query_subscriptions: SuccessAndSubscriptions
+    query_subscriptions_with_remainrounds_for_clientid(clientid: Int!): ReturnSubscriptionWithRemainRounds
   }
 
   type SuccessResult {
@@ -266,6 +284,59 @@ const resolvers = {
                 }
                 console.log(retobj)
                 return retobj
+            }
+
+        },
+        query_subscriptions_with_remainrounds_for_clientid: async (parent, args)=>{
+            console.log(args)
+
+            let subscriptions = await pgclient.query('select * from pilates.subscription where clientid=$1',[args.clientid]).then(res=>{
+                return res.rows
+            }).catch(e=>{
+                console.log(e)
+                return null
+            })
+
+            if(subscriptions==null){
+                return {
+                    success: false
+                }
+            }
+
+            // find remaining rounds
+            let subscription_with_rr_arr=[]
+
+            for(let i=0;i<subscriptions.length;i++){
+                let total_rounds = subscriptions[i].rounds
+                let subid = subscriptions[i].id
+                
+                let consumed_lesson_count = await pgclient.query('select * from pilates.lesson where bound_subscription_id=$1',[subid]).then(res=>{
+                    return res.rowCount
+                })
+                .catch(e=>{
+                    console.log(e)
+                    return null
+                })
+
+                if(consumed_lesson_count==null){
+                    return {
+                        success: false
+                    }
+                }
+
+                let remain_count = total_rounds - consumed_lesson_count
+                subscription_with_rr_arr.push({
+                    subscription: subscriptions[i],
+                    remainrounds: remain_count
+                    
+                })
+            }
+
+            console.log(subscription_with_rr_arr)
+
+            return {
+                success: true,
+                subscriptions: subscription_with_rr_arr
             }
 
         }
@@ -614,6 +685,10 @@ const resolvers = {
 const server = new ApolloServer({ typeDefs, resolvers });
 
 // The `listen` method launches a web server.
-server.listen().then(({ url }) => {
+server.listen({
+    host: '0.0.0.0',
+    port: 4000
+    
+}).then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
 });

@@ -19,6 +19,7 @@ import TopNavBar from './TopNavBar'
 
 import InstructorManagePage from './InstructorManagePage'
 import SubscriptionManagePage from './SubscriptionManage/SubscriptionManagePage'
+import {gql_server_addr} from '../config'
 
 
 const cache = new InMemoryCache({
@@ -29,8 +30,9 @@ const cache = new InMemoryCache({
         return o
     }
 });
+
 const link = createHttpLink({
-    uri: 'http://localhost:4000/'
+    uri: gql_server_addr
 });
 
 const client = new ApolloClient({

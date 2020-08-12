@@ -27,6 +27,7 @@ module.exports = {
         })
     ],
     devServer:{
-        open: "chrome"
+        open: "chrome",
+        host: '0.0.0.0'
     }
 }
