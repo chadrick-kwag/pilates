@@ -7,6 +7,7 @@ import DatePicker, { registerLocale, setDefaultLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ko from 'date-fns/locale/ko';
 
+import moment from 'moment'
 import TimeKeeper from 'react-timekeeper';
 import {gql} from '@apollo/client'
 
@@ -34,8 +35,8 @@ class CreateLessonPage extends React.Component {
             selected_client: null,
             selected_instructor: null,
             selected_date: new Date(),
-            start_time: null,
-            end_time: null
+            start_time: "12:00",
+            end_time: "12:00"
 
 
         }
@@ -44,46 +45,80 @@ class CreateLessonPage extends React.Component {
     }
 
     is_time_later(time1, time2){
-        if(time1.hour > time2.hour){
+
+        
+
+        const reg = /([0-9]+):([0-9]+)/
+
+        let mat = time1.match(reg)
+        console.log(mat)
+        let time1_hour = mat[1]
+        let time1_min = mat[2]
+
+        mat = time2.match(reg)
+
+        let time2_hour = mat[1]
+        let time2_min = mat[2]
+
+
+
+        if(time1_hour > time2_hour){
             return true
         }
 
-        else if(time1.hour < time2.hour){
+        else if(time1_hour < time2_hour){
             return false
         }
 
-        if(time1.minute >= time2.minute){
+        if(time1_min >= time2_min){
             return true
         }
 
-        if(time1.minute < time2.mintue){
+        if(time1_min < time2_min){
             return false
         }
 
         
 
     }
+
+    get_hour_and_minute_of_time_string(timestr){
+        const reg = /([0-9]+):([0-9]+)/
+
+        let mat = timestr.match(reg)
+
+        let hour = parseInt(mat[1])
+        let min = parseInt(mat[2])
+
+        return [hour, min]
+
+    }
     
 
     checkinput(){
         if(this.state.selected_client==null){
+            console.log('no selected client')
             return false
         }
 
         if(this.state.selected_instructor==null){
+            console.log('no selected instructor')
             return false
         }
 
         if(this.state.start_time==null || this.state.end_time==null){
+            console.log('null start/end time')
             return false
         }
 
         if(this.state.selected_date==null){
+            console.log('selected date is null')
             return false
         }
 
 
         if(!this.is_time_later(this.state.end_time, this.state.start_time)){
+            console.log("time end start wrong")
             return false
         }
 
@@ -102,16 +137,19 @@ class CreateLessonPage extends React.Component {
         }
 
         let start_datetime = new Date(this.state.selected_date)
-        start_datetime.setHours(this.state.start_time.hour)
-        start_datetime.setMinutes(this.state.start_time.minute)
+
+        let [start_hour, start_min] = this.get_hour_and_minute_of_time_string(this.state.start_time)
+        start_datetime.setHours(start_hour)
+        start_datetime.setMinutes(start_min)
         start_datetime.setSeconds(0)
         start_datetime.setMilliseconds(0)
         // console.log(start_datetime.toUTCString())
 
 
         let end_datetime = new Date(this.state.selected_date)
-        end_datetime.setHours(this.state.end_time.hour)
-        end_datetime.setMinutes(this.state.end_time.minute)
+        let [end_hour, end_min] = this.get_hour_and_minute_of_time_string(this.state.end_time)
+        end_datetime.setHours(end_hour)
+        end_datetime.setMinutes(end_min)
         end_datetime.setSeconds(0)
         end_datetime.setMilliseconds(0)
 
@@ -135,16 +173,19 @@ class CreateLessonPage extends React.Component {
             console.log(d)
             if(d.data.create_lesson.success){
                 console.log('success creating lesson')
+                this.props.onCreateSuccess()
                 return
             }
 
             console.log('failed to create lesson')
+            alert('failed to create lesson')
 
 
             
         }).catch(e=>{
             console.log('error creating lesson')
             console.log(JSON.stringify(e))
+            alert('error creating lesson')
         })
     }
 
@@ -232,11 +273,11 @@ class CreateLessonPage extends React.Component {
                             coarseMinutes="15"
                             forceCoarseMinutes="true"
                             switchToMinuteOnHourSelect="true"
-                            time={this.state.start_time == null ? "12:00" : this.state.start_time.formatted24}
+                            time={this.state.start_time}
                             onChange={(data) => {
                                 console.log(data)
                                 this.setState({
-                                    start_time: data
+                                    start_time: data.formatted24
                                 })
                             }}
                         />
@@ -252,15 +293,16 @@ class CreateLessonPage extends React.Component {
                     }}>
                         <span>종료</span>
                         <TimeKeeper
+                        
                             hour24Mode="true"
                             coarseMinutes="15"
                             forceCoarseMinutes="true"
                             switchToMinuteOnHourSelect="true"
-                            time={this.state.end_time == null ? "12:00" : this.state.end_time.formatted24}
+                            time={this.state.end_time}
                             onChange={(data) => {
                                 console.log(data)
                                 this.setState({
-                                    end_time: data
+                                    end_time: data.formatted24
                                 })
                             }}
                         />
