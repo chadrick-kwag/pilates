@@ -270,7 +270,7 @@ class CreateLessonPage extends React.Component {
                         <span>시작</span>
                         <TimeKeeper
                             hour24Mode="true"
-                            coarseMinutes="15"
+                            coarseMinutes="5"
                             forceCoarseMinutes="true"
                             switchToMinuteOnHourSelect="true"
                             time={this.state.start_time}
@@ -295,7 +295,7 @@ class CreateLessonPage extends React.Component {
                         <TimeKeeper
                         
                             hour24Mode="true"
-                            coarseMinutes="15"
+                            coarseMinutes="5"
                             forceCoarseMinutes="true"
                             switchToMinuteOnHourSelect="true"
                             time={this.state.end_time}
