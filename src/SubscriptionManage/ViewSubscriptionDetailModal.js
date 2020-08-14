@@ -3,15 +3,19 @@ import { Modal, Button } from 'react-bootstrap'
 import moment from 'moment'
 
 
+const activity_type_to_kor = {
+    'PILATES': '필라테스',
+    'BALLET': '발레',
+    'GYROTONIC': '자이로토닉'
+}
+
+const grouping_type_to_kor={
+    'INDIVIDUAL': '개별',
+    'SEMI': '세미',
+    'GROUP': '그룹'
+}
+
 class ViewSubscriptionDetailModal extends React.Component {
-
-
-    constructor(props) {
-        super(props)
-
-
-    }
-
 
     render() {
 
@@ -26,6 +30,14 @@ class ViewSubscriptionDetailModal extends React.Component {
                 <div className="block row-gravity-center">
                     <span className="block-header">회원명</span>
                     <span>{this.props.data.clientname}</span>
+                </div>
+                <div className="block row-gravity-center">
+                    <span className="block-header">수업운동</span>
+                    <span>{activity_type_to_kor[this.props.data.activity_type]}</span>
+                </div>
+                <div className="block row-gravity-center">
+                    <span className="block-header">수업크기</span>
+                    <span>{grouping_type_to_kor[this.props.data.grouping_type]}</span>
                 </div>
                 <div className="block row-gravity-center">
                     <span className="block-header">횟수</span>

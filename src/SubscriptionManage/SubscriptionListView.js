@@ -126,6 +126,8 @@ class SubscriptionListView extends React.Component {
                                             alert('error while deleting')
                                         })
                                     }
+
+                                    e.stopPropagation()
                                 }}>delete</Button>
                             </div></td>
                         </tr>

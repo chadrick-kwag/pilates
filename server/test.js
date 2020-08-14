@@ -25,6 +25,19 @@ const typeDefs = gql`
       rounds: Int
       totalcost: Int
       created: String
+      activity_type: String
+      grouping_type: String
+      coupon_backed: String
+  }
+
+  type Ticket {
+      id: Int
+      expire_time: String
+  }
+
+  type SubscriptionIdAndTickets {
+      subscription_id: Int
+      tickets: [Ticket]
   }
 
   type RawSubscription {
@@ -33,11 +46,14 @@ const typeDefs = gql`
       rounds: Int
       totalcost: Int
       created: String
+      activity_type: String
+      grouping_type: String
+      coupon_backed: String
   }
 
   type ReturnSubscriptionWithRemainRounds {
       success: Boolean
-      subscriptions: [SubscriptionWithRemainRounds]
+      subscriptions: [SubscriptionIdAndTickets]
   }
 
   type SubscriptionWithRemainRounds {
@@ -87,7 +103,7 @@ const typeDefs = gql`
     query_lesson_with_timerange_by_clientid(clientid: Int!, start_time: String!, end_time: String!): [Lesson]
     query_lesson_with_timerange_by_instructorid(instructorid: Int!, start_time: String!, end_time: String!): SuccessAndLessons
     query_subscriptions: SuccessAndSubscriptions
-    query_subscriptions_with_remainrounds_for_clientid(clientid: Int!): ReturnSubscriptionWithRemainRounds
+    query_subscriptions_with_remainrounds_for_clientid(clientid: Int!, activity_type: String!, grouping_type: String!): ReturnSubscriptionWithRemainRounds
   }
 
   type SuccessResult {
@@ -262,7 +278,7 @@ const resolvers = {
         query_subscriptions: async (parent, args) => {
             console.log(args)
 
-            let subscriptions = await pgclient.query("select subscription.id, subscription.clientid, client.name as clientname, rounds, totalcost, subscription.created from pilates.subscription left join pilates.client on subscription.clientid=client.id").then(res => {
+            let subscriptions = await pgclient.query("select subscription.id, subscription.clientid, client.name as clientname, rounds, totalcost, subscription.created, subscription.activity_type, subscription.grouping_type, subscription.coupon_backed from pilates.subscription left join pilates.client on subscription.clientid=client.id").then(res => {
                 console.log(res.rows)
                 return res.rows
             }).catch(e => {
@@ -289,56 +305,44 @@ const resolvers = {
             }
 
         },
-        query_subscriptions_with_remainrounds_for_clientid: async (parent, args)=>{
+        query_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
             console.log(args)
 
-            let subscriptions = await pgclient.query('select * from pilates.subscription where clientid=$1',[args.clientid]).then(res=>{
-                return res.rows
-            }).catch(e=>{
+            let subscriptions = await pgclient.query('select array_agg(json_build_object(\'id\',subscription_ticket.id, \'expire_time\',subscription_ticket.expire_time)), subscription_ticket.creator_subscription_id as subscription_id  from pilates.subscription_ticket \
+             LEFT JOIN pilates.lesson ON subscription_ticket.id = lesson.consuming_client_ss_ticket_id  where  destroyer_subscription_id is null and expire_time > now() and lesson.id is null and \
+              creator_subscription_id in ( select id from pilates.subscription where clientid=$1 and activity_type=$2 and grouping_type=$3) GROUP BY subscription_ticket.creator_subscription_id', [args.clientid, args.activity_type, args.grouping_type]).then(res => {
+
+                let ret_arr = []
+
+                
+
+                res.rows.forEach(d => {
+                    let item_arrs = d.array_agg
+                    //   console.log(item_arrs)
+
+                    ret_arr.push({
+                        subscription_id: d.subscription_id,
+                        tickets: item_arrs
+                    })
+                })
+
+                return ret_arr
+            }).catch(e => {
                 console.log(e)
                 return null
             })
 
-            if(subscriptions==null){
+            if (subscriptions == null) {
                 return {
                     success: false
                 }
             }
 
-            // find remaining rounds
-            let subscription_with_rr_arr=[]
 
-            for(let i=0;i<subscriptions.length;i++){
-                let total_rounds = subscriptions[i].rounds
-                let subid = subscriptions[i].id
-                
-                let consumed_lesson_count = await pgclient.query('select * from pilates.lesson where bound_subscription_id=$1',[subid]).then(res=>{
-                    return res.rowCount
-                })
-                .catch(e=>{
-                    console.log(e)
-                    return null
-                })
-
-                if(consumed_lesson_count==null){
-                    return {
-                        success: false
-                    }
-                }
-
-                let remain_count = total_rounds - consumed_lesson_count
-                subscription_with_rr_arr.push({
-                    subscription: subscriptions[i],
-                    remainrounds: remain_count
-                    
-                })
-            }
-
-            console.log(subscription_with_rr_arr)
 
             return {
                 success: true,
-                subscriptions: subscription_with_rr_arr
+                subscriptions: subscriptions
             }
 
         }
@@ -355,8 +359,6 @@ const resolvers = {
             })
 
             // let user = await pgclient.query("select * from pilates.client where")
-            console.log("ret:")
-            console.log(ret)
 
             return ret
 
@@ -396,7 +398,7 @@ const resolvers = {
 
             return { success: ret }
         },
-    
+
         create_lesson: async (parent, args) => {
 
             console.log(args)
@@ -418,25 +420,25 @@ const resolvers = {
             let end_unixtime = end_time.getTime() / 1000
 
             // check if no overlapping lessons exist
-            for(let i=0;i<args.clientids.length;i++){
+            for (let i = 0; i < args.clientids.length; i++) {
                 let clientid = args.clientids[i]
-                let overlap_exist = await pgclient.query("select * from pilates.lesson where (clientid=$1 or instructorid=$2) AND (tstzrange(to_timestamp($3), to_timestamp($4)) && tstzrange(lesson.starttime, lesson.endtime))",[clientid, args.instructorid, start_unixtime, end_unixtime]).then(res=>{
-                    if(res.rowCount>0){
+                let overlap_exist = await pgclient.query("select * from pilates.lesson where (clientid=$1 or instructorid=$2) AND (tstzrange(to_timestamp($3), to_timestamp($4)) && tstzrange(lesson.starttime, lesson.endtime))", [clientid, args.instructorid, start_unixtime, end_unixtime]).then(res => {
+                    if (res.rowCount > 0) {
                         return true
                     }
                     return false
-                }).catch(e=>{
+                }).catch(e => {
                     console.log(e)
                     return null
                 })
 
-                if(overlap_exist==null){
+                if (overlap_exist == null) {
                     return {
                         success: false
                     }
                 }
 
-                if(overlap_exist){
+                if (overlap_exist) {
                     return {
                         success: false
                     }
@@ -633,16 +635,16 @@ const resolvers = {
         create_subscription: async (parent, args) => {
             console.log(args)
 
-            if(args.rounds<=0){
+            if (args.rounds <= 0) {
                 return {
                     success: false
                 }
             }
-            
+
             let ret = await pgclient.query('insert into pilates.subscription (clientid, rounds, totalcost, activity_type, grouping_type, coupon_backed) values ($1,$2,$3, $4, $5, $6) RETURNING id', [args.clientid, args.rounds, args.totalcost, args.activity_type, args.grouping_type, args.coupon_backed == "" ? null : args.coupon_backed]).then(res => {
                 if (res.rowCount > 0) {
                     console.log(res)
-                    
+
                     return [true, res.rows[0].id]
                 }
                 return [false, null]
@@ -650,9 +652,9 @@ const resolvers = {
                 console.log(e)
                 return [false, null]
             })
-            
+
             let [retbool, created_id] = ret
-            if(!retbool){
+            if (!retbool) {
                 return {
                     success: false
                 }
@@ -660,24 +662,24 @@ const resolvers = {
 
             // // create tickets
 
-            
+
 
             let value_str = ""
 
             let expiredate = new Date()
 
-            expiredate.setDate(expiredate.getDate()+30)
+            expiredate.setDate(expiredate.getDate() + 30)
 
-            
 
-            
 
-            for(let i=0;i< args.rounds;i++){
+
+
+            for (let i = 0; i < args.rounds; i++) {
                 // order::  expire_time, creator_ssid
-                
-                let temp_value_str = `(to_timestamp(${expiredate.getTime()/1000}), ${created_id})`
+
+                let temp_value_str = `(to_timestamp(${expiredate.getTime() / 1000}), ${created_id})`
                 value_str += temp_value_str
-                if(i< args.rounds -1){
+                if (i < args.rounds - 1) {
                     value_str += ','
                 }
             }
@@ -685,34 +687,34 @@ const resolvers = {
             console.log(value_str)
 
 
-            ret = await pgclient.query(`insert into pilates.subscription_ticket (expire_time, creator_subscription_id) values ${value_str}`).then(res=>{
+            ret = await pgclient.query(`insert into pilates.subscription_ticket (expire_time, creator_subscription_id) values ${value_str}`).then(res => {
                 console.log(res)
 
-                if(res.rowCount>0){
+                if (res.rowCount > 0) {
                     return true
                 }
 
                 return false
             })
-            .catch(e=>{
-                console.log(e)
-                return false
-            })
-
-            // if failed to create tickets, we must remove created subscription
-
-            if(!ret){
-                let delete_ret = await pgclient.query('delete from pilates.subscription where id=$1', [created_id]).then(res=>{
-                    if(res.rowCount>0){
-                        return true
-                    }
-                    return false
-                }).catch(e=>{
+                .catch(e => {
                     console.log(e)
                     return false
                 })
 
-                if(!delete_ret){
+            // if failed to create tickets, we must remove created subscription
+
+            if (!ret) {
+                let delete_ret = await pgclient.query('delete from pilates.subscription where id=$1', [created_id]).then(res => {
+                    if (res.rowCount > 0) {
+                        return true
+                    }
+                    return false
+                }).catch(e => {
+                    console.log(e)
+                    return false
+                })
+
+                if (!delete_ret) {
                     console.warn("inconsistency occured. failed to delete half created subscription. subscription id = " + created_id)
                 }
             }
@@ -750,7 +752,7 @@ const server = new ApolloServer({ typeDefs, resolvers });
 server.listen({
     host: '0.0.0.0',
     port: 4000
-    
+
 }).then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
 });

@@ -132,6 +132,9 @@ const QUERY_SUBSCRIPTIONS_GQL = gql`query subscriptions{
             rounds
             totalcost
             created
+            activity_type
+            grouping_type
+            coupon_backed
         }
     }
 
@@ -155,21 +158,16 @@ const DELETE_SUBSCRITION_GQL = gql`mutation delete_subscription($id:Int!){
 }`
 
 //query_subscriptions_with_remainrounds_for_clientid
-const QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query query_subscriptions_with_remainrounds_for_clientid($clientid: Int!){
-    query_subscriptions_with_remainrounds_for_clientid(clientid: $clientid){
+const QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query query_subscriptions_with_remainrounds_for_clientid($clientid: Int!, $activity_type: String!, $grouping_type: String!){
+    query_subscriptions_with_remainrounds_for_clientid(clientid: $clientid, activity_type: $activity_type, grouping_type: $grouping_type){
         success
-        subscriptions {
-            subscription {
-                id
-                clientid
-                
-                rounds
-                totalcost
-                created
-                
-            }
-            remainrounds
-        }
+    subscriptions {
+      subscription_id
+      tickets {
+        id
+        expire_time
+      }
+    }
     }
 }`
 
