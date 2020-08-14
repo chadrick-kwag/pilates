@@ -1,0 +1,81 @@
+hr {
+    border-width: 2px;
+    border-color: rgba(100,100,100,0.3);
+    width: 50%;
+}
+
+.block-header {
+    font-weight: bold;
+    font-size: 1.2rem;
+
+    -moz-user-select: none; /* These user-select properties are inheritable, used to prevent text selection */
+        -webkit-user-select: none;
+        -ms-user-select: none; /* From IE10 only */
+        user-select: none; /* Not valid CSS yet, as of July 2012 */
+    
+        -webkit-user-drag: none; /* Prevents dragging of images/divs etc */
+        user-drag: none;
+}
+
+.row-gravity-center {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.row-gravity-center *, .col-gravity-center * {
+    padding: 10px
+}
+
+
+.col-gravity-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.row-gravity-center > input {
+    width: 50%
+}
+
+.block {
+    padding: 20px;
+}
+
+.footer>button {
+    margin: 10px;
+}
+
+.guideline-table {
+   
+}
+
+.guideline-table > tbody>tr:hover {
+    background-color: #ccc;
+}
+
+.noselect {
+    
+        /* For Opera and <= IE9, we need to add unselectable="on" attribute onto each element */
+        /* Check this site for more details: http://help.dottoro.com/lhwdpnva.php */
+        -moz-user-select: none; /* These user-select properties are inheritable, used to prevent text selection */
+        -webkit-user-select: none;
+        -ms-user-select: none; /* From IE10 only */
+        user-select: none; /* Not valid CSS yet, as of July 2012 */
+    
+        -webkit-user-drag: none; /* Prevents dragging of images/divs etc */
+        user-drag: none;
+    
+  }
+
+
+.guideline-table * {
+    text-align: center;
+}
+
+.disabled {
+    color: gray;
+    
+}

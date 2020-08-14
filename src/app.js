@@ -21,6 +21,10 @@ import InstructorManagePage from './InstructorManagePage'
 import SubscriptionManagePage from './SubscriptionManage/SubscriptionManagePage'
 import {gql_server_addr} from '../config'
 
+Number.prototype.format = function () {
+    return this.toString().split( /(?=(?:\d{3})+(?:\.|$))/g ).join( "," );
+};
+
 
 const cache = new InMemoryCache({
     dataIdFromObject: o=>{
