@@ -1,7 +1,8 @@
 
 const { ApolloServer, gql } = require('apollo-server');
 const { Pool, Client } = require('pg')
-const moment = require('moment-timezone')
+const moment = require('moment-timezone');
+
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -632,15 +633,89 @@ const resolvers = {
         create_subscription: async (parent, args) => {
             console.log(args)
 
-            let ret = await pgclient.query('insert into pilates.subscription (clientid, rounds, totalcost, activity_type, grouping_type, coupon_backed) values ($1,$2,$3, $4, $5, $6)', [args.clientid, args.rounds, args.totalcost, args.activity_type, args.grouping_type, args.coupon_backed == "" ? null : args.coupon_backed]).then(res => {
+            if(args.rounds<=0){
+                return {
+                    success: false
+                }
+            }
+            
+            let ret = await pgclient.query('insert into pilates.subscription (clientid, rounds, totalcost, activity_type, grouping_type, coupon_backed) values ($1,$2,$3, $4, $5, $6) RETURNING id', [args.clientid, args.rounds, args.totalcost, args.activity_type, args.grouping_type, args.coupon_backed == "" ? null : args.coupon_backed]).then(res => {
                 if (res.rowCount > 0) {
+                    console.log(res)
+                    
+                    return [true, res.rows[0].id]
+                }
+                return [false, null]
+            }).catch(e => {
+                console.log(e)
+                return [false, null]
+            })
+            
+            let [retbool, created_id] = ret
+            if(!retbool){
+                return {
+                    success: false
+                }
+            }
+
+            // // create tickets
+
+            
+
+            let value_str = ""
+
+            let expiredate = new Date()
+
+            expiredate.setDate(expiredate.getDate()+30)
+
+            
+
+            
+
+            for(let i=0;i< args.rounds;i++){
+                // order::  expire_time, creator_ssid
+                
+                let temp_value_str = `(to_timestamp(${expiredate.getTime()/1000}), ${created_id})`
+                value_str += temp_value_str
+                if(i< args.rounds -1){
+                    value_str += ','
+                }
+            }
+
+            console.log(value_str)
+
+
+            ret = await pgclient.query(`insert into pilates.subscription_ticket (expire_time, creator_subscription_id) values ${value_str}`).then(res=>{
+                console.log(res)
+
+                if(res.rowCount>0){
                     return true
                 }
+
                 return false
-            }).catch(e => {
+            })
+            .catch(e=>{
                 console.log(e)
                 return false
             })
+
+            // if failed to create tickets, we must remove created subscription
+
+            if(!ret){
+                let delete_ret = await pgclient.query('delete from pilates.subscription where id=$1', [created_id]).then(res=>{
+                    if(res.rowCount>0){
+                        return true
+                    }
+                    return false
+                }).catch(e=>{
+                    console.log(e)
+                    return false
+                })
+
+                if(!delete_ret){
+                    console.warn("inconsistency occured. failed to delete half created subscription. subscription id = " + created_id)
+                }
+            }
 
             return {
                 success: ret
