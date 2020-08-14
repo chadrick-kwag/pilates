@@ -4,6 +4,8 @@ import moment from 'moment'
 
 import { QUERY_SUBSCRIPTIONS_GQL, DELETE_SUBSCRITION_GQL } from '../common/gql_defs'
 
+import ViewSubscriptionDetailModal from './ViewSubscriptionDetailModal'
+
 
 class SubscriptionListView extends React.Component {
 
@@ -12,7 +14,8 @@ class SubscriptionListView extends React.Component {
 
         this.state = {
             data: null,
-            delete_target_subscription: null
+            delete_target_subscription: null,
+            view_selected_subscription: null
         }
 
         this.fetchdata = this.fetchdata.bind(this)
@@ -46,6 +49,8 @@ class SubscriptionListView extends React.Component {
     }
 
 
+
+
     render() {
 
         if (this.state.data == null) {
@@ -53,11 +58,24 @@ class SubscriptionListView extends React.Component {
         }
 
 
+        let detail_view_modal = null
+        if (this.state.view_selected_subscription != null) {
+            detail_view_modal = <ViewSubscriptionDetailModal
+                data={this.state.view_selected_subscription}
+                onCancel={() => {
+                    this.setState({
+                        view_selected_subscription: null
+                    })
+                }} />
+        }
+
+
 
         return <div>
+            {detail_view_modal}
 
 
-            <Table>
+            <Table className="row-clickable-table">
                 <thead>
                     <th>
                         id
@@ -73,7 +91,11 @@ class SubscriptionListView extends React.Component {
                 <tbody>
                     {this.state.data.map((d, i) => {
 
-                        return <tr>
+                        return <tr onClick={e => {
+                            this.setState({
+                                view_selected_subscription: d
+                            })
+                        }}>
                             <td>{d.id}</td>
                             <td>{d.clientid}</td>
                             <td>{d.clientname}</td>

@@ -48,11 +48,9 @@ hr {
     margin: 10px;
 }
 
-.guideline-table {
-   
-}
 
-.guideline-table > tbody>tr:hover {
+
+.row-clickable-table > tbody>tr:hover {
     background-color: #ccc;
 }
 
@@ -71,7 +69,7 @@ hr {
   }
 
 
-.guideline-table * {
+.row-clickable-table * {
     text-align: center;
 }
 

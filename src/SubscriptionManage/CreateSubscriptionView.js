@@ -114,7 +114,7 @@ class CreateSubscriptionView extends React.Component {
             console.log(guideline)
             plan_guideline = <div className="col-gravity-center" style={{width: '50%'}}>
                 <span>가격 가이드라인</span>
-                <Table className="guideline-table noselect">
+                <Table className="row-clickable-table noselect">
                     <thead>
                         <th>횟수</th>
                         <th>가격</th>
