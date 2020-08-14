@@ -21,7 +21,7 @@ class CreateSubscriptionView extends React.Component {
             activity_type: null,
             grouping_type: null,
             selected_client: null,
-            backed_coupon: null,
+            coupon_backed: null,
             rounds: "",
             totalcost: ""
         }
@@ -77,7 +77,10 @@ class CreateSubscriptionView extends React.Component {
             variables: {
                 clientid: parseInt(this.state.selected_client.id),
                 rounds: parseInt(this.state.rounds),
-                totalcost: parseInt(this.state.totalcost)
+                totalcost: parseInt(this.state.totalcost),
+                activity_type: this.state.activity_type,
+                grouping_type: this.state.grouping_type,
+                coupon_backed: this.state.coupon_backed
             }
         }).then(d => {
             console.log(d)
@@ -89,6 +92,7 @@ class CreateSubscriptionView extends React.Component {
             }
         }).catch(e => {
             console.log(e)
+            console.log(JSON.stringify(e))
 
             alert('error creating subscription')
         })

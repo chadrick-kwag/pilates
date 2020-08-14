@@ -138,9 +138,9 @@ const QUERY_SUBSCRIPTIONS_GQL = gql`query subscriptions{
 }`
 
 
-const CREATE_SUBSCRIPTION_GQL = gql`mutation create_subscription($clientid: Int!, $rounds: Int!, $totalcost: Int!){
+const CREATE_SUBSCRIPTION_GQL = gql`mutation create_subscription($clientid: Int!, $rounds: Int!, $totalcost: Int!, $activity_type: String!, $grouping_type: String!, $coupon_backed: String){
 
-    create_subscription(clientid: $clientid, rounds: $rounds, totalcost: $totalcost){
+    create_subscription(clientid: $clientid, rounds: $rounds, totalcost: $totalcost, activity_type: $activity_type, grouping_type: $grouping_type, coupon_backed: $coupon_backed){
         success
         
     }

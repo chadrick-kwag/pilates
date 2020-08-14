@@ -99,13 +99,13 @@ const typeDefs = gql`
       deleteclient(id: Int!): SuccessResult
       createinstructor(name: String!, phonenumber: String!): SuccessResult
       deleteinstructor(id: Int!): SuccessResult
-      createsubscription(clientid: Int!, rounds: Int!, totalcost: Int!): SuccessResult
+      
       create_lesson(clientids:[Int!], instructorid: Int!, start_time: String!, end_time: String!): SuccessResult
       delete_lesson(lessonid:Int!): SuccessResult
       attempt_update_lesson_time(lessonid:Int!, start_time: String!, end_time: String!): SuccessResult
       update_client(id: Int!, name: String!, phonenumber: String!): SuccessResult
       update_instructor(id: Int!, name: String!, phonenumber: String!): SuccessResult
-      create_subscription(clientid: Int!, rounds: Int!, totalcost: Int!): SuccessResult
+      create_subscription(clientid: Int!, rounds: Int!, totalcost: Int!,  activity_type: String!, grouping_type: String!, coupon_backed: String): SuccessResult
       delete_subscription(id:Int!): SuccessResult
   }
 
@@ -395,21 +395,7 @@ const resolvers = {
 
             return { success: ret }
         },
-        createsubscription: async (parent, args) => {
-
-            let ret = await pgclient.query('insert into pilates.subscription(clientid, rounds, totalcost) values ($1, $2,$3)', [args.clientid, args.rounds, args.totalcost]).then(res => {
-                if (res.rowCount > 0) {
-                    return true
-                }
-                else return false
-            })
-                .catch(e => {
-                    console.log(e)
-                    return false
-                })
-
-            return { success: ret }
-        },
+    
         create_lesson: async (parent, args) => {
 
             console.log(args)
@@ -646,7 +632,7 @@ const resolvers = {
         create_subscription: async (parent, args) => {
             console.log(args)
 
-            let ret = await pgclient.query('insert into pilates.subscription (clientid, rounds, totalcost, created) values ($1,$2,$3, now())', [args.clientid, args.rounds, args.totalcost]).then(res => {
+            let ret = await pgclient.query('insert into pilates.subscription (clientid, rounds, totalcost, activity_type, grouping_type, coupon_backed) values ($1,$2,$3, $4, $5, $6)', [args.clientid, args.rounds, args.totalcost, args.activity_type, args.grouping_type, args.coupon_backed == "" ? null : args.coupon_backed]).then(res => {
                 if (res.rowCount > 0) {
                     return true
                 }
