@@ -1,15 +1,11 @@
 import React from 'react'
 import { Table, Button, Form } from 'react-bootstrap'
-import { gql } from '@apollo/client'
 
 
-const SEARCH_CLIENT_WITH_NAME = gql`query search_clients($name: String!){
-    search_client_with_name(name: $name){
-        id
-        name
-        phonenumber
-    }
-}`
+import {SEARCH_CLIENT_WITH_NAME} from '../common/gql_defs'
+
+
+
 
 class ClientSearchComponent2 extends React.Component {
 
@@ -68,7 +64,7 @@ class ClientSearchComponent2 extends React.Component {
             client_search_result_area = <div>no results found</div>
         }
         else {
-            client_search_result_area = <Table>
+            client_search_result_area = <Table className="row-clickable-table">
                 <thead>
                     <th>id</th>
                     <th>name</th>
@@ -76,11 +72,6 @@ class ClientSearchComponent2 extends React.Component {
                 </thead>
                 <tbody>
                     {this.state.client_search_result.map(d => <tr onClick={e => {
-                        // this.setState({
-                        //     selected_client: d
-                        // })
-
-                        // update state
                         this.setState({
                             selected_client: d,
                             force_search: false

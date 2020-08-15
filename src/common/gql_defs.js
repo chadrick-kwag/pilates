@@ -172,6 +172,23 @@ const QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query query_subsc
 }`
 
 
+const SEARCH_CLIENT_WITH_NAME = gql`query search_clients($name: String!){
+    search_client_with_name(name: $name){
+        id
+        name
+        phonenumber
+    }
+}`
+
+
+const SEARCH_INSTRUCTOR_WITH_NAME = gql`query search_instructors($name: String!){
+    search_instructor_with_name(name: $name){
+        id
+        name
+        phonenumber
+    }
+}`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -189,5 +206,7 @@ export {
     QUERY_SUBSCRIPTIONS_GQL,
     CREATE_SUBSCRIPTION_GQL,
     DELETE_SUBSCRITION_GQL,
-    QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID
+    QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID,
+    SEARCH_CLIENT_WITH_NAME,
+    SEARCH_INSTRUCTOR_WITH_NAME
 }

@@ -2,14 +2,9 @@ import React from 'react'
 import { Table, Button, Form } from 'react-bootstrap'
 import { gql } from '@apollo/client'
 
+import {SEARCH_INSTRUCTOR_WITH_NAME} from '../common/gql_defs'
 
-const SEARCH_INSTRUCTOR_WITH_NAME = gql`query search_instructors($name: String!){
-    search_instructor_with_name(name: $name){
-        id
-        name
-        phonenumber
-    }
-}`
+
 
 class InstructorSearchComponent2 extends React.Component {
 
@@ -76,7 +71,7 @@ class InstructorSearchComponent2 extends React.Component {
                 instructor_search_result_area = <div>no results found</div>
             }
             else {
-                instructor_search_result_area = <Table>
+                instructor_search_result_area = <Table className="row-clickable-table">
                     <thead>
                         <th>id</th>
                         <th>name</th>
