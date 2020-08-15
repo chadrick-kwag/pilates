@@ -20,7 +20,7 @@ import { gql } from '@apollo/client'
 
 registerLocale('ko', ko)
 
-import { CREATE_LESSON_GQL } from '../common/gql_defs'
+import { CREATE_LESSON_GQL, CREATE_INDIVIDUAL_LESSON_GQL } from '../common/gql_defs'
 
 import SelectSubscriptionTicketComponent from '../components/SelectSubscriptionTicketComponent'
 
@@ -99,17 +99,21 @@ class CreateLessonPage extends React.Component {
 
     checkinput() {
 
-        if (this.state.selected_activity_type==null){
+        if (this.state.selected_activity_type == null) {
             return 'no selected activity type'
         }
 
-        if(this.state.selected_grouping_type==null){
+        if (this.state.selected_grouping_type == null) {
             return 'no selected grouping type'
         }
 
         if (this.state.selected_client == null) {
             console.log('no selected client')
             return 'no selected client'
+        }
+
+        if(this.state.selected_subscription_ticket==null){
+            return 'no subscription ticket selected'
         }
 
         if (this.state.selected_instructor == null) {
@@ -141,9 +145,9 @@ class CreateLessonPage extends React.Component {
 
         let ret = this.checkinput()
 
-        if (ret!=null) {
+        if (ret != null) {
             console.log('check input failed')
-            alert('input invalid\n'+ ret)
+            alert('input invalid\n' + ret)
             return
         }
 
@@ -169,20 +173,22 @@ class CreateLessonPage extends React.Component {
 
 
         let vars = {
-            clientids: [parseInt(this.state.selected_client.id)],
+            clientid: parseInt(this.state.selected_client.id),
             instructorid: parseInt(this.state.selected_instructor.id),
-            start_time: start_datetime.toUTCString(),
-            end_time: end_datetime.toUTCString()
+            starttime: start_datetime.toUTCString(),
+            endtime: end_datetime.toUTCString(),
+            ticketid: parseInt(this.state.selected_subscription_ticket.id)
         }
 
+        console.log('sending vars:')
         console.log(vars)
 
         this.props.apolloclient.mutate({
-            mutation: CREATE_LESSON_GQL,
+            mutation: CREATE_INDIVIDUAL_LESSON_GQL,
             variables: vars
         }).then(d => {
             console.log(d)
-            if (d.data.create_lesson.success) {
+            if (d.data.create_individual_lesson.success) {
                 console.log('success creating lesson')
                 this.props.onCreateSuccess()
                 return
@@ -205,13 +211,14 @@ class CreateLessonPage extends React.Component {
 
         let subscription_selector = null
 
-        if(this.state.selected_grouping_type!=null && this.state.selected_activity_type!=null && this.state.selected_client!=null)
-        {
+        if (this.state.selected_grouping_type != null && this.state.selected_activity_type != null && this.state.selected_client != null) {
             subscription_selector = <SelectSubscriptionTicketComponent apolloclient={this.props.apolloclient}
-           clientid ={this.state.selected_client.id} 
-           activity_type = {this.state.selected_activity_type}
-           grouping_type = {this.state.selected_grouping_type}
-                onSubscriptionTicketSelected={d=>{
+                clientid={this.state.selected_client.id}
+                activity_type={this.state.selected_activity_type}
+                grouping_type={this.state.selected_grouping_type}
+                onSubscriptionTicketSelected={d => {
+                    console.log('setting selected subscription ticket  to:')
+                    console.log(d)
                     this.setState({
                         selected_subscription_ticket: d
                     })
@@ -222,16 +229,16 @@ class CreateLessonPage extends React.Component {
         return <div className="col-gravity-center">
 
             <div className="padded-block col-gravity-center">
-                <ActivityTypeSelectComponent onItemClicked={d=>this.setState({
+                <ActivityTypeSelectComponent onItemClicked={d => this.setState({
                     selected_activity_type: d
-                })}/>
+                })} />
             </div>
 
 
             <div className="padded-block col-gravity-center">
-                <GroupingTypeSelectComponent onItemClicked={d=>this.setState({
+                <GroupingTypeSelectComponent onItemClicked={d => this.setState({
                     selected_grouping_type: d
-                })}/>
+                })} />
             </div>
 
             <div className="padded-block col-gravity-center">
@@ -241,7 +248,7 @@ class CreateLessonPage extends React.Component {
                     selected_client: c
                 })} />
 
-            </div> 
+            </div>
 
             {subscription_selector}
 

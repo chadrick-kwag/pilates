@@ -6,6 +6,12 @@ const moment = require('moment-timezone');
 const {postgres_access_info, graphql_server_options} = require('../config.js')
 
 
+
+function incoming_time_string_to_postgres_epoch_time(time_str){
+    let a= new Date(time_str)
+    return a.getTime()/1000
+}
+
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data.
@@ -131,6 +137,7 @@ const typeDefs = gql`
       update_instructor(id: Int!, name: String!, phonenumber: String!): SuccessResult
       create_subscription(clientid: Int!, rounds: Int!, totalcost: Int!,  activity_type: String!, grouping_type: String!, coupon_backed: String): SuccessResult
       delete_subscription(id:Int!): SuccessResult
+      create_individual_lesson(clientid: Int!, instructorid: Int!, ticketid: Int!, starttime: String!, endtime: String!): SuccessResult
   }
 
 `
@@ -748,6 +755,64 @@ const resolvers = {
             return {
                 success: ret
             }
+        },
+        create_individual_lesson: async (parent, args)=>{
+            console.log('inside create individual lesson')
+            console.log(args)
+
+            // check that ticket's owner matches given client id
+
+            let client_check = await pgclient.query('select subscription.clientid from pilates.subscription_ticket left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id where subscription_ticket.id=$1',[args.ticketid]).then(res=>{
+                console.log(res)
+
+                if(res.rowCount==0){
+                    return false
+                }
+
+                if(res.rows[0].clientid==args.clientid){
+                    return true
+                }
+
+                return false
+
+            })
+
+            if(!client_check){
+                return {
+                    success: false,
+                    msg: 'client id and ticket owner does not match'
+                }
+            }
+
+            // now create lesson
+
+            let res = await pgclient.query('insert into pilates.lesson(clientid, instructorid, starttime, endtime, consuming_client_ss_ticket_id) values ($1, $2, to_timestamp($3), to_timestamp($4), $5) ',[args.clientid, args.instructorid, incoming_time_string_to_postgres_epoch_time(args.starttime), incoming_time_string_to_postgres_epoch_time(args.endtime), args.ticketid]).then(res=>{
+                console.log(res)
+
+                if(res.rowCount>0){
+                    return true
+                }
+                return false
+            }).catch(e=>{
+                console.log(e)
+                return false
+            })
+
+
+            if(res){
+                return {
+                    success: true,
+                    
+                }
+
+            }
+            else{
+                return {
+                    success: false,
+                    msg: 'failed to create lesson'
+                }
+            }
+
         }
 
     }

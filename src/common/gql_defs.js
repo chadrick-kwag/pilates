@@ -20,6 +20,14 @@ const CREATE_LESSON_GQL = gql`mutation createlesson($clientids:[Int!], $instruct
     }
 }`
 
+const CREATE_INDIVIDUAL_LESSON_GQL = gql`mutation create_individual_lesson($clientid: Int!, $instructorid: Int!, $starttime: String!, $endtime: String!, $ticketid: Int!){
+    create_individual_lesson(clientid: $clientid, instructorid: $instructorid, ticketid: $ticketid, starttime: $starttime, endtime: $endtime ){
+        success
+        msg
+    }
+
+}`
+
 
 const DELETE_LESSON_GQL = gql`mutation deletelesson($lessonid:Int!){
     delete_lesson(lessonid:$lessonid){
@@ -218,6 +226,7 @@ export {
     DELETE_SUBSCRITION_GQL,
     QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID,
     SEARCH_CLIENT_WITH_NAME,
-    SEARCH_INSTRUCTOR_WITH_NAME
+    SEARCH_INSTRUCTOR_WITH_NAME,
+    CREATE_INDIVIDUAL_LESSON_GQL
     
 }
