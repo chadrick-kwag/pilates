@@ -1,6 +1,6 @@
 import { Button, Modal } from 'react-bootstrap'
-import ClientSearchComponent2 from '../components/ClientSearchComponent2'
-import InstructorSearchComponent2 from '../components/InstructorSearchComponent2'
+import ClientSearchComponent2 from '../../components/ClientSearchComponent2'
+import InstructorSearchComponent2 from '../../components/InstructorSearchComponent2'
 
 import React from 'react'
 import moment from 'moment'
@@ -9,7 +9,7 @@ import {
 
     DELETE_LESSON_GQL
 
-} from '../common/gql_defs'
+} from '../../common/gql_defs'
 
 class AllScheduleViewLessonModal extends React.Component {
 

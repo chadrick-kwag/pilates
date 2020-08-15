@@ -189,6 +189,13 @@ const SEARCH_INSTRUCTOR_WITH_NAME = gql`query search_instructors($name: String!)
     }
 }`
 
+// const CREATE_LESSON_GQL = gql`mutation create_lesson($clientids:[Int!], $instructorid: Int!, $start_time: String!, $end_time: String!){
+
+//     create_lesson(clientids: $clientids, instructorid: $instructorid, start_time: $start_time, end_time: $end_time){
+//         success
+//     }
+// }`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -209,4 +216,5 @@ export {
     QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID,
     SEARCH_CLIENT_WITH_NAME,
     SEARCH_INSTRUCTOR_WITH_NAME
+    
 }

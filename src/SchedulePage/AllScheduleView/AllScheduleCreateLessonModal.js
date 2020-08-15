@@ -1,6 +1,6 @@
 import { Button, Modal, DropdownButton, Dropdown } from 'react-bootstrap'
-import ClientSearchComponent2 from '../components/ClientSearchComponent2'
-import InstructorSearchComponent2 from '../components/InstructorSearchComponent2'
+import ClientSearchComponent2 from '../../components/ClientSearchComponent2'
+import InstructorSearchComponent2 from '../../components/InstructorSearchComponent2'
 
 import React from 'react'
 import moment from 'moment'
@@ -9,7 +9,7 @@ import {
 
     CREATE_LESSON_GQL, QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID
 
-} from '../common/gql_defs'
+} from '../../common/gql_defs'
 
 class AllScheduleCreateLessonModal extends React.Component {
 
@@ -72,7 +72,7 @@ class AllScheduleCreateLessonModal extends React.Component {
             alert("error fetching subscriptions")
         })
     }
-
+    
     create_lesson() {
         let check_res = this.create_input_check()
         if (!check_res) {

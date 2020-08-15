@@ -24,10 +24,22 @@ hr {
     align-items: center;
 }
 
-.row-gravity-center *, .col-gravity-center * {
+/* .row-gravity-center *, .col-gravity-center * {
+    padding: 10px
+} */
+
+.col-gravity-center > .padded-block {
     padding: 10px
 }
 
+
+.bold {
+    font-weight: bold;
+}
+
+.small-margined {
+    margin: 20px
+}
 
 .col-gravity-center {
     display: flex;

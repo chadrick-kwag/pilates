@@ -19,10 +19,10 @@ import 'react-day-picker/lib/style.css';
 import {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL
-} from '../common/gql_defs'
+} from '../../common/gql_defs'
 
 
-import { get_week_range_of_date } from '../common/date_fns'
+import { get_week_range_of_date } from '../../common/date_fns'
 
 import AllScheduleCreateLessonModal from './AllScheduleCreateLessonModal'
 import AllScheduleViewLessonModal from './AllScheduleViewLessonModal'

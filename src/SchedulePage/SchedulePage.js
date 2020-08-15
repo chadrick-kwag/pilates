@@ -2,7 +2,7 @@ import React from 'react'
 import { Button } from 'react-bootstrap'
 
 import './schedulepage.css'
-import ScheduleViewer from './ScheduleViewer'
+import ScheduleViewer from './AllScheduleView/ScheduleViewer'
 import CreateLessonPage from './CreateLessonPage'
 import ClientScheduleViewer from './ClientScheduleViewer'
 import InstructorScheduleViewer from './InstructorScheduleViewer'
