@@ -2,6 +2,9 @@ import React from 'react'
 import ClientSearchComponent from '../components/ClientSearchComponent'
 import InstructorSearchComponent from '../components/InstructorSearchComponent'
 
+import GroupingTypeSelectComponent from '../components/GroupingTypeSelectComponent'
+import ActivityTypeSelectComponent from '../components/ActivityTypeSelectComponent'
+
 import ClientSearchComponent2 from '../components/ClientSearchComponent2'
 import InstructorSearchComponent2 from '../components/InstructorSearchComponent2'
 
@@ -28,6 +31,8 @@ class CreateLessonPage extends React.Component {
         super(props)
 
         this.state = {
+            selected_activity_type: null,
+            selected_grouping_type: null,
             selected_client: null,
             selected_instructor: null,
             selected_date: new Date(),
@@ -187,6 +192,18 @@ class CreateLessonPage extends React.Component {
 
         return <div className="col-gravity-center">
 
+            <div className="padded-block col-gravity-center">
+                <ActivityTypeSelectComponent onItemClicked={d=>this.setState({
+                    selected_activity_type: d
+                })}/>
+            </div>
+
+
+            <div className="padded-block col-gravity-center">
+                <GroupingTypeSelectComponent onItemClicked={d=>this.setState({
+                    selected_grouping_type: d
+                })}/>
+            </div>
 
             <div className="padded-block col-gravity-center">
                 <h3>회원선택</h3>
