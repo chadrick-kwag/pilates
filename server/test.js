@@ -37,8 +37,13 @@ const typeDefs = gql`
       expire_time: String
   }
 
+  type SubscriptionInfo {
+      id: Int
+      created: String
+  }
+
   type SubscriptionIdAndTickets {
-      subscription_id: Int
+      subscription: SubscriptionInfo
       tickets: [Ticket]
   }
 
@@ -305,9 +310,9 @@ const resolvers = {
         query_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
             console.log(args)
 
-            let subscriptions = await pgclient.query('select array_agg(json_build_object(\'id\',subscription_ticket.id, \'expire_time\',subscription_ticket.expire_time)), subscription_ticket.creator_subscription_id as subscription_id  from pilates.subscription_ticket \
-             LEFT JOIN pilates.lesson ON subscription_ticket.id = lesson.consuming_client_ss_ticket_id  where  destroyer_subscription_id is null and expire_time > now() and lesson.id is null and \
-              creator_subscription_id in ( select id from pilates.subscription where clientid=$1 and activity_type=$2 and grouping_type=$3) GROUP BY subscription_ticket.creator_subscription_id', [args.clientid, args.activity_type, args.grouping_type]).then(res => {
+            let subscriptions = await pgclient.query('select array_agg(json_build_object(\'id\',subscription_ticket.id, \'expire_time\',subscription_ticket.expire_time)), subscription_ticket.creator_subscription_id as subscription_id, subscription.created  from pilates.subscription_ticket \
+             LEFT JOIN pilates.lesson ON subscription_ticket.id = lesson.consuming_client_ss_ticket_id  LEFT JOIN pilates.subscription ON subscription_ticket.creator_subscription_id = subscription.id where  destroyer_subscription_id is null and expire_time > now() and lesson.id is null and \
+              creator_subscription_id in ( select id from pilates.subscription where clientid=$1 and activity_type=$2 and grouping_type=$3) GROUP BY subscription_ticket.creator_subscription_id, subscription.created', [args.clientid, args.activity_type, args.grouping_type]).then(res => {
 
                 let ret_arr = []
 
@@ -317,8 +322,13 @@ const resolvers = {
                     let item_arrs = d.array_agg
                     //   console.log(item_arrs)
 
+                    let subscription_info = {
+                        id: d.subscription_id,
+                        created: d.created
+                    }
+
                     ret_arr.push({
-                        subscription_id: d.subscription_id,
+                        subscription: subscription_info,
                         tickets: item_arrs
                     })
                 })

@@ -22,6 +22,8 @@ registerLocale('ko', ko)
 
 import { CREATE_LESSON_GQL } from '../common/gql_defs'
 
+import SelectSubscriptionTicketComponent from '../components/SelectSubscriptionTicketComponent'
+
 
 
 class CreateLessonPage extends React.Component {
@@ -34,6 +36,7 @@ class CreateLessonPage extends React.Component {
             selected_activity_type: null,
             selected_grouping_type: null,
             selected_client: null,
+            selected_subscription_ticket: null,
             selected_instructor: null,
             selected_date: new Date(),
             start_time: "12:00",
@@ -95,33 +98,41 @@ class CreateLessonPage extends React.Component {
 
 
     checkinput() {
+
+        if (this.state.selected_activity_type==null){
+            return 'no selected activity type'
+        }
+
+        if(this.state.selected_grouping_type==null){
+            return 'no selected grouping type'
+        }
+
         if (this.state.selected_client == null) {
             console.log('no selected client')
-            return false
+            return 'no selected client'
         }
 
         if (this.state.selected_instructor == null) {
             console.log('no selected instructor')
-            return false
+            return 'no selected instructor'
         }
 
         if (this.state.start_time == null || this.state.end_time == null) {
             console.log('null start/end time')
-            return false
+            return 'null start /end time'
         }
 
         if (this.state.selected_date == null) {
             console.log('selected date is null')
-            return false
+            return 'selected date is null'
         }
-
 
         if (!this.is_time_later(this.state.end_time, this.state.start_time)) {
             console.log("time end start wrong")
-            return false
+            return 'time end start wrong'
         }
 
-        return true
+        return null
 
 
     }
@@ -130,8 +141,9 @@ class CreateLessonPage extends React.Component {
 
         let ret = this.checkinput()
 
-        if (!ret) {
+        if (ret!=null) {
             console.log('check input failed')
+            alert('input invalid\n'+ ret)
             return
         }
 
@@ -190,6 +202,23 @@ class CreateLessonPage extends React.Component {
 
     render() {
 
+
+        let subscription_selector = null
+
+        if(this.state.selected_grouping_type!=null && this.state.selected_activity_type!=null && this.state.selected_client!=null)
+        {
+            subscription_selector = <SelectSubscriptionTicketComponent apolloclient={this.props.apolloclient}
+           clientid ={this.state.selected_client.id} 
+           activity_type = {this.state.selected_activity_type}
+           grouping_type = {this.state.selected_grouping_type}
+                onSubscriptionTicketSelected={d=>{
+                    this.setState({
+                        selected_subscription_ticket: d
+                    })
+                }}
+            />
+        }
+
         return <div className="col-gravity-center">
 
             <div className="padded-block col-gravity-center">
@@ -212,7 +241,9 @@ class CreateLessonPage extends React.Component {
                     selected_client: c
                 })} />
 
-            </div>
+            </div> 
+
+            {subscription_selector}
 
             <div className="padded-block col-gravity-center">
                 <h3>강사선택</h3>

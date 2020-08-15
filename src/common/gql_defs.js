@@ -162,7 +162,10 @@ const QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query query_subsc
     query_subscriptions_with_remainrounds_for_clientid(clientid: $clientid, activity_type: $activity_type, grouping_type: $grouping_type){
         success
     subscriptions {
-      subscription_id
+      subscription{
+          id
+          created
+      }
       tickets {
         id
         expire_time

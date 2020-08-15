@@ -73,6 +73,8 @@ class ClientSearchComponent2 extends React.Component {
                 <tbody>
                     {this.state.client_search_result.map(d => <tr onClick={e => {
                         this.setState({
+                            client_name: "",
+                            client_search_result: null,
                             selected_client: d,
                             force_search: false
                         })
