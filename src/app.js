@@ -1,20 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Button, Form, Table } from 'react-bootstrap'
 
+import './common/subscription.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { ApolloProvider, } from '@apollo/react-hooks';
 import { ApolloClient, InMemoryCache, createHttpLink, useMutation } from '@apollo/client'
 
-import CreateInstructorPage from './CreateInstructorPage'
-import ListInstructorPage from './ListInstructorPage'
-import ListClientPage from './ListClientPage'
-// import CreateClientPage from './CreateClientPage'
 import CreateSubscriptionPage from './CreateSubscriptionPage'
 import SchedulePage from './SchedulePage/SchedulePage'
 
-import ClientManagePage from './ClientManagePage'
+import ClientManagePage from './ClientManage/ClientManagePage'
 import TopNavBar from './TopNavBar'
 
 import InstructorManagePage from './InstructorManagePage'

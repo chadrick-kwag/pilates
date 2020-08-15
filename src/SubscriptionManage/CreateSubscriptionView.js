@@ -5,7 +5,6 @@ import { Table, Button, Form } from 'react-bootstrap'
 
 import { CREATE_SUBSCRIPTION_GQL } from '../common/gql_defs'
 
-import './subscription.css'
 
 import PREDEFINED_PLANS from './PredefinedPlans'
 

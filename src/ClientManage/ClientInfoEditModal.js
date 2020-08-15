@@ -1,6 +1,6 @@
 import React from 'react'
 import { Modal, Button, Form } from 'react-bootstrap'
-import {UPDATE_CLIENT_INFO_GQL} from './common/gql_defs'
+import {UPDATE_CLIENT_INFO_GQL} from '../common/gql_defs'
 
 
 class ClientInfoEditModal extends React.Component {

@@ -2,10 +2,11 @@ import React from 'react'
 import { Form, Table, Button } from 'react-bootstrap'
 
 
-import { LIST_CLIENT_GQL, DELETE_CLIENT_GQL } from './common/gql_defs'
+import { LIST_CLIENT_GQL, DELETE_CLIENT_GQL } from '../common/gql_defs'
 
 import ClientInfoEditModal from './ClientInfoEditModal'
 import moment from 'moment'
+import ClientDetailModal from './ClientDetailModal'
 
 
 
@@ -18,7 +19,8 @@ class ListClientPage extends React.Component {
         this.state = {
             search_name: "",
             data: [],
-            edit_target_client: null
+            edit_target_client: null,
+            show_detail_target_client: null
         }
 
         this.refetch_data = this.refetch_data.bind(this)
@@ -62,7 +64,20 @@ class ListClientPage extends React.Component {
             show_data = this.state.data.filter(d => d.name == this.state.search_name)
         }
 
+
+        let detail_modal = null
+
+        if (this.state.show_detail_target_client != null) {
+            detail_modal = <ClientDetailModal client={this.state.show_detail_target_client} onCancel={() => {
+                this.setState({
+                    show_detail_target_client: null
+                })
+            }} />
+        }
+
         return <div>
+
+            {detail_modal}
 
             {this.state.edit_target_client == null ? null : <ClientInfoEditModal apolloclient={this.props.apolloclient}
                 onSubmitSuccess={() => {
@@ -74,9 +89,9 @@ class ListClientPage extends React.Component {
                     })
                 }}
                 client={this.state.edit_target_client}
-                onCancelClick={()=>{
+                onCancelClick={() => {
                     this.setState({
-                        edit_target_client : null
+                        edit_target_client: null
                     })
                 }}
             />}
@@ -89,7 +104,7 @@ class ListClientPage extends React.Component {
                     })
                 }}></Form.Control>
             </div>
-            {show_data.length == 0 ? <div>no results</div> : <Table>
+            {show_data.length == 0 ? <div>no results</div> : <Table className='row-clickable-table'>
                 <thead>
                     <th>id</th>
                     <th>name</th>
@@ -98,41 +113,43 @@ class ListClientPage extends React.Component {
                     <th>action</th>
                 </thead>
                 <tbody>
-                    {show_data.map(d => <tr>
+                    {show_data.map(d => <tr onClick={e => this.setState({
+                        show_detail_target_client: d
+                    })}>
                         <td>{d.id}</td>
                         <td>{d.name}</td>
                         <td>{d.phonenumber}</td>
-                    <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
+                        <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
                         <td>
                             <div>
-                                <Button onClick={e=>{
+                                <Button onClick={e => {
                                     this.setState({
                                         edit_target_client: d
                                     })
                                 }}>edit</Button>
                                 <Button onClick={e => {
-                                console.log('try deleting ' + d.id)
-                                this.props.apolloclient.mutate({
-                                    mutation: DELETE_CLIENT_GQL,
-                                    variables: {
-                                        id: parseInt(d.id)
-                                    },
-                                    errorPolicy: "all"
-                                }).then(d => {
-                                    console.log(d)
-                                    if (d.data.deleteclient.success) {
-                                        this.refetch_data()
+                                    console.log('try deleting ' + d.id)
+                                    this.props.apolloclient.mutate({
+                                        mutation: DELETE_CLIENT_GQL,
+                                        variables: {
+                                            id: parseInt(d.id)
+                                        },
+                                        errorPolicy: "all"
+                                    }).then(d => {
+                                        console.log(d)
+                                        if (d.data.deleteclient.success) {
+                                            this.refetch_data()
 
-                                    }
-                                    else {
-                                        console.log('failed to delete')
-                                    }
-                                }).catch(e => {
-                                    console.log(e)
-                                    console.log(e.data)
-                                    console.log(JSON.stringify(e, null, 2));
-                                })
-                            }}>delete</Button>
+                                        }
+                                        else {
+                                            console.log('failed to delete')
+                                        }
+                                    }).catch(e => {
+                                        console.log(e)
+                                        console.log(e.data)
+                                        console.log(JSON.stringify(e, null, 2));
+                                    })
+                                }}>delete</Button>
                             </div>
                         </td>
                     </tr>)}
