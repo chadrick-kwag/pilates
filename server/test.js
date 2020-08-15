@@ -3,7 +3,7 @@ const { ApolloServer, gql } = require('apollo-server');
 const { Pool, Client } = require('pg')
 const moment = require('moment-timezone');
 
-const {postgres_access_info} = require('../config.js')
+const {postgres_access_info, graphql_server_options} = require('../config.js')
 
 
 // A schema is a collection of type definitions (hence "typeDefs")
@@ -746,10 +746,6 @@ const resolvers = {
 const server = new ApolloServer({ typeDefs, resolvers });
 
 // The `listen` method launches a web server.
-server.listen({
-    host: '0.0.0.0',
-    port: 4000
-
-}).then(({ url }) => {
-    console.log(`🚀  Server ready at ${url}`);
+server.listen(graphql_server_options).then(({ url }) => {
+    console.log(`Server ready at ${url}`);
 });
