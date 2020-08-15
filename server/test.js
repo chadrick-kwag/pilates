@@ -3,6 +3,8 @@ const { ApolloServer, gql } = require('apollo-server');
 const { Pool, Client } = require('pg')
 const moment = require('moment-timezone');
 
+const {postgres_access_info} = require('../config.js')
+
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -129,13 +131,8 @@ const typeDefs = gql`
 `
 
 
-const pgclient = new Client({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'test',
-    password: 'rootpw',
-    port: 5432,
-})
+const pgclient = new Client(postgres_access_info)
+
 pgclient.connect(err => {
     if (err) {
         console.log("pgclient connect err")
