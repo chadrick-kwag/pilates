@@ -20,7 +20,15 @@ class SelectSubscriptionTikcetComponent extends React.Component {
 
     componentDidUpdate(prevprops) {
 
-        if (prevprops.clientid != this.props.clientid) {
+        // check for reset conditions
+
+        let need_reset = false
+
+        if(prevprops.clientid!=this.props.clientid || prevprops.activity_type != this.props.activity_type || prevprops.grouping_type != this.props.grouping_type){
+            need_reset = true
+        }
+
+        if (need_reset) {
             console.log('manually calling fetchdata')
 
             // reset states

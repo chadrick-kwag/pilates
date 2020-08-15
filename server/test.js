@@ -786,7 +786,10 @@ const resolvers = {
 
             // now create lesson
 
-            let res = await pgclient.query('insert into pilates.lesson(clientid, instructorid, starttime, endtime, consuming_client_ss_ticket_id) values ($1, $2, to_timestamp($3), to_timestamp($4), $5) ',[args.clientid, args.instructorid, incoming_time_string_to_postgres_epoch_time(args.starttime), incoming_time_string_to_postgres_epoch_time(args.endtime), args.ticketid]).then(res=>{
+            console.log(incoming_time_string_to_postgres_epoch_time(args.starttime))
+            console.log(incoming_time_string_to_postgres_epoch_time(args.endtime))
+
+            let res = await pgclient.query('insert into pilates.lesson (clientid, instructorid, starttime, endtime, consuming_client_ss_ticket_id) select $1, $2, to_timestamp($3), to_timestamp($4), $5 where not exists ( select * from pilates.lesson where (lesson.clientid=$1 or lesson.instructorid=$2) and ( tstzrange(to_timestamp($3), to_timestamp($4)) && tstzrange(lesson.starttime, lesson.endtime) ) )',[args.clientid, args.instructorid, incoming_time_string_to_postgres_epoch_time(args.starttime), incoming_time_string_to_postgres_epoch_time(args.endtime), args.ticketid]).then(res=>{
                 console.log(res)
 
                 if(res.rowCount>0){
@@ -809,7 +812,7 @@ const resolvers = {
             else{
                 return {
                     success: false,
-                    msg: 'failed to create lesson'
+                    msg: 'failed to create lesson. possibly time overlap'
                 }
             }
 

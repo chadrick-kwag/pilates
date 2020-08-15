@@ -112,7 +112,7 @@ class CreateLessonPage extends React.Component {
             return 'no selected client'
         }
 
-        if(this.state.selected_subscription_ticket==null){
+        if (this.state.selected_subscription_ticket == null) {
             return 'no subscription ticket selected'
         }
 
@@ -195,7 +195,7 @@ class CreateLessonPage extends React.Component {
             }
 
             console.log('failed to create lesson')
-            alert('failed to create lesson')
+            alert('failed to create lesson\n' + d.data.create_individual_lesson.msg)
 
 
 
@@ -212,18 +212,21 @@ class CreateLessonPage extends React.Component {
         let subscription_selector = null
 
         if (this.state.selected_grouping_type != null && this.state.selected_activity_type != null && this.state.selected_client != null) {
-            subscription_selector = <SelectSubscriptionTicketComponent apolloclient={this.props.apolloclient}
-                clientid={this.state.selected_client.id}
-                activity_type={this.state.selected_activity_type}
-                grouping_type={this.state.selected_grouping_type}
-                onSubscriptionTicketSelected={d => {
-                    console.log('setting selected subscription ticket  to:')
-                    console.log(d)
-                    this.setState({
-                        selected_subscription_ticket: d
-                    })
-                }}
-            />
+            subscription_selector = <div className='padded-block col-gravity-center'>
+                <h3>플랜선택</h3>
+                <SelectSubscriptionTicketComponent apolloclient={this.props.apolloclient}
+                    clientid={this.state.selected_client.id}
+                    activity_type={this.state.selected_activity_type}
+                    grouping_type={this.state.selected_grouping_type}
+                    onSubscriptionTicketSelected={d => {
+                        console.log('setting selected subscription ticket  to:')
+                        console.log(d)
+                        this.setState({
+                            selected_subscription_ticket: d
+                        })
+                    }}
+                />
+            </div>
         }
 
         return <div className="col-gravity-center">
