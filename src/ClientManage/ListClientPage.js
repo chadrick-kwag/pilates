@@ -2,7 +2,7 @@ import React from 'react'
 import { Form, Table, Button } from 'react-bootstrap'
 
 
-import { LIST_CLIENT_GQL, DELETE_CLIENT_GQL } from '../common/gql_defs'
+import { FETCH_CLIENTS_GQL, DELETE_CLIENT_GQL } from '../common/gql_defs'
 
 import ClientInfoEditModal from './ClientInfoEditModal'
 import moment from 'moment'
@@ -28,13 +28,13 @@ class ListClientPage extends React.Component {
 
     refetch_data() {
         this.props.apolloclient.query({
-            query: LIST_CLIENT_GQL,
+            query: FETCH_CLIENTS_GQL,
             fetchPolicy: "no-cache"
         }).then(d => {
             console.log(d)
-            if (d.data.clients) {
+            if (d.data.fetch_clients.success) {
                 this.setState({
-                    data: d.data.clients
+                    data: d.data.fetch_clients.clients
                 })
                 return
             }

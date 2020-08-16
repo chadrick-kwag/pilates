@@ -83,12 +83,24 @@ const QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTORID_GQL = gql`query($instructorid:
     }
 }`
 
-const LIST_CLIENT_GQL = gql`{
-    clients{
-        id
-        name
-        phonenumber
-        created
+const FETCH_CLIENTS_GQL = gql`{
+    
+    fetch_clients{
+
+        success
+        clients{
+            id
+            name
+            phonenumber
+            created
+            job
+            gender
+            email
+            address
+            memo
+            birthdate
+        }
+        
     }
 }`
 
@@ -215,7 +227,7 @@ export {
     FETCH_LESSON_GQL,
     QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL,
     QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTORID_GQL,
-    LIST_CLIENT_GQL,
+    FETCH_CLIENTS_GQL,
     DELETE_CLIENT_GQL,
     UPDATE_CLIENT_INFO_GQL,
     LIST_INSTRUCTOR_GQL,
@@ -228,5 +240,5 @@ export {
     SEARCH_CLIENT_WITH_NAME,
     SEARCH_INSTRUCTOR_WITH_NAME,
     CREATE_INDIVIDUAL_LESSON_GQL
-    
+
 }

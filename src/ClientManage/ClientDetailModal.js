@@ -1,6 +1,7 @@
 import React from 'react'
 import { Form, Modal, Button, Table } from 'react-bootstrap'
 import _ from 'lodash'
+import moment from 'moment'
 
 
 class ClientDetailModal extends React.Component {
@@ -93,11 +94,11 @@ class ClientDetailModal extends React.Component {
                 </tr>
                 <tr>
                     <td>성별</td>
-                    <td>{this.props.client.name}</td>
+                    <td>{this.props.client.gender}</td>
                 </tr>
                 <tr>
                     <td>생년월일</td>
-                    <td>{this.props.client.name}</td>
+                    <td>{}</td>
                 </tr>
                 <tr>
                     <td>연락처</td>
@@ -105,27 +106,27 @@ class ClientDetailModal extends React.Component {
                 </tr>
                 <tr>
                     <td>주소</td>
-                    <td>{this.props.client.phonenumber}</td>
+                    <td>{this.props.client.address}</td>
                 </tr>
                 <tr>
                     <td>이메일</td>
-                    <td>{this.props.client.phonenumber}</td>
+                    <td>{this.props.client.email}</td>
                 </tr>
                 <tr>
                     <td>직업</td>
-                    <td>{this.props.client.phonenumber}</td>
+                    <td>{this.props.client.job}</td>
                 </tr>
                 <tr>
                     <td>등록일</td>
-                    <td>{this.props.client.phonenumber}</td>
+                    <td>{moment(new Date(parseInt(this.props.client.created))).format('YYYY-MM-DD HH:mm')}</td>
                 </tr>
                 <tr>
                     <td>메모</td>
-                    <td>{this.props.client.phonenumber}</td>
+                    <td>{this.props.client.memo}</td>
                 </tr>
                 <tr>
                     <td>플랜목록</td>
-                    <td>{this.props.client.phonenumber}</td>
+                    <td>{}</td>
                 </tr>
                 
 

@@ -20,10 +20,16 @@ const typeDefs = gql`
 
   # This "Book" type defines the queryable fields for every book in our data source.
   type Client {
-    id: String
-    name: String
-    phonenumber: String
+    id: String!
+    name: String!
+    phonenumber: String!
     created: String
+    job: String
+    email: String
+    memo: String
+    address: String
+    gender: String
+    birthdate: String
   }
 
   type Subscription {
@@ -106,8 +112,14 @@ const typeDefs = gql`
       subscriptions: [Subscription]
   }
 
+  type SuccessAndClients{
+      success: Boolean
+      msg: String
+      clients: [Client]
+  }
+
   type Query {
-    clients: [Client]
+    fetch_clients: SuccessAndClients
     instructors: [Instructor]
     search_client_with_name(name: String!): [Client]
     search_instructor_with_name(name: String!): [Instructor]
@@ -158,11 +170,18 @@ pgclient.connect(err => {
 
 const resolvers = {
     Query: {
-        clients: async () => {
-            let results = await pgclient.query("select * from pilates.client").then(res => {
-                return res.rows
+        fetch_clients: async (parent, args) => {
+            let results = await pgclient.query("select id, name, phonenumber, created, job, email, birthdate, address, gender, memo from pilates.client").then(res => {
+                
+                return {
+                    success: true,
+                    clients: res.rows
+                }
             }).catch(e => {
-                return []
+                return {
+                    success: false,
+                    msg: "query error"
+                }
             })
 
             return results
