@@ -3,14 +3,7 @@ import { Form, Button, Table } from 'react-bootstrap'
 import { gql } from '@apollo/client'
 import moment from 'moment'
 
-
-const CREATE_CLIENT_GQL = gql`mutation  CreateClient($name: String!, $phonenumber: String!){
-    createclient(name: $name, phonenumber: $phonenumber){
-        id
-        name
-        phonenumber
-    }
-}`
+import {CREATE_CLIENT_GQL} from '../common/gql_defs'
 
 
 class CreateClientPage extends React.Component {
@@ -130,13 +123,10 @@ class CreateClientPage extends React.Component {
 
         this.props.apolloclient.mutate({
             mutation: CREATE_CLIENT_GQL,
-            variables: {
-                name: this.state.name,
-                phonenumber: this.state.phonenumber
-            }
+            variables: _variables 
         }).then(d => {
             console.log(d)
-            if (d.data != null) {
+            if (d.data.createclient.success) {
                 this.props.onSubmitSuccess()
             }
             else {
@@ -146,6 +136,7 @@ class CreateClientPage extends React.Component {
         })
             .catch(e => {
                 console.log(e)
+                console.log(JSON.stringify(e))
                 // alert('failed to reigster client')
                 this.props.onSubmitFail()
             })
