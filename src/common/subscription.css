@@ -89,3 +89,13 @@ hr {
     color: gray;
     
 }
+
+.modal-90w {
+    
+    max-width: 90%!important;
+}
+
+.view-kv-table > tr >td:first-child {
+    font-weight: bold;
+    width: 150px;
+}

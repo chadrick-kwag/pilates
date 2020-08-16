@@ -151,7 +151,7 @@ class CreateClientPage extends React.Component {
             </div>
 
             <div>
-                <Table>
+                <Table className="view-kv-table">
                     <tr>
                         <td>이름*</td>
                         <td><Form.Control value={this.state.name} onChange={e => {

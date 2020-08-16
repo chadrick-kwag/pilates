@@ -123,7 +123,7 @@ class ClientDetailModal extends React.Component {
         let body = null
 
         if (this.state.edit_mode) {
-            body = <Table>
+            body = <Table className="view-kv-table">
                 <tr>
                     <td>이름</td>
                     <td><Form.Control value={this.state.edit_client.name} onChange={e => {
@@ -239,7 +239,7 @@ class ClientDetailModal extends React.Component {
             </Table>
         }
         else {
-            body = <Table>
+            body = <Table className="view-kv-table">
                 <tr>
                     <td>id</td>
                     <td>{this.props.client.id}</td>
@@ -317,7 +317,7 @@ class ClientDetailModal extends React.Component {
         }
 
 
-        return <Modal show={true} onHide={e => this.props.onCancel()}>
+        return <Modal dialogClassName="modal-90w" show={true} onHide={e => this.props.onCancel()}>
 
             <Modal.Body>
                 {body}
