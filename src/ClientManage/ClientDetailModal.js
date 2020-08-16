@@ -20,18 +20,18 @@ class ClientDetailModal extends React.Component {
 
 
 
-    check_edit_inputs(){
+    check_edit_inputs() {
         // return null if all pass
         // do input checks
 
         return null
     }
 
-    onsubmit(){
+    onsubmit() {
         let check = this.check_edit_inputs()
 
-        if(check!=null){
-            alert('invalid input\n'+ check)
+        if (check != null) {
+            alert('invalid input\n' + check)
             return
         }
 
@@ -57,13 +57,41 @@ class ClientDetailModal extends React.Component {
                     }} /></td>
                 </tr>
                 <tr>
-                    <td>id</td>
-                    <td><Form.Control value={this.state.edit_client.id} onChange={e => {
-                        let updated_client = this.state.edit_client
-                        updated_client.id = e.target.value
+                    <td>성별</td>
+                    <td>
+                        <div>
+                            <Button variant={this.state.edit_client.gender == 'male' ? 'warning' : 'light'}
+                                onClick={e => {
+                                    let updated_client = this.state.edit_client
+                                    updated_client.gender = 'male'
 
+                                    this.setState({
+                                        edit_client: updated_client
+                                    })
+                                }}
+                            >남</Button>
+                            <Button variant={this.state.edit_client.gender == 'female' ? 'warning' : 'light'}
+                                onClick={e => {
+                                    let updated_client = this.state.edit_client
+                                    updated_client.gender = 'female'
+                                    console.log('updated_client')
+                                    console.log(updated_client)
+
+                                    this.setState({
+                                        edit_client: updated_client
+                                    })
+                                }}
+                            >여</Button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>생년월일</td>
+                    <td><Form.Control value={this.state.edit_client.birthdate} onChange={e => {
+                        let newclient = this.state.edit_client
+                        newclient.birthdate = e.target.value
                         this.setState({
-                            edit_client: updated_client
+                            edit_client: newclient
                         })
                     }} /></td>
                 </tr>
@@ -78,6 +106,56 @@ class ClientDetailModal extends React.Component {
                         })
                     }} /></td>
                 </tr>
+                <tr>
+                    <td>주소</td>
+                    <td>
+                        <Form.Control value={this.state.edit_client.address} onChange={e => {
+                            let newclient = this.state.edit_client
+                            newclient.address = e.target.value
+                            this.setState({
+                                edit_client: newclient
+                            })
+                        }} />
+                    </td>
+                </tr>
+                <tr>
+                    <td>이메일</td>
+                    <td>
+                        <Form.Control value={this.state.edit_client.email} onChange={e => {
+                            let newclient = this.state.edit_client
+                            newclient.email = e.target.value
+                            this.setState({
+                                edit_client: newclient
+                            })
+                        }} />
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>직업</td>
+                    <td>
+                        <Form.Control value={this.state.edit_client.job} onChange={e => {
+                            let newclient = this.state.edit_client
+                            newclient.job = e.target.value
+                            this.setState({
+                                edit_client: newclient
+                            })
+                        }} />
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>메모</td>
+                    <td><Form.Control as='textarea' rows='5' value={this.state.edit_client.memo}  onChange={e=>{
+                        let newclient = this.state.edit_client
+                        newclient.memo = e.target.value
+                        this.setState({
+                            edit_client: newclient
+                        })
+
+                    }}/></td>
+                </tr>
+
 
             </Table>
         }
@@ -117,7 +195,7 @@ class ClientDetailModal extends React.Component {
                 </tr>
                 <tr>
                     <td>등록일</td>
-                    <td>{this.props.client.phonenumber}</td>
+                    <td>{this.props.client.created}</td>
                 </tr>
                 <tr>
                     <td>메모</td>
@@ -127,7 +205,7 @@ class ClientDetailModal extends React.Component {
                     <td>플랜목록</td>
                     <td>{this.props.client.phonenumber}</td>
                 </tr>
-                
+
 
             </Table>
         }
@@ -153,7 +231,7 @@ class ClientDetailModal extends React.Component {
                 <Button variant='warning' onClick={e => this.setState({
                     edit_mode: true
                 })}>edit</Button>
-                
+
             </div>
         }
 
