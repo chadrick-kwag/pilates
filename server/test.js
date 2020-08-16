@@ -123,6 +123,8 @@ const typeDefs = gql`
     total_rounds: Int
     remain_rounds: Int
     created: String
+    activity_type: String
+    grouping_type: String
   }
 
   type ReturnAllSubscriptionsWithRemainRounds{
@@ -189,7 +191,7 @@ const resolvers = {
 
             // console.log(args)
 
-            let result = await pgclient.query("select json_build_object('subscription_id', subscription.id, 'total_rounds', count(subscription_ticket.id),'remain_rounds', subscription.rounds, 'created', subscription.created) from pilates.subscription_ticket left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id  left join pilates.lesson on subscription_ticket.id=lesson.consuming_client_ss_ticket_id  where subscription.clientid=$1 and lesson.id is null  group by subscription.id ORDER BY subscription.created desc",[args.clientid]).then(res=>{
+            let result = await pgclient.query("select json_build_object('subscription_id', subscription.id, 'total_rounds', count(subscription_ticket.id),'remain_rounds', subscription.rounds, 'created', subscription.created,  'activity_type', subscription.activity_type, 'grouping_type', subscription.grouping_type) from pilates.subscription_ticket left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id  left join pilates.lesson on subscription_ticket.id=lesson.consuming_client_ss_ticket_id  where subscription.clientid=$1 and lesson.id is null  group by subscription.id ORDER BY subscription.created desc",[args.clientid]).then(res=>{
 
                 // console.log(res.rows)
 

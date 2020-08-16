@@ -239,6 +239,8 @@ const FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query a($clie
             total_rounds
             remain_rounds
             created
+            activity_type
+            grouping_type
         }
     }
 }`

@@ -6,6 +6,8 @@ import { UPDATE_CLIENT_INFO_GQL, FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_C
 
 import { extract_date_from_birthdate_str } from './CreateClientPage'
 
+import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
+
 
 
 function convert_gender_type_to_kor_str(gender_type_str) {
@@ -288,18 +290,17 @@ class ClientDetailModal extends React.Component {
                     </div>
                 }
                 else {
-                    // plan_list_comp = <div>
-                    //     <span>{this.state.subscription_info_arr.map(d=>d.created)}</span>
-                    // </div>
 
                     plan_list_comp = <Table>
                         <thead>
                             <th>생성일</th>
+                            <th>종류</th>
                             <th>rounds</th>
                         </thead>
                         <tbody>
                             {this.state.subscription_info_arr.map(d => <tr>
                                 <td>{moment(new Date(d.created)).format('YYYY-MM-DD HH:mm')}</td>
+                                <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
                                 <td>{d.remain_rounds}/{d.total_rounds}</td>
                             </tr>)}
                         </tbody>
