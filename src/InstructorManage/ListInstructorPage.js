@@ -8,7 +8,7 @@ import moment from 'moment'
 import {
     LIST_INSTRUCTOR_GQL,
     DELETE_INSTRUCTOR_GQL
-} from './common/gql_defs'
+} from '../common/gql_defs'
 
 
 class ListInstructorPage extends React.Component {
@@ -69,7 +69,7 @@ class ListInstructorPage extends React.Component {
 
 
         if (this.state.data != null) {
-            table_area = <Table>
+            table_area = <Table className='row-clickable-table'>
                 <thead>
                     <td>id</td>
                     <td>name</td>
@@ -84,11 +84,7 @@ class ListInstructorPage extends React.Component {
                         <td>{d.phonenumber}</td>
                         <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
                         <td><div>
-                            <Button onClick={e => {
-                                this.setState({
-                                    edit_target_instructor: d
-                                })
-                            }}>edit</Button>
+                            
                             <Button onClick={e => {
                                 this.props.apolloclient.mutate({
                                     mutation: DELETE_INSTRUCTOR_GQL,
@@ -107,6 +103,7 @@ class ListInstructorPage extends React.Component {
                                     console.log('error deleting instructor')
 
                                 })
+                                e.stopPropagation()
                             }}>delete</Button></div></td>
                     </tr>)}
                 </tbody>

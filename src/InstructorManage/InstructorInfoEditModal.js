@@ -1,6 +1,6 @@
 import React from 'react'
 import { Modal, Button, Form } from 'react-bootstrap'
-import {UPDATE_INSTRUCTOR_INFO_GQL} from './common/gql_defs'
+import {UPDATE_INSTRUCTOR_INFO_GQL} from '../common/gql_defs'
 
 
 class InstructorInfoEditModal extends React.Component {

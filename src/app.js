@@ -13,7 +13,7 @@ import SchedulePage from './SchedulePage/SchedulePage'
 import ClientManagePage from './ClientManage/ClientManagePage'
 import TopNavBar from './TopNavBar'
 
-import InstructorManagePage from './InstructorManagePage'
+import InstructorManagePage from './InstructorManage/InstructorManagePage'
 import SubscriptionManagePage from './SubscriptionManage/SubscriptionManagePage'
 import {gql_server_addr} from '../config'
 
