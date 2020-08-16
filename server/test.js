@@ -3,13 +3,13 @@ const { ApolloServer, gql } = require('apollo-server');
 const { Pool, Client } = require('pg')
 const moment = require('moment-timezone');
 
-const {postgres_access_info, graphql_server_options} = require('../config.js')
+const { postgres_access_info, graphql_server_options } = require('../config.js')
 
 
 
-function incoming_time_string_to_postgres_epoch_time(time_str){
-    let a= new Date(time_str)
-    return a.getTime()/1000
+function incoming_time_string_to_postgres_epoch_time(time_str) {
+    let a = new Date(time_str)
+    return a.getTime() / 1000
 }
 
 // A schema is a collection of type definitions (hence "typeDefs")
@@ -172,7 +172,7 @@ const resolvers = {
     Query: {
         fetch_clients: async (parent, args) => {
             let results = await pgclient.query("select id, name, phonenumber, created, job, email, birthdate, address, gender, memo from pilates.client").then(res => {
-                
+
                 return {
                     success: true,
                     clients: res.rows
@@ -342,7 +342,7 @@ const resolvers = {
 
                 let ret_arr = []
 
-                
+
 
                 res.rows.forEach(d => {
                     let item_arrs = d.array_agg
@@ -385,31 +385,31 @@ const resolvers = {
             console.log(args)
 
             let gender = null
-            if(args.gender.toLowerCase() == "male"){
+            if (args.gender.toLowerCase() == "male") {
                 gender = 'MALE'
             }
-            else if(args.gender.toLowerCase()== "female"){
+            else if (args.gender.toLowerCase() == "female") {
                 gender = 'FEMALE'
             }
 
             let birthdate = null
-            if(args.birthdate){
-                birthdate = incoming_time_string_to_postgres_epoch_time(args.birthdate) 
+            if (args.birthdate) {
+                birthdate = incoming_time_string_to_postgres_epoch_time(args.birthdate)
             }
 
             let pre_args = [args.name, args.phonenumber, gender, args.job, args.address, args.memo, args.email, birthdate]
 
             console.log(pre_args)
 
-            let ret = await pgclient.query("insert into pilates.client (name, phonenumber, gender, job, address, memo, email, birthdate) values ($1, $2, $3, $4, $5, $6, $7, to_timestamp($8))", [args.name, args.phonenumber, gender, args.job, args.address, args.memo, args.email, incoming_time_string_to_postgres_epoch_time(args.birthdate) ]).then(res => {
+            let ret = await pgclient.query("insert into pilates.client (name, phonenumber, gender, job, address, memo, email, birthdate) values ($1, $2, $3, $4, $5, $6, $7, to_timestamp($8))", [args.name, args.phonenumber, gender, args.job, args.address, args.memo, args.email, incoming_time_string_to_postgres_epoch_time(args.birthdate)]).then(res => {
                 console.log(res)
-                
-                if(res.rowCount>0){
+
+                if (res.rowCount > 0) {
                     return {
                         success: true
                     }
                 }
-                
+
                 return {
                     success: false,
                     msg: 'failed to insert'
@@ -663,16 +663,19 @@ const resolvers = {
             console.log(args)
 
             let gender = null
-            if(args.gender.toLowerCase()=='male'){
-                gender = 'MALE'
+            if (args.gender != null) {
+                if (args.gender.toLowerCase() == 'male') {
+                    gender = 'MALE'
+                }
+                else if (args.gender.toLowerCase() == 'female') {
+                    gender = 'FEMALE'
+                }
             }
-            else if(args.gender.toLowerCase()=='female'){
-                gender = 'FEMALE'
-            }
+
 
             let birthdate = null
 
-            if(args.birthdate){
+            if (args.birthdate) {
                 birthdate = incoming_time_string_to_postgres_epoch_time(args.birthdate)
             }
 
@@ -695,7 +698,7 @@ const resolvers = {
                         success: true
                     }
                 }
-                
+
                 return {
                     success: false,
                     msg: 'update did not happen'
@@ -838,20 +841,20 @@ const resolvers = {
                 success: ret
             }
         },
-        create_individual_lesson: async (parent, args)=>{
+        create_individual_lesson: async (parent, args) => {
             console.log('inside create individual lesson')
             console.log(args)
 
             // check that ticket's owner matches given client id
 
-            let client_check = await pgclient.query('select subscription.clientid from pilates.subscription_ticket left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id where subscription_ticket.id=$1',[args.ticketid]).then(res=>{
+            let client_check = await pgclient.query('select subscription.clientid from pilates.subscription_ticket left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id where subscription_ticket.id=$1', [args.ticketid]).then(res => {
                 console.log(res)
 
-                if(res.rowCount==0){
+                if (res.rowCount == 0) {
                     return false
                 }
 
-                if(res.rows[0].clientid==args.clientid){
+                if (res.rows[0].clientid == args.clientid) {
                     return true
                 }
 
@@ -859,7 +862,7 @@ const resolvers = {
 
             })
 
-            if(!client_check){
+            if (!client_check) {
                 return {
                     success: false,
                     msg: 'client id and ticket owner does not match'
@@ -871,27 +874,27 @@ const resolvers = {
             console.log(incoming_time_string_to_postgres_epoch_time(args.starttime))
             console.log(incoming_time_string_to_postgres_epoch_time(args.endtime))
 
-            let res = await pgclient.query('insert into pilates.lesson (clientid, instructorid, starttime, endtime, consuming_client_ss_ticket_id) select $1, $2, to_timestamp($3), to_timestamp($4), $5 where not exists ( select * from pilates.lesson where (lesson.clientid=$1 or lesson.instructorid=$2) and ( tstzrange(to_timestamp($3), to_timestamp($4)) && tstzrange(lesson.starttime, lesson.endtime) ) )',[args.clientid, args.instructorid, incoming_time_string_to_postgres_epoch_time(args.starttime), incoming_time_string_to_postgres_epoch_time(args.endtime), args.ticketid]).then(res=>{
+            let res = await pgclient.query('insert into pilates.lesson (clientid, instructorid, starttime, endtime, consuming_client_ss_ticket_id) select $1, $2, to_timestamp($3), to_timestamp($4), $5 where not exists ( select * from pilates.lesson where (lesson.clientid=$1 or lesson.instructorid=$2) and ( tstzrange(to_timestamp($3), to_timestamp($4)) && tstzrange(lesson.starttime, lesson.endtime) ) )', [args.clientid, args.instructorid, incoming_time_string_to_postgres_epoch_time(args.starttime), incoming_time_string_to_postgres_epoch_time(args.endtime), args.ticketid]).then(res => {
                 console.log(res)
 
-                if(res.rowCount>0){
+                if (res.rowCount > 0) {
                     return true
                 }
                 return false
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return false
             })
 
 
-            if(res){
+            if (res) {
                 return {
                     success: true,
-                    
+
                 }
 
             }
-            else{
+            else {
                 return {
                     success: false,
                     msg: 'failed to create lesson. possibly time overlap'
