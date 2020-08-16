@@ -2,6 +2,9 @@ import React from 'react'
 import { Form, Modal, Button, Table } from 'react-bootstrap'
 import _ from 'lodash'
 import moment from 'moment'
+import {UPDATE_CLIENT_INFO_GQL} from '../common/gql_defs'
+
+import {extract_date_from_birthdate_str} from './CreateClientPage'
 
 
 class ClientDetailModal extends React.Component {
@@ -12,18 +15,40 @@ class ClientDetailModal extends React.Component {
         this.state = {
             base_client: this.props.client,
             edit_mode: false,
-            edit_client: _.cloneDeep(this.props.client)
+            edit_client: this.modify_prop_client_for_init_edit_client(_.cloneDeep(this.props.client))
 
         }
+
+        
 
         this.check_edit_inputs = this.check_edit_inputs.bind(this)
     }
 
+    modify_prop_client_for_init_edit_client(client){
+        if(client.birthdate){
+            client.birthdate = moment(new Date(parseInt(client.birthdate))).format('YYYYMMDD')
+        }
 
+        return client
+    }
 
     check_edit_inputs() {
         // return null if all pass
         // do input checks
+
+        if(this.state.edit_client.name.trim()==""){
+            return "invalid name"
+        }
+
+        if(this.state.edit_client.phonenumber.trim()==""){
+            return 'invalid phonenumber'
+        }
+
+        if(this.state.edit_client.birthdate!=null){
+            if(extract_date_from_birthdate_str(this.state.edit_client.birthdate)==null){
+                return 'invalid birthdate'
+            }
+        }
 
         return null
     }
@@ -37,6 +62,44 @@ class ClientDetailModal extends React.Component {
         }
 
         // submit to server
+
+        let prep_birthdate = null
+        if(this.state.edit_client.birthdate){
+            prep_birthdate = extract_date_from_birthdate_str(this.state.edit_client.birthdate)
+        }
+
+        this.props.apolloclient.mutate({
+            mutation: UPDATE_CLIENT_INFO_GQL,
+            variables: {
+                id: parseInt(this.state.edit_client.id),
+                name: this.state.edit_client.name,
+                phonenumber: this.state.edit_client.phonenumber,
+                address: this.state.edit_client.address,
+                email: this.state.edit_client.email,
+                gender: this.state.edit_client.gender,
+                memo: this.state.edit_client.memo,
+                job: this.state.edit_client.job,
+                birthdate: prep_birthdate
+                
+
+            }
+        }).then(d=>{
+            console.log(d)
+
+            if(d.data.update_client.success){
+                console.log('update success')
+                this.props.onEditSuccess()
+            }
+            else{
+                alert('edit update failed\n' + d.data.update_client.msg)
+            }
+        }).catch(e=>{
+            console.log(e)
+            console.log(JSON.stringify(e))
+
+            alert('update error')
+        })
+
     }
 
 
@@ -176,8 +239,10 @@ class ClientDetailModal extends React.Component {
                 </tr>
                 <tr>
                     <td>생년월일</td>
-                    <td>{}</td>
-                </tr>
+                    <td>{
+                        this.props.client.birthdate == null ? null : moment(new Date(parseInt(this.props.client.birthdate))).format('YYYY-MM-DD')
+                        }</td>
+                </tr> 
                 <tr>
                     <td>연락처</td>
                     <td>{this.props.client.phonenumber}</td>
@@ -223,7 +288,7 @@ class ClientDetailModal extends React.Component {
                         edit_client: _.cloneDeep(this.props.client)
                     })
                 }}>cancel</Button>
-                <Button>submit</Button>
+                <Button onClick={e=>this.onsubmit()}>submit</Button>
             </div>
         }
         else {

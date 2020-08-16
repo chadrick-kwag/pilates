@@ -111,9 +111,10 @@ const DELETE_CLIENT_GQL = gql`mutation DeleteClient($id:Int!){
 }`
 
 
-const UPDATE_CLIENT_INFO_GQL = gql`mutation updateclient($id: Int!, $name: String!, $phonenumber: String!){
-    update_client(id: $id, name: $name, phonenumber: $phonenumber){
+const UPDATE_CLIENT_INFO_GQL = gql`mutation updateclient($id: Int!, $name: String!, $phonenumber: String!, $gender:String, $address: String, $email: String, $memo: String, $birthdate: String, $job: String){
+    update_client(id: $id, name: $name, phonenumber: $phonenumber, gender: $gender, email: $email, job: $job, memo: $memo, address: $address, birthdate: $birthdate){
         success
+        msg
     }
 }`
 

@@ -6,6 +6,44 @@ import moment from 'moment'
 import {CREATE_CLIENT_GQL} from '../common/gql_defs'
 
 
+
+function extract_date_from_birthdate_str(bd_str) {
+
+    try {
+        let _bd_str = bd_str.trim()
+
+        if (_bd_str.length != 8) {
+            return null
+        }
+
+        let year_str = _bd_str.slice(0, 4)
+        let month_str = _bd_str.slice(4, 6)
+        let day_str = _bd_str.slice(6, 8)
+
+
+        let month = parseInt(month_str) - 1
+        let day = parseInt(day_str)
+
+        if (day > 31) {
+            return null
+        }
+
+        if(month <1 || month > 12){
+            return null
+        }
+
+        let output = moment()
+        output.year(year_str)
+        output.month(month)
+        output.date(day_str)
+
+        return output
+
+    } catch (err) {
+        return null
+    }
+}
+
 class CreateClientPage extends React.Component {
 
     constructor(props) {
@@ -28,43 +66,6 @@ class CreateClientPage extends React.Component {
     }
 
 
-    extract_date_from_birthdate_str(bd_str) {
-
-        try {
-            let _bd_str = bd_str.trim()
-
-            if (_bd_str.length != 8) {
-                return null
-            }
-
-            let year_str = _bd_str.slice(0, 4)
-            let month_str = _bd_str.slice(4, 6)
-            let day_str = _bd_str.slice(6, 8)
-
-
-            let month = parseInt(month_str) - 1
-            let day = parseInt(day_str)
-
-            if (day > 31) {
-                return null
-            }
-
-            if(month <1 || month > 12){
-                return null
-            }
-
-            let output = moment()
-            output.year(year_str)
-            output.month(month)
-            output.date(day_str)
-
-            return output
-
-        } catch (err) {
-            return null
-        }
-    }
-
 
     check_input() {
 
@@ -78,7 +79,7 @@ class CreateClientPage extends React.Component {
             return 'invalid phone number'
         }
         if (this.state.birthdate.trim() != "") {
-            if (this.extract_date_from_birthdate_str(this.state.birthdate) == null) {
+            if (extract_date_from_birthdate_str(this.state.birthdate) == null) {
                 return 'invalid birthdate'
             }
 
@@ -98,7 +99,7 @@ class CreateClientPage extends React.Component {
         }
 
 
-        let birthdate_date = this.extract_date_from_birthdate_str(this.state.birthdate)
+        let birthdate_date = extract_date_from_birthdate_str(this.state.birthdate)
 
         console.log(birthdate_date)
 
@@ -251,3 +252,7 @@ class CreateClientPage extends React.Component {
 }
 
 export default CreateClientPage
+
+export {
+    extract_date_from_birthdate_str
+}

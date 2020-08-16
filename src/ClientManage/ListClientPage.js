@@ -68,11 +68,23 @@ class ListClientPage extends React.Component {
         let detail_modal = null
 
         if (this.state.show_detail_target_client != null) {
-            detail_modal = <ClientDetailModal client={this.state.show_detail_target_client} onCancel={() => {
-                this.setState({
-                    show_detail_target_client: null
-                })
-            }} />
+            detail_modal = <ClientDetailModal
+                apolloclient={this.props.apolloclient}
+                client={this.state.show_detail_target_client} onCancel={() => {
+                    this.setState({
+                        show_detail_target_client: null
+                    })
+
+                }}
+                onEditSuccess={() => {
+                    this.setState({
+                        show_detail_target_client: null
+
+                    }, () => {
+                        this.refetch_data()
+                    })
+                }}
+            />
         }
 
         return <div>

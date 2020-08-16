@@ -145,7 +145,7 @@ const typeDefs = gql`
       create_lesson(clientids:[Int!], instructorid: Int!, start_time: String!, end_time: String!): SuccessResult
       delete_lesson(lessonid:Int!): SuccessResult
       attempt_update_lesson_time(lessonid:Int!, start_time: String!, end_time: String!): SuccessResult
-      update_client(id: Int!, name: String!, phonenumber: String!): SuccessResult
+      update_client(id: Int!, name: String!, phonenumber: String!, address: String, job: String, birthdate: String, gender: String, memo: String, email: String): SuccessResult
       update_instructor(id: Int!, name: String!, phonenumber: String!): SuccessResult
       create_subscription(clientid: Int!, rounds: Int!, totalcost: Int!,  activity_type: String!, grouping_type: String!, coupon_backed: String): SuccessResult
       delete_subscription(id:Int!): SuccessResult
@@ -392,7 +392,12 @@ const resolvers = {
                 gender = 'FEMALE'
             }
 
-            let pre_args = [args.name, args.phonenumber, gender, args.job, args.address, args.memo, args.email, incoming_time_string_to_postgres_epoch_time(args.birthdate) ]
+            let birthdate = null
+            if(args.birthdate){
+                birthdate = incoming_time_string_to_postgres_epoch_time(args.birthdate) 
+            }
+
+            let pre_args = [args.name, args.phonenumber, gender, args.job, args.address, args.memo, args.email, birthdate]
 
             console.log(pre_args)
 
@@ -657,19 +662,53 @@ const resolvers = {
 
             console.log(args)
 
-            let ret = await pgclient.query('update pilates.client set name=$1, phonenumber=$2 where id=$3', [args.name, args.phonenumber, args.id]).then(res => {
+            let gender = null
+            if(args.gender.toLowerCase()=='male'){
+                gender = 'MALE'
+            }
+            else if(args.gender.toLowerCase()=='female'){
+                gender = 'FEMALE'
+            }
+
+            let birthdate = null
+
+            if(args.birthdate){
+                birthdate = incoming_time_string_to_postgres_epoch_time(args.birthdate)
+            }
+
+            let prep_args = [
+                args.name,
+                args.phonenumber,
+                args.email,
+                args.memo,
+                args.address,
+                gender,
+                args.job,
+                birthdate,
+                args.id
+            ]
+
+            let ret = await pgclient.query('update pilates.client set name=$1, phonenumber=$2, email=$3, memo=$4, address=$5, gender=$6, job=$7, birthdate=to_timestamp($8) where id=$9', prep_args).then(res => {
+                console.log(res)
                 if (res.rowCount > 0) {
-                    return true
+                    return {
+                        success: true
+                    }
                 }
-                return false
+                
+                return {
+                    success: false,
+                    msg: 'update did not happen'
+                }
             }).catch(e => {
                 console.log(e)
-                return false
+                return {
+                    success: false,
+                    msg: 'error updating'
+                }
             })
 
-            return {
-                success: ret
-            }
+            return ret
         },
         update_instructor: async (parent, args) => {
             console.log(args)
