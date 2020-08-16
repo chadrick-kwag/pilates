@@ -219,6 +219,17 @@ const SEARCH_INSTRUCTOR_WITH_NAME = gql`query search_instructors($name: String!)
 //     }
 // }`
 
+const CREATE_CLIENT_GQL = gql`mutation  createclient($name: String!, $phonenumber: String!, $email: String, $job: String, $memo: String, $address: String, $gender: String, $birthdate: String){
+    createclient(name: $name, phonenumber: $phonenumber, email: $email, job: $job, memo: $memo, address: $address, gender: $gender, birthdate: $birthdate){
+
+        success
+        msg
+    }
+}`
+
+
+
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -239,6 +250,7 @@ export {
     QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID,
     SEARCH_CLIENT_WITH_NAME,
     SEARCH_INSTRUCTOR_WITH_NAME,
-    CREATE_INDIVIDUAL_LESSON_GQL
-
+    CREATE_INDIVIDUAL_LESSON_GQL,
+    CREATE_CLIENT_GQL
+    
 }

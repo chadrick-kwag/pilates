@@ -137,7 +137,7 @@ const typeDefs = gql`
   }
 
   type Mutation{
-      createclient(name: String!, phonenumber: String!): Client
+      createclient(name: String!, phonenumber: String!, email: String, birthdate: String, memo: String, address: String, gender: String, job: String ): SuccessResult
       deleteclient(id: Int!): SuccessResult
       createinstructor(name: String!, phonenumber: String!): SuccessResult
       deleteinstructor(id: Int!): SuccessResult
@@ -384,17 +384,41 @@ const resolvers = {
         createclient: async (parent, args) => {
             console.log(args)
 
-            let ret = await pgclient.query("insert into pilates.client (name, phonenumber, created) values ($1, $2, now()) returning id,name,phonenumber", [args.name, args.phonenumber]).then(res => {
+            let gender = null
+            if(args.gender.toLowerCase() == "male"){
+                gender = 'MALE'
+            }
+            else if(args.gender.toLowerCase()== "female"){
+                gender = 'FEMALE'
+            }
+
+            let pre_args = [args.name, args.phonenumber, gender, args.job, args.address, args.memo, args.email, incoming_time_string_to_postgres_epoch_time(args.birthdate) ]
+
+            console.log(pre_args)
+
+            let ret = await pgclient.query("insert into pilates.client (name, phonenumber, gender, job, address, memo, email, birthdate) values ($1, $2, $3, $4, $5, $6, $7, to_timestamp($8))", [args.name, args.phonenumber, gender, args.job, args.address, args.memo, args.email, incoming_time_string_to_postgres_epoch_time(args.birthdate) ]).then(res => {
                 console.log(res)
-                return res.rows[0]
+                
+                if(res.rowCount>0){
+                    return {
+                        success: true
+                    }
+                }
+                
+                return {
+                    success: false,
+                    msg: 'failed to insert'
+                }
             }).catch(err => {
-                return {}
+                return {
+                    success: false,
+                    msg: 'error inserting query'
+                }
             })
 
             // let user = await pgclient.query("select * from pilates.client where")
 
             return ret
-
 
         },
         deleteclient: async (parent, args) => {

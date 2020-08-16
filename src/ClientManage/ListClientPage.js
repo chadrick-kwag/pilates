@@ -123,11 +123,6 @@ class ListClientPage extends React.Component {
                         <td>
                             <div>
                                 <Button onClick={e => {
-                                    this.setState({
-                                        edit_target_client: d
-                                    })
-                                }}>edit</Button>
-                                <Button onClick={e => {
                                     console.log('try deleting ' + d.id)
                                     this.props.apolloclient.mutate({
                                         mutation: DELETE_CLIENT_GQL,
@@ -148,7 +143,13 @@ class ListClientPage extends React.Component {
                                         console.log(e)
                                         console.log(e.data)
                                         console.log(JSON.stringify(e, null, 2));
-                                    })
+                                    }
+
+                                    )
+
+
+                                    e.stopPropagation()
+
                                 }}>delete</Button>
                             </div>
                         </td>
