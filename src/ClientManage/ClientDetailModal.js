@@ -7,6 +7,21 @@ import {UPDATE_CLIENT_INFO_GQL} from '../common/gql_defs'
 import {extract_date_from_birthdate_str} from './CreateClientPage'
 
 
+
+function convert_gender_type_to_kor_str(gender_type_str){
+    if(gender_type_str==null){
+        return null
+    }
+    else if(gender_type_str.toLowerCase()=='male'){
+        return '남'
+    }
+    else if(gender_type_str.toLowerCase()=='female'){
+        return '여'
+    }
+
+    return null
+}
+
 class ClientDetailModal extends React.Component {
 
     constructor(props) {
@@ -235,7 +250,7 @@ class ClientDetailModal extends React.Component {
                 </tr>
                 <tr>
                     <td>성별</td>
-                    <td>{this.props.client.gender}</td>
+                    <td>{convert_gender_type_to_kor_str(this.props.client.gender)}</td>
                 </tr>
                 <tr>
                     <td>생년월일</td>
@@ -265,7 +280,7 @@ class ClientDetailModal extends React.Component {
                 </tr>
                 <tr>
                     <td>메모</td>
-                    <td>{this.props.client.memo}</td>
+                    <td><Form.Control readOnly value={this.props.client.memo} as='textarea' rows='5'  /></td>
                 </tr>
                 <tr>
                     <td>플랜목록</td>
