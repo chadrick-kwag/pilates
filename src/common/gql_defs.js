@@ -229,6 +229,20 @@ const CREATE_CLIENT_GQL = gql`mutation  createclient($name: String!, $phonenumbe
 }`
 
 
+// query_all_subscriptions_with_remainrounds_for_clientid
+const FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query a($clientid: Int!){
+    query_all_subscriptions_with_remainrounds_for_clientid(clientid: $clientid){
+        success
+        msg
+        allSubscriptionsWithRemainRounds{
+            subscription_id
+            total_rounds
+            remain_rounds
+            created
+        }
+    }
+}`
+
 
 
 export {
@@ -252,6 +266,7 @@ export {
     SEARCH_CLIENT_WITH_NAME,
     SEARCH_INSTRUCTOR_WITH_NAME,
     CREATE_INDIVIDUAL_LESSON_GQL,
-    CREATE_CLIENT_GQL
+    CREATE_CLIENT_GQL,
+    FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID
     
 }

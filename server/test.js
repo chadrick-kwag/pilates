@@ -102,7 +102,7 @@ const typeDefs = gql`
   # case, the "books" query returns an array of zero or more Books (defined above).
 
   type SuccessAndLessons {
-      success: Boolean,
+      success: Boolean
       lessons: [Lesson]
   }
 
@@ -118,6 +118,20 @@ const typeDefs = gql`
       clients: [Client]
   }
 
+  type AllSubscriptionsWithRemainRounds{
+    subscription_id: Int
+    total_rounds: Int
+    remain_rounds: Int
+    created: String
+  }
+
+  type ReturnAllSubscriptionsWithRemainRounds{
+      success: Boolean
+      msg: String
+      allSubscriptionsWithRemainRounds: [AllSubscriptionsWithRemainRounds]
+      
+  }
+
   type Query {
     fetch_clients: SuccessAndClients
     instructors: [Instructor]
@@ -129,6 +143,7 @@ const typeDefs = gql`
     query_lesson_with_timerange_by_instructorid(instructorid: Int!, start_time: String!, end_time: String!): SuccessAndLessons
     query_subscriptions: SuccessAndSubscriptions
     query_subscriptions_with_remainrounds_for_clientid(clientid: Int!, activity_type: String!, grouping_type: String!): ReturnSubscriptionWithRemainRounds
+    query_all_subscriptions_with_remainrounds_for_clientid(clientid: Int!): ReturnAllSubscriptionsWithRemainRounds
   }
 
   type SuccessResult {
@@ -170,6 +185,33 @@ pgclient.connect(err => {
 
 const resolvers = {
     Query: {
+        query_all_subscriptions_with_remainrounds_for_clientid: async (parent, args)=>{
+
+            // console.log(args)
+
+            let result = await pgclient.query("select json_build_object('subscription_id', subscription.id, 'total_rounds', count(subscription_ticket.id),'remain_rounds', subscription.rounds, 'created', subscription.created) from pilates.subscription_ticket left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id  left join pilates.lesson on subscription_ticket.id=lesson.consuming_client_ss_ticket_id  where subscription.clientid=$1 and lesson.id is null  group by subscription.id ORDER BY subscription.created desc",[args.clientid]).then(res=>{
+
+                // console.log(res.rows)
+
+                let json_arr = res.rows.map(d=>d.json_build_object)
+                // console.log(json_arr)
+                return {
+                    success: true,
+                    allSubscriptionsWithRemainRounds: json_arr
+                }
+            }).catch(e=>{
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
+            })
+
+            console.log(result)
+
+            return result
+        },
         fetch_clients: async (parent, args) => {
             let results = await pgclient.query("select id, name, phonenumber, created, job, email, birthdate, address, gender, memo from pilates.client").then(res => {
 
