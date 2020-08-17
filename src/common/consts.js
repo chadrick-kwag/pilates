@@ -15,7 +15,11 @@ const grouping_type_to_kor={
 }
 
 
+const INSTRUCTOR_LEVEL_LIST = ['LV1', 'LV2', 'LV3']
+
+
 export {
     activity_type_to_kor,
-    grouping_type_to_kor
+    grouping_type_to_kor,
+    INSTRUCTOR_LEVEL_LIST
 }

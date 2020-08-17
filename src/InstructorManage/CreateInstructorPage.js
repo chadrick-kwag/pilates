@@ -1,93 +1,259 @@
 import React from 'react'
-import {Form, Button} from 'react-bootstrap'
-import {gql} from '@apollo/client'
+import { Form, Button, Table, DropdownButton, Dropdown, ButtonGroup, ToggleButton } from 'react-bootstrap'
 
-const CREATE_INSTRUCTOR_GQL = gql`mutation createinstructor($name: String!, $phonenumber: String!){
-    createinstructor(name: $name, phonenumber: $phonenumber){
-        success
-    }
-}
-`
+import moment from 'moment'
 
-class CreateInstructorPage extends React.Component{
+import { CREATE_INSTRUCTOR_GQL } from '../common/gql_defs'
+
+import { extract_date_from_birthdate_str } from '../ClientManage/CreateClientPage'
+import { INSTRUCTOR_LEVEL_LIST } from '../common/consts'
 
 
-    constructor(props){
+class CreateInstructorPage extends React.Component {
+
+    constructor(props) {
         super(props)
 
-        this.state={
+        this.state = {
             name: "",
-            phonenumber: ""
+            phonenumber: "",
+            email: "",
+            gender: null,
+            job: "",
+            address: "",
+            memo: "",
+            birthdate: "",
+            level: null,
+            validation_date: null,
+            is_apprentice: null
         }
 
-        this.createcallback = this.createcallback.bind(this)
-        this.check_inputs = this.check_inputs.bind(this)
+        this.submitcallback = this.submitcallback.bind(this)
     }
 
 
-    check_inputs(){
 
-        if(this.state.name.trim()==""){
-            return false
+    check_input() {
+
+        // necessary values
+
+        if (this.state.name.trim() == "") {
+            return 'invalid name'
         }
 
-        if(this.state.phonenumber.trim()==""){
-            return false
+        if (this.state.phonenumber.trim() == "") {
+            return 'invalid phone number'
+        }
+        if (this.state.birthdate.trim() != "") {
+            if (extract_date_from_birthdate_str(this.state.birthdate) == null) {
+                return 'invalid birthdate'
+            }
+
         }
 
-        return true
+        return null
     }
 
-    createcallback(){
 
-        if(!this.check_inputs()){
-            return alert('invalid input')
-            
+    submitcallback() {
+
+
+        let check_msg = this.check_input()
+
+        if (check_msg != null) {
+            return alert('invalid input\n' + check_msg)
         }
+
+
+        let birthdate_date = extract_date_from_birthdate_str(this.state.birthdate)
+
+        console.log(birthdate_date)
+
+
+        let birthdate_str = birthdate_date.toDate().toUTCString()
+
+
+        let _variables = {
+            name: this.state.name,
+            phonenumber: this.state.phonenumber,
+            job: this.state.job,
+            address: this.state.address,
+            gender: this.state.gender,
+            memo: this.state.memo,
+            birthdate: birthdate_str,
+            email: this.state.email,
+            validation_date: this.state.validation_date,
+            level: this.state.level,
+            is_apprentice: this.state.is_apprentice
+
+        }
+
+        console.log(_variables)
 
         this.props.apolloclient.mutate({
             mutation: CREATE_INSTRUCTOR_GQL,
-            variables:{
-                name: this.state.name,
-                phonenumber: this.state.phonenumber
-            }
-        }).then(d=>{
+            variables: _variables
+        }).then(d => {
             console.log(d)
-            if(d.data.createinstructor.success){
-                console.log("create success")
+            if (d.data.create_instructor.success) {
                 this.props.onSubmitSuccess()
-                return
             }
-
-            console.log("create failed")
-            alert('instructor create failed')
+            else {
+                alert('fail to create\n'+ d.data.create_instructor.msg)
+                this.props.onSubmitFail()
+            }
+            // this.props.changeViewMode('list_client')
         })
-        .catch(e=>{
-            console.log(e)
-            alert('error attempt instructor creation')
-        })
+            .catch(e => {
+                console.log(e)
+                console.log(JSON.stringify(e))
+                // alert('failed to reigster client')
+                alert('error creating instructor')
+                this.props.onSubmitFail()
+            })
     }
 
-    render(){
+
+    render() {
         return <div>
-
             <div>
-                <span>name</span>
-                <Form.Control value={this.state.name}  onChange={e=>this.setState({name: e.target.value})}/>
+                <h2>강사생성</h2>
+
             </div>
 
             <div>
-                <span>phone</span>
-                <Form.Control value={this.state.phonenumber}  onChange={e=>this.setState({phonenumber: e.target.value})}/>
-            </div>
+                <Table className="view-kv-table">
+                    <tr>
+                        <td>이름*</td>
+                        <td><Form.Control value={this.state.name} onChange={e => {
+                            this.setState({
+                                name: e.target.value
+                            })
+                        }} /></td>
+                    </tr>
+                    <tr>
+                        <td>성별</td>
+                        <td>
+                            <div>
+                                <Button variant={this.state.gender == 'male' ? 'warning' : 'light'}
+                                    onClick={e => {
+                                        this.setState({
+                                            gender: "male"
+                                        })
+                                    }}
+                                >남</Button>
+                                <Button variant={this.state.gender == 'female' ? 'warning' : 'light'}
+                                    onClick={e => {
+                                        this.setState({
+                                            gender: "female"
+                                        })
+                                    }}
+                                >여</Button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>레벨</td>
+                        <td><DropdownButton title={this.state.level==null? 'select': this.state.level}>
+                            {INSTRUCTOR_LEVEL_LIST.map(d => <Dropdown.Item onClick={e => this.setState({
+                                level: d
+                            })}>
+                                {d}
+                            </Dropdown.Item>)}
+                        </DropdownButton></td>
+                    </tr>
+                    <tr>
+                        <td>생년월일</td>
+                        <td><Form.Control value={this.state.birthdate} onChange={e => {
+                            this.setState({
+                                birthdate: e.target.value
+                            })
+                        }} /></td>
+                    </tr>
+                    <tr>
+                        <td>연락처*</td>
+                        <td><Form.Control value={this.state.phonenumber} onChange={e => {
+                            this.setState({
+                                phonenumber: e.target.value
+                            })
+                        }} /></td>
+                    </tr>
+                    <tr>
+                        <td>견습생 여부</td>
+                        <td>
+                            <ButtonGroup toggle>
+                                {[['예',true],['아니오', false]].map((d,i)=>{
+                                    
+                                    return <ToggleButton
+                                    key={i}
+                                    type="radio"
+                                    value={d[1]}
+                                    checked={this.state.is_apprentice==d[1]}
+                                    onChange={e=>this.setState({
+                                        is_apprentice: d[1]
+                                    })}
+                                    >
+                                        {d[0]}
+                                    </ToggleButton>
+                                })}
 
+                            </ButtonGroup>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>주소</td>
+                        <td>
+                            <Form.Control value={this.state.address} onChange={e => {
+                                this.setState({
+                                    address: e.target.value
+                                })
+                            }} />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>이메일</td>
+                        <td>
+                            <Form.Control value={this.state.email} onChange={e => {
+                                this.setState({
+                                    email: e.target.value
+                                })
+                            }} />
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>직업</td>
+                        <td>
+                            <Form.Control value={this.state.job} onChange={e => {
+                                this.setState({
+                                    job: e.target.value
+                                })
+                            }} />
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>메모</td>
+                        <td><Form.Control as='textarea' rows='5' value={this.state.memo} onChange={e => {
+                            this.setState({
+                                memo: e.target.value
+                            })
+
+                        }} /></td>
+                    </tr>
+
+
+
+                </Table>
+
+            </div>
             <div>
-                <Button onClick={e=>this.props.onCancelClick()}>cancel</Button>
-                <Button onClick={e=>this.createcallback()}>create</Button>
+                <Button onClick={e => this.props.cancelBtnCallback()}>cancel</Button>
+                <Button onClick={e => this.submitcallback()}>submit</Button>
             </div>
-
         </div>
     }
 }
 
 export default CreateInstructorPage
+

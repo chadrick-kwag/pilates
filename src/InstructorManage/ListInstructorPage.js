@@ -1,7 +1,9 @@
 import React from 'react'
 import { Table, Button, Form } from 'react-bootstrap'
-import InstructorInfoEditModal from './InstructorInfoEditModal'
+// import InstructorInfoEditModal from './InstructorInfoEditModal'
 import moment from 'moment'
+
+import InstructorDetailModal from './InstructorDetailModal'
 
 
 
@@ -20,6 +22,7 @@ class ListInstructorPage extends React.Component {
         this.state = {
             data: [],
             edit_target_instructor: null,
+            detail_target_instructor: null,
             search_name: ""
         }
 
@@ -56,6 +59,23 @@ class ListInstructorPage extends React.Component {
 
     render() {
 
+        let detail_view_modal = null
+
+        if (this.state.detail_target_instructor != null) {
+            detail_view_modal = <InstructorDetailModal instructor={this.state.detail_target_instructor}
+                onCancel={() => this.setState({
+                    detail_target_instructor: null
+                })}
+                onEditSuccess={() => {
+                    this.setState({
+                        detail_target_instructor: null
+                    }, () => {
+                        this.fetchdata()
+                    })
+                }}
+            />
+        }
+
 
         let visible_data
         if (this.state.search_name.trim() == "") {
@@ -78,14 +98,21 @@ class ListInstructorPage extends React.Component {
                     <td>action</td>
                 </thead>
                 <tbody>
-                    {visible_data.map(d => <tr>
+                    {visible_data.map(d => <tr onClick={e => this.setState({
+                        detail_target_instructor: d
+                    })}>
                         <td>{d.id}</td>
                         <td>{d.name}</td>
                         <td>{d.phonenumber}</td>
                         <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
                         <td><div>
-                            
+
                             <Button onClick={e => {
+                                e.stopPropagation()
+                                let ret = confirm('delete?')
+                                if (!ret) {
+                                    return
+                                }
                                 this.props.apolloclient.mutate({
                                     mutation: DELETE_INSTRUCTOR_GQL,
                                     variables: {
@@ -103,7 +130,7 @@ class ListInstructorPage extends React.Component {
                                     console.log('error deleting instructor')
 
                                 })
-                                e.stopPropagation()
+
                             }}>delete</Button></div></td>
                     </tr>)}
                 </tbody>
@@ -116,22 +143,8 @@ class ListInstructorPage extends React.Component {
 
 
         return <div>
-            {this.state.edit_target_instructor == null ? null : <InstructorInfoEditModal
-                apolloclient={this.props.apolloclient}
-                onSubmitSuccess={() => {
-                    this.setState({
-                        edit_target_instructor: null
-                    }, () => {
-                        this.fetchdata()
-                    })
-                }}
-                instructor={this.state.edit_target_instructor}
-                onCancelClick={() => {
-                    this.setState({
-                        edit_target_instructor: null
-                    })
-                }}
-            />}
+            {detail_view_modal}
+
             <div style={{ display: "flex", flexDirection: "row" }}>
                 <span>이름검색</span>
                 <Form.Control style={{ width: "200px" }} value={this.state.search_name} onChange={e => this.setState({

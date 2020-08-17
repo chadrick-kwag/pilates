@@ -12,6 +12,35 @@ function incoming_time_string_to_postgres_epoch_time(time_str) {
     return a.getTime() / 1000
 }
 
+
+function parse_incoming_gender_str(gender_str){
+    if(gender_str == null){
+        return null
+    }
+  
+    let gender = null
+    if (gender_str.toLowerCase() == 'male') {
+        gender = 'MALE'
+    }
+    else if (gender_str.toLowerCase() == 'female') {
+        gender = 'FEMALE'
+    }
+
+    return gender
+    
+}
+
+function parse_incoming_date_utc_string(date_utc_str){
+    // return epoch seconds
+    if(date_utc_str==null){
+        return null
+    }
+
+    return new Date(date_utc_str).getTime()/1000
+
+    
+}
+
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data.
@@ -156,7 +185,9 @@ const typeDefs = gql`
   type Mutation{
       createclient(name: String!, phonenumber: String!, email: String, birthdate: String, memo: String, address: String, gender: String, job: String ): SuccessResult
       deleteclient(id: Int!): SuccessResult
-      createinstructor(name: String!, phonenumber: String!): SuccessResult
+
+      create_instructor(name: String!, phonenumber: String!, email: String, job: String, validation_date: String, memo: String, address: String, birthdate: String, is_apprentice: Boolean, level: String, gender: String): SuccessResult
+      
       deleteinstructor(id: Int!): SuccessResult
       
       create_lesson(clientids:[Int!], instructorid: Int!, start_time: String!, end_time: String!): SuccessResult
@@ -482,15 +513,33 @@ const resolvers = {
 
             return { success: ret }
         },
-        createinstructor: async (parent, args) => {
-            console.log('inside create instructor')
-            let ret = await pgclient.query('insert into pilates.instructor (name, phonenumber, created) values ($1, $2, now())', [args.name, args.phonenumber]).then(res => {
-                if (res.rowCount > 0) return true
+        create_instructor: async (parent, args) => {
 
-                return false
-            }).catch(e => false)
+            console.log(args)
 
-            return { success: ret }
+            let _args = [args.name, args.phonenumber, parse_incoming_gender_str(args.gender), args.email, args.job, parse_incoming_date_utc_string(args.validation_date), args.is_apprentice, args.memo, args.address, parse_incoming_date_utc_string(args.birthdate), args.level]
+
+            console.log(_args)
+
+            let ret = await pgclient.query('insert into pilates.instructor (name, phonenumber, gender, email, job, validation_date, is_apprentice, memo, address, birthdate, level) values ($1, $2, $3, $4, $5, to_timestamp($6), $7, $8, $9, to_timestamp($10), $11)', _args).then(res => {
+                if (res.rowCount > 0) return {
+                    success: true
+                }
+
+                return {
+                    success: false,
+                    msg: 'query failed'
+                }
+            }).catch(e =>{
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: "query error"
+                }
+            })
+
+            return ret
 
         },
         deleteinstructor: async (parent, args) => {

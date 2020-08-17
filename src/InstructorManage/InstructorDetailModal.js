@@ -4,9 +4,9 @@ import _ from 'lodash'
 import moment from 'moment'
 import {UPDATE_INSTRUCTOR_INFO_GQL} from '../common/gql_defs'
 
-import { extract_date_from_birthdate_str } from './CreateClientPage'
+import { extract_date_from_birthdate_str } from '../ClientManage/CreateClientPage'
 
-import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
+
 
 
 
@@ -107,12 +107,12 @@ class InstructorDetailModal extends React.Component {
         }).then(d => {
             console.log(d)
 
-            if (d.data.update_client.success) {
+            if (d.data.update_instructor.success) {
                 console.log('update success')
                 this.props.onEditSuccess()
             }
             else {
-                alert('edit update failed\n' + d.data.update_client.msg)
+                alert('edit update failed\n' + d.data.update_instructor.msg)
             }
         }).catch(e => {
             console.log(e)
@@ -133,11 +133,11 @@ class InstructorDetailModal extends React.Component {
                 <tr>
                     <td>이름</td>
                     <td><Form.Control value={this.state.edit_instructor.name} onChange={e => {
-                        let updated_client = this.state.edit_instructor
-                        updated_client.name = e.target.value
+                        let updated_instructor = this.state.edit_instructor
+                        updated_instructor.name = e.target.value
 
                         this.setState({
-                            edit_client: updated_client
+                            edit_client: updated_instructor
                         })
                     }} /></td>
                 </tr>
@@ -147,23 +147,23 @@ class InstructorDetailModal extends React.Component {
                         <div>
                             <Button variant={this.state.edit_instructor.gender == 'male' ? 'warning' : 'light'}
                                 onClick={e => {
-                                    let updated_client = this.state.edit_instructor
-                                    updated_client.gender = 'male'
+                                    let updated_instructor = this.state.edit_instructor
+                                    updated_instructor.gender = 'male'
 
                                     this.setState({
-                                        edit_client: updated_client
+                                        edit_client: updated_instructor
                                     })
                                 }}
                             >남</Button>
                             <Button variant={this.state.edit_instructor.gender == 'female' ? 'warning' : 'light'}
                                 onClick={e => {
-                                    let updated_client = this.state.edit_instructor
-                                    updated_client.gender = 'female'
+                                    let updated_instructor = this.state.edit_instructor
+                                    updated_instructor.gender = 'female'
                                     console.log('updated_client')
-                                    console.log(updated_client)
+                                    console.log(updated_instructor)
 
                                     this.setState({
-                                        edit_client: updated_client
+                                        edit_client: updated_instructor
                                     })
                                 }}
                             >여</Button>
@@ -173,21 +173,21 @@ class InstructorDetailModal extends React.Component {
                 <tr>
                     <td>생년월일</td>
                     <td><Form.Control value={this.state.edit_instructor.birthdate} onChange={e => {
-                        let newclient = this.state.edit_instructor
-                        newclient.birthdate = e.target.value
+                        let updated_instructor = this.state.edit_instructor
+                        updated_instructor.birthdate = e.target.value
                         this.setState({
-                            edit_client: newclient
+                            edit_client: updated_instructor
                         })
                     }} /></td>
                 </tr>
                 <tr>
                     <td>연락처</td>
                     <td><Form.Control value={this.state.edit_instructor.phonenumber} onChange={e => {
-                        let updated_client = this.state.edit_instructor
-                        updated_client.phonenumber = e.target.value
+                        let updated_instructor = this.state.edit_instructor
+                        updated_instructor.phonenumber = e.target.value
 
                         this.setState({
-                            edit_client: updated_client
+                            edit_client: updated_instructor
                         })
                     }} /></td>
                 </tr>
@@ -195,10 +195,10 @@ class InstructorDetailModal extends React.Component {
                     <td>주소</td>
                     <td>
                         <Form.Control value={this.state.edit_instructor.address} onChange={e => {
-                            let newclient = this.state.edit_instructor
-                            newclient.address = e.target.value
+                            let updated_instructor = this.state.edit_instructor
+                            updated_instructor.address = e.target.value
                             this.setState({
-                                edit_client: newclient
+                                edit_client: updated_instructor
                             })
                         }} />
                     </td>
@@ -207,10 +207,10 @@ class InstructorDetailModal extends React.Component {
                     <td>이메일</td>
                     <td>
                         <Form.Control value={this.state.edit_instructor.email} onChange={e => {
-                            let newclient = this.state.edit_instructor
-                            newclient.email = e.target.value
+                            let updated_instructor = this.state.edit_instructor
+                            updated_instructor.email = e.target.value
                             this.setState({
-                                edit_client: newclient
+                                edit_client: updated_instructor
                             })
                         }} />
 
@@ -220,10 +220,10 @@ class InstructorDetailModal extends React.Component {
                     <td>직업</td>
                     <td>
                         <Form.Control value={this.state.edit_instructor.job} onChange={e => {
-                            let newclient = this.state.edit_instructor
-                            newclient.job = e.target.value
+                            let updated_instructor = this.state.edit_instructor
+                            updated_instructor.job = e.target.value
                             this.setState({
-                                edit_client: newclient
+                                edit_client: updated_instructor
                             })
                         }} />
 
@@ -232,10 +232,10 @@ class InstructorDetailModal extends React.Component {
                 <tr>
                     <td>메모</td>
                     <td><Form.Control as='textarea' rows='5' value={this.state.edit_instructor.memo} onChange={e => {
-                        let newclient = this.state.edit_instructor
-                        newclient.memo = e.target.value
+                        let updated_instructor = this.state.edit_instructor
+                        updated_instructor.memo = e.target.value
                         this.setState({
-                            edit_client: newclient
+                            edit_client: updated_instructor
                         })
 
                     }} /></td>
@@ -246,83 +246,51 @@ class InstructorDetailModal extends React.Component {
         }
         else {
 
-            let plan_list_comp = <div>
-                <Spinner animation='border' />
-            </div>
-
-            if (this.state.subscription_info_arr != null) {
-                if (this.state.subscription_info_arr.length == 0) {
-                    plan_list_comp = <div>
-                        <span>no plans found</span>
-                    </div>
-                }
-                else {
-
-                    plan_list_comp = <Table>
-                        <thead>
-                            <th>생성일</th>
-                            <th>종류</th>
-                            <th>rounds</th>
-                        </thead>
-                        <tbody>
-                            {this.state.subscription_info_arr.map(d => <tr>
-                                <td>{moment(new Date(d.created)).format('YYYY-MM-DD HH:mm')}</td>
-                                <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
-                                <td>{d.remain_rounds}/{d.total_rounds}</td>
-                            </tr>)}
-                        </tbody>
-                    </Table>
-                }
-            }
-
 
             body = <Table className="view-kv-table">
                 <tr>
                     <td>id</td>
-                    <td>{this.props.client.id}</td>
+                    <td>{this.props.instructor.id}</td>
                 </tr>
                 <tr>
                     <td>이름</td>
-                    <td>{this.props.client.name}</td>
+                    <td>{this.props.instructor.name}</td>
                 </tr>
                 <tr>
                     <td>성별</td>
-                    <td>{convert_gender_type_to_kor_str(this.props.client.gender)}</td>
+                    <td>{convert_gender_type_to_kor_str(this.props.instructor.gender)}</td>
                 </tr>
                 <tr>
                     <td>생년월일</td>
                     <td>{
-                        this.props.client.birthdate == null ? null : moment(new Date(parseInt(this.props.client.birthdate))).format('YYYY-MM-DD')
+                        this.props.instructor.birthdate == null ? null : moment(new Date(parseInt(this.props.instructor.birthdate))).format('YYYY-MM-DD')
                     }</td>
                 </tr>
                 <tr>
                     <td>연락처</td>
-                    <td>{this.props.client.phonenumber}</td>
+                    <td>{this.props.instructor.phonenumber}</td>
                 </tr>
                 <tr>
                     <td>주소</td>
-                    <td>{this.props.client.address}</td>
+                    <td>{this.props.instructor.address}</td>
                 </tr>
                 <tr>
                     <td>이메일</td>
-                    <td>{this.props.client.email}</td>
+                    <td>{this.props.instructor.email}</td>
                 </tr>
                 <tr>
                     <td>직업</td>
-                    <td>{this.props.client.job}</td>
+                    <td>{this.props.instructor.job}</td>
                 </tr>
                 <tr>
                     <td>등록일</td>
-                    <td>{moment(new Date(parseInt(this.props.client.created))).format('YYYY-MM-DD HH:mm')}</td>
+                    <td>{moment(new Date(parseInt(this.props.instructor.created))).format('YYYY-MM-DD HH:mm')}</td>
                 </tr>
                 <tr>
                     <td>메모</td>
-                    <td><Form.Control readOnly value={this.props.client.memo} as='textarea' rows='5' /></td>
+                    <td><Form.Control readOnly value={this.props.instructor.memo} as='textarea' rows='5' /></td>
                 </tr>
-                <tr>
-                    <td>플랜목록</td>
-                    <td>{plan_list_comp}</td>
-                </tr>
+                
 
 
             </Table>
@@ -337,7 +305,7 @@ class InstructorDetailModal extends React.Component {
 
                     this.setState({
                         edit_mode: false,
-                        edit_client: _.cloneDeep(this.props.client)
+                        edit_instructor: _.cloneDeep(this.props.instructor)
                     })
                 }}>cancel</Button>
                 <Button onClick={e => this.onsubmit()}>submit</Button>

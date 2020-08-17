@@ -246,6 +246,17 @@ const FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query a($clie
 }`
 
 
+const CREATE_INSTRUCTOR_GQL = gql`mutation a($name: String!, $phonenumber: String!, $job: String, $address: String, $birthdate: String, $validation_date: String, $gender: String, $email: String, $memo: String, $level: String, $is_apprentice: Boolean){
+
+    create_instructor(name: $name, phonenumber: $phonenumber, job: $job, gender: $gender, address: $address, birthdate: $birthdate, validation_date: $validation_date, email: $email, memo: $memo, level: $level, is_apprentice: $is_apprentice){
+        success
+        msg
+    }
+    
+
+}`
+
+
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
@@ -269,6 +280,7 @@ export {
     SEARCH_INSTRUCTOR_WITH_NAME,
     CREATE_INDIVIDUAL_LESSON_GQL,
     CREATE_CLIENT_GQL,
-    FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID
+    FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID,
+    CREATE_INSTRUCTOR_GQL
     
 }
