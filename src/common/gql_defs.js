@@ -120,11 +120,26 @@ const UPDATE_CLIENT_INFO_GQL = gql`mutation updateclient($id: Int!, $name: Strin
 
 
 const LIST_INSTRUCTOR_GQL = gql`query instructors{
-    instructors{
-        id
-        name
-        phonenumber
-        created
+    fetch_instructors{
+        success
+        msg
+        instructors{
+            id
+            name
+            phonenumber
+            created
+            job
+            memo
+            address
+            level
+            validated_date
+            gender
+            email
+            birthdate
+            is_apprentice
+        }
+        
+
     }
 } `
 
@@ -282,5 +297,5 @@ export {
     CREATE_CLIENT_GQL,
     FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID,
     CREATE_INSTRUCTOR_GQL
-    
+
 }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Table, Button, Form } from 'react-bootstrap'
+import { Table, Button, Form, Spinner } from 'react-bootstrap'
 // import InstructorInfoEditModal from './InstructorInfoEditModal'
 import moment from 'moment'
 
@@ -30,24 +30,27 @@ class ListInstructorPage extends React.Component {
     }
 
     fetchdata() {
+        console.log('inside fetchdata')
         this.props.apolloclient.query({
             query: LIST_INSTRUCTOR_GQL,
             fetchPolicy: "no-cache"
         }).then(d => {
             console.log(d)
-            if (d.data.instructors) {
+            if (d.data.fetch_instructors.success) {
                 this.setState({
-                    data: d.data.instructors
+                    data: d.data.fetch_instructors.instructors
                 })
                 return
             }
 
             console.log('failed to fetch data')
+            alert('fetch data failed')
 
 
         })
             .catch(e => {
                 console.log(e)
+                console.log(JSON.stringify(e))
                 alert('failed to fetch data from server')
             })
     }
@@ -87,8 +90,12 @@ class ListInstructorPage extends React.Component {
 
         let table_area
 
-
-        if (this.state.data != null) {
+        if(this.state.data == null){
+            table_area = <div className='row-gravity-center'>
+                <Spinner animation='border'/>
+            </div>
+        }
+        else if (this.state.data != null) {
             table_area = <Table className='row-clickable-table'>
                 <thead>
                     <td>id</td>

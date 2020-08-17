@@ -110,10 +110,26 @@ const typeDefs = gql`
   }
 
   type Instructor {
-      id: String
-      name: String
-      phonenumber: String
+      id: String!
+      name: String!
+      phonenumber: String!
       created: String
+      memo: String
+      job: String
+      email: String
+      validated_date: String
+      birthdate: String
+      is_apprentice: Boolean
+      level: String
+      address: String
+      gender: String
+  }
+
+  type SuccessAndInstructors{
+
+    success: Boolean
+    msg: String
+    instructors: [Instructor]
   }
 
   type Lesson {
@@ -165,7 +181,7 @@ const typeDefs = gql`
 
   type Query {
     fetch_clients: SuccessAndClients
-    instructors: [Instructor]
+    fetch_instructors: SuccessAndInstructors
     search_client_with_name(name: String!): [Client]
     search_instructor_with_name(name: String!): [Instructor]
     query_all_lessons: [Lesson]
@@ -261,12 +277,26 @@ const resolvers = {
 
             return results
         },
-        instructors: async () => {
-            let results = await pgclient.query("select * from pilates.instructor").then(res => {
-                return res.rows
-            }).catch(e => [])
+        fetch_instructors: async () => {
+            let result = await pgclient.query("select id,name,phonenumber, created, is_apprentice, birthdate, validated_date, memo, job, address, email, gender from pilates.instructor").then(res => {
 
-            return results
+                console.log(res)
+
+                return {
+                    success: true,
+                    instructors: res.rows
+                    
+                }
+            }).catch(e => {
+             console.log(e)
+             return {
+                 success: false,
+                 msg: 'query error'
+
+             }
+            })
+
+            return result
         },
         search_client_with_name: async (parent, args, context, info) => {
             console.log(args)
