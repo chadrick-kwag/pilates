@@ -1,23 +1,22 @@
 import React from 'react'
-import { Form, Modal, Button, Table, Spinner } from 'react-bootstrap'
+import { Form, Modal, Button, Table, Spinner, Dropdown, ToggleButton, DropdownButton, ButtonGroup } from 'react-bootstrap'
 import _ from 'lodash'
 import moment from 'moment'
 import { UPDATE_INSTRUCTOR_INFO_GQL } from '../common/gql_defs'
 
 import { extract_date_from_birthdate_str } from '../ClientManage/CreateClientPage'
+import { INSTRUCTOR_LEVEL_LIST } from '../common/consts'
 
-function convert_is_apprentice_to_str(ia_val){
-    if(ia_val == null){
+function convert_is_apprentice_to_str(ia_val) {
+    if (ia_val == null) {
         return 'N/A'
     }
-    else if(ia_val == true){
+    else if (ia_val == true) {
         return '예'
     }
-    else if(ia_val == false){
+    else if (ia_val == false) {
         return '아니오'
     }
-
-
 
 }
 
@@ -46,11 +45,10 @@ class InstructorDetailModal extends React.Component {
             base_instructor: this.props.instructor,
             edit_mode: false,
             edit_instructor: this.modify_prop_instructor_for_init_edit_instructor(_.cloneDeep(this.props.instructor)),
-
-
         }
 
-
+        console.log('edit instructor')
+        console.log(this.state.edit_instructor)
 
         this.check_edit_inputs = this.check_edit_inputs.bind(this)
     }
@@ -150,7 +148,7 @@ class InstructorDetailModal extends React.Component {
                         updated_instructor.name = e.target.value
 
                         this.setState({
-                            edit_client: updated_instructor
+                            edit_instructor: updated_instructor
                         })
                     }} /></td>
                 </tr>
@@ -164,7 +162,7 @@ class InstructorDetailModal extends React.Component {
                                     updated_instructor.gender = 'male'
 
                                     this.setState({
-                                        edit_client: updated_instructor
+                                        edit_instructor: updated_instructor
                                     })
                                 }}
                             >남</Button>
@@ -176,7 +174,7 @@ class InstructorDetailModal extends React.Component {
                                     console.log(updated_instructor)
 
                                     this.setState({
-                                        edit_client: updated_instructor
+                                        edit_instructor: updated_instructor
                                     })
                                 }}
                             >여</Button>
@@ -189,7 +187,7 @@ class InstructorDetailModal extends React.Component {
                         let updated_instructor = this.state.edit_instructor
                         updated_instructor.birthdate = e.target.value
                         this.setState({
-                            edit_client: updated_instructor
+                            edit_instructor: updated_instructor
                         })
                     }} /></td>
                 </tr>
@@ -200,7 +198,61 @@ class InstructorDetailModal extends React.Component {
                         updated_instructor.phonenumber = e.target.value
 
                         this.setState({
-                            edit_client: updated_instructor
+                            edit_instructor: updated_instructor
+                        })
+                    }} /></td>
+                </tr>
+                <tr>
+                    <td>레벨</td>
+                    <td>
+                        <DropdownButton title={this.state.edit_instructor.level == null ? 'select' : this.state.edit_instructor.level}>
+                            {INSTRUCTOR_LEVEL_LIST.map(d => <Dropdown.Item onClick={e => {
+                                let updated_instructor = this.state.edit_instructor
+                                updated_instructor.level = d
+                                this.setState({
+                                    edit_instructor: updated_instructor
+                                })
+                            }}>
+                                {d}
+                            </Dropdown.Item>)}
+                        </DropdownButton>
+                    </td>
+                </tr>
+                <tr>
+                    <td>견습생</td>
+                    <td>
+                        <ButtonGroup toggle>
+                            {[['예', true], ['아니오', false]].map((d, i) => {
+
+                                return <ToggleButton
+                                    key={i}
+                                    type="radio"
+                                    value={d[1]}
+                                    checked={this.state.edit_instructor.is_apprentice == d[1]}
+                                    onChange={e => {
+                                        let updated = this.state.edit_instructor
+
+                                        updated.is_apprentice = d[1]
+                                        this.setState({
+                                            edit_instructor: updated
+                                        })
+                                    }}
+                                >
+                                    {d[0]}
+                                </ToggleButton>
+                            })}
+
+                        </ButtonGroup>
+                    </td>
+                </tr>
+                <tr>
+                    <td>자격증취득일</td>
+                    <td><Form.Control value={this.state.edit_instructor.validation_date} onChange={e => {
+                        let updated_instructor = this.state.edit_instructor
+                        updated_instructor.validation_date = e.target.value
+
+                        this.setState({
+                            edit_instructor: updated_instructor
                         })
                     }} /></td>
                 </tr>
@@ -211,7 +263,7 @@ class InstructorDetailModal extends React.Component {
                             let updated_instructor = this.state.edit_instructor
                             updated_instructor.address = e.target.value
                             this.setState({
-                                edit_client: updated_instructor
+                                edit_instructor: updated_instructor
                             })
                         }} />
                     </td>
@@ -223,7 +275,7 @@ class InstructorDetailModal extends React.Component {
                             let updated_instructor = this.state.edit_instructor
                             updated_instructor.email = e.target.value
                             this.setState({
-                                edit_client: updated_instructor
+                                edit_instructor: updated_instructor
                             })
                         }} />
 
@@ -236,7 +288,7 @@ class InstructorDetailModal extends React.Component {
                             let updated_instructor = this.state.edit_instructor
                             updated_instructor.job = e.target.value
                             this.setState({
-                                edit_client: updated_instructor
+                                edit_instructor: updated_instructor
                             })
                         }} />
 
@@ -248,7 +300,7 @@ class InstructorDetailModal extends React.Component {
                         let updated_instructor = this.state.edit_instructor
                         updated_instructor.memo = e.target.value
                         this.setState({
-                            edit_client: updated_instructor
+                            edit_instructor: updated_instructor
                         })
 
                     }} /></td>

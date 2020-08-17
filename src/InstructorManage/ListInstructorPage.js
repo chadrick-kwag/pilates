@@ -65,7 +65,9 @@ class ListInstructorPage extends React.Component {
         let detail_view_modal = null
 
         if (this.state.detail_target_instructor != null) {
-            detail_view_modal = <InstructorDetailModal instructor={this.state.detail_target_instructor}
+            detail_view_modal = <InstructorDetailModal
+                apolloclient={this.props.apolloclient}
+                instructor={this.state.detail_target_instructor}
                 onCancel={() => this.setState({
                     detail_target_instructor: null
                 })}
@@ -90,9 +92,9 @@ class ListInstructorPage extends React.Component {
 
         let table_area
 
-        if(this.state.data == null){
+        if (this.state.data == null) {
             table_area = <div className='row-gravity-center'>
-                <Spinner animation='border'/>
+                <Spinner animation='border' />
             </div>
         }
         else if (this.state.data != null) {
