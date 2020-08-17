@@ -132,9 +132,11 @@ class ListInstructorPage extends React.Component {
                                     }
 
                                     console.log('failed to delete instructor')
+                                    alert('failed to delete instructor')
                                 }).catch(e => {
                                     console.log(JSON.stringify(e))
                                     console.log('error deleting instructor')
+                                    alert('error deleteing instructor')
 
                                 })
 

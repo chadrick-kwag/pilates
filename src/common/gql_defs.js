@@ -132,7 +132,7 @@ const LIST_INSTRUCTOR_GQL = gql`query instructors{
             memo
             address
             level
-            validated_date
+            validation_date
             gender
             email
             birthdate

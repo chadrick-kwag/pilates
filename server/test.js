@@ -117,7 +117,7 @@ const typeDefs = gql`
       memo: String
       job: String
       email: String
-      validated_date: String
+      validation_date: String
       birthdate: String
       is_apprentice: Boolean
       level: String
@@ -278,7 +278,7 @@ const resolvers = {
             return results
         },
         fetch_instructors: async () => {
-            let result = await pgclient.query("select id,name,phonenumber, created, is_apprentice, birthdate, validated_date, memo, job, address, email, gender from pilates.instructor").then(res => {
+            let result = await pgclient.query("select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level from pilates.instructor").then(res => {
 
                 console.log(res)
 

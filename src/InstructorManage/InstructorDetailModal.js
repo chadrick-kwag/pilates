@@ -2,11 +2,24 @@ import React from 'react'
 import { Form, Modal, Button, Table, Spinner } from 'react-bootstrap'
 import _ from 'lodash'
 import moment from 'moment'
-import {UPDATE_INSTRUCTOR_INFO_GQL} from '../common/gql_defs'
+import { UPDATE_INSTRUCTOR_INFO_GQL } from '../common/gql_defs'
 
 import { extract_date_from_birthdate_str } from '../ClientManage/CreateClientPage'
 
+function convert_is_apprentice_to_str(ia_val){
+    if(ia_val == null){
+        return 'N/A'
+    }
+    else if(ia_val == true){
+        return '예'
+    }
+    else if(ia_val == false){
+        return '아니오'
+    }
 
+
+
+}
 
 
 
@@ -33,7 +46,7 @@ class InstructorDetailModal extends React.Component {
             base_instructor: this.props.instructor,
             edit_mode: false,
             edit_instructor: this.modify_prop_instructor_for_init_edit_instructor(_.cloneDeep(this.props.instructor)),
-            
+
 
         }
 
@@ -271,6 +284,18 @@ class InstructorDetailModal extends React.Component {
                     <td>{this.props.instructor.phonenumber}</td>
                 </tr>
                 <tr>
+                    <td>레벨</td>
+                    <td>{this.props.instructor.level}</td>
+                </tr>
+                <tr>
+                    <td>견습생</td>
+                    <td>{convert_is_apprentice_to_str(this.props.instructor.is_apprentice)}</td>
+                </tr>
+                <tr>
+                    <td>자격증취득일</td>
+                    <td>{this.props.instructor.validation_date == null ? null : moment(new Date(parseInt(this.props.instructor.validation_date))).format('YYYY-MM-DD')}</td>
+                </tr>
+                <tr>
                     <td>주소</td>
                     <td>{this.props.instructor.address}</td>
                 </tr>
@@ -290,7 +315,7 @@ class InstructorDetailModal extends React.Component {
                     <td>메모</td>
                     <td><Form.Control readOnly value={this.props.instructor.memo} as='textarea' rows='5' /></td>
                 </tr>
-                
+
 
 
             </Table>
