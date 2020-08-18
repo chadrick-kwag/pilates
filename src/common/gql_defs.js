@@ -272,6 +272,20 @@ const CREATE_INSTRUCTOR_GQL = gql`mutation a($name: String!, $phonenumber: Strin
 
 }`
 
+const FETCH_TICKETS_FOR_SUBSCRIPTION_ID = gql`query b($subscription_id: Int!){
+    fetch_tickets_for_subscription_id(subscription_id: $subscription_id){
+        success
+        msg
+        tickets{
+            id
+            created_date
+            expire_time
+            destroyed_date
+            consumed_date
+        }
+    }
+}`
+
 
 
 export {
@@ -297,6 +311,7 @@ export {
     CREATE_INDIVIDUAL_LESSON_GQL,
     CREATE_CLIENT_GQL,
     FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID,
-    CREATE_INSTRUCTOR_GQL
+    CREATE_INSTRUCTOR_GQL,
+    FETCH_TICKETS_FOR_SUBSCRIPTION_ID
 
 }

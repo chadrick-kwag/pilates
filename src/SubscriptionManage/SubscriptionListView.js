@@ -2,10 +2,10 @@ import React from 'react'
 import { Button, Table } from 'react-bootstrap'
 import moment from 'moment'
 
-import { QUERY_SUBSCRIPTIONS_GQL, DELETE_SUBSCRITION_GQL } from '../common/gql_defs'
+import { QUERY_SUBSCRIPTIONS_GQL, DELETE_SUBSCRITION_GQL} from '../common/gql_defs'
 
 import ViewSubscriptionDetailModal from './ViewSubscriptionDetailModal'
-import {activity_type_to_kor, grouping_type_to_kor} from '../common/consts'
+import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 
 
 class SubscriptionListView extends React.Component {
@@ -62,6 +62,7 @@ class SubscriptionListView extends React.Component {
         let detail_view_modal = null
         if (this.state.view_selected_subscription != null) {
             detail_view_modal = <ViewSubscriptionDetailModal
+                apolloclient={this.props.apolloclient}
                 data={this.state.view_selected_subscription}
                 onCancel={() => {
                     this.setState({
@@ -101,7 +102,7 @@ class SubscriptionListView extends React.Component {
                             <td>{d.id}</td>
                             <td>{d.clientid}</td>
                             <td>{d.clientname}</td>
-                            <td>{ activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
+                            <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
 
                             <td>{d.rounds}</td>
                             <td>{d.totalcost}</td>

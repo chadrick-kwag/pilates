@@ -76,6 +76,18 @@ const typeDefs = gql`
   type Ticket {
       id: Int
       expire_time: String
+      creator_subscription_id: Int
+      destroyer_subscription_id: Int
+
+  }
+
+
+  type Ticket2 {
+      id: Int
+      expire_time: String
+      created_date: String
+      consumed_date: String
+      destroyed_date: String
   }
 
   type SubscriptionInfo {
@@ -179,6 +191,12 @@ const typeDefs = gql`
       
   }
 
+  type SuccessAndTickets{
+      success: Boolean
+      msg: String
+      tickets: [Ticket2]
+  }
+
   type Query {
     fetch_clients: SuccessAndClients
     fetch_instructors: SuccessAndInstructors
@@ -191,6 +209,8 @@ const typeDefs = gql`
     query_subscriptions: SuccessAndSubscriptions
     query_subscriptions_with_remainrounds_for_clientid(clientid: Int!, activity_type: String!, grouping_type: String!): ReturnSubscriptionWithRemainRounds
     query_all_subscriptions_with_remainrounds_for_clientid(clientid: Int!): ReturnAllSubscriptionsWithRemainRounds
+
+    fetch_tickets_for_subscription_id(subscription_id: Int!): SuccessAndTickets
   }
 
   type SuccessResult {
@@ -235,6 +255,40 @@ pgclient.connect(err => {
 
 const resolvers = {
     Query: {
+
+        fetch_tickets_for_subscription_id: async (parent, args)=>{
+
+            console.log(args)
+
+
+            let result = await pgclient.query("select subscription_ticket.id, expire_time, subscription.created as created_date, \
+            lesson.created as consumed_date ,\
+            destroyer_subscription.created as destroyed_date\
+            from pilates.subscription_ticket \
+            left join pilates.subscription on subscription_ticket.creator_subscription_id = subscription.id \
+            left join pilates.lesson on subscription_ticket.id = lesson.consuming_client_ss_ticket_id \
+            left join pilates.subscription as destroyer_subscription on subscription_ticket.destroyer_subscription_id = \ destroyer_subscription.id \
+            where subscription.id=$1", [args.subscription_id]).then(res=>{
+                console.log(res.rows)
+
+                return {
+                    success: true,
+                    tickets: res.rows
+                }
+            }).catch(e=>{
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: "query error"
+                    
+                }
+            })
+
+            return result
+
+        },
+
         query_all_subscriptions_with_remainrounds_for_clientid: async (parent, args)=>{
 
             // console.log(args)
