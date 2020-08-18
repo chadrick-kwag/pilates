@@ -59,6 +59,10 @@ class InstructorDetailModal extends React.Component {
             instructor.birthdate = moment(new Date(parseInt(instructor.birthdate))).format('YYYYMMDD')
         }
 
+        if(instructor.validation_date){
+            instructor.validation_date = moment(new Date(parseInt(instructor.validation_date))).format('YYYYMMDD')
+        }
+
         return instructor
     }
 
@@ -80,6 +84,12 @@ class InstructorDetailModal extends React.Component {
             }
         }
 
+        if (this.state.edit_instructor.validation_date != null) {
+            if (extract_date_from_birthdate_str(this.state.edit_instructor.validation_date) == null) {
+                return 'invalid validation_date'
+            }
+        }
+
         return null
     }
 
@@ -98,6 +108,11 @@ class InstructorDetailModal extends React.Component {
             prep_birthdate = extract_date_from_birthdate_str(this.state.edit_instructor.birthdate)
         }
 
+        let prep_validation_date = null
+        if(this.state.edit_instructor.validation_date){
+            prep_validation_date = extract_date_from_birthdate_str(this.state.edit_instructor.validation_date)
+        }
+
         this.props.apolloclient.mutate({
             mutation: UPDATE_INSTRUCTOR_INFO_GQL,
             variables: {
@@ -111,9 +126,8 @@ class InstructorDetailModal extends React.Component {
                 job: this.state.edit_instructor.job,
                 birthdate: prep_birthdate,
                 is_apprentice: this.state.edit_instructor.is_apprentice,
-                validation_date: this.state.edit_instructor.validation_date,
+                validation_date: prep_validation_date,
                 level: this.state.edit_instructor.level
-
             }
         }).then(d => {
             console.log(d)
@@ -382,7 +396,7 @@ class InstructorDetailModal extends React.Component {
 
                     this.setState({
                         edit_mode: false,
-                        edit_instructor: _.cloneDeep(this.props.instructor)
+                        edit_instructor: this.modify_prop_instructor_for_init_edit_instructor(_.cloneDeep(this.props.instructor))
                     })
                 }}>cancel</Button>
                 <Button onClick={e => this.onsubmit()}>submit</Button>

@@ -150,9 +150,10 @@ const DELETE_INSTRUCTOR_GQL = gql`mutation di($id: Int!){
     }
 }`
 
-const UPDATE_INSTRUCTOR_INFO_GQL = gql`mutation updateinstructor($id: Int!, $name: String!, $phonenumber: String!){
-    update_instructor(id: $id, name: $name, phonenumber: $phonenumber){
+const UPDATE_INSTRUCTOR_INFO_GQL = gql`mutation updateinstructor($id: Int!, $name: String!, $phonenumber: String!, $memo: String, $address: String, $is_apprentice: Boolean, $level: String, $birthdate: String, $validation_date: String, $email: String, $job: String, $gender: String){
+    update_instructor(id: $id, name: $name, phonenumber: $phonenumber, memo: $memo, address: $address, is_apprentice: $is_apprentice, level: $level, birthdate: $birthdate, validation_date: $validation_date, email: $email, job: $job, gender: $gender){
         success
+        msg
     }
 }`
 

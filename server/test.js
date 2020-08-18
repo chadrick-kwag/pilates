@@ -210,7 +210,8 @@ const typeDefs = gql`
       delete_lesson(lessonid:Int!): SuccessResult
       attempt_update_lesson_time(lessonid:Int!, start_time: String!, end_time: String!): SuccessResult
       update_client(id: Int!, name: String!, phonenumber: String!, address: String, job: String, birthdate: String, gender: String, memo: String, email: String): SuccessResult
-      update_instructor(id: Int!, name: String!, phonenumber: String!): SuccessResult
+      update_instructor(id: Int!, name: String!, phonenumber: String!, birthdate: String, validation_date: String, memo: String, address: String, is_apprentice: Boolean, email: String, job: String, level: String, gender: String): SuccessResult
+      
       create_subscription(clientid: Int!, rounds: Int!, totalcost: Int!,  activity_type: String!, grouping_type: String!, coupon_backed: String): SuccessResult
       delete_subscription(id:Int!): SuccessResult
       create_individual_lesson(clientid: Int!, instructorid: Int!, ticketid: Int!, starttime: String!, endtime: String!): SuccessResult
@@ -839,20 +840,30 @@ const resolvers = {
         update_instructor: async (parent, args) => {
             console.log(args)
 
-            let ret = await pgclient.query('update pilates.instructor set name=$1, phonenumber=$2 where id=$3', [args.name, args.phonenumber, args.id]).then(res => {
+            let _args = [args.name, args.phonenumber, parse_incoming_gender_str(args.gender), args.email, args.level, args.address, incoming_time_string_to_postgres_epoch_time(args.validation_date), incoming_time_string_to_postgres_epoch_time(args.birthdate), args.memo, args.is_apprentice, args.job, args.id]
+
+            console.log(_args)
+
+            let ret = await pgclient.query('update pilates.instructor set name=$1, phonenumber=$2, gender=$3, email=$4, level=$5, address=$6, validation_date=to_timestamp($7), birthdate=to_timestamp($8), memo=$9, is_apprentice=$10, job=$11 where id=$12', _args).then(res => {
                 if (res.rowCount > 0) {
-                    return true
+                    return {
+                        success: true
+                    }
                 }
-                return false
+                return {
+                    success: false,
+                    msg: 'no instructor updated'
+                }
             }).catch(e => {
                 console.log(e)
-                return false
+                return {
+                    success: true,
+                    msg: 'error updating instructor'
+                }
             })
 
 
-            return {
-                success: ret
-            }
+            return ret
         },
         create_subscription: async (parent, args) => {
             console.log(args)
