@@ -5,6 +5,7 @@ import moment from 'moment'
 import { QUERY_SUBSCRIPTIONS_GQL, DELETE_SUBSCRITION_GQL } from '../common/gql_defs'
 
 import ViewSubscriptionDetailModal from './ViewSubscriptionDetailModal'
+import {activity_type_to_kor, grouping_type_to_kor} from '../common/consts'
 
 
 class SubscriptionListView extends React.Component {
@@ -82,6 +83,7 @@ class SubscriptionListView extends React.Component {
                 </th>
                     <th>client id</th>
                     <th>client name</th>
+                    <th>type</th>
 
                     <th>rounds</th>
                     <th>total cost</th>
@@ -99,6 +101,7 @@ class SubscriptionListView extends React.Component {
                             <td>{d.id}</td>
                             <td>{d.clientid}</td>
                             <td>{d.clientname}</td>
+                            <td>{ activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
 
                             <td>{d.rounds}</td>
                             <td>{d.totalcost}</td>
