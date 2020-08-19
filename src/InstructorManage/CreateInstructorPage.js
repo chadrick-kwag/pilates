@@ -210,6 +210,14 @@ class CreateInstructorPage extends React.Component {
                         </td>
                     </tr>
                     <tr>
+                        <td>자격취득일</td>
+                        <td><Form.Control value={this.state.validation_date} onChange={e => {
+                            this.setState({
+                                validation_date: e.target.value
+                            })
+                        }} /></td>
+                    </tr>
+                    <tr>
                         <td>주소</td>
                         <td>
                             <Form.Control value={this.state.address} onChange={e => {
