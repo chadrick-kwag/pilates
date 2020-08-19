@@ -69,8 +69,17 @@ class CreateInstructorPage extends React.Component {
 
         console.log(birthdate_date)
 
+        let birthdate_str = null
+        if(birthdate_date!=null){
+            birthdate_str = birthdate_date.toDate().toUTCString()
+        }
 
-        let birthdate_str = birthdate_date.toDate().toUTCString()
+        let validation_date = extract_date_from_birthdate_str(this.state.validation_date)
+
+        if(validation_date!=null){
+            validation_date = validation_date.toDate().toUTCString()
+        }
+        
 
 
         let _variables = {
@@ -82,7 +91,7 @@ class CreateInstructorPage extends React.Component {
             memo: this.state.memo,
             birthdate: birthdate_str,
             email: this.state.email,
-            validation_date: this.state.validation_date,
+            validation_date: validation_date,
             level: this.state.level,
             is_apprentice: this.state.is_apprentice
 

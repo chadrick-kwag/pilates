@@ -293,7 +293,26 @@ const resolvers = {
 
             // console.log(args)
 
-            let result = await pgclient.query("select json_build_object('subscription_id', subscription.id, 'total_rounds', count(subscription_ticket.id),'remain_rounds', subscription.rounds, 'created', subscription.created,  'activity_type', subscription.activity_type, 'grouping_type', subscription.grouping_type) from pilates.subscription_ticket left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id  left join pilates.lesson on subscription_ticket.id=lesson.consuming_client_ss_ticket_id  where subscription.clientid=$1 and lesson.id is null  group by subscription.id ORDER BY subscription.created desc",[args.clientid]).then(res=>{
+            let result = await pgclient.query(" \
+            select json_build_object('total_rounds', subscription.rounds, \
+            'activity_type', subscription.activity_type, \
+            'grouping_type', subscription.grouping_type, \
+            'remain_rounds', A.remain_rounds, \
+            'subscription_id', subscription.id, \
+            'created', subscription.created) \
+            from pilates.subscription left join \
+            (select count(subscription_ticket.id) as total_rounds, \
+            count(case when lesson.id is null then 1 else null end) as remain_rounds,  \
+            subscription_ticket.creator_subscription_id as subscription_id \
+            from pilates.subscription_ticket \
+            left join pilates.lesson on subscription_ticket.id = lesson.consuming_client_ss_ticket_id \
+            left join pilates.subscription on subscription_ticket.creator_subscription_id = subscription.id \
+            where creator_subscription_id in (select id from pilates.subscription where clientid=$1 order by created) \
+            group by subscription_id) as A \
+             \
+            on A.subscription_id=subscription.id \
+            where subscription.clientid = $1 \
+            order by created",[args.clientid]).then(res=>{
 
                 // console.log(res.rows)
 
