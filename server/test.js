@@ -13,11 +13,11 @@ function incoming_time_string_to_postgres_epoch_time(time_str) {
 }
 
 
-function parse_incoming_gender_str(gender_str){
-    if(gender_str == null){
+function parse_incoming_gender_str(gender_str) {
+    if (gender_str == null) {
         return null
     }
-  
+
     let gender = null
     if (gender_str.toLowerCase() == 'male') {
         gender = 'MALE'
@@ -27,18 +27,18 @@ function parse_incoming_gender_str(gender_str){
     }
 
     return gender
-    
+
 }
 
-function parse_incoming_date_utc_string(date_utc_str){
+function parse_incoming_date_utc_string(date_utc_str) {
     // return epoch seconds
-    if(date_utc_str==null){
+    if (date_utc_str == null) {
         return null
     }
 
-    return new Date(date_utc_str).getTime()/1000
+    return new Date(date_utc_str).getTime() / 1000
 
-    
+
 }
 
 // A schema is a collection of type definitions (hence "typeDefs")
@@ -226,7 +226,7 @@ const typeDefs = gql`
       
       deleteinstructor(id: Int!): SuccessResult
       
-      create_lesson(clientids:[Int!], instructorid: Int!, start_time: String!, end_time: String!): SuccessResult
+      create_lesson(clientids:[Int!], instructorid: Int!, start_time: String!, end_time: String!, ticketid: Int!): SuccessResult
       delete_lesson(lessonid:Int!): SuccessResult
       attempt_update_lesson_time(lessonid:Int!, start_time: String!, end_time: String!): SuccessResult
       update_client(id: Int!, name: String!, phonenumber: String!, address: String, job: String, birthdate: String, gender: String, memo: String, email: String): SuccessResult
@@ -256,7 +256,7 @@ pgclient.connect(err => {
 const resolvers = {
     Query: {
 
-        fetch_tickets_for_subscription_id: async (parent, args)=>{
+        fetch_tickets_for_subscription_id: async (parent, args) => {
 
             console.log(args)
 
@@ -268,20 +268,20 @@ const resolvers = {
             left join pilates.subscription on subscription_ticket.creator_subscription_id = subscription.id \
             left join pilates.lesson on subscription_ticket.id = lesson.consuming_client_ss_ticket_id \
             left join pilates.subscription as destroyer_subscription on subscription_ticket.destroyer_subscription_id = \ destroyer_subscription.id \
-            where subscription.id=$1", [args.subscription_id]).then(res=>{
+            where subscription.id=$1", [args.subscription_id]).then(res => {
                 console.log(res.rows)
 
                 return {
                     success: true,
                     tickets: res.rows
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
 
                 return {
                     success: false,
                     msg: "query error"
-                    
+
                 }
             })
 
@@ -289,7 +289,7 @@ const resolvers = {
 
         },
 
-        query_all_subscriptions_with_remainrounds_for_clientid: async (parent, args)=>{
+        query_all_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
 
             // console.log(args)
 
@@ -312,17 +312,17 @@ const resolvers = {
              \
             on A.subscription_id=subscription.id \
             where subscription.clientid = $1 \
-            order by created",[args.clientid]).then(res=>{
+            order by created", [args.clientid]).then(res => {
 
                 // console.log(res.rows)
 
-                let json_arr = res.rows.map(d=>d.json_build_object)
+                let json_arr = res.rows.map(d => d.json_build_object)
                 // console.log(json_arr)
                 return {
                     success: true,
                     allSubscriptionsWithRemainRounds: json_arr
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
 
                 return {
@@ -359,15 +359,15 @@ const resolvers = {
                 return {
                     success: true,
                     instructors: res.rows
-                    
+
                 }
             }).catch(e => {
-             console.log(e)
-             return {
-                 success: false,
-                 msg: 'query error'
+                console.log(e)
+                return {
+                    success: false,
+                    msg: 'query error'
 
-             }
+                }
             })
 
             return result
@@ -634,7 +634,7 @@ const resolvers = {
                     success: false,
                     msg: 'query failed'
                 }
-            }).catch(e =>{
+            }).catch(e => {
                 console.log(e)
 
                 return {
@@ -658,89 +658,47 @@ const resolvers = {
             return { success: ret }
         },
 
-        create_lesson: async (parent, args) => {
 
+        create_lesson: async (parent, args) => {
             console.log(args)
 
-            let start_time = args.start_time
-            let end_time = args.end_time
+            let _args = [args.clientid, args.instructorid, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time), args.ticketid]
 
-            console.log(start_time.toString())
-            console.log(end_time.toString())
+            console.log(_args)
 
-            start_time = new Date(start_time)
-            console.log("raw date start_time")
-            console.log(start_time)
-
-            end_time = new Date(end_time)
-            // end_time = get_postgres_timestamp_format(end_time)
-
-            let start_unixtime = start_time.getTime() / 1000 // dict milisecond info
-            let end_unixtime = end_time.getTime() / 1000
-
-            // check if no overlapping lessons exist
-            for (let i = 0; i < args.clientids.length; i++) {
-                let clientid = args.clientids[i]
-                let overlap_exist = await pgclient.query("select * from pilates.lesson where (clientid=$1 or instructorid=$2) AND (tstzrange(to_timestamp($3), to_timestamp($4)) && tstzrange(lesson.starttime, lesson.endtime))", [clientid, args.instructorid, start_unixtime, end_unixtime]).then(res => {
-                    if (res.rowCount > 0) {
-                        return true
-                    }
-                    return false
-                }).catch(e => {
-                    console.log(e)
-                    return null
-                })
-
-                if (overlap_exist == null) {
-                    return {
-                        success: false
-                    }
-                }
-
-                if (overlap_exist) {
-                    return {
-                        success: false
-                    }
-                }
-
-            }
-
-
-            let value_string_arr = []
-
-            args.clientids.forEach(cid => {
-                let value_string = "(" + cid + "," + args.instructorid + ",to_timestamp(" + start_unixtime + "),to_timestamp(" + end_unixtime + "))"
-                value_string_arr.push(value_string)
-            })
-
-            console.log(value_string_arr)
-
-
-            let query_str = "insert into pilates.lesson(clientid, instructorid, starttime, endtime) values "
-
-            value_string_arr.forEach(s => {
-                query_str = query_str + s + " "
-            })
-
-            console.log(query_str)
-
-            let ret = await pgclient.query(query_str).then(res => {
-
+            let result = await pgclient.query("insert into pilates.lesson clientid, instructorid, starttime, endtime, consuming_client_ss_ticket_id values ($1, $2, $3, $4, $5) where not exists( \
+                select 1 from pilates.lesson where  (clientid=$1 or instructorid=$2) \
+                AND (tstzrange(to_timestamp($3), to_timestamp($4)) \
+                     && tstzrange(lesson.starttime, lesson.endtime)) \
+                     and predecessor_id is null \
+                     ) and exists (select 1 from pilates.subscription_ticket where id=$5 and expire_time > now() and destroyer_subscription_id is not null)", _args).then(res => {
                 console.log(res)
 
                 if (res.rowCount > 0) {
-                    return true
+                    return {
+                        success: true
+
+                    }
                 }
-
-                return false
-            }).catch(e => {
-                console.log(e)
-                return false
+                else {
+                    return {
+                        success: false,
+                        msg: 'failed to insert query'
+                    }
+                }
             })
+                .catch(e => {
 
+                    console.log(e)
+                    return {
+                        success: false,
+                        msg: "error query"
+                    }
+                })
 
-            return { success: ret }
+            return result
         },
+
         delete_lesson: async (parent, args) => {
             console.log(args)
 
