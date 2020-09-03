@@ -4,3 +4,4 @@ dist
 teststuff
 backup
 config.js
+*.log

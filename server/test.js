@@ -197,13 +197,37 @@ const typeDefs = gql`
       tickets: [Ticket2]
   }
 
+  type LessonWithMoreInfo {
+    id: Int,
+    clientid: Int,
+    clientname: String,
+    client_phonenumber: String,
+    instructorid: Int,
+    instructorname: String,
+    instructor_phonenumber: String,
+    starttime: String,
+    endtime: String
+  }
+
+  type query_lesson_return {
+      success: Boolean,
+      msg: String,
+      lessons: [LessonWithMoreInfo]
+  }
+
+  type ResultInstructor{
+      success: Boolean,
+      msg: String,
+      instructor: Instructor
+  }
+
   type Query {
     fetch_clients: SuccessAndClients
     fetch_instructors: SuccessAndInstructors
     search_client_with_name(name: String!): [Client]
     search_instructor_with_name(name: String!): [Instructor]
     query_all_lessons: [Lesson]
-    query_lessons_with_daterange(start_time: String!, end_time: String!): [Lesson]
+    query_lessons_with_daterange(start_time: String!, end_time: String!): query_lesson_return
     query_lesson_with_timerange_by_clientid(clientid: Int!, start_time: String!, end_time: String!): [Lesson]
     query_lesson_with_timerange_by_instructorid(instructorid: Int!, start_time: String!, end_time: String!): SuccessAndLessons
     query_subscriptions: SuccessAndSubscriptions
@@ -211,6 +235,7 @@ const typeDefs = gql`
     query_all_subscriptions_with_remainrounds_for_clientid(clientid: Int!): ReturnAllSubscriptionsWithRemainRounds
 
     fetch_tickets_for_subscription_id(subscription_id: Int!): SuccessAndTickets
+    fetch_instructor_with_id(id: Int!): ResultInstructor
   }
 
   type SuccessResult {
@@ -402,6 +427,8 @@ const resolvers = {
             return results
         },
         query_lessons_with_daterange: async (parent, args) => {
+
+            console.log("inside query_lessons_with_daterange")
             console.log(args)
 
 
@@ -413,13 +440,21 @@ const resolvers = {
             end_time = end_time.getTime() / 1000
 
 
-            let results = await pgclient.query("select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid where lesson.starttime > to_timestamp($1) and lesson.endtime < to_timestamp($2)", [start_time, end_time]).then(res => {
+            let results = await pgclient.query("select lesson.id as id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname,  client.phonenumber as client_phonenumber, instructor.name as instructorname, instructor.phonenumber as instructor_phonenumber from pilates.lesson \
+            left join pilates.client on lesson.clientid=client.id \
+            left join pilates.instructor on instructor.id=lesson.instructorid where lesson.starttime > to_timestamp($1) and lesson.endtime < to_timestamp($2)", [start_time, end_time]).then(res => {
 
-                return res.rows
+                return {
+                    success: true,
+                    lessons: res.rows
+                }
 
 
             }).catch(e => {
-                return []
+                return {
+                    success: false,
+                    msg: "query error"     
+                }
             })
 
 
@@ -557,6 +592,27 @@ const resolvers = {
                 subscriptions: subscriptions
             }
 
+        },
+        fetch_instructor_with_id: async (parent, args)=>{
+
+            console.log("inside fetch instructor with id")
+
+            console.log(args)
+
+            let result = await pgclient.query('select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level from pilates.instructor where id=$1', [args.id]).then(res=>{
+                return {
+                    success: true,
+                    instructor: res.rows[0]
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: "query erro"
+                }
+            })
+
+            return result
         }
     },
     Mutation: {

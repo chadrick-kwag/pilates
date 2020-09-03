@@ -67,12 +67,20 @@ class ScheduleViewer extends React.Component {
 
         }).then(d => {
 
-            if (d.data.query_lessons_with_daterange != null) {
-                this.setState({
-                    data: d.data.query_lessons_with_daterange
-                })
+            console.log(d)
 
+            if(d.data.query_lessons_with_daterange.success){
+                this.setState({
+                    data: d.data.query_lessons_with_daterange.lessons
+                })
             }
+
+            // if (d.data.query_lessons_with_daterange != null) {
+            //     this.setState({
+            //         data: d.data.query_lessons_with_daterange
+            //     })
+
+            // }
             else {
                 alert('failed to fetch schedule data')
             }

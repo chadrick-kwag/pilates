@@ -37,13 +37,20 @@ const DELETE_LESSON_GQL = gql`mutation deletelesson($lessonid:Int!){
 
 const QUERY_LESSON_WITH_DATERANGE_GQL = gql`query($start_time: String!, $end_time: String!){
     query_lessons_with_daterange(start_time: $start_time, end_time: $end_time){
-        id,
-        clientid,
-        clientname,
-        instructorid,
-        instructorname,
-        starttime,
-        endtime
+        success,
+        msg,
+        lessons {
+            id,
+            clientid,
+            clientname,
+            client_phonenumber,
+            instructorid,
+            instructorname,
+            instructor_phonenumber,
+            starttime,
+            endtime
+        }
+        
     }
 }`
 
@@ -229,12 +236,21 @@ const SEARCH_INSTRUCTOR_WITH_NAME = gql`query search_instructors($name: String!)
     }
 }`
 
-// const CREATE_LESSON_GQL = gql`mutation create_lesson($clientids:[Int!], $instructorid: Int!, $start_time: String!, $end_time: String!){
 
-//     create_lesson(clientids: $clientids, instructorid: $instructorid, start_time: $start_time, end_time: $end_time){
-//         success
-//     }
-// }`
+const FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID = gql`query fetch_instructor_with_id($id: Int!){
+    fetch_instructor_with_id(id: $id){
+        success
+        msg
+        instructor {
+            id
+            name
+            phonenumber
+        }
+
+    }
+}`
+
+
 
 const CREATE_CLIENT_GQL = gql`mutation  createclient($name: String!, $phonenumber: String!, $email: String, $job: String, $memo: String, $address: String, $gender: String, $birthdate: String){
     createclient(name: $name, phonenumber: $phonenumber, email: $email, job: $job, memo: $memo, address: $address, gender: $gender, birthdate: $birthdate){
@@ -312,6 +328,7 @@ export {
     CREATE_CLIENT_GQL,
     FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID,
     CREATE_INSTRUCTOR_GQL,
-    FETCH_TICKETS_FOR_SUBSCRIPTION_ID
+    FETCH_TICKETS_FOR_SUBSCRIPTION_ID,
+    FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID
 
 }

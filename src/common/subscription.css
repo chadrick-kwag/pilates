@@ -48,6 +48,11 @@ hr {
     align-items: center;
 }
 
+.flex-col-left-align {
+    display: flex;
+    flex-direction: column;
+}
+
 .row-gravity-center > input {
     width: 50%
 }
