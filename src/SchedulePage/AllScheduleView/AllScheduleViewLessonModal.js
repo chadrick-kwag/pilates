@@ -12,7 +12,8 @@ import TimeKeeper from 'react-timekeeper';
 
 import {
 
-    DELETE_LESSON_GQL
+    DELETE_LESSON_GQL,
+    UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL
 
 } from '../../common/gql_defs'
 
@@ -34,6 +35,8 @@ class AllScheduleViewLessonModal extends React.Component {
 
         this.delete_lesson = this.delete_lesson.bind(this)
         this.submit_edit_changes = this.submit_edit_changes.bind(this)
+        this.valid_check_edit_info = this.valid_check_edit_info.bind(this)
+        this.get_edit_info_start_end_moment = this.get_edit_info_start_end_moment.bind(this)
 
     }
 
@@ -59,8 +62,90 @@ class AllScheduleViewLessonModal extends React.Component {
         })
     }
 
+    valid_check_edit_info() {
+
+        let [start_m, end_m] = this.get_edit_info_start_end_moment()
+
+        if (!start_m.isBefore(end_m)) {
+            return "start time is before end time"
+        }
+
+        return null
+
+    }
+
+    get_edit_info_start_end_moment() {
+        // check time validation
+        let ei = this.state.edit_info
+
+        console.log(ei)
+
+        let date_m = moment(ei.lesson_date)
+        let start_time_m = moment(ei.start_time, 'HH:mm')
+        let end_time_m = moment(ei.end_time, 'HH:mm')
+
+        console.log(date_m)
+        console.log(start_time_m)
+        console.log(end_time_m)
+
+        let start_m = moment(date_m)
+        let end_m = moment(date_m)
+
+        console.log(start_time_m.hour())
+        console.log(start_time_m.minute())
+
+        start_m.hour(start_time_m.hour())
+        start_m.minute(start_time_m.minute())
+        start_m.second(start_time_m.second())
+
+        end_m.set({
+            hour: end_time_m.get('hour'),
+            minute: end_time_m.get('minute'),
+            second: end_time_m.get('second')
+        })
+        console.log('end_m')
+        console.log(end_m)
+
+
+        return [start_m, end_m]
+
+    }
 
     submit_edit_changes() {
+
+
+        let check_result = this.valid_check_edit_info()
+
+        if (check_result != null) {
+            alert(check_result)
+            return
+        }
+
+        let [start_m, end_m] = this.get_edit_info_start_end_moment()
+
+
+
+        let _var = {
+            lesson_id: this.props.view_selected_lesson.id,
+            start_time: start_m.toDate().toUTCString(),
+            end_time: end_m.toDate().toUTCString(),
+            instructor_id: this.state.edit_info.instructorid
+
+        }
+
+        console.log(_var)
+
+        // try to register lesson
+        this.props.apolloclient.mutate({
+            mutation: UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL,
+            variables: _var
+        }).then(d => {
+            console.log(d)
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+        })
+
+
 
     }
 
@@ -119,7 +204,7 @@ class AllScheduleViewLessonModal extends React.Component {
                                     this.setState({
                                         edit_info: update_edit_info
                                     })
-                                    
+
                                 }
                                 }
                                 dateFormat="yyMMdd"
@@ -148,6 +233,9 @@ class AllScheduleViewLessonModal extends React.Component {
                                         console.log(data)
                                         let update_edit_info = this.state.edit_info
                                         update_edit_info.start_time = data.formatted24
+
+                                        console.log('update start time')
+                                        console.log(update_edit_info)
                                         this.setState({
                                             edit_info: update_edit_info
                                         })
@@ -175,6 +263,10 @@ class AllScheduleViewLessonModal extends React.Component {
                                         console.log(data)
                                         let update_edit_info = this.state.edit_info
                                         update_edit_info.end_time = data.formatted24
+
+                                        console.log('update end time')
+                                        console.log(update_edit_info)
+
                                         this.setState({
                                             edit_info: update_edit_info
                                         })
@@ -249,6 +341,8 @@ class AllScheduleViewLessonModal extends React.Component {
                     })
                 }}>cancel</Button>
                 <Button onClick={e => {
+
+                    this.submit_edit_changes()
 
                 }}>Done</Button>
             </Modal.Footer>

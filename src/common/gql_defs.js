@@ -29,6 +29,14 @@ const CREATE_INDIVIDUAL_LESSON_GQL = gql`mutation create_individual_lesson($clie
 }`
 
 
+const UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL = gql`mutation update_lesson($lessonid: Int!, $start_time: String!, $end_time: String!, $instructor_id: Int!){
+    update_lesson(lessonid: $lessonid, start_time: $start_time, end_time: $end_time, instructor_id: $instructor_id){
+        success
+        msg
+
+    }
+}`
+
 const DELETE_LESSON_GQL = gql`mutation deletelesson($lessonid:Int!){
     delete_lesson(lessonid:$lessonid){
         success
@@ -329,6 +337,7 @@ export {
     FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID,
     CREATE_INSTRUCTOR_GQL,
     FETCH_TICKETS_FOR_SUBSCRIPTION_ID,
-    FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID
+    FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID,
+    UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL
 
 }
