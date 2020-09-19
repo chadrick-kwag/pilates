@@ -30,7 +30,7 @@ const CREATE_INDIVIDUAL_LESSON_GQL = gql`mutation create_individual_lesson($clie
 
 
 const UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL = gql`mutation update_lesson($lessonid: Int!, $start_time: String!, $end_time: String!, $instructor_id: Int!){
-    update_lesson(lessonid: $lessonid, start_time: $start_time, end_time: $end_time, instructor_id: $instructor_id){
+    update_lesson_instructor_or_time(lessonid: $lessonid, start_time: $start_time, end_time: $end_time, instructor_id: $instructor_id){
         success
         msg
 

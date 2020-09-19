@@ -260,6 +260,7 @@ const typeDefs = gql`
       create_subscription(clientid: Int!, rounds: Int!, totalcost: Int!,  activity_type: String!, grouping_type: String!, coupon_backed: String): SuccessResult
       delete_subscription(id:Int!): SuccessResult
       create_individual_lesson(clientid: Int!, instructorid: Int!, ticketid: Int!, starttime: String!, endtime: String!): SuccessResult
+      update_lesson_instructor_or_time(lessonid: Int!, start_time: String!, end_time: String!, instructor_id: Int!): SuccessResult
   }
 
 `
@@ -616,6 +617,26 @@ const resolvers = {
         }
     },
     Mutation: {
+        update_lesson_instructor_or_time: async (parent, args)=>{
+            console.log('inside update lesson instructor or time')
+            console.log(args)
+
+            let result = await pgclient.query('select func1($1,$2,$3,$4)',[args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)]).then(res=>{
+                return res.rows[0].func1;
+            })
+            .catch(e=>{
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
+            })
+
+            console.log(result)
+
+            return result
+        },
         createclient: async (parent, args) => {
             console.log(args)
 

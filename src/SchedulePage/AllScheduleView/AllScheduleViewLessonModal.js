@@ -22,13 +22,16 @@ class AllScheduleViewLessonModal extends React.Component {
     constructor(props) {
         super(props)
 
+        console.log('props')
+        console.log(this.props)
+
         this.state = {
             edit_mode: false,
             edit_info: {
                 lesson_date: new Date(parseInt(this.props.view_selected_lesson.starttime)),
                 start_time: moment(new Date(parseInt(this.props.view_selected_lesson.starttime))).format('HH:mm'),
                 end_time: moment(new Date(parseInt(this.props.view_selected_lesson.endtime))).format('HH:mm'),
-                instructorid: this.props.instructorid
+                instructorid: this.props.view_selected_lesson.instructorid
 
             }
         }
@@ -126,10 +129,10 @@ class AllScheduleViewLessonModal extends React.Component {
 
 
         let _var = {
-            lesson_id: this.props.view_selected_lesson.id,
+            lessonid: parseInt(this.props.view_selected_lesson.id),
             start_time: start_m.toDate().toUTCString(),
             end_time: end_m.toDate().toUTCString(),
-            instructor_id: this.state.edit_info.instructorid
+            instructor_id: parseInt(this.state.edit_info.instructorid)
 
         }
 
