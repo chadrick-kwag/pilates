@@ -69,7 +69,7 @@ class ScheduleViewer extends React.Component {
 
             console.log(d)
 
-            if(d.data.query_lessons_with_daterange.success){
+            if (d.data.query_lessons_with_daterange.success) {
                 this.setState({
                     data: d.data.query_lessons_with_daterange.lessons
                 })
@@ -126,27 +126,37 @@ class ScheduleViewer extends React.Component {
 
 
 
-        let view_modal=null
+        let view_modal = null
 
         if (this.state.show_view_modal) {
 
 
 
             view_modal = <AllScheduleViewLessonModal apolloclient={this.props.apolloclient}
-            view_selected_lesson={this.state.view_selected_lesson}
-            onCancel={()=>this.setState({
-                show_view_modal: false
-            })}
-            onDeleteSuccess={()=>{
-                this.setState({
+                view_selected_lesson={this.state.view_selected_lesson}
+                onCancel={() => this.setState({
                     show_view_modal: false
-                }, ()=>{
-                    this.fetchdata()
-                })
-            }}
+                })}
+                onDeleteSuccess={() => {
+                    this.setState({
+                        show_view_modal: false
+                    }, () => {
+                        this.fetchdata()
+                    })
+                }}
+                onEditSuccess={
+                    () => {
+                        this.setState({
+                            show_view_modal: false
+                        }, () => {
+                            this.fetchdata()
+                        })
+                    }
+                }
+
             />
         }
-        
+
 
 
         // date picker div
@@ -281,8 +291,7 @@ class ScheduleViewer extends React.Component {
 
                     template={{
                         milestone(schedule) {
-                            return `<span style="color:#fff;background-color: ${schedule.bgColor};">${
-                                schedule.title
+                            return `<span style="color:#fff;background-color: ${schedule.bgColor};">${schedule.title
                                 }</span>`;
                         },
                         milestoneTitle() {

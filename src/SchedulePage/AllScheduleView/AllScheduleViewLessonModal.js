@@ -144,8 +144,16 @@ class AllScheduleViewLessonModal extends React.Component {
             variables: _var
         }).then(d => {
             console.log(d)
+
+            if (d.data.update_lesson_instructor_or_time.success) {
+                this.props.onEditSuccess()
+            }
+            else {
+                alert('failed to submit edit')
+            }
         }).catch(e => {
             console.log(JSON.stringify(e))
+            alert('error submitting edit')
         })
 
 
@@ -360,8 +368,13 @@ class AllScheduleViewLessonModal extends React.Component {
                     시간/강사변경
             </Button>
                 <Button onClick={e => {
-                    this.delete_lesson()
+                    let ret = confirm("delete?")
+                    if (ret) {
+                        this.delete_lesson()
+                    }
+
                 }}>delete</Button>
+                
                 <Button onClick={e => {
                     this.props.onCancel()
                 }
