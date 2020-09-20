@@ -443,7 +443,8 @@ const resolvers = {
 
             let results = await pgclient.query("select lesson.id as id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname,  client.phonenumber as client_phonenumber, instructor.name as instructorname, instructor.phonenumber as instructor_phonenumber from pilates.lesson \
             left join pilates.client on lesson.clientid=client.id \
-            left join pilates.instructor on instructor.id=lesson.instructorid where lesson.starttime > to_timestamp($1) and lesson.endtime < to_timestamp($2)", [start_time, end_time]).then(res => {
+            left join pilates.instructor on instructor.id=lesson.instructorid \
+			where lesson.starttime > to_timestamp($1) and lesson.endtime < to_timestamp($2) and canceled_time is null", [start_time, end_time]).then(res => {
 
                 return {
                     success: true,
@@ -452,6 +453,7 @@ const resolvers = {
 
 
             }).catch(e => {
+                console.log(e)
                 return {
                     success: false,
                     msg: "query error"     
