@@ -777,23 +777,37 @@ const resolvers = {
         },
 
         delete_lesson: async (parent, args) => {
+            console.log("delete_lesson")
             console.log(args)
 
             let lessonid = args.lessonid
 
-            let ret = await pgclient.query('delete from pilates.lesson where id=$1', [lessonid]).then(res => {
+            let ret = await pgclient.query("update pilates.lesson set cancel_type='BUFFERED_CLIENT_REQ_CANCEL', canceled_time=now() where id=$1", [lessonid]).then(res => {
                 console.log(res)
 
                 if (res.rowCount > 0) {
-                    return true
+                    return {
+                        success: true
+                        
+                    }
                 }
 
-                return false
-            }).catch(e => false)
+                return {
+                    success: false,
+                    msg: "query failed"
+                }
+            }).catch(e => {
+                console.log(e)
+                return {
+                    success: false,
+                    msg: "query error"
+                }
+            })
+            
 
-            return {
-                success: ret
-            }
+            console.log(ret)
+
+            return ret
         },
         attempt_update_lesson_time: async (parent, args) => {
             console.log(args)

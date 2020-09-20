@@ -40,6 +40,7 @@ const UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL = gql`mutation update_lesson($lessoni
 const DELETE_LESSON_GQL = gql`mutation deletelesson($lessonid:Int!){
     delete_lesson(lessonid:$lessonid){
         success
+        msg
     }
 }`
 
