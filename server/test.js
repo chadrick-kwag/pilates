@@ -55,11 +55,6 @@ function parse_incoming_date_utc_string(date_utc_str) {
 
 }
 
-// A schema is a collection of type definitions (hence "typeDefs")
-// that together define the "shape" of queries that are executed against
-// your data.
-
-
 
 const typeDefs = mergeTypeDefs([ lesson_typedefs, client_typedefs, subscription_typedefs, instructor_typedefs, common_typedefs])
 
@@ -76,22 +71,9 @@ pgclient.connect(err => {
 })
 
 
-const local_resolvers = {
-    Query: {
 
 
-        
-    },
-    Mutation: {
-       
-        
-       
-
-    }
-};
-
-
-let resolvers = mergeResolvers([lesson_resolver, local_resolvers, client_resolver, subscription_resolver, instructor_resolver])
+let resolvers = mergeResolvers([lesson_resolver, client_resolver, subscription_resolver, instructor_resolver])
 
 const server = new ApolloServer({ typeDefs, resolvers });
 
