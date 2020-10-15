@@ -11,6 +11,19 @@ type Subscription {
     coupon_backed: String
 }
 
+type Client {
+    id: String!
+    name: String!
+    phonenumber: String!
+    created: String
+    job: String
+    email: String
+    memo: String
+    address: String
+    gender: String
+    birthdate: String
+  }
+
 type Ticket {
     id: Int
     expire_time: String
