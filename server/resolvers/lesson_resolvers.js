@@ -1,4 +1,4 @@
-
+const moment = require('moment-timezone');
 const pgclient  = require('../pgclient')
 
 module.exports = {
@@ -321,7 +321,11 @@ module.exports = {
                 return null
             })
 
+            console.log("lesson_start_time: " + lesson_start_time)
+
             if(lesson_start_time==null){
+
+                console.log('lesson start time is null')
                 return {
                     success: false,
                     msg: "failed to check start time of lesson"
@@ -386,22 +390,91 @@ module.exports = {
                 return result
             }
             else if(time_delta < 2 * 3600 ){
+
+                console.log("time buffer too small")
+
+
                 return {
                     success: false,
                     msg: "minimum time window closed"
                 }
             }
             else if(!is_current_date_before_start_time_date){
-                return {
-                    success: true,
-                    msg: "penalized change"
+
+                console.log('not current date before start time')
+
+                let cancel_type
+
+                if(request_type == 'CLIENT_REQUEST'){
+                    cancel_type = 'EMERGENCY_CLIENT_REQ_CANCEL'
                 }
+                else if(request_type == 'INSTRUCTOR_REQUEST'){
+                    cancel_type = 'CANCEL_REQUEST_BY_INSTRUCTOR'
+                }
+
+                
+                let result = pgclient.query("update pilates.lesson set cancel_type=$1, canceled_time = now() where id=$2", [cancel_type, args.lessonid]).then(res=>{
+                    if(res.rowCount==0){
+                        return {
+                            success: false,
+                            msg: 'query effect no row'
+                        }
+                    }
+
+                    
+
+                    return {
+                        success: true
+                    }
+                }).catch(e=>{
+                    console.log(e)
+                    return {
+                        success: false,
+                        msg: "query error"
+                    }
+                })
+
+                console.log(result)
+
+                return result
+                
+
             }
             else{
-                return {
-                    success: true,
-                    msg: "no penalized change"
+
+                console.log('buffered delete condition')
+
+                let cancel_type
+
+                if(request_type == 'CLIENT_REQUEST'){
+                    cancel_type = 'BUFFERED_CLIENT_REQ_CANCEL'
                 }
+                else if(request_type == 'INSTRUCTOR_REQUEST'){
+                    cancel_type = 'BUFFERED_INSTRUCTOR_CHANGE'
+                }
+
+                let result = pgclient.query("update pilates.lesson set cancel_type=$1, canceled_time = now() where id=$2", [cancel_type, args.lessonid]).then(res=>{
+                    if(res.rowCount==0){
+                        return {
+                            success: false,
+                            msg: 'query effect no row'
+                        }
+                    }
+
+                    return {
+                        success: true
+                    }
+                }).catch(e=>{
+                    console.log(e)
+                    return {
+                        success: false,
+                        msg: "query error"
+                    }
+                })
+
+                console.log(result)
+
+                return result
             }
 
 
