@@ -253,6 +253,7 @@ const typeDefs = gql`
       
       create_lesson(clientids:[Int!], instructorid: Int!, start_time: String!, end_time: String!, ticketid: Int!): SuccessResult
       delete_lesson(lessonid:Int!): SuccessResult
+      delete_lesson_with_request_type(lessonid:Int!, request_type: String!): SuccessResult
       attempt_update_lesson_time(lessonid:Int!, start_time: String!, end_time: String!): SuccessResult
       update_client(id: Int!, name: String!, phonenumber: String!, address: String, job: String, birthdate: String, gender: String, memo: String, email: String): SuccessResult
       update_instructor(id: Int!, name: String!, phonenumber: String!, birthdate: String, validation_date: String, memo: String, address: String, is_apprentice: Boolean, email: String, job: String, level: String, gender: String): SuccessResult
@@ -1098,6 +1099,111 @@ const resolvers = {
             return {
                 success: ret
             }
+        },
+        delete_lesson_with_request_type: async (parent, args)=>{
+            console.log('inside delete_lesson_with_request_type')
+
+            console.log(args)
+
+            let current_time = new Date()
+
+            let request_type = args.request_type
+
+            let lesson_start_time = await pgclient.query('select starttime from pilates.lesson where id=$1',[args.lessonid]).then(res=>{
+                if(res.rowCount ==0){
+                    return null
+                }
+
+                return res.rows[0].starttime
+            }).catch(e=>{
+                console.log(e)
+                return null
+            })
+
+            if(lesson_start_time==null){
+                return {
+                    success: false,
+                    msg: "failed to check start time of lesson"
+                }
+            }
+
+            lesson_start_time = moment(lesson_start_time)
+
+            console.log("current time")
+            console.log(current_time)
+
+            console.log("start time")
+            console.log(lesson_start_time)
+
+
+
+            let time_delta = lesson_start_time - current_time
+            time_delta /= 1000   // convert to seconds
+
+            console.log('time delta: ' + time_delta)
+
+            // check if the current date is day before start time
+            
+            let start_time_zero_hour = moment(lesson_start_time)
+            start_time_zero_hour.set({
+                hours: 0
+            })
+
+            console.log("start_time_zero_hour")
+            console.log(start_time_zero_hour)
+
+            let is_current_date_before_start_time_date = current_time < start_time_zero_hour ? true: false
+
+            console.log("is_current_date_before_start_time_date")
+            console.log(is_current_date_before_start_time_date)
+
+            if(request_type == "ADMIN_REQUEST"){
+
+
+
+                let result = await pgclient.query('update pilates.lesson set cancel_type=\'ADMIN_CANCEL\', canceled_time=now() where id=$1',[ args.lessonid ]).then(res=>{
+                    if(res.rowCount==0){
+                        return {
+                            success: false,
+                            msg: "no lesson found matching lessonid"
+                        }
+                    }
+
+                    return {
+                        success: true
+                    }
+                })
+                .catch(e=>{
+                    console.log(e)
+
+                    return {
+                        success: false,
+                        msg: "query error updating"
+                    }
+                })
+
+                return result
+            }
+            else if(time_delta < 2 * 3600 ){
+                return {
+                    success: false,
+                    msg: "minimum time window closed"
+                }
+            }
+            else if(!is_current_date_before_start_time_date){
+                return {
+                    success: true,
+                    msg: "penalized change"
+                }
+            }
+            else{
+                return {
+                    success: true,
+                    msg: "no penalized change"
+                }
+            }
+
+
         },
         create_individual_lesson: async (parent, args) => {
             console.log('inside create individual lesson')

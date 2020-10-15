@@ -13,7 +13,8 @@ import TimeKeeper from 'react-timekeeper';
 import {
 
     DELETE_LESSON_GQL,
-    UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL
+    UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL,
+    DELETE_LESSON_WITH_REQUEST_TYPE_GQL
 
 } from '../../common/gql_defs'
 
@@ -22,8 +23,6 @@ class AllScheduleViewLessonModal extends React.Component {
     constructor(props) {
         super(props)
 
-        console.log('props')
-        console.log(this.props)
 
         this.state = {
             edit_mode: false,
@@ -31,7 +30,9 @@ class AllScheduleViewLessonModal extends React.Component {
                 lesson_date: new Date(parseInt(this.props.view_selected_lesson.starttime)),
                 start_time: moment(new Date(parseInt(this.props.view_selected_lesson.starttime))).format('HH:mm'),
                 end_time: moment(new Date(parseInt(this.props.view_selected_lesson.endtime))).format('HH:mm'),
-                instructorid: this.props.view_selected_lesson.instructorid
+                instructorid: this.props.view_selected_lesson.instructorid,
+
+                show_delete_ask_modal: false
 
             }
         }
@@ -40,6 +41,7 @@ class AllScheduleViewLessonModal extends React.Component {
         this.submit_edit_changes = this.submit_edit_changes.bind(this)
         this.valid_check_edit_info = this.valid_check_edit_info.bind(this)
         this.get_edit_info_start_end_moment = this.get_edit_info_start_end_moment.bind(this)
+        this.delete_lesson_with_request_type = this.delete_lesson_with_request_type.bind(this)
 
     }
 
@@ -58,6 +60,30 @@ class AllScheduleViewLessonModal extends React.Component {
             }
             else {
                 alert('failed to delete lesson')
+            }
+        }).catch(e => {
+            console.log('error deleting lesson')
+            alert('failed to delete lesson')
+        })
+    }
+
+
+    delete_lesson_with_request_type(request_type){
+
+        this.props.apolloclient.mutate({
+            mutation: DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
+            variables: {
+                lessonid: this.props.view_selected_lesson.id,
+                request_type: request_type
+            }
+        }).then(d => {
+            console.log(d)
+            if (d.data.delete_lesson_with_request_type.success) {
+
+                this.props.onDeleteSuccess()
+            }
+            else {
+                alert('failed to delete lesson.' + d.data.delete_lesson_with_request_type.msg)
             }
         }).catch(e => {
             console.log('error deleting lesson')
@@ -368,13 +394,18 @@ class AllScheduleViewLessonModal extends React.Component {
                     시간/강사변경
             </Button>
                 <Button onClick={e => {
-                    let ret = confirm("delete?")
-                    if (ret) {
-                        this.delete_lesson()
-                    }
+
+                    this.setState({
+                        show_delete_ask_modal: true
+                    })
+
+                    // let ret = confirm("delete?")
+                    // if (ret) {
+                    //     this.delete_lesson()
+                    // }
 
                 }}>delete</Button>
-                
+
                 <Button onClick={e => {
                     this.props.onCancel()
                 }
@@ -383,10 +414,32 @@ class AllScheduleViewLessonModal extends React.Component {
         }
 
 
-        return <Modal show={true} onHide={() => this.props.onCancel()} dialogClassName="modal-90w" >
-            {modal_body}
-            {modal_footer}
-        </Modal>
+        return <div>
+            <Modal show={true} onHide={() => this.props.onCancel()} dialogClassName="modal-90w" >
+                {modal_body}
+                {modal_footer}
+            </Modal>
+
+            <Modal show={this.state.show_delete_ask_modal} onHide={() => this.setState({
+                show_delete_ask_modal: false
+            })}>
+                <Modal.Body>
+                    <div className="col-gravity-center">
+                        <Button className="small-margined" onClick={e=>this.delete_lesson_with_request_type('CLIENT_REQUEST')}>고객요청</Button>
+                        <Button className="small-margined" onClick={e=>this.delete_lesson_with_request_type('INSTRUCTOR_REQUEST')}>강사요청</Button>
+                        <Button className="small-margined" onClick={e=>this.delete_lesson_with_request_type('ADMIN_REQUEST')}>관리자권한 강제요청</Button>
+                    </div>
+
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button onClick={e => {
+                        this.setState({
+                            show_delete_ask_modal: false
+                        })
+                    }}>cancel</Button>
+                </Modal.Footer>
+            </Modal>
+        </div>
 
     }
 }

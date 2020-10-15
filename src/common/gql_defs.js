@@ -44,6 +44,16 @@ const DELETE_LESSON_GQL = gql`mutation deletelesson($lessonid:Int!){
     }
 }`
 
+
+const DELETE_LESSON_WITH_REQUEST_TYPE_GQL = gql`mutation delete_lesson_with_request_type($lessonid: Int!, $request_type: String!){
+    delete_lesson_with_request_type(lessonid: $lessonid, request_type: $request_type){
+        success
+        msg
+    }
+}
+`
+
+
 const QUERY_LESSON_WITH_DATERANGE_GQL = gql`query($start_time: String!, $end_time: String!){
     query_lessons_with_daterange(start_time: $start_time, end_time: $end_time){
         success,
@@ -339,6 +349,7 @@ export {
     CREATE_INSTRUCTOR_GQL,
     FETCH_TICKETS_FOR_SUBSCRIPTION_ID,
     FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID,
-    UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL
+    UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL,
+    DELETE_LESSON_WITH_REQUEST_TYPE_GQL
 
 }
