@@ -35,7 +35,7 @@ function parse_incoming_date_utc_string(date_utc_str) {
 }
 
 module.exports={
-    parse_incoming_date_utc_string,
-    parse_incoming_gender_str,
-    incoming_time_string_to_postgres_epoch_time
+    parse_incoming_date_utc_string: parse_incoming_date_utc_string,
+    parse_incoming_gender_str: parse_incoming_gender_str,
+    incoming_time_string_to_postgres_epoch_time: incoming_time_string_to_postgres_epoch_time 
 }

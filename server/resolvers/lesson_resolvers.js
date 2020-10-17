@@ -1,5 +1,10 @@
 const moment = require('moment-timezone');
 const pgclient  = require('../pgclient')
+const {
+    parse_incoming_date_utc_string,
+    parse_incoming_gender_str,
+    incoming_time_string_to_postgres_epoch_time
+}  = require('./common')
 
 module.exports = {
 
@@ -498,6 +503,9 @@ module.exports = {
 
                 return false
 
+            }).catch(e=>{
+                console.log(e)
+                return false
             })
 
             if (!client_check) {

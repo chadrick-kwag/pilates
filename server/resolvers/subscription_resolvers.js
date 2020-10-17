@@ -12,15 +12,23 @@ module.exports = {
 
             console.log(args)
 
-
-            let result = await pgclient.query("select subscription_ticket.id, expire_time, subscription.created as created_date, \
+            /* old query: select subscription_ticket.id, expire_time, subscription.created as created_date, \
             lesson.created as consumed_date ,\
             destroyer_subscription.created as destroyed_date\
             from pilates.subscription_ticket \
             left join pilates.subscription on subscription_ticket.creator_subscription_id = subscription.id \
             left join pilates.lesson on subscription_ticket.id = lesson.consuming_client_ss_ticket_id \
             left join pilates.subscription as destroyer_subscription on subscription_ticket.destroyer_subscription_id = \ destroyer_subscription.id \
-            where subscription.id=$1", [args.subscription_id]).then(res => {
+            where subscription.id=$1
+            */
+
+
+            let result = await pgclient.query("select distinct on(A.id) A.id as id, expire_time, creator_subscription.created as created_date,  get_ticket_consumed_time(cancel_type, canceled_time, lesson.created) as consumed_date, destroyer_subscription.created as destroyed_date \
+            from ((select * from pilates.subscription_ticket where creator_subscription_id=$1) as A  \
+            left join pilates.lesson on A.id = lesson.consuming_client_ss_ticket_id ) \
+            left join pilates.subscription as creator_subscription on creator_subscription_id = creator_subscription.id \
+            left join pilates.subscription as destroyer_subscription on destroyer_subscription_id = destroyer_subscription.id \
+            order by A.id, lesson.created desc  ", [args.subscription_id]).then(res => {
                 console.log(res.rows)
 
                 return {
