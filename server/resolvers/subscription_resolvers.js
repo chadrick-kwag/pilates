@@ -1,13 +1,13 @@
-const pgclient  = require('../pgclient')
+const pgclient = require('../pgclient')
 const {
     parse_incoming_date_utc_string,
     parse_incoming_gender_str,
     incoming_time_string_to_postgres_epoch_time
-}  = require('./common')
+} = require('./common')
 
 module.exports = {
-    Query:{
-        
+    Query: {
+
         fetch_tickets_for_subscription_id: async (parent, args) => {
 
             console.log(args)
@@ -48,13 +48,14 @@ module.exports = {
             return result
 
         },
-        
+
         query_all_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
 
             // console.log(args)
 
-            let result = await pgclient.query(" \
-            select json_build_object('total_rounds', subscription.rounds, \
+
+            /* old query
+select json_build_object('total_rounds', subscription.rounds, \
             'activity_type', subscription.activity_type, \
             'grouping_type', subscription.grouping_type, \
             'remain_rounds', A.remain_rounds, \
@@ -72,7 +73,22 @@ module.exports = {
              \
             on A.subscription_id=subscription.id \
             where subscription.clientid = $1 \
-            order by created", [args.clientid]).then(res => {
+            order by created
+            */
+
+            let result = await pgclient.query(" select json_build_object( \
+                'subscription_id',subscription_ticket.creator_subscription_id , \
+                'total_rounds', count(subscription_ticket.id), \
+                'remain_rounds',count( case when get_ticket_consumed_time(cancel_type, canceled_time, lesson.created) is null then 1 else null end), \
+                'activity_type', subscription.activity_type, \
+                'grouping_type', subscription.grouping_type, \
+                'created',subscription.created) \
+                from pilates.subscription_ticket \
+                left join pilates.lesson on subscription_ticket.id = lesson.consuming_client_ss_ticket_id \
+                left join pilates.subscription on creator_subscription_id = subscription.id \
+                where subscription_ticket.creator_subscription_id in (select id from pilates.subscription where clientid=$1) \
+                group by subscription_ticket.creator_subscription_id, subscription.activity_type, subscription.grouping_type, subscription.created \
+                order by subscription.created", [args.clientid]).then(res => {
 
                 // console.log(res.rows)
 
@@ -95,7 +111,7 @@ module.exports = {
 
             return result
         },
-        
+
         query_subscriptions: async (parent, args) => {
             console.log(args)
 
@@ -129,9 +145,38 @@ module.exports = {
         query_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
             console.log(args)
 
-            let subscriptions = await pgclient.query('select array_agg(json_build_object(\'id\',subscription_ticket.id, \'expire_time\',subscription_ticket.expire_time)), subscription_ticket.creator_subscription_id as subscription_id, subscription.created  from pilates.subscription_ticket \
+            /*
+            old query:
+
+            select array_agg(json_build_object(\'id\',subscription_ticket.id, \'expire_time\',subscription_ticket.expire_time)), subscription_ticket.creator_subscription_id as subscription_id, subscription.created  from pilates.subscription_ticket \
              LEFT JOIN pilates.lesson ON subscription_ticket.id = lesson.consuming_client_ss_ticket_id  LEFT JOIN pilates.subscription ON subscription_ticket.creator_subscription_id = subscription.id where  destroyer_subscription_id is null and expire_time > now() and lesson.id is null and \
-              creator_subscription_id in ( select id from pilates.subscription where clientid=$1 and activity_type=$2 and grouping_type=$3) GROUP BY subscription_ticket.creator_subscription_id, subscription.created', [args.clientid, args.activity_type, args.grouping_type]).then(res => {
+              creator_subscription_id in ( select id from pilates.subscription where clientid=$1 and activity_type=$2 and grouping_type=$3) GROUP BY subscription_ticket.creator_subscription_id, subscription.created
+            */
+
+            let subscriptions = await pgclient.query("select \
+            array_agg(json_build_object('id',id, 'expire_time',expire_time)), \
+            creator_subscription_id as subscription_id, \
+            created \
+            from (\
+            select distinct on(subscription_ticket.id) \
+            subscription_ticket.id,\
+            expire_time,\
+            lesson.created as lesson_created,\
+            lesson.cancel_type,\
+            lesson.canceled_time,\
+            subscription_ticket.creator_subscription_id,\
+            subscription.created  as created\
+             from pilates.subscription_ticket \
+            left join pilates.lesson ON subscription_ticket.id = lesson.consuming_client_ss_ticket_id\
+            LEFT JOIN pilates.subscription ON subscription_ticket.creator_subscription_id = subscription.id \
+            where subscription.clientid=$1 \
+            and subscription.activity_type=$2 and subscription.grouping_type = $3\
+             and \
+             destroyer_subscription_id is null and expire_time > now() \
+            order by subscription_ticket.id,lesson.created desc\
+            ) AS a\
+            where get_ticket_consumed_time(a.cancel_type, a.canceled_time, a.lesson_created) is null\
+            GROUP BY creator_subscription_id, created", [args.clientid, args.activity_type, args.grouping_type]).then(res => {
 
                 let ret_arr = []
 
