@@ -76,19 +76,32 @@ select json_build_object('total_rounds', subscription.rounds, \
             order by created
             */
 
-            let result = await pgclient.query(" select json_build_object( \
-                'subscription_id',subscription_ticket.creator_subscription_id , \
-                'total_rounds', count(subscription_ticket.id), \
-                'remain_rounds',count( case when get_ticket_consumed_time(cancel_type, canceled_time, lesson.created) is null then 1 else null end), \
-                'activity_type', subscription.activity_type, \
-                'grouping_type', subscription.grouping_type, \
-                'created',subscription.created) \
-                from pilates.subscription_ticket \
-                left join pilates.lesson on subscription_ticket.id = lesson.consuming_client_ss_ticket_id \
-                left join pilates.subscription on creator_subscription_id = subscription.id \
-                where subscription_ticket.creator_subscription_id in (select id from pilates.subscription where clientid=$1) \
-                group by subscription_ticket.creator_subscription_id, subscription.activity_type, subscription.grouping_type, subscription.created \
-                order by subscription.created", [args.clientid]).then(res => {
+            let result = await pgclient.query("select \
+            json_build_object(\
+            'subscription_id',creator_subscription_id,\
+            'total_rounds',count(id),\
+            'remain_rounds',count(case when get_ticket_consumed_time(cancel_type, canceled_time, lesson_created) is null then 1 else null end),\
+            'activity_type',activity_type,\
+            'grouping_type',grouping_type,\
+            'created',created\
+            )\
+             from\
+            (select distinct on (subscription_ticket.id) \
+            subscription_ticket.id as id,\
+            subscription_ticket.creator_subscription_id,\
+            subscription.activity_type as activity_type,\
+            grouping_type,\
+            subscription.created as created,\
+            lesson.cancel_type as cancel_type,\
+            lesson.canceled_time as canceled_time,\
+            lesson.created as lesson_created\
+            from pilates.subscription_ticket\
+            left join pilates.lesson on subscription_ticket.id = lesson.consuming_client_ss_ticket_id\
+            left join pilates.subscription on creator_subscription_id = subscription.id \
+            where subscription_ticket.creator_subscription_id in (select id from pilates.subscription where clientid=$1)\
+            order by subscription_ticket.id, lesson.created desc) AS a\
+            group by creator_subscription_id, activity_type, grouping_type, created \
+            order by created", [args.clientid]).then(res => {
 
                 // console.log(res.rows)
 
