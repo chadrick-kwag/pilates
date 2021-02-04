@@ -13,11 +13,11 @@ module.exports = {
                 test: /\.jsx?$/,
                 include: path.resolve(__dirname, 'src'),
                 exclude : "/node_modules",
-                loader: "babel-loader"
+                use: "babel-loader"
             },
             {
                 test: /\.css/,
-                loader: ["style-loader", "css-loader"]
+                use: ["style-loader", "css-loader"]
             }
         ]
     },
@@ -28,6 +28,6 @@ module.exports = {
     ],
     devServer:{
         open: "chrome",
-        host: '0.0.0.0'
+        host: 'localhost'
     }
 }
