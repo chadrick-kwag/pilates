@@ -20,7 +20,7 @@ class ListInstructorPage extends React.Component {
         super(props)
 
         this.state = {
-            data: [],
+            data: null,
             edit_target_instructor: null,
             detail_target_instructor: null,
             search_name: ""
