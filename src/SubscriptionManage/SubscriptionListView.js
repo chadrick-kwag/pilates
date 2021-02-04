@@ -1,8 +1,8 @@
 import React from 'react'
-import { Button, Table } from 'react-bootstrap'
+import { Button, Table, DropdownButton, Form } from 'react-bootstrap'
 import moment from 'moment'
 
-import { QUERY_SUBSCRIPTIONS_GQL, DELETE_SUBSCRITION_GQL} from '../common/gql_defs'
+import { QUERY_SUBSCRIPTIONS_GQL, DELETE_SUBSCRITION_GQL, QUERY_SUBSCRIPTION_OF_CLIENTNAME } from '../common/gql_defs'
 
 import ViewSubscriptionDetailModal from './ViewSubscriptionDetailModal'
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
@@ -16,30 +16,59 @@ class SubscriptionListView extends React.Component {
         this.state = {
             data: null,
             delete_target_subscription: null,
-            view_selected_subscription: null
+            view_selected_subscription: null,
+            search_client_name: ""
         }
 
         this.fetchdata = this.fetchdata.bind(this)
+        this.check_search_input = this.check_search_input.bind(this)
     }
 
-    componentDidMount() {
-        this.fetchdata()
-    }
+    // componentDidMount() {
+    //     this.fetchdata()
+    // }
+
+    // fetchdata() {
+
+    //     this.props.apolloclient.query({
+    //         query: QUERY_SUBSCRIPTIONS_GQL,
+    //         fetchPolicy: 'no-cache'
+    //     }).then(d => {
+    //         console.log(d)
+    //         if (d.data.query_subscriptions.success) {
+    //             this.setState({
+    //                 data: d.data.query_subscriptions.subscriptions
+    //             })
+    //         }
+    //         else {
+    //             alert('failed to fetch data')
+    //         }
+    //     }).catch(e => {
+    //         console.log(e)
+    //         console.log(JSON.stringify(e))
+    //         alert('error fetch data')
+    //     })
+
+    // }
 
     fetchdata() {
 
         this.props.apolloclient.query({
-            query: QUERY_SUBSCRIPTIONS_GQL,
+            query: QUERY_SUBSCRIPTION_OF_CLIENTNAME,
+            variables: {
+                clientname: this.state.search_client_name
+            },
             fetchPolicy: 'no-cache'
         }).then(d => {
             console.log(d)
-            if (d.data.query_subscriptions.success) {
+            if (d.data.query_subscriptions_of_clientname.success) {
                 this.setState({
-                    data: d.data.query_subscriptions.subscriptions
+                    data: d.data.query_subscriptions_of_clientname.subscriptions
                 })
             }
             else {
                 alert('failed to fetch data')
+
             }
         }).catch(e => {
             console.log(e)
@@ -50,13 +79,22 @@ class SubscriptionListView extends React.Component {
     }
 
 
+    check_search_input() {
+
+        if (this.state.search_client_name === undefined) {
+            return false
+        }
+        if (this.state.search_client_name.trim() === "") {
+            return false
+        }
+
+        return true
+    }
+
 
 
     render() {
 
-        if (this.state.data == null) {
-            return <div>no results</div>
-        }
 
 
         let detail_view_modal = null
@@ -76,8 +114,19 @@ class SubscriptionListView extends React.Component {
         return <div>
             {detail_view_modal}
 
+            <div className='row-gravity-center'>
+                <span>회원이름</span>
+                <Form.Control value={this.state.search_client_name} onChange={e => this.setState({ search_client_name: e.target.value })} />
+                <Button onClick={_ => {
+                    let check = this.check_search_input()
 
-            <Table className="row-clickable-table">
+                    if (check) {
+                        this.fetchdata()
+                    }
+                }}>search</Button>
+            </div>
+
+            {this.state.data === null ? <div>no results</div> : <Table className="row-clickable-table">
                 <thead>
                     <th>
                         id
@@ -138,6 +187,9 @@ class SubscriptionListView extends React.Component {
                     })}
                 </tbody>
             </Table>
+
+            }
+
         </div>
     }
 }

@@ -125,6 +125,41 @@ select json_build_object('total_rounds', subscription.rounds, \
             return result
         },
 
+        query_subscriptions_of_clientname: async (parent, args)=>{
+
+            console.log('inside query_subscriptions_of_clientname')
+            console.log(args)
+
+            let subscriptions = await pgclient.query('select subscription.id, subscription.clientid, client.name as clientname, rounds, totalcost, subscription.created, subscription.activity_type, subscription.grouping_type, subscription.coupon_backed from pilates.subscription left join pilates.client on subscription.clientid=client.id where client.name=$1',[args.clientname])
+            .then(res=>{
+                console.log(res.rows)
+                return res.rows
+            }).catch(e=>{
+                console.log(e)
+                return null
+            })
+
+
+            if (subscriptions == null) {
+                return {
+                    success: false,
+                    subscriptions: []
+                }
+            }
+            else {
+
+                let retobj = {
+                    success: true,
+                    "subscriptions": subscriptions
+                }
+                console.log(retobj)
+                return retobj
+            }
+
+
+
+        },
+
         query_subscriptions: async (parent, args) => {
             console.log(args)
 

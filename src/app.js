@@ -5,7 +5,7 @@ import './common/subscription.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { ApolloProvider, } from '@apollo/react-hooks';
-import { ApolloClient, InMemoryCache, createHttpLink, useMutation } from '@apollo/client'
+// import { ApolloClient, InMemoryCache, createHttpLink, useMutation } from '@apollo/client'
 
 import CreateSubscriptionPage from './CreateSubscriptionPage'
 import SchedulePage from './SchedulePage/SchedulePage'
@@ -17,28 +17,15 @@ import InstructorManagePage from './InstructorManage/InstructorManagePage'
 import SubscriptionManagePage from './SubscriptionManage/SubscriptionManagePage'
 import {gql_server_addr} from '../config'
 
+import client from './apolloclient'
+
 Number.prototype.format = function () {
     return this.toString().split( /(?=(?:\d{3})+(?:\.|$))/g ).join( "," );
 };
 
 
-const cache = new InMemoryCache({
-    dataIdFromObject: o=>{
-        console.log(o)
-        let retid = o.id ? `${o.__typename}-${o.id}` : `${o.__typename}-${o.cursor}`
-        console.log(retid)
-        return o
-    }
-});
 
-const link = createHttpLink({
-    uri: gql_server_addr
-});
 
-const client = new ApolloClient({
-    cache,
-    link
-});
 
 
 class App extends React.Component {

@@ -28,6 +28,7 @@ module.exports = {
     ],
     devServer:{
         open: "chrome",
-        host: 'localhost'
+        host: 'localhost',
+        compress: false
     }
 }
