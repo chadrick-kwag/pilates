@@ -37,7 +37,6 @@ class AllScheduleViewLessonModal extends React.Component {
             }
         }
 
-        this.delete_lesson = this.delete_lesson.bind(this)
         this.submit_edit_changes = this.submit_edit_changes.bind(this)
         this.valid_check_edit_info = this.valid_check_edit_info.bind(this)
         this.get_edit_info_start_end_moment = this.get_edit_info_start_end_moment.bind(this)
@@ -45,27 +44,6 @@ class AllScheduleViewLessonModal extends React.Component {
 
     }
 
-
-    delete_lesson() {
-        this.props.apolloclient.mutate({
-            mutation: DELETE_LESSON_GQL,
-            variables: {
-                lessonid: this.props.view_selected_lesson.id
-            }
-        }).then(d => {
-            console.log(d)
-            if (d.data.delete_lesson.success) {
-
-                this.props.onDeleteSuccess()
-            }
-            else {
-                alert('failed to delete lesson')
-            }
-        }).catch(e => {
-            console.log('error deleting lesson')
-            alert('failed to delete lesson')
-        })
-    }
 
 
     delete_lesson_with_request_type(request_type){
@@ -96,7 +74,7 @@ class AllScheduleViewLessonModal extends React.Component {
         let [start_m, end_m] = this.get_edit_info_start_end_moment()
 
         if (!start_m.isBefore(end_m)) {
-            return "start time is before end time"
+            return "start time is after end time"
         }
 
         return null
@@ -175,7 +153,7 @@ class AllScheduleViewLessonModal extends React.Component {
                 this.props.onEditSuccess()
             }
             else {
-                alert('failed to submit edit')
+                alert(`failed to submit edit\n${d.data.update_lesson_instructor_or_time.msg}`)
             }
         }).catch(e => {
             console.log(JSON.stringify(e))
@@ -399,10 +377,6 @@ class AllScheduleViewLessonModal extends React.Component {
                         show_delete_ask_modal: true
                     })
 
-                    // let ret = confirm("delete?")
-                    // if (ret) {
-                    //     this.delete_lesson()
-                    // }
 
                 }}>delete</Button>
 

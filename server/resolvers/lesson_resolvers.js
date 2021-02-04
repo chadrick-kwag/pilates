@@ -121,6 +121,29 @@ module.exports = {
             console.log('inside update lesson instructor or time')
             console.log(args)
 
+            // if current time is after lesson's start time, then do not allow change at any circumstance
+            let currdate = new Date()
+
+            let lesson_startdate=  parse_incoming_date_utc_string(args.start_time)
+            let lesson_enddate = parse_incoming_date_utc_string(args.end_time)
+
+            if(lesson_startdate >= lesson_enddate){
+                return {
+                    success: false,
+                    msg: 'lesson start time is same or after end time'
+                }
+            }
+
+            console.log(`currdate: ${currdate}`)
+            console.log(`lesson_startdate: ${lesson_startdate}`)
+
+            if(currdate> lesson_startdate){
+                return {
+                    success: false,
+                    msg: 'cannot change time of lesson that is already past'
+                }
+            }
+
             let result = await pgclient.query('select func1($1,$2,$3,$4)',[args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)]).then(res=>{
                 return res.rows[0].func1;
             })
