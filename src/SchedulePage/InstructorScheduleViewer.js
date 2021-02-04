@@ -488,69 +488,6 @@ class InstructorScheduleViewer extends React.Component {
                                 timezonesCollapsed: true
                             }}
 
-                            onBeforeCreateSchedule={e => {
-                                console.log('before create schedule')
-                                console.log(e)
-                                let new_modal_info = {
-                                    schedule: e
-                                }
-
-                                console.log(new_modal_info)
-                                this.setState({
-                                    show_create_modal: true,
-                                    modal_info: new_modal_info
-                                })
-                            }}
-                            onBeforeUpdateSchedule={e => {
-                                let { schedule, changes } = e
-                                // do check if new schedule is viable
-                                // this.calendar.calendarInst.updateSchedule(schedule.id, schedule.calendarId, changes)
-
-                                let schedule_id = schedule.id
-                                if (schedule_id == "" || schedule_id == null) {
-                                    schedule_id = 0
-                                }
-
-                                let selected_data = this.state.data[schedule_id]
-
-                                let start_time, end_time
-                                if (changes.start) {
-                                    start_time = changes.start
-                                }
-                                else {
-                                    start_time = new Date(parseInt(selected_data.starttime))
-                                }
-
-
-
-
-                                this.props.apolloclient.mutate({
-                                    mutation: ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
-                                    variables: {
-                                        lessonid: selected_data.id,
-                                        start_time: start_time.toUTCString(),
-                                        end_time: changes.end.toUTCString()
-                                    }
-
-                                }).then(d => {
-                                    console.log(d)
-
-                                    if (d.data.attempt_update_lesson_time.success) {
-                                        // update success
-                                        this.fetchdata()
-                                        return
-                                    }
-
-                                    alert('failed to update lesson: ' + d.data.attempt_update_lesson_time.msg)
-
-
-
-                                }).catch(e => {
-                                    console.log(e)
-                                    console.log(JSON.stringify(e))
-                                    alert("error updating lesson")
-                                })
-                            }}
                             onClickSchedule={e => {
 
                                 let new_modal_info = {
