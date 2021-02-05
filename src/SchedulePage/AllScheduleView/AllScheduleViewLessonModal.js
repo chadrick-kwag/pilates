@@ -35,6 +35,7 @@ class AllScheduleViewLessonModal extends React.Component {
                 show_delete_ask_modal: false
 
             }
+            
         }
 
         this.submit_edit_changes = this.submit_edit_changes.bind(this)
@@ -46,16 +47,30 @@ class AllScheduleViewLessonModal extends React.Component {
 
 
 
-    delete_lesson_with_request_type(request_type){
+    delete_lesson_with_request_type(request_type, ignore_warning=false){
 
         this.props.apolloclient.mutate({
             mutation: DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
             variables: {
                 lessonid: this.props.view_selected_lesson.id,
+                ignore_warning: ignore_warning,
                 request_type: request_type
             }
         }).then(d => {
             console.log(d)
+
+            if(d.data.delete_lesson_with_request_type.penalty_warning===true){
+
+                let ret = confirm(d.data.delete_lesson_with_request_type.msg)
+
+                if(ret){
+                    this.delete_lesson_with_request_type(request_type, true)
+                }
+
+                // if do not proceed
+                return
+            }
+
             if (d.data.delete_lesson_with_request_type.success) {
 
                 this.props.onDeleteSuccess()
@@ -64,6 +79,7 @@ class AllScheduleViewLessonModal extends React.Component {
                 alert('failed to delete lesson.' + d.data.delete_lesson_with_request_type.msg)
             }
         }).catch(e => {
+            console.log(JSON.stringify(e))
             console.log('error deleting lesson')
             alert('failed to delete lesson')
         })

@@ -45,9 +45,10 @@ const DELETE_LESSON_GQL = gql`mutation deletelesson($lessonid:Int!){
 }`
 
 
-const DELETE_LESSON_WITH_REQUEST_TYPE_GQL = gql`mutation delete_lesson_with_request_type($lessonid: Int!, $request_type: String!){
-    delete_lesson_with_request_type(lessonid: $lessonid, request_type: $request_type){
+const DELETE_LESSON_WITH_REQUEST_TYPE_GQL = gql`mutation delete_lesson_with_request_type($lessonid: Int!, $request_type: String!, $ignore_warning: Boolean!){
+    delete_lesson_with_request_type(lessonid: $lessonid, request_type: $request_type, ignore_warning: $ignore_warning){
         success
+        penalty_warning
         msg
     }
 }

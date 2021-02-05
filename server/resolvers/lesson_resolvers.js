@@ -1,10 +1,10 @@
 const moment = require('moment-timezone');
-const pgclient  = require('../pgclient')
+const pgclient = require('../pgclient')
 const {
     parse_incoming_date_utc_string,
     parse_incoming_gender_str,
     incoming_time_string_to_postgres_epoch_time
-}  = require('./common')
+} = require('./common')
 
 module.exports = {
 
@@ -21,7 +21,7 @@ module.exports = {
 
             return results
         },
-        
+
         query_lessons_with_daterange: async (parent, args) => {
 
             console.log("inside query_lessons_with_daterange")
@@ -51,7 +51,7 @@ module.exports = {
                 console.log(e)
                 return {
                     success: false,
-                    msg: "query error"     
+                    msg: "query error"
                 }
             })
 
@@ -116,18 +116,18 @@ module.exports = {
             }
         }
     },
-    Mutation:{
-        update_lesson_instructor_or_time: async (parent, args)=>{
+    Mutation: {
+        update_lesson_instructor_or_time: async (parent, args) => {
             console.log('inside update lesson instructor or time')
             console.log(args)
 
             // if current time is after lesson's start time, then do not allow change at any circumstance
             let currdate = new Date()
 
-            let lesson_startdate=  parse_incoming_date_utc_string(args.start_time)
+            let lesson_startdate = parse_incoming_date_utc_string(args.start_time)
             let lesson_enddate = parse_incoming_date_utc_string(args.end_time)
 
-            if(lesson_startdate >= lesson_enddate){
+            if (lesson_startdate >= lesson_enddate) {
                 return {
                     success: false,
                     msg: 'lesson start time is same or after end time'
@@ -137,30 +137,30 @@ module.exports = {
             console.log(`currdate: ${currdate}`)
             console.log(`lesson_startdate: ${lesson_startdate}`)
 
-            if(currdate> lesson_startdate){
+            if (currdate > lesson_startdate) {
                 return {
                     success: false,
                     msg: 'cannot change time of lesson that is already past'
                 }
             }
 
-            let result = await pgclient.query('select func1($1,$2,$3,$4)',[args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)]).then(res=>{
+            let result = await pgclient.query('select func1($1,$2,$3,$4)', [args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)]).then(res => {
                 return res.rows[0].func1;
             })
-            .catch(e=>{
-                console.log(e)
+                .catch(e => {
+                    console.log(e)
 
-                return {
-                    success: false,
-                    msg: 'query error'
-                }
-            })
+                    return {
+                        success: false,
+                        msg: 'query error'
+                    }
+                })
 
             console.log(result)
 
             return result
         },
-        
+
         create_lesson: async (parent, args) => {
             console.log(args)
 
@@ -213,7 +213,7 @@ module.exports = {
                 if (res.rowCount > 0) {
                     return {
                         success: true
-                        
+
                     }
                 }
 
@@ -228,7 +228,7 @@ module.exports = {
                     msg: "query error"
                 }
             })
-            
+
 
             console.log(ret)
 
@@ -329,7 +329,12 @@ module.exports = {
 
 
         },
-        delete_lesson_with_request_type: async (parent, args)=>{
+        delete_lesson_with_request_type: async (parent, args) => {
+            /* 
+            success: Boolean
+            warning: Boolean
+            msg: String
+            */
             console.log('inside delete_lesson_with_request_type')
 
             console.log(args)
@@ -338,20 +343,20 @@ module.exports = {
 
             let request_type = args.request_type
 
-            let lesson_start_time = await pgclient.query('select starttime from pilates.lesson where id=$1',[args.lessonid]).then(res=>{
-                if(res.rowCount ==0){
+            let lesson_start_time = await pgclient.query('select starttime from pilates.lesson where id=$1', [args.lessonid]).then(res => {
+                if (res.rowCount == 0) {
                     return null
                 }
 
                 return res.rows[0].starttime
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return null
             })
 
             console.log("lesson_start_time: " + lesson_start_time)
 
-            if(lesson_start_time==null){
+            if (lesson_start_time == null) {
 
                 console.log('lesson start time is null')
                 return {
@@ -376,7 +381,7 @@ module.exports = {
             console.log('time delta: ' + time_delta)
 
             // check if the current date is day before start time
-            
+
             let start_time_zero_hour = moment(lesson_start_time)
             start_time_zero_hour.set({
                 hours: 0
@@ -385,17 +390,16 @@ module.exports = {
             console.log("start_time_zero_hour")
             console.log(start_time_zero_hour)
 
-            let is_current_date_before_start_time_date = current_time < start_time_zero_hour ? true: false
+            let is_current_date_before_start_time_date = current_time < start_time_zero_hour ? true : false
 
             console.log("is_current_date_before_start_time_date")
             console.log(is_current_date_before_start_time_date)
 
-            if(request_type == "ADMIN_REQUEST"){
+            // if admin request, just do it regardless of req time and stuff.
+            if (request_type == "ADMIN_REQUEST") {
 
-
-
-                let result = await pgclient.query('update pilates.lesson set cancel_type=\'ADMIN_CANCEL\', canceled_time=now() where id=$1',[ args.lessonid ]).then(res=>{
-                    if(res.rowCount==0){
+                let result = await pgclient.query('update pilates.lesson set cancel_type=\'ADMIN_CANCEL\', canceled_time=now() where id=$1', [args.lessonid]).then(res => {
+                    if (res.rowCount == 0) {
                         return {
                             success: false,
                             msg: "no lesson found matching lessonid"
@@ -406,104 +410,147 @@ module.exports = {
                         success: true
                     }
                 })
-                .catch(e=>{
-                    console.log(e)
+                    .catch(e => {
+                        console.log(e)
 
-                    return {
-                        success: false,
-                        msg: "query error updating"
-                    }
-                })
+                        return {
+                            success: false,
+                            msg: "query error updating"
+                        }
+                    })
 
                 return result
             }
-            else if(time_delta < 2 * 3600 ){
+            // admin request handled.
 
-                console.log("time buffer too small")
-
+            // if req time is after lesson start time, then deleting is impossible.
+            if(current_time >= lesson_start_time){
+                console.log('req time is after lesson start time')
 
                 return {
                     success: false,
-                    msg: "minimum time window closed"
+                    penalty_warning: false,
+                    msg: "req time is after lesson start time"
                 }
             }
-            else if(!is_current_date_before_start_time_date){
 
-                console.log('not current date before start time')
+            // handle client req, instructor req differently.
 
-                let cancel_type
-
-                if(request_type == 'CLIENT_REQUEST'){
-                    cancel_type = 'EMERGENCY_CLIENT_REQ_CANCEL'
-                }
-                else if(request_type == 'INSTRUCTOR_REQUEST'){
-                    cancel_type = 'CANCEL_REQUEST_BY_INSTRUCTOR'
-                }
-
+            if(args.request_type==="CLIENT_REQUEST"){
                 
-                let result = pgclient.query("update pilates.lesson set cancel_type=$1, canceled_time = now() where id=$2", [cancel_type, args.lessonid]).then(res=>{
-                    if(res.rowCount==0){
+
+                let warning=null
+                let cancel_type = null
+
+                // check for warning cases first. if warning and ignore_warning=false, then just return with warning.
+                if(time_delta < 2* 3600){
+                    console.log('time buffer too small')
+                    warning = true
+                    cancel_type = "EMERGENCY_CLIENT_REQ_CANCEL"
+                    if(!args.ignore_warning){
+                        console.log('return full penalty warning')
                         return {
                             success: false,
+                            penalty_warning: true,
+                            msg: "time buffer insufficient. forcing will cause full penalty"
+                        }   
+                    }
+
+                }
+                else if(!is_current_date_before_start_time_date){
+                    console.log('client req, req date same as start date')
+                    warning = true
+                    cancel_type = "CRITICAL_CLIENT_REQ_CANCEL"
+                    if(!args.ignore_warning){
+                        return {
+                            success: false,
+                            penalty_warning: true,
+                            msg: "req date is same as lesson date. forcing will cause semi-penalty"
+                        }
+                    }
+
+                }
+                else{
+                    // by here, timing is buffered enough.
+                    warning = false
+                    cancel_type = "BUFFERED_CLIENT_REQ_CANCEL"
+                }
+
+
+                // execute lesson cancel query with determined cancel type.
+                let result = pgclient.query("update pilates.lesson set cancel_type=$1, canceled_time = now() where id=$2", [cancel_type, args.lessonid]).then(res => {
+                    if (res.rowCount == 0) {
+                        return {
+                            success: false,
+                            warning: false,
                             msg: 'query effect no row'
                         }
                     }
 
-                    
 
                     return {
-                        success: true
+                        success: true,
+                        warning: false,
+                        msg: "success update"
                     }
-                }).catch(e=>{
+                }).catch(e => {
                     console.log(e)
                     return {
                         success: false,
+                        warning: false,
                         msg: "query error"
                     }
                 })
 
-                console.log(result)
+                return result
+
+
+
+            } // end of client req case
+            else if(args.request_type==="INSTRUCTOR_REQUEST"){
+                // for instructore, currently the policy is to use "CANCEL_REQUEST_BY_INSTRUCTOR" as cancel type.
+                // only restriction is, request should come in before lesson start time. 
+                // but at this point, this restriction is already satisfied.
+
+                let cancel_type = "CANCEL_REQUEST_BY_INSTRUCTOR"
+
+                let result = pgclient.query("update pilates.lesson set cancel_type=$1, canceled_time = now() where id=$2", [cancel_type, args.lessonid]).then(res => {
+                    if (res.rowCount == 0) {
+                        return {
+                            success: false,
+                            warning: false,
+                            msg: 'query effect no row'
+                        }
+                    }
+
+
+                    return {
+                        success: true,
+                        warning: false,
+                        msg: "success update"
+                    }
+                }).catch(e => {
+                    console.log(e)
+                    return {
+                        success: false,
+                        warning: false,
+                        msg: "query error"
+                    }
+                })
 
                 return result
-                
-
             }
             else{
+                console.log(`invalid req type: ${args.request_type}`)
 
-                console.log('buffered delete condition')
-
-                let cancel_type
-
-                if(request_type == 'CLIENT_REQUEST'){
-                    cancel_type = 'BUFFERED_CLIENT_REQ_CANCEL'
+                return {
+                    success: false,
+                    warning: false,
+                    msg: 'error. invalid req type'
                 }
-                else if(request_type == 'INSTRUCTOR_REQUEST'){
-                    cancel_type = 'BUFFERED_INSTRUCTOR_CHANGE'
-                }
-
-                let result = pgclient.query("update pilates.lesson set cancel_type=$1, canceled_time = now() where id=$2", [cancel_type, args.lessonid]).then(res=>{
-                    if(res.rowCount==0){
-                        return {
-                            success: false,
-                            msg: 'query effect no row'
-                        }
-                    }
-
-                    return {
-                        success: true
-                    }
-                }).catch(e=>{
-                    console.log(e)
-                    return {
-                        success: false,
-                        msg: "query error"
-                    }
-                })
-
-                console.log(result)
-
-                return result
             }
+            
+            
 
 
         },
@@ -526,7 +573,7 @@ module.exports = {
 
                 return false
 
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return false
             })
