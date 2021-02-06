@@ -46,8 +46,9 @@ class CreateLessonPage extends React.Component {
     }
 
     is_time_later(time1, time2) {
+        // check if time1 is later than time2
 
-
+        console.log(`time1: ${time1}, time2: ${time2}`)
 
         const reg = /([0-9]+):([0-9]+)/
 
@@ -61,7 +62,12 @@ class CreateLessonPage extends React.Component {
         let time2_hour = mat[1]
         let time2_min = mat[2]
 
+        time1_hour = parseInt(time1_hour)
+        time2_hour = parseInt(time2_hour)
+        time1_min = parseInt(time1_min)
+        time2_min = parseInt(time2_min)
 
+        console.log(`time1_hour: ${time1_hour}, time2_hour: ${time2_hour}`)
 
         if (time1_hour > time2_hour) {
             return true
