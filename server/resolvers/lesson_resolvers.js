@@ -446,7 +446,7 @@ module.exports = {
                 if(time_delta < 2* 3600){
                     console.log('time buffer too small')
                     warning = true
-                    cancel_type = "EMERGENCY_CLIENT_REQ_CANCEL"
+                    cancel_type = "CRITICAL_CLIENT_REQ_CANCEL"
                     if(!args.ignore_warning){
                         console.log('return full penalty warning')
                         return {
@@ -460,7 +460,7 @@ module.exports = {
                 else if(!is_current_date_before_start_time_date){
                     console.log('client req, req date same as start date')
                     warning = true
-                    cancel_type = "CRITICAL_CLIENT_REQ_CANCEL"
+                    cancel_type = "EMERGENCY_CLIENT_REQ_CANCEL"
                     if(!args.ignore_warning){
                         return {
                             success: false,
