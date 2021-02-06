@@ -19,6 +19,7 @@ class SubscriptionListView extends React.Component {
             view_selected_subscription: null,
             search_client_name: "",
             client_candidates: []
+            
 
         }
 
@@ -99,29 +100,6 @@ class SubscriptionListView extends React.Component {
             alert('query error')
         })
 
-        // this.props.apolloclient.query({
-        //     query: QUERY_SUBSCRIPTION_OF_CLIENTNAME,
-        //     variables: {
-        //         clientname: this.state.search_client_name
-        //     },
-        //     fetchPolicy: 'no-cache'
-        // }).then(d => {
-        //     console.log(d)
-        //     if (d.data.query_subscriptions_of_clientname.success) {
-        //         this.setState({
-        //             data: d.data.query_subscriptions_of_clientname.subscriptions
-        //         })
-        //     }
-        //     else {
-        //         alert('failed to fetch data')
-
-        //     }
-        // }).catch(e => {
-        //     console.log(e)
-        //     console.log(JSON.stringify(e))
-        //     alert('error fetch data')
-        // })
-
     }
 
 
@@ -136,7 +114,6 @@ class SubscriptionListView extends React.Component {
 
         return true
     }
-
 
 
     render() {
@@ -179,67 +156,72 @@ class SubscriptionListView extends React.Component {
                 }}>search</Button>
             </div>
 
-            {this.state.client_candidates.length == 0 ? (this.state.data === null ? <div>no results</div> : <Table className="row-clickable-table">
-                <thead>
-                    <th>
-                        id
-                </th>
-                    <th>client id</th>
-                    <th>client name</th>
-                    <th>type</th>
+            {this.state.client_candidates.length == 0 ? (this.state.data === null ? <div>no results</div> :
 
-                    <th>rounds</th>
-                    <th>total cost</th>
-                    <th>created</th>
-                    <th>action</th>
-                </thead>
-                <tbody>
-                    {this.state.data.map((d, i) => {
+                <div>
+                    <Table className="row-clickable-table">
+                        <thead>
+                            <th>
+                                id
+                        </th>
+                            <th>client id</th>
+                            <th>client name</th>
+                            <th>type</th>
 
-                        return <tr onClick={e => {
-                            this.setState({
-                                view_selected_subscription: d
-                            })
-                        }}>
-                            <td>{d.id}</td>
-                            <td>{d.clientid}</td>
-                            <td>{d.clientname}</td>
-                            <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
+                            <th>rounds</th>
+                            <th>total cost</th>
+                            <th>created</th>
+                            <th>action</th>
+                        </thead>
+                        <tbody>
+                            {this.state.data.map((d, i) => {
 
-                            <td>{d.rounds}</td>
-                            <td>{d.totalcost}</td>
-                            <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
-                            <td><div>
-                                <Button onClick={e => {
-                                    let result = confirm("delete?")
-                                    if (result) {
-                                        this.props.apolloclient.mutate({
-                                            mutation: DELETE_SUBSCRITION_GQL,
-                                            variables: {
-                                                id: parseInt(d.id)
+                                return <tr onClick={e => {
+                                    this.setState({
+                                        view_selected_subscription: d
+                                    })
+                                }}>
+                                    <td>{d.id}</td>
+                                    <td>{d.clientid}</td>
+                                    <td>{d.clientname}</td>
+                                    <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
+
+                                    <td>{d.rounds}</td>
+                                    <td>{d.totalcost}</td>
+                                    <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
+                                    <td><div>
+                                        <Button onClick={e => {
+                                            let result = confirm("delete?")
+                                            if (result) {
+                                                this.props.apolloclient.mutate({
+                                                    mutation: DELETE_SUBSCRITION_GQL,
+                                                    variables: {
+                                                        id: parseInt(d.id)
+                                                    }
+                                                }).then(d => {
+                                                    console.log(d)
+
+                                                    if (d.data.delete_subscription.success) {
+                                                        this.fetchdata()
+                                                    }
+                                                    else {
+                                                        alert('failed to delete')
+                                                    }
+                                                }).catch(e => {
+                                                    console.log(e)
+                                                    alert('error while deleting')
+                                                })
                                             }
-                                        }).then(d => {
-                                            console.log(d)
 
-                                            if (d.data.delete_subscription.success) {
-                                                this.fetchdata()
-                                            }
-                                            else {
-                                                alert('failed to delete')
-                                            }
-                                        }).catch(e => {
-                                            console.log(e)
-                                            alert('error while deleting')
-                                        })
-                                    }
-
-                                    e.stopPropagation()
-                                }}>delete</Button>
-                            </div></td>
-                        </tr>
-                    })}
-                </tbody>
-            </Table>)
+                                            e.stopPropagation()
+                                        }}>delete</Button>
+                                    </div></td>
+                                </tr>
+                            })}
+                        </tbody>
+                    </Table>
+                </div>
+            )
                 :
                 <div>
                     <div className="row-gravity-center">
