@@ -154,6 +154,8 @@ class InstructorDetailModal extends React.Component {
 
         let body = null
 
+        console.log(this.state.edit_instructor)
+
         if (this.state.edit_mode) {
             body = <Table className="view-kv-table">
                 <tr>
@@ -171,20 +173,20 @@ class InstructorDetailModal extends React.Component {
                     <td>성별</td>
                     <td>
                         <div>
-                            <Button variant={this.state.edit_instructor.gender == 'male' ? 'warning' : 'light'}
+                            <Button variant={this.state.edit_instructor.gender === 'MALE' ? 'warning' : 'light'}
                                 onClick={e => {
                                     let updated_instructor = this.state.edit_instructor
-                                    updated_instructor.gender = 'male'
+                                    updated_instructor.gender = 'MALE'
 
                                     this.setState({
                                         edit_instructor: updated_instructor
                                     })
                                 }}
                             >남</Button>
-                            <Button variant={this.state.edit_instructor.gender == 'female' ? 'warning' : 'light'}
+                            <Button variant={this.state.edit_instructor.gender === 'FEMALE' ? 'warning' : 'light'}
                                 onClick={e => {
                                     let updated_instructor = this.state.edit_instructor
-                                    updated_instructor.gender = 'female'
+                                    updated_instructor.gender = 'FEMALE'
                                     console.log('updated_client')
                                     console.log(updated_instructor)
 
