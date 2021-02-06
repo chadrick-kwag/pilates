@@ -2,7 +2,7 @@ import React from 'react'
 import { Form, Table, Button } from 'react-bootstrap'
 
 
-import { FETCH_CLIENTS_GQL, DELETE_CLIENT_GQL } from '../common/gql_defs'
+import { QUERY_CLIENTS_BY_NAME, FETCH_CLIENTS_GQL, DELETE_CLIENT_GQL } from '../common/gql_defs'
 
 import ClientInfoEditModal from './ClientInfoEditModal'
 import moment from 'moment'
@@ -23,46 +23,83 @@ class ListClientPage extends React.Component {
             show_detail_target_client: null
         }
 
-        this.refetch_data = this.refetch_data.bind(this)
+        // this.refetch_data = this.refetch_data.bind(this)
+        this.fetchdata_by_clientname = this.fetchdata_by_clientname.bind(this)
     }
 
-    refetch_data() {
+
+    fetchdata_by_clientname(){
+
+        // check input
+        let clientname = this.state.search_name.trim()
+
+        if(clientname===""){
+            console.log('clientname empty')
+            return
+        }
+
+
         this.props.apolloclient.query({
-            query: FETCH_CLIENTS_GQL,
-            fetchPolicy: "no-cache"
-        }).then(d => {
-            console.log(d)
-            if (d.data.fetch_clients.success) {
+            query: QUERY_CLIENTS_BY_NAME,
+            variables: {
+                name: this.state.search_name
+            },
+            fetchPolicy: 'no-cache'
+            
+        }).then(res=>{
+            console.log(res)
+
+            if(res.data.query_clients_by_name.success){
                 this.setState({
-                    data: d.data.fetch_clients.clients
+                    data: res.data.query_clients_by_name.clients
                 })
-                return
             }
-
-            console.log('failed to fetch client data')
-
-
+            else{
+                alert('query failed')
+            }
+        }).catch(e=>{
+            console.log(JSON.stringify(e))
+            alert('query error')
         })
-            .catch(e => {
-                console.log(e)
-            })
     }
 
-    componentDidMount() {
-        this.refetch_data()
-    }
+    // refetch_data() {
+    //     this.props.apolloclient.query({
+    //         query: FETCH_CLIENTS_GQL,
+    //         fetchPolicy: "no-cache"
+    //     }).then(d => {
+    //         console.log(d)
+    //         if (d.data.fetch_clients.success) {
+    //             this.setState({
+    //                 data: d.data.fetch_clients.clients
+    //             })
+    //             return
+    //         }
+
+    //         console.log('failed to fetch client data')
+
+
+    //     })
+    //         .catch(e => {
+    //             console.log(e)
+    //         })
+    // }
+
+    // componentDidMount() {
+    //     this.refetch_data()
+    // }
 
 
     render() {
 
-        let show_data = []
+        // let show_data = []
 
-        if (this.state.search_name == "") {
-            show_data = this.state.data
-        }
-        else {
-            show_data = this.state.data.filter(d => d.name == this.state.search_name)
-        }
+        // if (this.state.search_name == "") {
+        //     show_data = this.state.data
+        // }
+        // else {
+        //     show_data = this.state.data.filter(d => d.name == this.state.search_name)
+        // }
 
 
         let detail_modal = null
@@ -88,6 +125,7 @@ class ListClientPage extends React.Component {
         }
 
         return <div>
+
 
             {detail_modal}
 
@@ -115,8 +153,9 @@ class ListClientPage extends React.Component {
                         search_name: e.target.value
                     })
                 }}></Form.Control>
+                <Button onClick={()=>this.fetchdata_by_clientname()}>search</Button>
             </div>
-            {show_data.length == 0 ? <div>no results</div> : <Table className='row-clickable-table'>
+            {this.state.data.length == 0 ? <div>no results</div> : <Table className='row-clickable-table'>
                 <thead>
                     <th>id</th>
                     <th>name</th>
@@ -125,7 +164,7 @@ class ListClientPage extends React.Component {
                     <th>action</th>
                 </thead>
                 <tbody>
-                    {show_data.map(d => <tr onClick={e => this.setState({
+                    {this.state.data.map(d => <tr onClick={e => this.setState({
                         show_detail_target_client: d
                     })}>
                         <td>{d.id}</td>

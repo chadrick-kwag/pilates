@@ -30,12 +30,37 @@ module.exports = {
         search_client_with_name: async (parent, args, context, info) => {
             console.log(args)
             let results = await pgclient.query("select * from pilates.client where name=$1", [args.name]).then(res => {
+                
                 return res.rows
-            }).catch(e => [])
+                
+                
+            }).catch(e =>{
+                console.log(e)
+                return []
+            })
 
 
             return results
         },
+        query_clients_by_name: async (parent, args)=>{
+            let results = await pgclient.query("select * from pilates.client where name=$1", [args.name]).then(res => {
+                
+                return {
+                    success: true,
+                    clients: res.rows
+                }
+                
+                
+            }).catch(e =>{
+                console.log(e)
+                return {
+                    success: false
+                }
+            })
+
+
+            return results
+        }
     },
     Mutation: {
 

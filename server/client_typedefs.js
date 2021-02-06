@@ -3,6 +3,7 @@ module.exports = `
 type Query {
     fetch_clients: SuccessAndClients
     search_client_with_name(name: String!): [Client]
+    query_clients_by_name(name: String!): SuccessAndClients
 }
 
 

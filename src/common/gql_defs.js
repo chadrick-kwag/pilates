@@ -278,6 +278,28 @@ const QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query query_subsc
 }`
 
 
+
+const QUERY_CLIENTS_BY_NAME = gql`
+    query($name:String!){
+        query_clients_by_name(name:$name){
+                
+            success
+            clients{
+                id
+                name
+                phonenumber
+                created
+                job
+                gender
+                email
+                address
+                memo
+                birthdate
+            }
+        }
+    }
+`
+
 const SEARCH_CLIENT_WITH_NAME = gql`query search_clients($name: String!){
     search_client_with_name(name: $name){
         id
@@ -392,6 +414,7 @@ export {
     UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL,
     DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
     QUERY_SUBSCRIPTION_OF_CLIENTNAME,
-    QUERY_SUBSCRIPTIONS_BY_CLIENTID
+    QUERY_SUBSCRIPTIONS_BY_CLIENTID,
+    QUERY_CLIENTS_BY_NAME
 
 }
