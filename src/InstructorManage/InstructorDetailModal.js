@@ -70,22 +70,23 @@ class InstructorDetailModal extends React.Component {
         // return null if all pass
         // do input checks
 
-        if (this.state.edit_instructor.name.trim() == "") {
+
+        if (this.state.edit_instructor.name.trim() === "") {
             return "invalid name"
         }
 
-        if (this.state.edit_instructor.phonenumber.trim() == "") {
+        if (this.state.edit_instructor.phonenumber.trim() === "") {
             return 'invalid phonenumber'
         }
 
-        if (this.state.edit_instructor.birthdate != null) {
-            if (extract_date_from_birthdate_str(this.state.edit_instructor.birthdate) == null) {
+        if (this.state.edit_instructor.birthdate !== null) {
+            if (extract_date_from_birthdate_str(this.state.edit_instructor.birthdate) === null) {
                 return 'invalid birthdate'
             }
         }
 
-        if (this.state.edit_instructor.validation_date != null) {
-            if (extract_date_from_birthdate_str(this.state.edit_instructor.validation_date) == null) {
+        if (this.state.edit_instructor.validation_date !== null) {
+            if (extract_date_from_birthdate_str(this.state.edit_instructor.validation_date) === null) {
                 return 'invalid validation_date'
             }
         }

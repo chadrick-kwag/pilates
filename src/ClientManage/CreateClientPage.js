@@ -9,6 +9,8 @@ import {CREATE_CLIENT_GQL} from '../common/gql_defs'
 
 function extract_date_from_birthdate_str(bd_str) {
 
+    console.log('inside extract_date_from_birthdate_str')
+
     try {
         let _bd_str = bd_str.trim()
 
@@ -24,11 +26,12 @@ function extract_date_from_birthdate_str(bd_str) {
         let month = parseInt(month_str) - 1
         let day = parseInt(day_str)
 
+
         if (day > 31) {
             return null
         }
 
-        if(month <1 || month > 12){
+        if(month <0 || month > 11){
             return null
         }
 
@@ -37,9 +40,11 @@ function extract_date_from_birthdate_str(bd_str) {
         output.month(month)
         output.date(day_str)
 
+
         return output
 
     } catch (err) {
+        console.log(err)
         return null
     }
 }
