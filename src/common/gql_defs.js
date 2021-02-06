@@ -204,6 +204,26 @@ const QUERY_SUBSCRIPTIONS_GQL = gql`query subscriptions{
 
 }`
 
+
+const QUERY_SUBSCRIPTIONS_BY_CLIENTID = gql`
+    query($clientid: Int!){
+        query_subscriptions_by_clientid(clientid: $clientid){
+            success
+            subscriptions {
+                id
+                clientid
+                clientname
+                rounds
+                totalcost
+                created
+                activity_type
+                grouping_type
+                coupon_backed
+            }
+        }
+    }
+`
+
 const QUERY_SUBSCRIPTION_OF_CLIENTNAME = gql`
     query($clientname:String){
         query_subscriptions_of_clientname(clientname:$clientname){
@@ -371,6 +391,7 @@ export {
     FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID,
     UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL,
     DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
-    QUERY_SUBSCRIPTION_OF_CLIENTNAME
+    QUERY_SUBSCRIPTION_OF_CLIENTNAME,
+    QUERY_SUBSCRIPTIONS_BY_CLIENTID
 
 }

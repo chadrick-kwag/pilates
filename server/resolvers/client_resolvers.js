@@ -43,23 +43,27 @@ module.exports = {
             console.log(args)
 
             let gender = null
-            if (args.gender.toLowerCase() == "male") {
-                gender = 'MALE'
+            if(args.gender!==null){
+                if (args.gender.toLowerCase() == "male") {
+                    gender = 'MALE'
+                }
+                else if (args.gender.toLowerCase() == "female") {
+                    gender = 'FEMALE'
+                }
             }
-            else if (args.gender.toLowerCase() == "female") {
-                gender = 'FEMALE'
-            }
-
-            let birthdate = null
+            
+            let birthdate = -1
             if (args.birthdate) {
                 birthdate = incoming_time_string_to_postgres_epoch_time(args.birthdate)
             }
+            console.log(`birthdate: ${birthdate}`)
 
             let pre_args = [args.name, args.phonenumber, gender, args.job, args.address, args.memo, args.email, birthdate]
 
             console.log(pre_args)
-
-            let ret = await pgclient.query("insert into pilates.client (name, phonenumber, gender, job, address, memo, email, birthdate) values ($1, $2, $3, $4, $5, $6, $7, to_timestamp($8))", [args.name, args.phonenumber, gender, args.job, args.address, args.memo, args.email, incoming_time_string_to_postgres_epoch_time(args.birthdate)]).then(res => {
+            console.log('executing query')
+                //incoming_time_string_to_postgres_epoch_time(args.birthdate)
+            let ret = await pgclient.query("insert into pilates.client (name, phonenumber, gender, job, address, memo, email, birthdate) values ($1, $2, $3, $4, $5, $6, $7, CASE WHEN $8 = -1 THEN NULL ELSE to_timestamp($8) END )", pre_args).then(res => {
                 console.log(res)
 
                 if (res.rowCount > 0) {
@@ -73,6 +77,7 @@ module.exports = {
                     msg: 'failed to insert'
                 }
             }).catch(err => {
+                console.log(err)
                 return {
                     success: false,
                     msg: 'error inserting query'

@@ -98,13 +98,19 @@ class CreateClientPage extends React.Component {
             return alert('invalid input\n' + check_msg)
         }
 
+        let birthdate_str
+        if(this.state.birthdate===null || this.state.birthdate.trim()===""){
+            birthdate_str = ""
+        }
+        else{
+            let birthdate_date = extract_date_from_birthdate_str(this.state.birthdate)
+            birthdate_str = birthdate_date.toDate().toUTCString()
+        }
+        
+        // console.log(birthdate_date)
 
-        let birthdate_date = extract_date_from_birthdate_str(this.state.birthdate)
-
-        console.log(birthdate_date)
-
-
-        let birthdate_str = birthdate_date.toDate().toUTCString()
+        
+        // let birthdate_str = birthdate_date.toDate().toUTCString()
 
 
         let _variables = {

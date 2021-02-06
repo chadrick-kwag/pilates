@@ -2,7 +2,7 @@ import React from 'react'
 import { Button, Table, DropdownButton, Form } from 'react-bootstrap'
 import moment from 'moment'
 
-import { QUERY_SUBSCRIPTIONS_GQL, DELETE_SUBSCRITION_GQL, QUERY_SUBSCRIPTION_OF_CLIENTNAME } from '../common/gql_defs'
+import { QUERY_SUBSCRIPTIONS_BY_CLIENTID, SEARCH_CLIENT_WITH_NAME, QUERY_SUBSCRIPTIONS_GQL, DELETE_SUBSCRITION_GQL, QUERY_SUBSCRIPTION_OF_CLIENTNAME } from '../common/gql_defs'
 
 import ViewSubscriptionDetailModal from './ViewSubscriptionDetailModal'
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
@@ -17,64 +17,110 @@ class SubscriptionListView extends React.Component {
             data: null,
             delete_target_subscription: null,
             view_selected_subscription: null,
-            search_client_name: ""
+            search_client_name: "",
+            client_candidates: []
+
         }
 
         this.fetchdata = this.fetchdata.bind(this)
         this.check_search_input = this.check_search_input.bind(this)
+        this.fetchclient = this.fetchclient.bind(this)
     }
 
-    // componentDidMount() {
-    //     this.fetchdata()
-    // }
 
-    // fetchdata() {
-
-    //     this.props.apolloclient.query({
-    //         query: QUERY_SUBSCRIPTIONS_GQL,
-    //         fetchPolicy: 'no-cache'
-    //     }).then(d => {
-    //         console.log(d)
-    //         if (d.data.query_subscriptions.success) {
-    //             this.setState({
-    //                 data: d.data.query_subscriptions.subscriptions
-    //             })
-    //         }
-    //         else {
-    //             alert('failed to fetch data')
-    //         }
-    //     }).catch(e => {
-    //         console.log(e)
-    //         console.log(JSON.stringify(e))
-    //         alert('error fetch data')
-    //     })
-
-    // }
-
-    fetchdata() {
+    fetchclient() {
+        // fetch client info based on client search name.
+        // if there is only one, then proceed to calling fetchdata.
+        // if there are mulltiple clients with that name, then update `client_candidates` and do NOT proceed to `fetchdata()`
 
         this.props.apolloclient.query({
-            query: QUERY_SUBSCRIPTION_OF_CLIENTNAME,
+            query: SEARCH_CLIENT_WITH_NAME,
             variables: {
-                clientname: this.state.search_client_name
+                name: this.state.search_client_name
             },
             fetchPolicy: 'no-cache'
-        }).then(d => {
-            console.log(d)
-            if (d.data.query_subscriptions_of_clientname.success) {
-                this.setState({
-                    data: d.data.query_subscriptions_of_clientname.subscriptions
-                })
+        }).then(res => {
+
+            console.log(res)
+
+            let client_infos = res.data.search_client_with_name
+
+            console.log(client_infos)
+
+            if (client_infos.length == 0) {
+                alert('no client found by that name')
+            }
+            else if (client_infos.length == 1) {
+                let client_id = client_infos[0].id
+                console.log('need to proceed!')
+                this.fetchdata(parseInt(client_id))
             }
             else {
-                alert('failed to fetch data')
-
+                // multiple clients found
+                this.setState({
+                    client_candidates: client_infos,
+                    data: null
+                })
             }
         }).catch(e => {
             console.log(e)
             console.log(JSON.stringify(e))
-            alert('error fetch data')
+
+            alert('search client error')
         })
+    }
+
+    fetchdata(_clientid) {
+
+        this.props.apolloclient.query({
+            query: QUERY_SUBSCRIPTIONS_BY_CLIENTID,
+            variables: {
+                clientid: _clientid
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.query_subscriptions_by_clientid.success) {
+                this.setState({
+                    client_candidates: [],
+                    data: res.data.query_subscriptions_by_clientid.subscriptions
+                })
+            }
+            else {
+                alert('query fail')
+                this.setState({
+                    client_candidates: []
+                })
+            }
+
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            alert('query error')
+        })
+
+        // this.props.apolloclient.query({
+        //     query: QUERY_SUBSCRIPTION_OF_CLIENTNAME,
+        //     variables: {
+        //         clientname: this.state.search_client_name
+        //     },
+        //     fetchPolicy: 'no-cache'
+        // }).then(d => {
+        //     console.log(d)
+        //     if (d.data.query_subscriptions_of_clientname.success) {
+        //         this.setState({
+        //             data: d.data.query_subscriptions_of_clientname.subscriptions
+        //         })
+        //     }
+        //     else {
+        //         alert('failed to fetch data')
+
+        //     }
+        // }).catch(e => {
+        //     console.log(e)
+        //     console.log(JSON.stringify(e))
+        //     alert('error fetch data')
+        // })
 
     }
 
@@ -94,8 +140,6 @@ class SubscriptionListView extends React.Component {
 
 
     render() {
-
-
 
         let detail_view_modal = null
         if (this.state.view_selected_subscription != null) {
@@ -120,13 +164,22 @@ class SubscriptionListView extends React.Component {
                 <Button onClick={_ => {
                     let check = this.check_search_input()
 
+
+
                     if (check) {
-                        this.fetchdata()
+
+                        this.setState({
+                            client_candidates: [],
+                            data: null
+                        }, () => {
+                            this.fetchclient()
+                        })
+                        // this.fetchclient()
                     }
                 }}>search</Button>
             </div>
 
-            {this.state.data === null ? <div>no results</div> : <Table className="row-clickable-table">
+            {this.state.client_candidates.length == 0 ? (this.state.data === null ? <div>no results</div> : <Table className="row-clickable-table">
                 <thead>
                     <th>
                         id
@@ -186,9 +239,33 @@ class SubscriptionListView extends React.Component {
                         </tr>
                     })}
                 </tbody>
-            </Table>
+            </Table>)
+                :
+                <div>
+                    <div className="row-gravity-center">
+                        <p><b>please select client</b></p>
+                    </div>
 
-            }
+
+                    <Table className="row-clickable-table">
+                        <thead>
+                            <th>id</th>
+                            <th>name</th>
+                            <th>phone number</th>
+                        </thead>
+                        <tbody>
+                            {this.state.client_candidates.map(d => {
+                                return <tr onClick={() => this.fetchdata(parseInt(d.id))}>
+                                    <td>{d.id}</td>
+                                    <td>{d.name}</td>
+                                    <td>{d.phonenumber}</td>
+                                </tr>
+                            })}
+                        </tbody>
+                    </Table>
+                </div>}
+
+
 
         </div>
     }

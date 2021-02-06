@@ -1,6 +1,7 @@
 module.exports=`
 type Query{
     query_subscriptions_of_clientname(clientname:String): SuccessAndSubscriptions
+    query_subscriptions_by_clientid(clientid:Int!): SuccessAndSubscriptions
     query_subscriptions: SuccessAndSubscriptions
     query_subscriptions_with_remainrounds_for_clientid(clientid: Int!, activity_type: String!, grouping_type: String!): ReturnSubscriptionWithRemainRounds
     query_all_subscriptions_with_remainrounds_for_clientid(clientid: Int!): ReturnAllSubscriptionsWithRemainRounds
