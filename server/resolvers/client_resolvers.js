@@ -108,6 +108,32 @@ module.exports = {
             return ret
 
         },
+
+        disable_client_by_clientid: async (parent, args)=>{
+            let ret = await pgclient.query('update pilates.client set disabled=true where id=$1',[args.clientid]).then(res=>{
+                console.log(res)
+                if(res.rowCount==1){
+                    return {
+                        success: true
+                    }
+                }
+                else{
+                    return {
+                        success: false,
+                        msg: 'rowcount not 1'
+                    }
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: "query error"
+                }
+            })
+
+            return ret
+        },
+
         deleteclient: async (parent, args) => {
             console.log('delete client inside')
             let ret = await pgclient.query('delete from pilates.client where id=$1', [args.id]).then(res => {

@@ -2,7 +2,7 @@ import React from 'react'
 import { Form, Table, Button } from 'react-bootstrap'
 
 
-import { QUERY_CLIENTS_BY_NAME, FETCH_CLIENTS_GQL, DELETE_CLIENT_GQL } from '../common/gql_defs'
+import { DISABLE_CLIENT_BY_CLIENTID, QUERY_CLIENTS_BY_NAME, FETCH_CLIENTS_GQL, DELETE_CLIENT_GQL } from '../common/gql_defs'
 
 import ClientInfoEditModal from './ClientInfoEditModal'
 import moment from 'moment'
@@ -23,8 +23,9 @@ class ListClientPage extends React.Component {
             show_detail_target_client: null
         }
 
-        // this.refetch_data = this.refetch_data.bind(this)
+        
         this.fetchdata_by_clientname = this.fetchdata_by_clientname.bind(this)
+        this.disable_client = this.disable_client.bind(this)
     }
 
 
@@ -63,44 +64,32 @@ class ListClientPage extends React.Component {
         })
     }
 
-    // refetch_data() {
-    //     this.props.apolloclient.query({
-    //         query: FETCH_CLIENTS_GQL,
-    //         fetchPolicy: "no-cache"
-    //     }).then(d => {
-    //         console.log(d)
-    //         if (d.data.fetch_clients.success) {
-    //             this.setState({
-    //                 data: d.data.fetch_clients.clients
-    //             })
-    //             return
-    //         }
+    disable_client(clientid){
+        this.props.apolloclient.mutate({
+            mutation: DISABLE_CLIENT_BY_CLIENTID,
+            variables:{
+                clientid: parseInt(clientid)
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res=>{
+            console.log(res)
 
-    //         console.log('failed to fetch client data')
+            if(res.data.disable_client_by_clientid.success){
+                // refetch
+                this.fetchdata_by_clientname()
+                alert('deleted')
 
-
-    //     })
-    //         .catch(e => {
-    //             console.log(e)
-    //         })
-    // }
-
-    // componentDidMount() {
-    //     this.refetch_data()
-    // }
-
+            }
+            else{
+                alert('delete failed')
+            }
+        }).catch(e=>{
+            console.log(JSON.stringify(e))
+            alert('delete error')
+        })
+    }
 
     render() {
-
-        // let show_data = []
-
-        // if (this.state.search_name == "") {
-        //     show_data = this.state.data
-        // }
-        // else {
-        //     show_data = this.state.data.filter(d => d.name == this.state.search_name)
-        // }
-
 
         let detail_modal = null
 
@@ -174,34 +163,11 @@ class ListClientPage extends React.Component {
                         <td>
                             <div>
                                 <Button onClick={e => {
-                                    console.log('try deleting ' + d.id)
-                                    this.props.apolloclient.mutate({
-                                        mutation: DELETE_CLIENT_GQL,
-                                        variables: {
-                                            id: parseInt(d.id)
-                                        },
-                                        errorPolicy: "all"
-                                    }).then(d => {
-                                        console.log(d)
-                                        if (d.data.deleteclient.success) {
-                                            this.refetch_data()
-
-                                        }
-                                        else {
-                                            console.log('failed to delete')
-                                        }
-                                    }).catch(e => {
-                                        console.log(e)
-                                        console.log(e.data)
-                                        console.log(JSON.stringify(e, null, 2));
+                                    let asked = confirm('really want to delete?')
+                                    if(asked){
+                                        this.disable_client(d.id)
                                     }
-
-                                    )
-
-
-                                    e.stopPropagation()
-
-                                }}>delete</Button>
+                                    e.stopPropagation()}}>delete</Button>
                             </div>
                         </td>
                     </tr>)}
