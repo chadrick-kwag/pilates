@@ -23,25 +23,45 @@ module.exports = {
             */
 
 
-            let result = await pgclient.query("select distinct on(A.id) A.id as id, expire_time, creator_subscription.created as created_date,  get_ticket_consumed_time(cancel_type, canceled_time, lesson.created) as consumed_date, destroyer_subscription.created as destroyed_date \
-            from ((select * from pilates.subscription_ticket where creator_subscription_id=$1) as A  \
-            left join pilates.lesson on A.id = lesson.consuming_client_ss_ticket_id ) \
-            left join pilates.subscription as creator_subscription on creator_subscription_id = creator_subscription.id \
-            left join pilates.subscription as destroyer_subscription on destroyer_subscription_id = destroyer_subscription.id \
-            order by A.id, lesson.created desc  ", [args.subscription_id]).then(res => {
+            // let result = await pgclient.query("select distinct on(A.id) A.id as id, expire_time, creator_subscription.created as created_date,  get_ticket_consumed_time(cancel_type, canceled_time, lesson.created) as consumed_date, destroyer_subscription.created as destroyed_date \
+            // from ((select * from pilates.subscription_ticket where creator_subscription_id=$1) as A  \
+            // left join pilates.lesson on A.id = lesson.consuming_client_ss_ticket_id ) \
+            // left join pilates.subscription as creator_subscription on creator_subscription_id = creator_subscription.id \
+            // left join pilates.subscription as destroyer_subscription on destroyer_subscription_id = destroyer_subscription.id \
+            // order by A.id, lesson.created desc  ", [args.subscription_id]).then(res => {
+            //     console.log(res.rows)
+
+            //     return {
+            //         success: true,
+            //         tickets: res.rows
+            //     }
+            // }).catch(e => {
+            //     console.log(e)
+
+            //     return {
+            //         success: false,
+            //         msg: "query error"
+
+            //     }
+            // })
+
+            // return result
+
+
+
+            let result = await pgclient.query("SELECT DISTINCT ON (subscription_ticket.id)  subscription_ticket.id as id, expire_time, canceled_time, A.created as created_date, B.created as destroyed_date, get_ticket_consumed_time(cancel_type, canceled_time, lesson.created) as consumed_date from pilates.subscription_ticket  LEFT JOIN pilates.lesson on subscription_ticket.id = lesson.consuming_client_ss_ticket_id LEFT JOIN (select id, created from pilates.subscription) as A on subscription_ticket.creator_subscription_id = A.id LEFT JOIN (select id, created from pilates.subscription) as B on subscription_ticket.destroyer_subscription_id = B.id WHERE creator_subscription_id=$1 order by id , canceled_time desc nulls first", [args.subscription_id]).then(res=>{
                 console.log(res.rows)
 
                 return {
                     success: true,
                     tickets: res.rows
                 }
-            }).catch(e => {
+            }).catch(e=>{
                 console.log(e)
 
                 return {
                     success: false,
                     msg: "query error"
-
                 }
             })
 
