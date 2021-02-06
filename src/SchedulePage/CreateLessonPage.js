@@ -1,6 +1,5 @@
 import React from 'react'
-import ClientSearchComponent from '../components/ClientSearchComponent'
-import InstructorSearchComponent from '../components/InstructorSearchComponent'
+
 
 import GroupingTypeSelectComponent from '../components/GroupingTypeSelectComponent'
 import ActivityTypeSelectComponent from '../components/ActivityTypeSelectComponent'
@@ -16,7 +15,7 @@ import ko from 'date-fns/locale/ko';
 
 import moment from 'moment'
 import TimeKeeper from 'react-timekeeper';
-import { gql } from '@apollo/client'
+
 
 registerLocale('ko', ko)
 
