@@ -8,6 +8,8 @@ import InstructorDetailModal from './InstructorDetailModal'
 
 
 import {
+    DISABLE_INSTURCTOR_BY_ID,
+    ABLE_INSTRUCTOR_BY_ID,
     LIST_INSTRUCTOR_GQL,
     DELETE_INSTRUCTOR_GQL
 } from '../common/gql_defs'
@@ -27,6 +29,53 @@ class ListInstructorPage extends React.Component {
         }
 
         this.fetchdata = this.fetchdata.bind(this)
+        this.disable_instructor_by_id = this.disable_instructor_by_id.bind(this)
+        this.able_instructor_by_id = this.able_instructor_by_id.bind(this)
+    }
+
+
+    disable_instructor_by_id(instid) {
+        this.props.apolloclient.mutate({
+            mutation: DISABLE_INSTURCTOR_BY_ID,
+            variables: {
+                id: instid
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+            if (res.data.disable_instructor_by_id.success) {
+                alert('비활성화 성공')
+                this.fetchdata()
+            }
+            else {
+                alert('비활성화 실패')
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            alert('비활성화 에러')
+        })
+    }
+
+    able_instructor_by_id(instid) {
+        this.props.apolloclient.mutate({
+            mutation: ABLE_INSTRUCTOR_BY_ID,
+            variables: {
+                id: instid
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+            if (res.data.able_instructor_by_id.success) {
+                alert('활성화 성공')
+                this.fetchdata()
+            }
+            else {
+                alert('활성화 실패')
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            alert('활성화 에러')
+        })
     }
 
     fetchdata() {
@@ -115,34 +164,26 @@ class ListInstructorPage extends React.Component {
                         <td>{d.phonenumber}</td>
                         <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
                         <td><div>
-
-                            <Button onClick={e => {
-                                e.stopPropagation()
-                                let ret = confirm('delete?')
-                                if (!ret) {
-                                    return
+                            {d.disabled ? <Button variant='success' onClick={e => {
+                                let ask = confirm('활성화 하시겠습니까?')
+                                if (ask) {
+                                    this.able_instructor_by_id(parseInt(d.id))
                                 }
-                                this.props.apolloclient.mutate({
-                                    mutation: DELETE_INSTRUCTOR_GQL,
-                                    variables: {
-                                        id: parseInt(d.id)
-                                    }
-                                }).then(d => {
-                                    if (d.data.deleteinstructor.success) {
-                                        this.fetchdata()
-                                        return
-                                    }
+                                e.stopPropagation()
+                            }}>
+                                활성화
+                            </Button> :
+                                <Button
+                                    variant='danger'
+                                    onClick={e => {
+                                        let ask = confirm('비활성화 하시겠습니까?')
+                                        if (ask) {
+                                            this.disable_instructor_by_id(parseInt(d.id))
+                                        }
+                                        e.stopPropagation()
+                                    }}>비활성화</Button>}
 
-                                    console.log('failed to delete instructor')
-                                    alert('failed to delete instructor')
-                                }).catch(e => {
-                                    console.log(JSON.stringify(e))
-                                    console.log('error deleting instructor')
-                                    alert('error deleteing instructor')
-
-                                })
-
-                            }}>delete</Button></div></td>
+                        </div></td>
                     </tr>)}
                 </tbody>
             </Table>

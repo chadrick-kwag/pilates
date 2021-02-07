@@ -164,12 +164,31 @@ const LIST_INSTRUCTOR_GQL = gql`query instructors{
             email
             birthdate
             is_apprentice
+            disabled
         }
         
 
     }
 } `
 
+
+const DISABLE_INSTURCTOR_BY_ID = gql`
+    mutation($id:Int!){
+        disable_instructor_by_id(id: $id){
+            success
+            msg
+        }
+    }
+`
+
+const ABLE_INSTRUCTOR_BY_ID = gql`
+    mutation($id: Int!){
+        able_instructor_by_id(id:$id){
+            success
+            msg
+        }
+    }
+`
 
 const DELETE_INSTRUCTOR_GQL = gql`mutation di($id: Int!){
     deleteinstructor(id: $id){
@@ -434,5 +453,7 @@ export {
     QUERY_SUBSCRIPTIONS_BY_CLIENTID,
     QUERY_CLIENTS_BY_NAME,
     DISABLE_CLIENT_BY_CLIENTID,
-    ABLE_CLIENT_BY_CLIENTID
+    ABLE_CLIENT_BY_CLIENTID,
+    DISABLE_INSTURCTOR_BY_ID,
+    ABLE_INSTRUCTOR_BY_ID
 }

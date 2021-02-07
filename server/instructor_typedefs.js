@@ -13,7 +13,8 @@ type Mutation {
       
     deleteinstructor(id: Int!): SuccessResult
     
-    
+    disable_instructor_by_id(id:Int!): SuccessResult
+    able_instructor_by_id(id:Int!): SuccessResult
     
     update_instructor(id: Int!, name: String!, phonenumber: String!, birthdate: String, validation_date: String, memo: String, address: String, is_apprentice: Boolean, email: String, job: String, level: String, gender: String): SuccessResult
     

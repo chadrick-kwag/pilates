@@ -9,7 +9,7 @@ module.exports = {
     Query: {
         
         fetch_instructors: async () => {
-            let result = await pgclient.query("select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level from pilates.instructor").then(res => {
+            let result = await pgclient.query("select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, disabled from pilates.instructor").then(res => {
 
                 console.log(res)
 
@@ -45,7 +45,7 @@ module.exports = {
 
             console.log(args)
 
-            let result = await pgclient.query('select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level from pilates.instructor where id=$1', [args.id]).then(res=>{
+            let result = await pgclient.query('select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, disabled from pilates.instructor where id=$1', [args.id]).then(res=>{
                 return {
                     success: true,
                     instructor: res.rows[0]
@@ -133,5 +133,51 @@ module.exports = {
 
             return ret
         },
+        disable_instructor_by_id: async (parent, args)=>{
+            let result = pgclient.query('update pilates.instructor set disabled=true where id=$1',[args.id]).then(res=>{
+                if(res.rowCount==1){
+                    return {
+                        success: true
+                    }
+                }
+                else{
+                    return {
+                        success: false,
+                        msg: "row count not 1"
+                    }
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: "query error"
+                }
+            })
+
+            return result
+        },
+        able_instructor_by_id: async (parent, args)=>{
+            let result = pgclient.query('update pilates.instructor set disabled=false where id=$1',[args.id]).then(res=>{
+                if(res.rowCount==1){
+                    return {
+                        success: true
+                    }
+                }
+                else{
+                    return {
+                        success: false,
+                        msg: "row count not 1"
+                    }
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: "query error"
+                }
+            })
+
+            return result
+        }
     }
 }

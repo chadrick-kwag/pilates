@@ -87,6 +87,7 @@ type Instructor {
     level: String
     address: String
     gender: String
+    disabled: Boolean
 }
 
 type SuccessAndInstructors{
