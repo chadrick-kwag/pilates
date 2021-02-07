@@ -21,16 +21,28 @@ function TicketList(props) {
 
         let total_tickets = props.tickets.length
         let consumed_count = 0
+        let destroyed_count = 0
+        let expired_count = 0
+        let curr_date = new Date()
 
         props.tickets.forEach(a => {
             if (a.consumed_date !== null) {
                 consumed_count += 1
+                return
+            }
+            if(a.destroyed_date !== null){
+                destroyed_count +=1
+                return
+            }
+            if(curr_date > new Date(parseInt(a.expire_time))){
+                expired_count +=1
+                return
             }
         })
 
         return <div>
             <div>
-                <span>전체횟수: {total_tickets} / 소모횟수: {consumed_count} / 잔여횟수: {total_tickets - consumed_count}</span>
+                <span>전체횟수: {total_tickets} / 소모횟수: {consumed_count} / 양도된 횟수: {destroyed_count} / 기한만료 횟수: {expired_count} / 잔여횟수: {total_tickets - consumed_count - destroyed_count - expired_count}</span>
             </div>
 
             <Table >
