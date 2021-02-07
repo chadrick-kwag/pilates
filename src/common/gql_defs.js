@@ -341,6 +341,7 @@ const SEARCH_CLIENT_WITH_NAME = gql`query search_clients($name: String!){
         id
         name
         phonenumber
+        disabled
     }
 }`
 

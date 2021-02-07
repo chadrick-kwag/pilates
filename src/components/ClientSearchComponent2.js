@@ -39,7 +39,8 @@ class ClientSearchComponent2 extends React.Component {
             },
             fetchPolicy: 'no-cache'
         }).then(d => {
-            let fetched_data = d.data.search_client_with_name
+            console.log(d)
+            let fetched_data = d.data.search_client_with_name.filter(a=>a.disabled!==true)
 
             this.setState({
                 client_search_result: fetched_data
