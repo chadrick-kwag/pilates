@@ -1,4 +1,12 @@
+import moment from 'moment'
 
+export function get_null_safe_date_format(val, nullval = '') {
+    if (val == null) {
+        return nullval
+    }
+
+    return moment(new Date(parseInt(val))).format('YYYY-MM-DD HH:mm')
+}
 
 
 export function get_week_range_of_date(date) {

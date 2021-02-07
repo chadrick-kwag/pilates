@@ -3,6 +3,8 @@ import { Modal, Button, Table, Spinner } from 'react-bootstrap'
 import moment from 'moment'
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 import { FETCH_TICKETS_FOR_SUBSCRIPTION_ID } from '../common/gql_defs'
+import TicketList from './TicketList'
+import TicketListComponent from './TicketListComponent'
 
 
 
@@ -60,61 +62,6 @@ class ViewSubscriptionDetailModal extends React.Component {
 
     render() {
 
-
-        let ticket_area = <div><Spinner animation='border' /></div>
-
-        if (this.state.tickets != null) {
-            if (this.state.tickets.length == 0) {
-                ticket_area = <div>no tickets found</div>
-            }
-            else {
-
-                let total_tickets = this.state.tickets.length
-                let consumed_count = 0
-
-                this.state.tickets.forEach(a => {
-                    if (a.consumed_date !== null) {
-                        consumed_count += 1
-                    }
-                })
-
-
-                ticket_area =
-                    <div>
-                        <div>
-                            <span>전체횟수: {total_tickets} / 소모횟수: {consumed_count} / 잔여횟수: {total_tickets - consumed_count}</span>
-                        </div>
-
-                        <Table >
-
-                            <thead>
-                                <th>#</th>
-                                <th>expire time</th>
-                                <th>created</th>
-                                <th>consumed by</th>
-                                <th>destroyed</th>
-                            </thead>
-                            <tbody>
-                                {this.state.tickets.map((d, index) => {
-                                    let tr_classname = ""
-                                    let expire_date = new Date(parseInt(d.expire_time))
-                                    if (expire_date < new Date()) {
-                                        tr_classname = "table-row-expired"
-                                    }
-                                    return <tr className={tr_classname}>
-                                        <td>{index + 1}</td>
-                                        <td>{get_null_safe_date_format(d.expire_time, '-')}</td>
-                                        <td>{get_null_safe_date_format(d.created_date, '-')}</td>
-                                        <td>{get_null_safe_date_format(d.consumed_date, '-')}</td>
-                                        <td>{get_null_safe_date_format(d.destroyed_date, '-')}</td>
-                                    </tr>
-                                })}
-                            </tbody>
-
-                        </Table></div>
-            }
-        }
-
         return <Modal dialogClassName="modal-90w" show={true} onHide={e => { this.props.onCancel() }}>
             <Modal.Body>
 
@@ -151,7 +98,7 @@ class ViewSubscriptionDetailModal extends React.Component {
 
                     <tr>
                         <td>소진내역</td>
-                        <td>{ticket_area}</td>
+                        <td><TicketListComponent tickets={this.state.tickets}/></td>
                     </tr>
 
 
