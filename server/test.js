@@ -4,11 +4,11 @@ const { ApolloServer, gql } = require('apollo-server');
 const moment = require('moment-timezone');
 const { mergeTypeDefs, mergeResolvers } = require('@graphql-tools/merge');
 
-const lesson_typedefs = require('./lesson_typedefs')
-const client_typedefs = require('./client_typedefs')
-const subscription_typedefs = require('./subscription_typedefs')
-const instructor_typedefs = require('./instructor_typedefs')
-const common_typedefs = require('./common_typedefs')
+const lesson_typedefs = require('./typedefs/lesson_typedefs')
+const client_typedefs = require('./typedefs/client_typedefs')
+const subscription_typedefs = require('./typedefs/subscription_typedefs')
+const instructor_typedefs = require('./typedefs/instructor_typedefs')
+const common_typedefs = require('./typedefs/common_typedefs')
 
 const { graphql_server_options } = require('../config.js')
 
@@ -19,42 +19,6 @@ const instructor_resolver = require('./resolvers/instructor_resolvers')
 
 
 const pgclient  = require('./pgclient')
-
-
-function incoming_time_string_to_postgres_epoch_time(time_str) {
-    let a = new Date(time_str)
-    return a.getTime() / 1000
-}
-
-
-function parse_incoming_gender_str(gender_str) {
-    if (gender_str == null) {
-        return null
-    }
-
-    let gender = null
-    if (gender_str.toLowerCase() == 'male') {
-        gender = 'MALE'
-    }
-    else if (gender_str.toLowerCase() == 'female') {
-        gender = 'FEMALE'
-    }
-
-    return gender
-
-}
-
-function parse_incoming_date_utc_string(date_utc_str) {
-    // return epoch seconds
-    if (date_utc_str == null) {
-        return null
-    }
-
-    return new Date(date_utc_str).getTime() / 1000
-
-
-}
-
 
 const typeDefs = mergeTypeDefs([ lesson_typedefs, client_typedefs, subscription_typedefs, instructor_typedefs, common_typedefs])
 
