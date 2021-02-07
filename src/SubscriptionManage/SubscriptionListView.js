@@ -6,6 +6,7 @@ import { QUERY_SUBSCRIPTIONS_BY_CLIENTID, SEARCH_CLIENT_WITH_NAME, QUERY_SUBSCRI
 
 import ViewSubscriptionDetailModal from './ViewSubscriptionDetailModal'
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
+import { parse } from 'graphql'
 
 
 class SubscriptionListView extends React.Component {
@@ -85,7 +86,7 @@ class SubscriptionListView extends React.Component {
             if (res.data.query_subscriptions_by_clientid.success) {
                 this.setState({
                     client_candidates: [],
-                    data: res.data.query_subscriptions_by_clientid.subscriptions
+                    data: res.data.query_subscriptions_by_clientid.subscriptions.sort(a=>-parseInt(a.created))
                 })
             }
             else {
@@ -190,7 +191,7 @@ class SubscriptionListView extends React.Component {
                                     <td>{d.totalcost}</td>
                                     <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
                                     <td><div>
-                                        <Button onClick={e => {
+                                        <Button disabled onClick={e => {
                                             let result = confirm("delete?")
                                             if (result) {
                                                 this.props.apolloclient.mutate({
