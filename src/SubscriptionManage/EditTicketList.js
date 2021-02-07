@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Spinner, Table, Form, Button } from 'react-bootstrap'
 
 import { get_null_safe_date_format } from '../common/date_fns'
@@ -11,46 +11,55 @@ function EditTicketList(props) {
     console.log(`edit ticket list props: `)
     console.log(props)
 
+    const calc_init_selectlist = () => {
+        let init_selectlist = []
+        let curr_date = new Date()
+        if (props.tickets !== null && props.tickets !== undefined) {
+            for (let i = 0; i < props.tickets.length; i++) {
+                let sel_ticket = props.tickets[i]
 
-    let init_selectlist = []
-    let curr_date = new Date()
-    if (props.tickets !== null && props.tickets !== undefined) {
-        for (let i = 0; i < props.tickets.length; i++) {
-            let sel_ticket = props.tickets[i]
+                let is_edit_possible = true
+                console.log('sel ticket')
+                console.log(sel_ticket)
 
-            let is_edit_possible = true
-            console.log('sel ticket')
-            console.log(sel_ticket)
+                if (sel_ticket.consumed_date !== null) {
+                    is_edit_possible = false
+                }
+                let expdate = new Date(parseInt(sel_ticket.expire_time))
+                if (curr_date > expdate) {
+                    is_edit_possible = false
+                }
 
-            if (sel_ticket.consumed_date !== null) {
-                is_edit_possible = false
-            }
-            let expdate = new Date(parseInt(sel_ticket.expire_time))
-            if (curr_date > expdate) {
-                is_edit_possible = false
-            }
+                console.log(sel_ticket.destroyed_date)
+                if (sel_ticket.destroyed_date !== null) {
+                    is_edit_possible = false
+                }
 
-            console.log(sel_ticket.destroyed_date)
-            if (sel_ticket.destroyed_date !== null) {
-                is_edit_possible = false
-            }
-
-            if (!is_edit_possible) {
-                init_selectlist.push(null)
-            }
-            else {
-                init_selectlist.push(false)
+                if (!is_edit_possible) {
+                    init_selectlist.push(null)
+                }
+                else {
+                    init_selectlist.push(false)
+                }
             }
         }
+
+        return init_selectlist
+
     }
 
-    console.log("init_selectlist")
-    console.log(init_selectlist)
 
-    const [selectlist, setSelectList] = useState(init_selectlist)
+    const [selectlist, setSelectList] = useState(calc_init_selectlist())
     const [showTransferMOdal, setShowTransferModal] = useState(false)
     const [showExpDateChangeModal, setShowExpDateChangeModal] = useState(false)
     const [allselect, setAllSelect] = useState(false)
+
+
+    useEffect(()=>{
+        let new_selectlist = calc_init_selectlist()
+        setSelectList(new_selectlist)
+    }, [props.tickets])
+
 
 
     if (props.tickets === null || props.tickets === undefined) {
@@ -85,17 +94,17 @@ function EditTicketList(props) {
 
         return <div>
 
-            {showTransferMOdal ? <TicketTransferModal onCancel={() => setShowTransferModal(false)} 
-            selected_ticket_id_list={selected_ticket_id_list} 
-            onSuccess={()=>{
-                setShowTransferModal(false)
-                props.refreshdata()
-            }}
+            {showTransferMOdal ? <TicketTransferModal onCancel={() => setShowTransferModal(false)}
+                selected_ticket_id_list={selected_ticket_id_list}
+                onSuccess={() => {
+                    setShowTransferModal(false)
+                    props.refreshdata()
+                }}
             /> : null}
-            {showExpDateChangeModal ? <TicketExpDateChangeModal 
-            selected_ticket_id_list={selected_ticket_id_list}
+            {showExpDateChangeModal ? <TicketExpDateChangeModal
+                selected_ticket_id_list={selected_ticket_id_list}
                 default_date={new Date(parseInt(props.tickets[selectlist.indexOf(true)].expire_time))}
-                onCancel={_=>setShowExpDateChangeModal(false)}
+                onCancel={_ => setShowExpDateChangeModal(false)}
                 onSuccess={_ => {
                     setShowExpDateChangeModal(false)
                     props.refreshdata()
@@ -148,14 +157,15 @@ function EditTicketList(props) {
                         // let is_expired = expire_date < new Date()
 
                         return <tr className={tr_classname}>
-                            <td><Form.Check disabled={selectlist[index] === null} checked={selectlist[index]} onClick={() => {
-                                let newvalue = !selectlist[index]
+                            <td><Form.Check disabled={selectlist[index] === null}
+                                checked={selectlist[index]} onClick={() => {
+                                    let newvalue = !selectlist[index]
 
-                                let new_select_list = Array.from(selectlist)
-                                new_select_list[index] = newvalue
-                                setSelectList(new_select_list)
+                                    let new_select_list = Array.from(selectlist)
+                                    new_select_list[index] = newvalue
+                                    setSelectList(new_select_list)
 
-                            }} /></td>
+                                }} /></td>
                             <td>{get_null_safe_date_format(d.expire_time, '-')}</td>
                             <td>{get_null_safe_date_format(d.created_date, '-')}</td>
                             <td>{get_null_safe_date_format(d.consumed_date, '-')}</td>
