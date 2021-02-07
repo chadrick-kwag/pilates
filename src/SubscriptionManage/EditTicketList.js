@@ -110,10 +110,10 @@ function EditTicketList(props) {
 
                         </div>
                     </th>
-                    <th>expire time</th>
-                    <th>created</th>
-                    <th>consumed by</th>
-                    <th>destroyed</th>
+                    <th>만료 일시</th>
+                    <th>생성 일시</th>
+                    <th>소모 일시</th>
+                    <th>양도 일시</th>
                 </thead>
                 <tbody>
                     {props.tickets.map((d, index) => {
