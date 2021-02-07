@@ -4,7 +4,7 @@ import { Form, Table, Button } from 'react-bootstrap'
 
 import { ABLE_CLIENT_BY_CLIENTID, DISABLE_CLIENT_BY_CLIENTID, QUERY_CLIENTS_BY_NAME } from '../common/gql_defs'
 
-import ClientInfoEditModal from './ClientInfoEditModal'
+
 import moment from 'moment'
 import ClientDetailModal from './ClientDetailModal'
 
@@ -19,7 +19,6 @@ class ListClientPage extends React.Component {
         this.state = {
             search_name: "",
             data: [],
-            edit_target_client: null,
             show_detail_target_client: null,
             list_show_disabled_clients: false
         }
@@ -146,22 +145,6 @@ class ListClientPage extends React.Component {
 
             {detail_modal}
 
-            {this.state.edit_target_client == null ? null : <ClientInfoEditModal apolloclient={this.props.apolloclient}
-                onSubmitSuccess={() => {
-                    console.log('submit success called')
-                    this.setState({
-                        edit_target_client: null
-                    }, () => {
-                        this.refetch_data()
-                    })
-                }}
-                client={this.state.edit_target_client}
-                onCancelClick={() => {
-                    this.setState({
-                        edit_target_client: null
-                    })
-                }}
-            />}
 
             <div style={{ display: "flex", flexDirection: "row" }}>
                 <span>이름검색</span>
