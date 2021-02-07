@@ -421,6 +421,16 @@ const FETCH_TICKETS_FOR_SUBSCRIPTION_ID = gql`query b($subscription_id: Int!){
 }`
 
 
+const TRANSFER_TICKETS_TO_CLIENTID = gql`
+    mutation($ticket_id_list: [Int], $clientid: Int!){
+        transfer_tickets_to_clientid(ticket_id_list: $ticket_id_list, clientid: $clientid){
+            success
+            msg
+        }
+        
+    }
+`
+
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
@@ -456,5 +466,6 @@ export {
     DISABLE_CLIENT_BY_CLIENTID,
     ABLE_CLIENT_BY_CLIENTID,
     DISABLE_INSTURCTOR_BY_ID,
-    ABLE_INSTRUCTOR_BY_ID
+    ABLE_INSTRUCTOR_BY_ID,
+    TRANSFER_TICKETS_TO_CLIENTID
 }

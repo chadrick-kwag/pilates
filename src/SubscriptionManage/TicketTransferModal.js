@@ -2,18 +2,36 @@ import React, {useState} from 'react'
 import { Modal, Button } from 'react-bootstrap'
 import client from '../apolloclient'
 import ClientSearchComponent2 from '../components/ClientSearchComponent2'
+import {TRANSFER_TICKETS_TO_CLIENTID} from '../common/gql_defs'
 
 
 
 export default function TicketTransferModal(props) {
 
     console.log('inside ticket transfer modal')
+    console.log(props)
 
     const [selectedClient, setSelectedClient] = useState({})
 
     const submit_transfer = ()=>{
 
         console.log('inside submit transfer')
+
+        client.mutate({
+            mutation: TRANSFER_TICKETS_TO_CLIENTID,
+            variables: {
+                ticket_id_list: props.selected_ticket_id_list,
+                clientid: parseInt(selectedClient.id)
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res=>{
+            console.log(res)
+
+
+        }).catch(e=>{
+            console.log(JSON.stringify(e))
+            alert('query error')
+        })
     }
 
     return <Modal show={true} onHide={props.onCancel}>

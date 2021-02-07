@@ -7,14 +7,42 @@ import TicketTransferModal from './TicketTransferModal'
 
 function EditTicketList(props) {
 
-    let selectlist_length = 0
-    if (props.tickets !== null && props.tickets !== undefined) {
-        selectlist_length = props.tickets.length
-    }
-    const [selectlist, setSelectList] = useState(new Array(selectlist_length).fill(false))
+    console.log(`edit ticket list props: `)
+    console.log(props)
+
+
+    let init_selectlist = []
+        let curr_date = new Date()
+        if(props.tickets !== null && props.tickets !== undefined){
+            for(let i=0;i<props.tickets.length;i++){
+                let sel_ticket = props.tickets[i]
+    
+                let is_edit_possible = true
+    
+                if(sel_ticket.consumed_date!==null){
+                    is_edit_possible= false
+                }
+                let expdate = new Date(parseInt(sel_ticket.expire_date))
+                if(curr_date > expdate){
+                    is_edit_possible = false
+                }
+    
+                if(!is_edit_possible){
+                    init_selectlist.push(null)
+                }
+                else{
+                    init_selectlist.push(false)
+                }
+            }
+        }
+
+    
+
+    const [selectlist, setSelectList] = useState(init_selectlist)
     const [showTransferMOdal, setShowTransferModal] = useState(false)
     const [showExpDateChangeModal, setShowExpDateChangeModal] = useState(false)
     const [allselect, setAllSelect] = useState(false)
+
 
     if (props.tickets === null || props.tickets === undefined) {
         return <div><Spinner></Spinner></div>
@@ -24,7 +52,6 @@ function EditTicketList(props) {
     }
     else {
         // there are tickets.
-
         let at_least_one_selected = false
         for (let i = 0; i < selectlist.length; i++) {
             if (selectlist[i]) {
@@ -33,9 +60,23 @@ function EditTicketList(props) {
             }
         }
 
+        let selected_ticket_id_list = []
+        for(let i=0;i< selectlist.length; i++){
+
+            if(!selectlist[i]){
+                continue
+            }
+
+            let s_ticket = props.tickets[i]
+
+            selected_ticket_id_list.push(s_ticket.id)
+        }
+
+        console.log(`selected_ticket_id_list: ${selected_ticket_id_list}`)
+
         return <div>
 
-            {showTransferMOdal? <TicketTransferModal onCancel={()=>setShowTransferModal(false)}/> : null}
+            {showTransferMOdal? <TicketTransferModal onCancel={()=>setShowTransferModal(false)} selected_ticket_id_list={selected_ticket_id_list}/> : null}
             {showExpDateChangeModal? null : null}
 
             <div className='row-gravity-right'>
@@ -50,17 +91,19 @@ function EditTicketList(props) {
                     <th>
                         <div>
                             <Form.Check checked={allselect} onClick={_ => {
+                                
                                 let changed_val = !allselect
 
-                                if (changed_val === true) {
-                                    let new_selectlist = new Array(selectlist.length).fill(true)
-                                    setSelectList(new_selectlist)
-                                }
-                                else if (changed_val === false) {
-                                    let new_selectlist = new Array(selectlist.length).fill(false)
-                                    setSelectList(new_selectlist)
-                                }
-
+                                let new_selectlist = Array.from(selectlist)
+                                new_selectlist = new_selectlist.map(a=>{
+                                    if(a===null){
+                                        return a
+                                    }
+                                    else{
+                                        return changed_val
+                                    }
+                                })
+                                setSelectList(new_selectlist)
                                 setAllSelect(changed_val)
                             }} />
 
