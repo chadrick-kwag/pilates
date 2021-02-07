@@ -398,10 +398,16 @@ select json_build_object('total_rounds', subscription.rounds, \
 
             let ret = await pgclient.query('select pilates.transfer_tickets($1, $2)', [args.ticket_id_list, args.clientid]).then(res=>{
                 console.log(res)
+
+                if(res.rows[0].transfer_tickets){
+                    return {
+                        success: true
+                    }
+                }
                 
                 return {
                     success: false,
-                    msg: 'debug'
+                    msg: 'query properly done. but result of query was bad.'
                 }
             }).catch(e=>{
                 console.log(e)
