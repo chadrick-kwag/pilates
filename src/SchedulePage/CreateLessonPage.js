@@ -19,6 +19,24 @@ import { CREATE_INDIVIDUAL_LESSON_GQL } from '../common/gql_defs'
 import SelectSubscriptionTicketComponent from '../components/SelectSubscriptionTicketComponent'
 
 
+const zero_out_less_than_hours = (d)=>{
+    let output = new Date(d)
+    output.setMinutes(0)
+    output.setSeconds(0)
+    output.setMilliseconds(0)
+
+    return output
+}
+
+
+const zero_out_less_than_minutes = (d)=>{
+    let output = new Date(d)
+    
+    output.setSeconds(0)
+    output.setMilliseconds(0)
+
+    return output
+}
 
 class CreateLessonPage extends React.Component {
 
@@ -33,8 +51,8 @@ class CreateLessonPage extends React.Component {
             selected_subscription_ticket: null,
             selected_instructor: null,
             selected_date: new Date(),
-            start_time: "12:00",
-            end_time: "12:00"
+            start_time: zero_out_less_than_hours(new Date()),
+            end_time: zero_out_less_than_hours(new Date())
         }
 
         this.createlesson = this.createlesson.bind(this)
@@ -77,15 +95,15 @@ class CreateLessonPage extends React.Component {
         }
 
         // check start/end time
-        
+
         let start_datetime = new Date(this.state.selected_date)
 
         let start_hour = this.state.start_time.getHours()
         let start_min = this.state.start_time.getMinutes()
+        
         start_datetime.setHours(start_hour)
         start_datetime.setMinutes(start_min)
-        start_datetime.setSeconds(0)
-        start_datetime.setMilliseconds(0)
+        start_datetime = zero_out_less_than_minutes(start_datetime)
 
 
         let end_datetime = new Date(this.state.selected_date)
@@ -93,8 +111,7 @@ class CreateLessonPage extends React.Component {
         let end_min = this.state.end_time.getMinutes()
         end_datetime.setHours(end_hour)
         end_datetime.setMinutes(end_min)
-        end_datetime.setSeconds(0)
-        end_datetime.setMilliseconds(0)
+        end_datetime = zero_out_less_than_minutes(end_datetime)
 
         if (start_datetime >= end_datetime) {
             return 'time end start wrong'
@@ -118,10 +135,10 @@ class CreateLessonPage extends React.Component {
 
         let start_hour = this.state.start_time.getHours()
         let start_min = this.state.start_time.getMinutes()
+        
         start_datetime.setHours(start_hour)
         start_datetime.setMinutes(start_min)
-        start_datetime.setSeconds(0)
-        start_datetime.setMilliseconds(0)
+        start_datetime = zero_out_less_than_minutes(start_datetime)
 
 
         let end_datetime = new Date(this.state.selected_date)
@@ -129,8 +146,7 @@ class CreateLessonPage extends React.Component {
         let end_min = this.state.end_time.getMinutes()
         end_datetime.setHours(end_hour)
         end_datetime.setMinutes(end_min)
-        end_datetime.setSeconds(0)
-        end_datetime.setMilliseconds(0)
+        end_datetime = zero_out_less_than_minutes(end_datetime)
 
         let vars = {
             clientid: parseInt(this.state.selected_client.id),
@@ -230,35 +246,29 @@ class CreateLessonPage extends React.Component {
             <div className="padded-block col-gravity-center">
                 <h2>수업시간선택</h2>
 
-                <div>
-                    <span className="bold small-margined">날짜선택</span>
-                    <DatePicker
-                        autoOk
-                        orientation="landscape"
-                        variant="static"
-                        openTo="date"
-                        value={this.state.selected_date}
-                        onChange={d => {
-                            console.log(d)
-                            this.setState({
-                                selected_date: d
-                            })
-                        }}
-                    />
-
-                </div>
 
 
-                <div style={{ display: "flex", flexDirection: "row" }} className="small-margined">
-                    <span className="bold small-margined">시간선택</span>
+                <DatePicker
+                    autoOk
+                    orientation="landscape"
+                    variant="static"
+                    openTo="date"
+                    value={this.state.selected_date}
+                    onChange={d => {
+                        console.log(d)
+                        this.setState({
+                            selected_date: d
+                        })
+                    }}
+                />
 
-                    <div style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                        alignItems: "center"
-                    }}>
-                        <span>시작</span>
+
+
+                <div className="small-margined row-gravity-center">
+
+
+                    <div className='col-gravity-center'>
+                        <h3>시작</h3>
                         <TimePicker
                             autoOk
                             ampm={false}
@@ -267,37 +277,19 @@ class CreateLessonPage extends React.Component {
                             openTo="hours"
                             minutesStep="5"
                             value={this.state.start_time}
-                            onChange={d=>{
+                            onChange={d => {
                                 console.log(d)
                                 this.setState({
                                     start_time: d
                                 })
                             }}
                         />
-                        {/* <TimeKeeper
-                            hour24Mode="true"
-                            coarseMinutes="5"
-                            forceCoarseMinutes="true"
-                            switchToMinuteOnHourSelect="true"
-                            time={this.state.start_time}
-                            onChange={(data) => {
-                                console.log(data)
-                                this.setState({
-                                    start_time: data.formatted24
-                                })
-                            }}
-                        /> */}
 
                     </div>
 
 
-                    <div style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                        alignItems: "center"
-                    }}>
-                        <span>종료</span>
+                    <div className='col-gravity-center'>
+                        <h3>종료</h3>
                         <TimePicker
                             autoOk
                             ampm={false}
@@ -306,7 +298,7 @@ class CreateLessonPage extends React.Component {
                             openTo="hours"
                             minutesStep="5"
                             value={this.state.end_time}
-                            onChange={d=>{
+                            onChange={d => {
                                 console.log(d)
                                 this.setState({
                                     end_time: d
