@@ -430,7 +430,14 @@ const TRANSFER_TICKETS_TO_CLIENTID = gql`
         
     }
 `
-
+const UPDATE_EXPDATE_OF_TICKETS = gql`
+    mutation($ticket_id_list : [Int], $new_expdate: String!){
+        update_expdate_of_tickets(ticket_id_list: $ticket_id_list, new_expdate: $new_expdate){
+            success
+            msg
+        }
+}
+`
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
@@ -467,5 +474,6 @@ export {
     ABLE_CLIENT_BY_CLIENTID,
     DISABLE_INSTURCTOR_BY_ID,
     ABLE_INSTRUCTOR_BY_ID,
-    TRANSFER_TICKETS_TO_CLIENTID
+    TRANSFER_TICKETS_TO_CLIENTID,
+    UPDATE_EXPDATE_OF_TICKETS
 }

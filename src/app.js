@@ -13,11 +13,18 @@ import TopNavBar from './TopNavBar'
 import InstructorManagePage from './InstructorManage/InstructorManagePage'
 import SubscriptionManagePage from './SubscriptionManage/SubscriptionManagePage'
 
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
+
+// pick a date util library
+import MomentUtils from '@date-io/moment';
+import DateFnsUtils from '@date-io/date-fns';
+import LuxonUtils from '@date-io/luxon';
+
 
 import client from './apolloclient'
 
 Number.prototype.format = function () {
-    return this.toString().split( /(?=(?:\d{3})+(?:\.|$))/g ).join( "," );
+    return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
 };
 
 
@@ -34,33 +41,33 @@ class App extends React.Component {
 
         let mainview
 
-       
-        
-        if(this.state.viewmode == "schedule"){
+
+
+        if (this.state.viewmode == "schedule") {
             mainview = <SchedulePage apolloclient={client} />
         }
-        else if(this.state.viewmode == "client_manage"){
-            mainview = <ClientManagePage apolloclient={client}/>
+        else if (this.state.viewmode == "client_manage") {
+            mainview = <ClientManagePage apolloclient={client} />
         }
-        else if(this.state.viewmode == 'instructor_manage'){
-            mainview = <InstructorManagePage apolloclient={client}/>
+        else if (this.state.viewmode == 'instructor_manage') {
+            mainview = <InstructorManagePage apolloclient={client} />
         }
-        else if(this.state.viewmode === "plan_manage"){
-            mainview = <SubscriptionManagePage apolloclient={client}/>
+        else if (this.state.viewmode === "plan_manage") {
+            mainview = <SubscriptionManagePage apolloclient={client} />
         }
-        else{
+        else {
             mainview = <div>not yet implemented</div>
         }
 
         return <div>
 
-            <TopNavBar 
-            onClientManageClick={()=>this.setState({viewmode: "client_manage"})}
-            onInstructorManageClick={()=>this.setState({viewmode: "instructor_manage"})}
-            onPlanManageClick = {()=>this.setState({viewmode: "plan_manage"})}
-            onScheduleManageClick = {()=>this.setState({viewmode: "schedule"})}
+            <TopNavBar
+                onClientManageClick={() => this.setState({ viewmode: "client_manage" })}
+                onInstructorManageClick={() => this.setState({ viewmode: "instructor_manage" })}
+                onPlanManageClick={() => this.setState({ viewmode: "plan_manage" })}
+                onScheduleManageClick={() => this.setState({ viewmode: "schedule" })}
             />
-            
+
             {mainview}
 
         </div>
@@ -68,5 +75,6 @@ class App extends React.Component {
 }
 
 ReactDOM.render(<ApolloProvider client={client}>
-    <App />
-</ApolloProvider>, document.getElementById('app'))
+    <MuiPickersUtilsProvider utils={DateFnsUtils}>
+        <App />
+    </MuiPickersUtilsProvider></ApolloProvider>, document.getElementById('app'))

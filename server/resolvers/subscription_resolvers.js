@@ -398,6 +398,7 @@ select json_build_object('total_rounds', subscription.rounds, \
 
             let ret = await pgclient.query('select pilates.transfer_tickets($1, $2)', [args.ticket_id_list, args.clientid]).then(res=>{
                 console.log(res)
+                
                 return {
                     success: false,
                     msg: 'debug'
@@ -411,6 +412,42 @@ select json_build_object('total_rounds', subscription.rounds, \
             })
 
             return ret
+        },
+        update_expdate_of_tickets: async (parent, args)=>{
+            
+            let new_expdate = parse_incoming_date_utc_string(args.new_expdate)
+            if(args.ticket_id_list.length===0){
+                return {
+                    success: false,
+                    msg: 'no ticket ids given'
+                }
+            }
+
+            let ticket_id_list = args.ticket_id_list.map(a=>parseInt(a))
+
+            let ret = await pgclient.query('update pilates.subscription_ticket set expire_time=to_timestamp($1) where id in (select(unnest(cast($2 as int[]))) )', [new_expdate, ticket_id_list]).then(res=>{
+
+                if(res.rowCount>0){
+                    return {
+                        success: true
+                    }
+                }
+                else{
+                    return {
+                        success: false,
+                        msg: 'rowcount =0'
+                    }
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
+            })
+
+            return ret
+            
         }
     }
 

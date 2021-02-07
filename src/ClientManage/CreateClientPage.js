@@ -1,6 +1,5 @@
 import React from 'react'
 import { Form, Button, Table } from 'react-bootstrap'
-import { gql } from '@apollo/client'
 import moment from 'moment'
 
 import {CREATE_CLIENT_GQL} from '../common/gql_defs'

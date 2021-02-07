@@ -98,7 +98,7 @@ class ViewSubscriptionDetailModal extends React.Component {
 
                     <tr>
                         <td>소진내역</td>
-                        <td><TicketListComponent tickets={this.state.tickets}/></td>
+                        <td><TicketListComponent tickets={this.state.tickets} refreshdata={this.fetch_tickets} /></td>
                     </tr>
 
 

@@ -22,3 +22,9 @@
 tr.table-row-expired td {
     color: red;
 }
+
+.react-datepicker__month {
+ opacity: 1 important!;
+ background-color: white;
+ z-index: 800;
+}

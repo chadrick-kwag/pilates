@@ -27,10 +27,17 @@ export default function TicketTransferModal(props) {
         }).then(res=>{
             console.log(res)
 
+            if(res.data.transfer_tickets_to_clientid.success){
+                props.onSuccess()
+            }
+            else{
+                alert('submit failed')
+            }
+
 
         }).catch(e=>{
             console.log(JSON.stringify(e))
-            alert('query error')
+            alert('submit error')
         })
     }
 

@@ -12,5 +12,6 @@ type Mutation{
     create_subscription(clientid: Int!, rounds: Int!, totalcost: Int!,  activity_type: String!, grouping_type: String!, coupon_backed: String): SuccessResult
     delete_subscription(id:Int!): SuccessResult
     transfer_tickets_to_clientid(ticket_id_list: [Int], clientid: Int!): SuccessResult
+    update_expdate_of_tickets(ticket_id_list: [Int], new_expdate: String!): SuccessResult
 }
 `

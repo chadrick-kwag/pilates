@@ -3,6 +3,7 @@ import { Spinner, Table, Form, Button } from 'react-bootstrap'
 
 import { get_null_safe_date_format } from '../common/date_fns'
 import TicketTransferModal from './TicketTransferModal'
+import TicketExpDateChangeModal from './TicketExpDateChangeModal'
 
 
 function EditTicketList(props) {
@@ -13,31 +14,31 @@ function EditTicketList(props) {
 
     let init_selectlist = []
     let curr_date = new Date()
-    if(props.tickets !== null && props.tickets !== undefined){
-        for(let i=0;i<props.tickets.length;i++){
+    if (props.tickets !== null && props.tickets !== undefined) {
+        for (let i = 0; i < props.tickets.length; i++) {
             let sel_ticket = props.tickets[i]
 
             let is_edit_possible = true
             console.log('sel ticket')
             console.log(sel_ticket)
 
-            if(sel_ticket.consumed_date!==null){
-                is_edit_possible= false
+            if (sel_ticket.consumed_date !== null) {
+                is_edit_possible = false
             }
             let expdate = new Date(parseInt(sel_ticket.expire_time))
-            if(curr_date > expdate){
+            if (curr_date > expdate) {
                 is_edit_possible = false
             }
 
             console.log(sel_ticket.destroyed_date)
-            if(sel_ticket.destroyed_date!==null){
+            if (sel_ticket.destroyed_date !== null) {
                 is_edit_possible = false
             }
 
-            if(!is_edit_possible){
+            if (!is_edit_possible) {
                 init_selectlist.push(null)
             }
-            else{
+            else {
                 init_selectlist.push(false)
             }
         }
@@ -69,9 +70,9 @@ function EditTicketList(props) {
         }
 
         let selected_ticket_id_list = []
-        for(let i=0;i< selectlist.length; i++){
+        for (let i = 0; i < selectlist.length; i++) {
 
-            if(!selectlist[i]){
+            if (!selectlist[i]) {
                 continue
             }
 
@@ -84,12 +85,26 @@ function EditTicketList(props) {
 
         return <div>
 
-            {showTransferMOdal? <TicketTransferModal onCancel={()=>setShowTransferModal(false)} selected_ticket_id_list={selected_ticket_id_list}/> : null}
-            {showExpDateChangeModal? null : null}
+            {showTransferMOdal ? <TicketTransferModal onCancel={() => setShowTransferModal(false)} 
+            selected_ticket_id_list={selected_ticket_id_list} 
+            onSuccess={()=>{
+                setShowTransferModal(false)
+                props.refreshdata()
+            }}
+            /> : null}
+            {showExpDateChangeModal ? <TicketExpDateChangeModal 
+            selected_ticket_id_list={selected_ticket_id_list}
+                default_date={new Date(parseInt(props.tickets[selectlist.indexOf(true)].expire_time))}
+                onCancel={_=>setShowExpDateChangeModal(false)}
+                onSuccess={_ => {
+                    setShowExpDateChangeModal(false)
+                    props.refreshdata()
+                }}
+            /> : null}
 
             <div className='row-gravity-right'>
-                <Button disabled={!at_least_one_selected} onClick={_=>setShowTransferModal(true)}>양도</Button>
-                <Button disabled={!at_least_one_selected} onClick={_=>setShowExpDateChangeModal(true)}>유통기한 변경</Button>
+                <Button disabled={!at_least_one_selected} onClick={_ => setShowTransferModal(true)}>양도</Button>
+                <Button disabled={!at_least_one_selected} onClick={_ => setShowExpDateChangeModal(true)}>유통기한 변경</Button>
             </div>
 
 
@@ -99,15 +114,15 @@ function EditTicketList(props) {
                     <th>
                         <div>
                             <Form.Check checked={allselect} onClick={_ => {
-                                
+
                                 let changed_val = !allselect
 
                                 let new_selectlist = Array.from(selectlist)
-                                new_selectlist = new_selectlist.map(a=>{
-                                    if(a===null){
+                                new_selectlist = new_selectlist.map(a => {
+                                    if (a === null) {
                                         return a
                                     }
-                                    else{
+                                    else {
                                         return changed_val
                                     }
                                 })
@@ -131,9 +146,9 @@ function EditTicketList(props) {
                             tr_classname = "table-row-expired"
                         }
                         // let is_expired = expire_date < new Date()
-                        
+
                         return <tr className={tr_classname}>
-                            <td><Form.Check disabled={selectlist[index]===null} checked={selectlist[index]} onClick={() => {
+                            <td><Form.Check disabled={selectlist[index] === null} checked={selectlist[index]} onClick={() => {
                                 let newvalue = !selectlist[index]
 
                                 let new_select_list = Array.from(selectlist)

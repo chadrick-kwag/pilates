@@ -16,12 +16,12 @@ export default function TicketListComponent(props) {
                 </div>
 
                 <div>
-                    <TicketList tickets={props.tickets} />
+                    <TicketList tickets={props.tickets} refreshdata={props.refreshdata} />
                 </div>
             </div>
             :
             <div>
-                <EditTicketList tickets={props.tickets} onEscapeEditMode={()=>setEditMode(false)}/>
+                <EditTicketList tickets={props.tickets} onEscapeEditMode={()=>setEditMode(false)} refreshdata={props.refreshdata} />
             </div>}
 
 
