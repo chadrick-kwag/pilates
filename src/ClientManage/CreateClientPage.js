@@ -2,7 +2,8 @@ import React from 'react'
 import { Form, Button, Table } from 'react-bootstrap'
 import moment from 'moment'
 
-import {CREATE_CLIENT_GQL} from '../common/gql_defs'
+import { CREATE_CLIENT_GQL } from '../common/gql_defs'
+import { KeyboardDatePicker } from "@material-ui/pickers";
 
 
 
@@ -30,7 +31,7 @@ function extract_date_from_birthdate_str(bd_str) {
             return null
         }
 
-        if(month <0 || month > 11){
+        if (month < 0 || month > 11) {
             return null
         }
 
@@ -61,7 +62,7 @@ class CreateClientPage extends React.Component {
             job: "",
             address: "",
             memo: "",
-            birthdate: ""
+            birthdate: null
 
 
         }
@@ -82,10 +83,8 @@ class CreateClientPage extends React.Component {
         if (this.state.phonenumber.trim() == "") {
             return 'invalid phone number'
         }
-        if (this.state.birthdate.trim() != "") {
-            if (extract_date_from_birthdate_str(this.state.birthdate) == null) {
-                return 'invalid birthdate'
-            }
+        if (this.state.birthdate!==null && isNaN(this.state.birthdate)) {
+            return 'invalid birthdate'
 
         }
 
@@ -103,17 +102,17 @@ class CreateClientPage extends React.Component {
         }
 
         let birthdate_str
-        if(this.state.birthdate===null || this.state.birthdate.trim()===""){
+        if (this.state.birthdate === null ) {
             birthdate_str = ""
         }
-        else{
-            let birthdate_date = extract_date_from_birthdate_str(this.state.birthdate)
-            birthdate_str = birthdate_date.toDate().toUTCString()
+        else {
+            
+            birthdate_str = this.state.birthdate.toUTCString()
         }
-        
+
         // console.log(birthdate_date)
 
-        
+
         // let birthdate_str = birthdate_date.toDate().toUTCString()
 
 
@@ -134,7 +133,7 @@ class CreateClientPage extends React.Component {
 
         this.props.apolloclient.mutate({
             mutation: CREATE_CLIENT_GQL,
-            variables: _variables 
+            variables: _variables
         }).then(d => {
             console.log(d)
             if (d.data.createclient.success) {
@@ -193,11 +192,24 @@ class CreateClientPage extends React.Component {
                     </tr>
                     <tr>
                         <td>생년월일</td>
-                        <td><Form.Control value={this.state.birthdate} onChange={e => {
-                            this.setState({
-                                birthdate: e.target.value
-                            })
-                        }} /></td>
+                        <td>
+                            {/* <Form.Control value={this.state.birthdate} onChange={e => {
+                                this.setState({
+                                    birthdate: e.target.value
+                                })
+                            }} /> */}
+                            <KeyboardDatePicker
+                                placeholder="19901127"
+                                value={this.state.birthdate}
+                                onChange={date => {
+                                    console.log(date)
+                                    this.setState({
+                                        birthdate: date
+                                    })
+                                }}
+                                format="yyyyMMdd"
+                            />
+                        </td>
                     </tr>
                     <tr>
                         <td>연락처*</td>
