@@ -10,8 +10,8 @@ import InstructorDetailModal from './InstructorDetailModal'
 import {
     DISABLE_INSTURCTOR_BY_ID,
     ABLE_INSTRUCTOR_BY_ID,
-    LIST_INSTRUCTOR_GQL,
-    DELETE_INSTRUCTOR_GQL
+    LIST_INSTRUCTOR_GQL
+   
 } from '../common/gql_defs'
 
 

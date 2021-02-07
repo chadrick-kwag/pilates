@@ -350,6 +350,7 @@ const SEARCH_INSTRUCTOR_WITH_NAME = gql`query search_instructors($name: String!)
         id
         name
         phonenumber
+        disabled
     }
 }`
 

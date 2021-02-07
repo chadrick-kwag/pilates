@@ -6,6 +6,7 @@ import {SEARCH_INSTRUCTOR_WITH_NAME} from '../common/gql_defs'
 
 
 
+
 class InstructorSearchComponent2 extends React.Component {
 
 
@@ -40,7 +41,9 @@ class InstructorSearchComponent2 extends React.Component {
             fetchPolicy: 'no-cache'
         }).then(d => {
             console.log(d)
-            let fetched_data = d.data.search_instructor_with_name
+            let fetched_data = d.data.search_instructor_with_name.filter(a=>{
+                return a.disabled===true?  false:  true
+            })
 
             this.setState({
                 instructor_search_result: fetched_data
