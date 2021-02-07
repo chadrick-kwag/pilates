@@ -12,31 +12,39 @@ function EditTicketList(props) {
 
 
     let init_selectlist = []
-        let curr_date = new Date()
-        if(props.tickets !== null && props.tickets !== undefined){
-            for(let i=0;i<props.tickets.length;i++){
-                let sel_ticket = props.tickets[i]
-    
-                let is_edit_possible = true
-    
-                if(sel_ticket.consumed_date!==null){
-                    is_edit_possible= false
-                }
-                let expdate = new Date(parseInt(sel_ticket.expire_date))
-                if(curr_date > expdate){
-                    is_edit_possible = false
-                }
-    
-                if(!is_edit_possible){
-                    init_selectlist.push(null)
-                }
-                else{
-                    init_selectlist.push(false)
-                }
+    let curr_date = new Date()
+    if(props.tickets !== null && props.tickets !== undefined){
+        for(let i=0;i<props.tickets.length;i++){
+            let sel_ticket = props.tickets[i]
+
+            let is_edit_possible = true
+            console.log('sel ticket')
+            console.log(sel_ticket)
+
+            if(sel_ticket.consumed_date!==null){
+                is_edit_possible= false
+            }
+            let expdate = new Date(parseInt(sel_ticket.expire_time))
+            if(curr_date > expdate){
+                is_edit_possible = false
+            }
+
+            console.log(sel_ticket.destroyed_date)
+            if(sel_ticket.destroyed_date!==null){
+                is_edit_possible = false
+            }
+
+            if(!is_edit_possible){
+                init_selectlist.push(null)
+            }
+            else{
+                init_selectlist.push(false)
             }
         }
+    }
 
-    
+    console.log("init_selectlist")
+    console.log(init_selectlist)
 
     const [selectlist, setSelectList] = useState(init_selectlist)
     const [showTransferMOdal, setShowTransferModal] = useState(false)
@@ -122,16 +130,10 @@ function EditTicketList(props) {
                         if (expire_date < new Date()) {
                             tr_classname = "table-row-expired"
                         }
-                        let is_expired = expire_date < new Date()
-                        let can_edit = true
-                        if (is_expired) {
-                            can_edit = false
-                        }
-                        if (d.consumed_date !== null) {
-                            can_edit = false
-                        }
+                        // let is_expired = expire_date < new Date()
+                        
                         return <tr className={tr_classname}>
-                            <td><Form.Check disabled={!can_edit} checked={selectlist[index]} onClick={() => {
+                            <td><Form.Check disabled={selectlist[index]===null} checked={selectlist[index]} onClick={() => {
                                 let newvalue = !selectlist[index]
 
                                 let new_select_list = Array.from(selectlist)
