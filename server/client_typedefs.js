@@ -12,5 +12,6 @@ type Mutation{
     deleteclient(id: Int!): SuccessResult
     update_client(id: Int!, name: String!, phonenumber: String!, address: String, job: String, birthdate: String, gender: String, memo: String, email: String): SuccessResult
     disable_client_by_clientid(clientid:Int!): SuccessResult
+    able_client_by_clientid(clientid:Int!): SuccessResult
 }
 `

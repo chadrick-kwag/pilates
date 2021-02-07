@@ -12,7 +12,7 @@ module.exports = {
     Query: {
 
         fetch_clients: async (parent, args) => {
-            let results = await pgclient.query("select id, name, phonenumber, created, job, email, birthdate, address, gender, memo from pilates.client").then(res => {
+            let results = await pgclient.query("select id, name, phonenumber, created, job, email, birthdate, address, gender, memo, disabled from pilates.client").then(res => {
 
                 return {
                     success: true,
@@ -111,6 +111,31 @@ module.exports = {
 
         disable_client_by_clientid: async (parent, args)=>{
             let ret = await pgclient.query('update pilates.client set disabled=true where id=$1',[args.clientid]).then(res=>{
+                console.log(res)
+                if(res.rowCount==1){
+                    return {
+                        success: true
+                    }
+                }
+                else{
+                    return {
+                        success: false,
+                        msg: 'rowcount not 1'
+                    }
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: "query error"
+                }
+            })
+
+            return ret
+        },
+
+        able_client_by_clientid: async (parent, args)=>{
+            let ret = await pgclient.query('update pilates.client set disabled=false where id=$1',[args.clientid]).then(res=>{
                 console.log(res)
                 if(res.rowCount==1){
                     return {

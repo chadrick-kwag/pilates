@@ -277,6 +277,15 @@ const QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query query_subsc
     }
 }`
 
+const ABLE_CLIENT_BY_CLIENTID = gql`
+mutation($clientid: Int!){
+    able_client_by_clientid(clientid: $clientid){
+        success
+        msg
+    }
+}
+`
+
 const DISABLE_CLIENT_BY_CLIENTID = gql`
 mutation($clientid: Int!){
     disable_client_by_clientid(clientid: $clientid){
@@ -302,6 +311,7 @@ const QUERY_CLIENTS_BY_NAME = gql`
                 address
                 memo
                 birthdate
+                disabled
             }
         }
     }
@@ -423,6 +433,6 @@ export {
     QUERY_SUBSCRIPTION_OF_CLIENTNAME,
     QUERY_SUBSCRIPTIONS_BY_CLIENTID,
     QUERY_CLIENTS_BY_NAME,
-    DISABLE_CLIENT_BY_CLIENTID
-
+    DISABLE_CLIENT_BY_CLIENTID,
+    ABLE_CLIENT_BY_CLIENTID
 }

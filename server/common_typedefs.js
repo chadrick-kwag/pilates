@@ -22,6 +22,7 @@ type Client {
     address: String
     gender: String
     birthdate: String
+    disabled: Boolean
   }
 
 type Ticket {
