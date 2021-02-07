@@ -69,10 +69,10 @@ module.exports = {
 
             let gender = null
             if(args.gender!==null){
-                if (args.gender.toLowerCase() == "male") {
+                if (args.gender.toLowerCase() === "male") {
                     gender = 'MALE'
                 }
-                else if (args.gender.toLowerCase() == "female") {
+                else if (args.gender.toLowerCase() === "female") {
                     gender = 'FEMALE'
                 }
             }
@@ -84,7 +84,7 @@ module.exports = {
 
             let pre_args = [args.name, args.phonenumber, gender, args.job, args.address, args.memo, args.email, birthdate]
 
-            let ret = await pgclient.query("insert into pilates.client (name, phonenumber, gender, job, address, memo, email, birthdate) values ($1, $2, $3, $4, $5, $6, $7, CASE WHEN $8 = -1 THEN NULL ELSE to_timestamp($8) END )", pre_args).then(res => {
+            let ret = await pgclient.query("insert into pilates.client (name, phonenumber, gender, job, address, memo, email, birthdate) values ($1, $2, $3, $4, $5, $6, $7, CASE WHEN $8 = -1 THEN NULL ELSE to_timestamp($8) END ) ON CONFLICT (name, phonenumber) DO NOTHING", pre_args).then(res => {
                 console.log(res)
 
                 if (res.rowCount > 0) {

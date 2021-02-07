@@ -70,16 +70,16 @@ class CreateInstructorPage extends React.Component {
         console.log(birthdate_date)
 
         let birthdate_str = null
-        if(birthdate_date!=null){
+        if (birthdate_date != null) {
             birthdate_str = birthdate_date.toDate().toUTCString()
         }
 
         let validation_date = extract_date_from_birthdate_str(this.state.validation_date)
 
-        if(validation_date!=null){
+        if (validation_date != null) {
             validation_date = validation_date.toDate().toUTCString()
         }
-        
+
 
 
         let _variables = {
@@ -108,15 +108,16 @@ class CreateInstructorPage extends React.Component {
                 this.props.onSubmitSuccess()
             }
             else {
-                alert('fail to create\n'+ d.data.create_instructor.msg)
-                this.props.onSubmitFail()
+                alert('fail to create\n' + d.data.create_instructor.msg)
+                if (this.props.onSubmitFail !== undefined) {
+                    this.props.onSubmitFail()
+                }
+
             }
-            // this.props.changeViewMode('list_client')
         })
             .catch(e => {
                 console.log(e)
                 console.log(JSON.stringify(e))
-                // alert('failed to reigster client')
                 alert('error creating instructor')
                 this.props.onSubmitFail()
             })
@@ -163,7 +164,7 @@ class CreateInstructorPage extends React.Component {
                     </tr>
                     <tr>
                         <td>레벨</td>
-                        <td><DropdownButton title={this.state.level==null? 'select': this.state.level}>
+                        <td><DropdownButton title={this.state.level == null ? 'select' : this.state.level}>
                             {INSTRUCTOR_LEVEL_LIST.map(d => <Dropdown.Item onClick={e => this.setState({
                                 level: d
                             })}>
@@ -191,16 +192,16 @@ class CreateInstructorPage extends React.Component {
                         <td>견습생 여부</td>
                         <td>
                             <ButtonGroup toggle>
-                                {[['예',true],['아니오', false]].map((d,i)=>{
-                                    
+                                {[['예', true], ['아니오', false]].map((d, i) => {
+
                                     return <ToggleButton
-                                    key={i}
-                                    type="radio"
-                                    value={d[1]}
-                                    checked={this.state.is_apprentice==d[1]}
-                                    onChange={e=>this.setState({
-                                        is_apprentice: d[1]
-                                    })}
+                                        key={i}
+                                        type="radio"
+                                        value={d[1]}
+                                        checked={this.state.is_apprentice == d[1]}
+                                        onChange={e => this.setState({
+                                            is_apprentice: d[1]
+                                        })}
                                     >
                                         {d[0]}
                                     </ToggleButton>

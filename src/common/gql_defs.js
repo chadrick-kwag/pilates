@@ -373,14 +373,13 @@ const FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID = gql`query fetch_instructor_with_i
 
 const CREATE_CLIENT_GQL = gql`mutation  createclient($name: String!, $phonenumber: String!, $email: String, $job: String, $memo: String, $address: String, $gender: String, $birthdate: String){
     createclient(name: $name, phonenumber: $phonenumber, email: $email, job: $job, memo: $memo, address: $address, gender: $gender, birthdate: $birthdate){
-
         success
         msg
     }
 }`
 
 
-// query_all_subscriptions_with_remainrounds_for_clientid
+
 const FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query a($clientid: Int!){
     query_all_subscriptions_with_remainrounds_for_clientid(clientid: $clientid){
         success

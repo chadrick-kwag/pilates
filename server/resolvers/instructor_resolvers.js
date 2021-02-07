@@ -71,7 +71,9 @@ module.exports = {
 
             console.log(_args)
 
-            let ret = await pgclient.query('insert into pilates.instructor (name, phonenumber, gender, email, job, validation_date, is_apprentice, memo, address, birthdate, level) values ($1, $2, $3, $4, $5, to_timestamp($6), $7, $8, $9, to_timestamp($10), $11)', _args).then(res => {
+            let ret = await pgclient.query('insert into pilates.instructor (name, phonenumber, gender, email, job, validation_date, is_apprentice, memo, address, birthdate, level) values ($1, $2, $3, $4, $5, to_timestamp($6), $7, $8, $9, to_timestamp($10), $11) ON CONFLICT (name, phonenumber) DO NOTHING', _args).then(res => {
+
+                console.log(res)
                 if (res.rowCount > 0) return {
                     success: true
                 }
