@@ -149,7 +149,7 @@ class ListClientPageV2 extends React.Component {
             }
         }
 
-        filtered_data = filtered_data.sort((a, b) => { parseInt(a.id) > parseInt(b.id) })
+        filtered_data = filtered_data.sort((a, b) =>  parseInt(a.id) > parseInt(b.id) ? 1 : -1 )
 
 
         return <div className='row-gravity-center' style={{ width: '100%' }}>
