@@ -19,7 +19,6 @@ import 'react-day-picker/lib/style.css';
 import {get_bg_fontcolor_for_activity_type} from './common'
 
 import {
-    ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
 
     DELETE_LESSON_GQL,
     CREATE_LESSON_GQL,
@@ -29,6 +28,7 @@ import {
 
 
 import { get_week_range_of_date } from '../common/date_fns'
+import LessonColorToolTip from './LessonColorTooltip'
 
 
 class InstructorScheduleViewer extends React.Component {
@@ -427,6 +427,7 @@ class InstructorScheduleViewer extends React.Component {
                         }}>next week</Button>
 
                         {date_picker_element}
+                        <LessonColorToolTip/>
 
                     </div>
 
@@ -437,7 +438,7 @@ class InstructorScheduleViewer extends React.Component {
                                 this.calendar = r
 
                             }}
-                            height="900px"
+                            height="60%"
                             calendars={[
                                 {
                                     id: '0',

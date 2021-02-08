@@ -18,17 +18,16 @@ import DayPicker from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
 
 import {
-    ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
-    QUERY_LESSON_WITH_DATERANGE_GQL,
+
     DELETE_LESSON_GQL,
     CREATE_LESSON_GQL,
-
     QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL
 } from '../common/gql_defs'
 
 
 import { get_week_range_of_date } from '../common/date_fns'
 import {get_bg_fontcolor_for_activity_type} from './common'
+import LessonColorToolTip from './LessonColorTooltip'
 
 
 class ClientScheduleViewer extends React.Component {
@@ -425,6 +424,8 @@ class ClientScheduleViewer extends React.Component {
                         }}>next week</Button>
 
                         {date_picker_element}
+
+                        <LessonColorToolTip/>
 
                     </div>
 

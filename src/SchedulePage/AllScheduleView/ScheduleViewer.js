@@ -27,6 +27,7 @@ import AllScheduleCreateLessonModal from './AllScheduleCreateLessonModal'
 import AllScheduleViewLessonModal from './AllScheduleViewLessonModal'
 import client from '../../apolloclient'
 import {get_bg_fontcolor_for_activity_type} from '../common'
+import LessonColorToolTip from '../LessonColorTooltip'
 
 class ScheduleViewer extends React.Component {
 
@@ -252,6 +253,8 @@ class ScheduleViewer extends React.Component {
 
                         {date_picker_element}
 
+                        <LessonColorToolTip/>
+
                     </div>
 
                     <div>
@@ -261,7 +264,7 @@ class ScheduleViewer extends React.Component {
                                 this.calendar = r
 
                             }}
-                            height="900px"
+                            height="80%"
                             calendars={[
                                 {
                                     id: '0',

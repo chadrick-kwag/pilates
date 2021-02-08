@@ -1,18 +1,23 @@
+
+export const PILATES_BGCOLOR = '#4287f5'
+export const GYROTONIC_BGCOLOR = '#d8e310'
+export const BALLET_BGCOLOR = '#d6890d'
+
 export function get_bg_fontcolor_for_activity_type(activity_type){
 
-    let bgcolor = '#4287f5'
+    let bgcolor = PILATES_BGCOLOR
     let fontcolor = 'white'
     switch(activity_type){
         case "PILATES":
-            bgcolor = '#4287f5'
+            bgcolor = PILATES_BGCOLOR
             fontcolor = 'white'
             break
         case 'GYROTONIC':
-            bgcolor = '#d8e310'
+            bgcolor = GYROTONIC_BGCOLOR
             fontcolor = 'black'
             break
         case 'BALLET':
-            bgcolor = '#d6890d'
+            bgcolor = BALLET_BGCOLOR
             fontcolor = 'black'
             break
             

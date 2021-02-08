@@ -63,6 +63,13 @@ hr {
     align-items: center;
 }
 
+.col-gravity-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
 .flex-col-left-align {
     display: flex;
     flex-direction: column;
