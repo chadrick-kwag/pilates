@@ -4,7 +4,7 @@ import { Button } from 'react-bootstrap'
 import './schedulepage.css'
 
 import CreateLessonPage from './CreateLessonPage'
-import ClientScheduleViewer from './ClientScheduleViewer'
+import ClientScheduleViewer from './ClientScheduleView/ClientScheduleViewer'
 import InstructorScheduleViewer from './InstructorScheduleViewer'
 
 import ScheduleViewer from './AllScheduleView/ScheduleViewer'

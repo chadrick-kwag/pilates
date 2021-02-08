@@ -12,8 +12,7 @@ import {
 } from '../../common/gql_defs'
 
 import { DatePicker, TimePicker } from '@material-ui/pickers'
-import PersonProfileCard from '../../components/PersonProfileCard'
-import { activity_type_to_kor } from '../../common/consts'
+
 
 import LessonInfoComponent from '../LessonInfoComponent'
 

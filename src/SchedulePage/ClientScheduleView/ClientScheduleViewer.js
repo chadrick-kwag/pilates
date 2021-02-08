@@ -10,28 +10,29 @@ import 'tui-calendar/dist/tui-calendar.css';
 import 'tui-date-picker/dist/tui-date-picker.css';
 import 'tui-time-picker/dist/tui-time-picker.css';
 
-import ClientSearchComponent2 from '../components/ClientSearchComponent2'
-import InstructorSearchComponent2 from '../components/InstructorSearchComponent2'
+import ClientSearchComponent2 from '../../components/ClientSearchComponent2'
+import InstructorSearchComponent2 from '../../components/InstructorSearchComponent2'
 import moment from 'moment'
 
 import DayPicker from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
 
-import PartialOverlaySpinner from './PartialOverlaySpinner'
-import LessonInfoComponent from './LessonInfoComponent'
+import PartialOverlaySpinner from '../PartialOverlaySpinner'
+import LessonInfoComponent from '../LessonInfoComponent'
 
 import {
 
     DELETE_LESSON_GQL,
     CREATE_LESSON_GQL,
     QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL
-} from '../common/gql_defs'
+} from '../../common/gql_defs'
 
 
-import { get_week_range_of_date } from '../common/date_fns'
-import { get_bg_fontcolor_for_activity_type } from './common'
-import LessonColorToolTip from './LessonColorTooltip'
-import { isNullableType } from 'graphql';
+import { get_week_range_of_date } from '../../common/date_fns'
+import { get_bg_fontcolor_for_activity_type } from '../common'
+import LessonColorToolTip from '../LessonColorTooltip'
+import ClientViewLessonModal from './ClientViewLessonModal'
+
 
 
 class ClientScheduleViewer extends React.Component {
@@ -213,77 +214,6 @@ class ClientScheduleViewer extends React.Component {
         }
 
 
-        let view_modal
-
-        if (this.state.show_view_modal) {
-
-
-
-            view_modal = <Modal show={this.state.show_view_modal} onHide={() => this.setState({
-                show_view_modal: false
-            })}>
-                <Modal.Body>
-                    <div>
-                        <h2>회원</h2>
-                        <div>
-                            <span>이름: {this.state.view_selected_lesson.clientname}</span>
-
-                        </div>
-                        <hr></hr>
-
-                        <h2>강사</h2>
-
-                        <div>
-                            <span>이름: {this.state.view_selected_lesson.instructorname}</span>
-                        </div>
-                        <hr></hr>
-                        <div>
-                            <span>{datetimestr}</span>
-                        </div>
-
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={e => {
-                        console.log(this.state.view_selected_lesson)
-                        this.props.apolloclient.mutate({
-                            mutation: DELETE_LESSON_GQL,
-                            variables: {
-                                lessonid: this.state.view_selected_lesson.id
-                            }
-                        }).then(d => {
-                            console.log(d)
-                            if (d.data.delete_lesson.success) {
-
-                                this.setState({
-                                    show_view_modal: false
-
-                                }, () => {
-                                    this.fetchdata()
-                                })
-                            }
-                            else {
-                                alert('failed to delete lesson')
-                            }
-                        }).catch(e => {
-                            console.log('error deleting lesson')
-                            alert('failed to delete lesson')
-                        })
-                    }}>delete</Button>
-                    <Button onClick={e => {
-                        this.setState({
-                            show_view_modal: false
-                        })
-                    }
-                    }>Close</Button>
-                </Modal.Footer>
-            </Modal>
-        }
-        else {
-            view_modal = null
-        }
-
-
 
         // date picker div
 
@@ -322,7 +252,14 @@ class ClientScheduleViewer extends React.Component {
         return <div>
 
 
-            {view_modal}
+            {this.state.show_view_modal ? <ClientViewLessonModal show={this.state.show_view_modal} onHide={(_) => {
+                this.setState({
+                    show_view_modal: false
+                })
+
+            }}
+                lesson={this.state.view_selected_lesson}
+            /> : null}
 
             <div>
                 <ClientSearchComponent2 apolloclient={this.props.apolloclient} clientSelectedCallback={d => this.setState({

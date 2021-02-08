@@ -3,8 +3,8 @@ type Query{
 
     query_all_lessons: [Lesson]
     query_lessons_with_daterange(start_time: String!, end_time: String!): query_lesson_return
-    query_lesson_with_timerange_by_clientid(clientid: Int!, start_time: String!, end_time: String!): SuccessAndLessons
-    query_lesson_with_timerange_by_instructorid(instructorid: Int!, start_time: String!, end_time: String!): SuccessAndLessons
+    query_lesson_with_timerange_by_clientid(clientid: Int!, start_time: String!, end_time: String!): query_lesson_return
+    query_lesson_with_timerange_by_instructorid(instructorid: Int!, start_time: String!, end_time: String!): query_lesson_return
 
 
 }

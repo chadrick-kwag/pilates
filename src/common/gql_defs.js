@@ -57,8 +57,8 @@ const DELETE_LESSON_WITH_REQUEST_TYPE_GQL = gql`mutation delete_lesson_with_requ
 
 const QUERY_LESSON_WITH_DATERANGE_GQL = gql`query($start_time: String!, $end_time: String!){
     query_lessons_with_daterange(start_time: $start_time, end_time: $end_time){
-        success,
-        msg,
+        success
+        msg
         lessons {
             id
             clientid
@@ -88,16 +88,20 @@ const ATTEMPT_UPDATE_SCHEDULE_TIME_GQL = gql`mutation blah($lessonid: Int!, $sta
 const QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL = gql`query($clientid: Int!, $start_time: String!, $end_time: String!){
     query_lesson_with_timerange_by_clientid(clientid: $clientid, start_time: $start_time, end_time: $end_time){
         success
+        msg
         lessons{
             id
             clientid
             clientname
+            client_phonenumber
             instructorid
             instructorname
+            instructor_phonenumber
             starttime
             endtime
             activity_type
             grouping_type
+
         }
     }
 }`
@@ -105,12 +109,15 @@ const QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL = gql`query($clientid: Int!, $
 const QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTORID_GQL = gql`query($instructorid: Int!, $start_time: String!, $end_time: String!){
     query_lesson_with_timerange_by_instructorid(instructorid: $instructorid, start_time: $start_time, end_time: $end_time){
         success
+        msg
         lessons{
             id
             clientid
             clientname
+            client_phonenumber
             instructorid
             instructorname
+            instructor_phonenumber
             starttime
             endtime
             activity_type
