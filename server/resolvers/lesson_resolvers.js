@@ -135,10 +135,12 @@ module.exports = {
             console.log(args)
 
             // if current time is after lesson's start time, then do not allow change at any circumstance
-            let currdate = new Date()
+            let currdate = (new Date().getTime() / 1000)
 
             let lesson_startdate = parse_incoming_date_utc_string(args.start_time)
             let lesson_enddate = parse_incoming_date_utc_string(args.end_time)
+
+
 
             if (lesson_startdate >= lesson_enddate) {
                 return {
