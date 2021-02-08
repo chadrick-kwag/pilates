@@ -379,10 +379,6 @@ class ClientScheduleViewer extends React.Component {
 
                                 onClickSchedule={e => {
 
-                                    let new_modal_info = {
-                                        schedule: e.schedule
-                                    }
-
                                     let sel_id = e.schedule.id
 
                                     if (sel_id == null || sel_id == "") {
@@ -392,7 +388,7 @@ class ClientScheduleViewer extends React.Component {
                                     let sel_lesson = this.state.data[sel_id]
 
                                     this.setState({
-                                        modal_info: new_modal_info,
+                                       
                                         show_view_modal: true,
                                         view_selected_lesson: sel_lesson
                                     })

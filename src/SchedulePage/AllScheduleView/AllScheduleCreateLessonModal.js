@@ -38,7 +38,7 @@ class AllScheduleCreateLessonModal extends React.Component {
             return false
         }
 
-        if(this.state.selected_subscription==null){
+        if (this.state.selected_subscription == null) {
             return false
         }
 
@@ -72,7 +72,7 @@ class AllScheduleCreateLessonModal extends React.Component {
             alert("error fetching subscriptions")
         })
     }
-    
+
     create_lesson() {
         let check_res = this.create_input_check()
         if (!check_res) {
@@ -144,21 +144,21 @@ class AllScheduleCreateLessonModal extends React.Component {
 
         if (this.state.subscriptions != null) {
 
-            let variant = this.state.selected_subscription==null ? "Danger" : "Primary"
+            let variant = this.state.selected_subscription == null ? "Danger" : "Primary"
 
-            subscriptions_div = <div style={{paddingTop: "10px"}}><DropdownButton variant={variant} style={{
+            subscriptions_div = <div style={{ paddingTop: "10px" }}><DropdownButton variant={variant} style={{
                 width: "300px"
             }} title={this.state.selected_subscription == null ? "please select" : this.get_subscription_repr(this.state.selected_subscription)}>
 
-                    {this.state.subscriptions.map((d, i) =>
-                        <Dropdown.Item as="button" key={i} onClick={e=>
-                            this.setState({
-                                selected_subscription: d
-                            })
-                        } >{this.get_subscription_repr(d)}</Dropdown.Item>
-                    )}
+                {this.state.subscriptions.map((d, i) =>
+                    <Dropdown.Item as="button" key={i} onClick={e =>
+                        this.setState({
+                            selected_subscription: d
+                        })
+                    } >{this.get_subscription_repr(d)}</Dropdown.Item>
+                )}
 
-                </DropdownButton></div>
+            </DropdownButton></div>
         }
 
 
