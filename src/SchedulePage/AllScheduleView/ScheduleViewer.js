@@ -23,11 +23,12 @@ import {
 
 import { get_week_range_of_date } from '../../common/date_fns'
 
-import AllScheduleCreateLessonModal from './AllScheduleCreateLessonModal'
+
 import AllScheduleViewLessonModal from './AllScheduleViewLessonModal'
 import client from '../../apolloclient'
-import {get_bg_fontcolor_for_activity_type} from '../common'
+import { get_bg_fontcolor_for_activity_type } from '../common'
 import LessonColorToolTip from '../LessonColorTooltip'
+import PartialOverlaySpinner from '../PartialOverlaySpinner'
 
 class ScheduleViewer extends React.Component {
 
@@ -108,7 +109,7 @@ class ScheduleViewer extends React.Component {
                 let title = d.clientname + " 회원님 / " + d.instructorname + " 강사님"
 
                 let [bgcolor, fontcolor] = get_bg_fontcolor_for_activity_type(d.activity_type)
-                
+
                 return {
                     id: parseInt(i),
                     calendarId: '0',
@@ -192,7 +193,7 @@ class ScheduleViewer extends React.Component {
         return <div>
 
             {view_modal}
-            {this.state.data === null ? <div className='row-gravity-center'><Spinner animation="border"/></div> :
+            
                 <div>
                     <div>
                         <Button onClick={e => {
@@ -226,100 +227,103 @@ class ScheduleViewer extends React.Component {
 
                         {date_picker_element}
 
-                        <LessonColorToolTip/>
+                        <LessonColorToolTip />
 
                     </div>
 
                     <div>
-                        <Calendar
 
-                            ref={r => {
-                                this.calendar = r
+                        <PartialOverlaySpinner hide={this.state.data===null? true : false}>
+                            <Calendar
 
-                            }}
-                            height="80%"
-                            calendars={[
-                                {
-                                    id: '0',
-                                    name: 'Private',
-                                    color: 'white',
-                                    bgColor: '#4275ff',
-                                    borderColor: '#9e5fff'
-                                }
+                                ref={r => {
+                                    this.calendar = r
 
-                            ]}
-                            useCreationPopup={false}
-                            useDetailPopup={false}
-                            disableDblClick={true}
-                            disableClick={false}
-                            isReadOnly={false}
+                                }}
+                                height="80%"
+                                calendars={[
+                                    {
+                                        id: '0',
+                                        name: 'Private',
+                                        color: 'white',
+                                        bgColor: '#4275ff',
+                                        borderColor: '#9e5fff'
+                                    }
 
-
-                            month={{
-                                startDayOfWeek: 0,
-                                daynames: ['일', '월', '화', '수', '목', '금', '토']
-                            }}
-                            schedules={schedule_formatted_data}
-                            taskView={false}
-                            scheduleView={['time']}
-
-                            template={{
-                                milestone(schedule) {
-                                    return `<span style="color:#fff;background-color: ${schedule.bgColor};">${schedule.title
-                                        }</span>`;
-                                },
-                                milestoneTitle() {
-                                    return 'Milestone';
-                                },
-                                allday(schedule) {
-                                    return `${schedule.title}<i class="fa fa-refresh"></i>`;
-                                },
-                                alldayTitle() {
-                                    return 'All Day';
-                                }
-                            }}
-
-                            timezones={[
-                                {
-                                    timezoneOffset: +540,
-                                    displayLabel: 'GMT+09:00',
-                                    tooltip: 'Seoul'
-                                }
-
-                            ]}
-
-                            // view={selectedView} // You can also set the `defaultView` option.
-                            week={{
-                                showTimezoneCollapseButton: false,
-                                timezonesCollapsed: true
-                            }}
+                                ]}
+                                useCreationPopup={false}
+                                useDetailPopup={false}
+                                disableDblClick={true}
+                                disableClick={false}
+                                isReadOnly={false}
 
 
-                            onClickSchedule={e => {
+                                month={{
+                                    startDayOfWeek: 0,
+                                    daynames: ['일', '월', '화', '수', '목', '금', '토']
+                                }}
+                                schedules={schedule_formatted_data}
+                                taskView={false}
+                                scheduleView={['time']}
 
-                                let new_modal_info = {
-                                    schedule: e.schedule
-                                }
+                                template={{
+                                    milestone(schedule) {
+                                        return `<span style="color:#fff;background-color: ${schedule.bgColor};">${schedule.title
+                                            }</span>`;
+                                    },
+                                    milestoneTitle() {
+                                        return 'Milestone';
+                                    },
+                                    allday(schedule) {
+                                        return `${schedule.title}<i class="fa fa-refresh"></i>`;
+                                    },
+                                    alldayTitle() {
+                                        return 'All Day';
+                                    }
+                                }}
 
-                                let sel_id = e.schedule.id
+                                timezones={[
+                                    {
+                                        timezoneOffset: +540,
+                                        displayLabel: 'GMT+09:00',
+                                        tooltip: 'Seoul'
+                                    }
 
-                                if (sel_id == null || sel_id == "") {
-                                    sel_id = 0
-                                }
+                                ]}
 
-                                let sel_lesson = this.state.data[sel_id]
+                                // view={selectedView} // You can also set the `defaultView` option.
+                                week={{
+                                    showTimezoneCollapseButton: false,
+                                    timezonesCollapsed: true
+                                }}
 
-                                this.setState({
-                                    modal_info: new_modal_info,
-                                    show_view_modal: true,
-                                    view_selected_lesson: sel_lesson
-                                })
-                            }}
 
-                        />
+                                onClickSchedule={e => {
+
+                                    let new_modal_info = {
+                                        schedule: e.schedule
+                                    }
+
+                                    let sel_id = e.schedule.id
+
+                                    if (sel_id == null || sel_id == "") {
+                                        sel_id = 0
+                                    }
+
+                                    let sel_lesson = this.state.data[sel_id]
+
+                                    this.setState({
+                                        modal_info: new_modal_info,
+                                        show_view_modal: true,
+                                        view_selected_lesson: sel_lesson
+                                    })
+                                }}
+
+                            />
+                        </PartialOverlaySpinner>
                     </div>
                 </div>
-            }
+            
 
         </div>
 

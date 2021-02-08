@@ -148,3 +148,10 @@ hr {
 .profilecard{
     width: 25rem;
 }
+
+.custom-overlay{
+    position: absolute;
+    z-index: 500;
+    opacity: 0.3;
+    background-color: grey;
+}
