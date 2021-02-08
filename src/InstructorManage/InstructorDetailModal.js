@@ -4,7 +4,6 @@ import _ from 'lodash'
 import moment from 'moment'
 import { UPDATE_INSTRUCTOR_INFO_GQL, FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID } from '../common/gql_defs'
 
-import { extract_date_from_birthdate_str } from '../ClientManage/CreateClientPage'
 import { INSTRUCTOR_LEVEL_LIST } from '../common/consts'
 import client from '../apolloclient'
 import { KeyboardDatePicker } from "@material-ui/pickers";
@@ -173,6 +172,7 @@ class InstructorDetailModal extends React.Component {
 
         console.log("prep_validation_date")
         console.log(prep_validation_date)
+
 
         client.mutate({
             mutation: UPDATE_INSTRUCTOR_INFO_GQL,

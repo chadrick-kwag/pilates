@@ -1,12 +1,9 @@
 import React from 'react'
 import { Form, Button, Table, DropdownButton, Dropdown, ButtonGroup, ToggleButton } from 'react-bootstrap'
-
-import moment from 'moment'
-
 import { CREATE_INSTRUCTOR_GQL } from '../common/gql_defs'
-
-import { extract_date_from_birthdate_str } from '../ClientManage/CreateClientPage'
 import { INSTRUCTOR_LEVEL_LIST } from '../common/consts'
+import client from '../apolloclient'
+import { KeyboardDatePicker } from "@material-ui/pickers";
 
 
 class CreateInstructorPage extends React.Component {
@@ -22,7 +19,7 @@ class CreateInstructorPage extends React.Component {
             job: "",
             address: "",
             memo: "",
-            birthdate: "",
+            birthdate: null,
             level: null,
             validation_date: null,
             is_apprentice: null
@@ -44,12 +41,16 @@ class CreateInstructorPage extends React.Component {
         if (this.state.phonenumber.trim() == "") {
             return 'invalid phone number'
         }
-        if (this.state.birthdate.trim() != "") {
-            if (extract_date_from_birthdate_str(this.state.birthdate) == null) {
-                return 'invalid birthdate'
-            }
 
+        if(this.state.birthdate !== null && this.state.birthdate instanceof Date && isNaN(this.state.birthdate)){
+            return 'invalid birthdate'
         }
+
+        if(this.state.validation_date !== null && this.state.validation_date instanceof Date && isNaN(this.state.validation_date)){
+            return 'invalid validation date'
+        }
+
+        
 
         return null
     }
@@ -64,34 +65,16 @@ class CreateInstructorPage extends React.Component {
             return alert('invalid input\n' + check_msg)
         }
 
-
-        let birthdate_date = extract_date_from_birthdate_str(this.state.birthdate)
-
-        console.log(birthdate_date)
-
-        let birthdate_str = null
-        if (birthdate_date != null) {
-            birthdate_str = birthdate_date.toDate().toUTCString()
-        }
-
-        let validation_date = extract_date_from_birthdate_str(this.state.validation_date)
-
-        if (validation_date != null) {
-            validation_date = validation_date.toDate().toUTCString()
-        }
-
-
-
         let _variables = {
-            name: this.state.name,
+            name: this.state.name.trim(),
             phonenumber: this.state.phonenumber,
             job: this.state.job,
             address: this.state.address,
             gender: this.state.gender,
             memo: this.state.memo,
-            birthdate: birthdate_str,
+            birthdate: this.state.birthdate===null? null : this.state.birthdate.toUTCString(),
             email: this.state.email,
-            validation_date: validation_date,
+            validation_date: this.state.validation_date===null? null : this.state.validation_date.toUTCString(),
             level: this.state.level,
             is_apprentice: this.state.is_apprentice
 
@@ -99,7 +82,7 @@ class CreateInstructorPage extends React.Component {
 
         console.log(_variables)
 
-        this.props.apolloclient.mutate({
+        client.mutate({
             mutation: CREATE_INSTRUCTOR_GQL,
             variables: _variables
         }).then(d => {
@@ -174,11 +157,23 @@ class CreateInstructorPage extends React.Component {
                     </tr>
                     <tr>
                         <td>생년월일</td>
-                        <td><Form.Control value={this.state.birthdate} onChange={e => {
+                        <td>
+                            {/* <Form.Control value={this.state.birthdate} onChange={e => {
                             this.setState({
                                 birthdate: e.target.value
                             })
-                        }} /></td>
+                        }} /> */}
+                            <KeyboardDatePicker
+                                placeholder="19901127"
+                                value={this.state.birthdate}
+                                onChange={date => {
+                                    this.setState({
+                                        birthdate: date
+                                    })
+                                }}
+                                format="yyyyMMdd"
+                            />
+                        </td>
                     </tr>
                     <tr>
                         <td>연락처*</td>
@@ -212,11 +207,23 @@ class CreateInstructorPage extends React.Component {
                     </tr>
                     <tr>
                         <td>자격취득일</td>
-                        <td><Form.Control value={this.state.validation_date} onChange={e => {
+                        <td>
+                            {/* <Form.Control value={this.state.validation_date} onChange={e => {
                             this.setState({
                                 validation_date: e.target.value
                             })
-                        }} /></td>
+                        }} /> */}
+                            <KeyboardDatePicker
+                                placeholder="19901127"
+                                value={this.state.validation_date}
+                                onChange={date => {
+                                    this.setState({
+                                        validation_date: date
+                                    })
+                                }}
+                                format="yyyyMMdd"
+                            />
+                        </td>
                     </tr>
                     <tr>
                         <td>주소</td>
