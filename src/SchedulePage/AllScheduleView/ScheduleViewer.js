@@ -182,7 +182,8 @@ class ScheduleViewer extends React.Component {
                         this.calendar.calendarInst.setDate(d)
                         this.setState({
                             view_date: d,
-                            show_date_picker: false
+                            show_date_picker: false,
+                            data: null
                         }, () => {
                             this.fetchdata()
                         })
@@ -202,7 +203,8 @@ class ScheduleViewer extends React.Component {
                             let new_date = new Date(this.state.view_date)
                             new_date.setDate(this.state.view_date.getDate() - 7)
                             this.setState({
-                                view_date: new_date
+                                view_date: new_date,
+                                data: null
                             }, () => {
                                 this.fetchdata()
                             })
@@ -219,7 +221,8 @@ class ScheduleViewer extends React.Component {
                             let new_date = new Date(this.state.view_date)
                             new_date.setDate(this.state.view_date.getDate() + 7)
                             this.setState({
-                                view_date: new_date
+                                view_date: new_date,
+                                data: null
                             }, () => {
                                 this.fetchdata()
                             })
