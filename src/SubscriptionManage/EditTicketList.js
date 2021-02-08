@@ -63,7 +63,7 @@ function EditTicketList(props) {
 
 
     if (props.tickets === null || props.tickets === undefined) {
-        return <div><Spinner></Spinner></div>
+        return <div><Spinner animation='border' /></div>
     }
     else if (props.tickets.length == 0) {
         return <div>no tickets</div>

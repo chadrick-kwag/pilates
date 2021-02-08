@@ -17,7 +17,6 @@ import DayPicker from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
 
 import {
-    ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL
 } from '../../common/gql_defs'
 
@@ -27,6 +26,7 @@ import { get_week_range_of_date } from '../../common/date_fns'
 import AllScheduleCreateLessonModal from './AllScheduleCreateLessonModal'
 import AllScheduleViewLessonModal from './AllScheduleViewLessonModal'
 import client from '../../apolloclient'
+import {get_bg_fontcolor_for_activity_type} from '../common'
 
 class ScheduleViewer extends React.Component {
 
@@ -105,7 +105,9 @@ class ScheduleViewer extends React.Component {
                 endtime = new Date(parseInt(endtime))
 
                 let title = d.clientname + " 회원님 / " + d.instructorname + " 강사님"
-                console.log(i)
+
+                let [bgcolor, fontcolor] = get_bg_fontcolor_for_activity_type(d.activity_type)
+                
                 return {
                     id: parseInt(i),
                     calendarId: '0',
@@ -113,13 +115,12 @@ class ScheduleViewer extends React.Component {
                     category: 'time',
                     dueDateClass: '',
                     start: starttime,
-                    end: endtime
+                    end: endtime,
+                    bgColor: bgcolor,
+                    color: fontcolor
                 }
             })
         }
-
-
-
 
 
         let view_modal = null

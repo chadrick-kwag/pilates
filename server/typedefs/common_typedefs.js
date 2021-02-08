@@ -98,13 +98,16 @@ type SuccessAndInstructors{
 }
 
 type Lesson {
-    id: Int,
-  clientid: Int,
-  clientname: String,
-  instructorid: Int,
-  instructorname: String,
-  starttime: String,
+    id: Int
+  clientid: Int
+  clientname: String
+  instructorid: Int
+  instructorname: String
+  starttime: String
   endtime: String
+  activity_type: String
+  grouping_type: String
+
 }
 
 
@@ -148,20 +151,22 @@ type SuccessAndTickets{
 }
 
 type LessonWithMoreInfo {
-  id: Int,
-  clientid: Int,
-  clientname: String,
-  client_phonenumber: String,
-  instructorid: Int,
-  instructorname: String,
-  instructor_phonenumber: String,
-  starttime: String,
+  id: Int
+  clientid: Int
+  clientname: String
+  client_phonenumber: String
+  instructorid: Int
+  instructorname: String
+  instructor_phonenumber: String
+  starttime: String
   endtime: String
+  activity_type: String
+  grouping_type: String
 }
 
 type query_lesson_return {
-    success: Boolean,
-    msg: String,
+    success: Boolean
+    msg: String
     lessons: [LessonWithMoreInfo]
 }
 

@@ -60,15 +60,18 @@ const QUERY_LESSON_WITH_DATERANGE_GQL = gql`query($start_time: String!, $end_tim
         success,
         msg,
         lessons {
-            id,
-            clientid,
-            clientname,
-            client_phonenumber,
-            instructorid,
-            instructorname,
-            instructor_phonenumber,
-            starttime,
+            id
+            clientid
+            clientname
+            client_phonenumber
+            instructorid
+            instructorname
+            instructor_phonenumber
+            starttime
             endtime
+            activity_type
+            grouping_type
+
         }
         
     }
@@ -98,13 +101,15 @@ const QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTORID_GQL = gql`query($instructorid:
     query_lesson_with_timerange_by_instructorid(instructorid: $instructorid, start_time: $start_time, end_time: $end_time){
         success
         lessons{
-            id,
-        clientid,
-        clientname,
-        instructorid,
-        instructorname,
-        starttime,
-        endtime
+            id
+            clientid
+            clientname
+            instructorid
+            instructorname
+            starttime
+            endtime
+            activity_type
+            grouping_type
         }
         
     }

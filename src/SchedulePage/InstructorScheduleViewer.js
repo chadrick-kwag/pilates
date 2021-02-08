@@ -16,6 +16,7 @@ import moment from 'moment'
 
 import DayPicker from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
+import {get_bg_fontcolor_for_activity_type} from './common'
 
 import {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
@@ -164,7 +165,11 @@ class InstructorScheduleViewer extends React.Component {
             endtime = new Date(parseInt(endtime))
 
             let title = d.clientname + " 회원님 / " + d.instructorname + " 강사님"
-            console.log(i)
+            
+            console.log(d)
+
+            let [bgcolor, fontcolor ] = get_bg_fontcolor_for_activity_type(d.activity_type)
+
             return {
                 id: parseInt(i),
                 calendarId: '0',
@@ -172,7 +177,9 @@ class InstructorScheduleViewer extends React.Component {
                 category: 'time',
                 dueDateClass: '',
                 start: starttime,
-                end: endtime
+                end: endtime,
+                bgColor: bgcolor,
+                color: fontcolor
             }
         })
 
