@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button } from 'react-bootstrap'
+import { Button, Spinner } from 'react-bootstrap'
 
 
 
@@ -26,7 +26,7 @@ import { get_week_range_of_date } from '../../common/date_fns'
 
 import AllScheduleCreateLessonModal from './AllScheduleCreateLessonModal'
 import AllScheduleViewLessonModal from './AllScheduleViewLessonModal'
-
+import client from '../../apolloclient'
 
 class ScheduleViewer extends React.Component {
 
@@ -34,7 +34,7 @@ class ScheduleViewer extends React.Component {
         super(props)
 
         this.state = {
-            data: [],
+            data: null,
             show_create_modal: false,
             modal_info: null,
             show_view_modal: false,
@@ -56,7 +56,7 @@ class ScheduleViewer extends React.Component {
         let [start_time, end_time] = get_week_range_of_date(this.state.view_date)
 
 
-        this.props.apolloclient.query({
+        client.query({
             query: QUERY_LESSON_WITH_DATERANGE_GQL,
             variables: {
                 start_time: start_time.toUTCString(),
@@ -66,7 +66,7 @@ class ScheduleViewer extends React.Component {
 
 
         }).then(d => {
-
+            console.log('fetched lesson data')
             console.log(d)
 
             if (d.data.query_lessons_with_daterange.success) {
@@ -79,7 +79,7 @@ class ScheduleViewer extends React.Component {
                 alert('failed to fetch schedule data')
             }
         }).catch(e => {
-            console.log('error fetching scehdule data')
+
             console.log(JSON.stringify(e))
             console.log(e)
             alert('error fetching schedule data')
@@ -93,29 +93,31 @@ class ScheduleViewer extends React.Component {
 
     render() {
 
-        console.log("inside render")
+        let schedule_formatted_data = []
+        if (this.state.data !== null) {
+            schedule_formatted_data = this.state.data.map((d, i) => {
 
-        let schedule_formatted_data = this.state.data.map((d, i) => {
-
-            let starttime = d.starttime
-            let endtime = d.endtime
+                let starttime = d.starttime
+                let endtime = d.endtime
 
 
-            starttime = new Date(parseInt(starttime))
-            endtime = new Date(parseInt(endtime))
+                starttime = new Date(parseInt(starttime))
+                endtime = new Date(parseInt(endtime))
 
-            let title = d.clientname + " 회원님 / " + d.instructorname + " 강사님"
-            console.log(i)
-            return {
-                id: parseInt(i),
-                calendarId: '0',
-                title: title,
-                category: 'time',
-                dueDateClass: '',
-                start: starttime,
-                end: endtime
-            }
-        })
+                let title = d.clientname + " 회원님 / " + d.instructorname + " 강사님"
+                console.log(i)
+                return {
+                    id: parseInt(i),
+                    calendarId: '0',
+                    title: title,
+                    category: 'time',
+                    dueDateClass: '',
+                    start: starttime,
+                    end: endtime
+                }
+            })
+        }
+
 
 
 
@@ -215,131 +217,135 @@ class ScheduleViewer extends React.Component {
             {create_modal}
 
             {view_modal}
+            {this.state.data === null ? <div className='row-gravity-center'><Spinner animation="border"/></div> :
+                <div>
+                    <div>
+                        <Button onClick={e => {
+                            this.calendar.calendarInst.prev()
+                            // update current view date
+                            let new_date = new Date(this.state.view_date)
+                            new_date.setDate(this.state.view_date.getDate() - 7)
+                            this.setState({
+                                view_date: new_date
+                            }, () => {
+                                this.fetchdata()
+                            })
 
-            <div>
-                <Button onClick={e => {
-                    this.calendar.calendarInst.prev()
-                    // update current view date
-                    let new_date = new Date(this.state.view_date)
-                    new_date.setDate(this.state.view_date.getDate() - 7)
-                    this.setState({
-                        view_date: new_date
-                    }, () => {
-                        this.fetchdata()
-                    })
+                        }}>prev week</Button>
+                        <Button ref={r => this.datebutton = r} onClick={e => {
+                            this.setState({
+                                show_date_picker: !this.state.show_date_picker
+                            })
+                        }}>{moment(this.state.view_date).format('YY-MM-DD')}</Button>
+                        <Button onClick={e => {
+                            this.calendar.calendarInst.next()
+                            // update current view date
+                            let new_date = new Date(this.state.view_date)
+                            new_date.setDate(this.state.view_date.getDate() + 7)
+                            this.setState({
+                                view_date: new_date
+                            }, () => {
+                                this.fetchdata()
+                            })
+                        }}>next week</Button>
 
-                }}>prev week</Button>
-                <Button ref={r => this.datebutton = r} onClick={e => {
-                    this.setState({
-                        show_date_picker: !this.state.show_date_picker
-                    })
-                }}>{moment(this.state.view_date).format('YY-MM-DD')}</Button>
-                <Button onClick={e => {
-                    this.calendar.calendarInst.next()
-                    // update current view date
-                    let new_date = new Date(this.state.view_date)
-                    new_date.setDate(this.state.view_date.getDate() + 7)
-                    this.setState({
-                        view_date: new_date
-                    }, () => {
-                        this.fetchdata()
-                    })
-                }}>next week</Button>
+                        {date_picker_element}
 
-                {date_picker_element}
+                    </div>
 
-            </div>
+                    <div>
+                        <Calendar
 
-            <div>
-                <Calendar
+                            ref={r => {
+                                this.calendar = r
 
-                    ref={r => {
-                        this.calendar = r
+                            }}
+                            height="900px"
+                            calendars={[
+                                {
+                                    id: '0',
+                                    name: 'Private',
+                                    color: 'white',
+                                    bgColor: '#4275ff',
+                                    borderColor: '#9e5fff'
+                                }
 
-                    }}
-                    height="900px"
-                    calendars={[
-                        {
-                            id: '0',
-                            name: 'Private',
-                            color: 'white',
-                            bgColor: '#4275ff',
-                            borderColor: '#9e5fff'
-                        }
-
-                    ]}
-                    useCreationPopup={false}
-                    useDetailPopup={false}
-                    disableDblClick={true}
-                    disableClick={false}
-                    isReadOnly={false}
+                            ]}
+                            useCreationPopup={false}
+                            useDetailPopup={false}
+                            disableDblClick={true}
+                            disableClick={false}
+                            isReadOnly={false}
 
 
-                    month={{
-                        startDayOfWeek: 0,
-                        daynames: ['일', '월', '화', '수', '목', '금', '토']
-                    }}
-                    schedules={schedule_formatted_data}
-                    taskView={false}
-                    scheduleView={['time']}
+                            month={{
+                                startDayOfWeek: 0,
+                                daynames: ['일', '월', '화', '수', '목', '금', '토']
+                            }}
+                            schedules={schedule_formatted_data}
+                            taskView={false}
+                            scheduleView={['time']}
 
-                    template={{
-                        milestone(schedule) {
-                            return `<span style="color:#fff;background-color: ${schedule.bgColor};">${schedule.title
-                                }</span>`;
-                        },
-                        milestoneTitle() {
-                            return 'Milestone';
-                        },
-                        allday(schedule) {
-                            return `${schedule.title}<i class="fa fa-refresh"></i>`;
-                        },
-                        alldayTitle() {
-                            return 'All Day';
-                        }
-                    }}
+                            template={{
+                                milestone(schedule) {
+                                    return `<span style="color:#fff;background-color: ${schedule.bgColor};">${schedule.title
+                                        }</span>`;
+                                },
+                                milestoneTitle() {
+                                    return 'Milestone';
+                                },
+                                allday(schedule) {
+                                    return `${schedule.title}<i class="fa fa-refresh"></i>`;
+                                },
+                                alldayTitle() {
+                                    return 'All Day';
+                                }
+                            }}
 
-                    timezones={[
-                        {
-                            timezoneOffset: +540,
-                            displayLabel: 'GMT+09:00',
-                            tooltip: 'Seoul'
-                        }
+                            timezones={[
+                                {
+                                    timezoneOffset: +540,
+                                    displayLabel: 'GMT+09:00',
+                                    tooltip: 'Seoul'
+                                }
 
-                    ]}
+                            ]}
 
-                    // view={selectedView} // You can also set the `defaultView` option.
-                    week={{
-                        showTimezoneCollapseButton: false,
-                        timezonesCollapsed: true
-                    }}
+                            // view={selectedView} // You can also set the `defaultView` option.
+                            week={{
+                                showTimezoneCollapseButton: false,
+                                timezonesCollapsed: true
+                            }}
 
-                    
-                    onClickSchedule={e => {
 
-                        let new_modal_info = {
-                            schedule: e.schedule
-                        }
+                            onClickSchedule={e => {
 
-                        let sel_id = e.schedule.id
+                                let new_modal_info = {
+                                    schedule: e.schedule
+                                }
 
-                        if (sel_id == null || sel_id == "") {
-                            sel_id = 0
-                        }
+                                let sel_id = e.schedule.id
 
-                        let sel_lesson = this.state.data[sel_id]
+                                if (sel_id == null || sel_id == "") {
+                                    sel_id = 0
+                                }
 
-                        this.setState({
-                            modal_info: new_modal_info,
-                            show_view_modal: true,
-                            view_selected_lesson: sel_lesson
-                        })
-                    }}
+                                let sel_lesson = this.state.data[sel_id]
 
-                />
-            </div>
+                                this.setState({
+                                    modal_info: new_modal_info,
+                                    show_view_modal: true,
+                                    view_selected_lesson: sel_lesson
+                                })
+                            }}
+
+                        />
+                    </div>
+                </div>
+            }
 
         </div>
+
 
 
     }
