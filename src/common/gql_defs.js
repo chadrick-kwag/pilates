@@ -136,6 +136,7 @@ const FETCH_CLIENTS_GQL = gql`{
             address
             memo
             birthdate
+            disabled
         }
         
     }

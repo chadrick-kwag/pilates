@@ -3,6 +3,7 @@ import { Button } from 'react-bootstrap'
 
 import ListClientPage from './ListClientPage'
 import CreateClientPage from './CreateClientPage'
+import ListClientPageV2 from './ListClientPage_v2'
 
 
 
@@ -28,9 +29,8 @@ class ClientManagePage extends React.Component {
                     })}>회원생성</Button>
                 </div>
                 <div>
-                    <ListClientPage apolloclient={this.props.apolloclient} 
-                    
-                    />
+                    {/* <ListClientPage apolloclient={this.props.apolloclient} /> */}
+                    <ListClientPageV2 />
                 </div>
 
             </div>
