@@ -7,26 +7,31 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js'
     },
-    module:{
-        rules:[
+    module: {
+        rules: [
             {
                 test: /\.jsx?$/,
                 include: path.resolve(__dirname, 'src'),
-                exclude : "/node_modules",
+                exclude: "/node_modules",
                 use: "babel-loader"
             },
             {
                 test: /\.css/,
                 use: ["style-loader", "css-loader"]
+            }, {
+                test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot)$/,
+                use: 'file-loader?name=assets/[name].[hash].[ext]'
             }
         ]
     },
     plugins: [
         new hwp({
-            template: "./src/template.html"
+            template: "./src/template.html",
+            favicon: "./src/assets/favicon.ico"
         })
+
     ],
-    devServer:{
+    devServer: {
         open: "chrome",
         host: 'localhost',
         compress: false

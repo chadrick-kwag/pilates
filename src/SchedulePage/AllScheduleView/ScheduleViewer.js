@@ -128,8 +128,6 @@ class ScheduleViewer extends React.Component {
 
         if (this.state.show_view_modal) {
 
-
-
             view_modal = <AllScheduleViewLessonModal apolloclient={this.props.apolloclient}
                 view_selected_lesson={this.state.view_selected_lesson}
                 onCancel={() => this.setState({
@@ -191,32 +189,7 @@ class ScheduleViewer extends React.Component {
         }
 
 
-        let create_modal = null
-
-        if (this.state.show_create_modal) {
-            create_modal = <AllScheduleCreateLessonModal
-                apolloclient={this.props.apolloclient}
-                onCancel={() => {
-                    this.setState({
-                        show_create_modal: false
-                    })
-                }}
-
-                onCreateSuccess={() => {
-                    this.setState({
-                        show_create_modal: false
-                    }, () => {
-                        this.fetchdata()
-                    })
-                }}
-
-                start={this.state.modal_info.schedule.start}
-                end={this.state.modal_info.schedule.end}
-            />
-        }
-
         return <div>
-            {create_modal}
 
             {view_modal}
             {this.state.data === null ? <div className='row-gravity-center'><Spinner animation="border"/></div> :

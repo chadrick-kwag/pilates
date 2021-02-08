@@ -1,41 +1,38 @@
 import { Button, Modal } from 'react-bootstrap'
-import ClientSearchComponent2 from '../../components/ClientSearchComponent2'
-import InstructorSearchComponent2 from '../../components/InstructorSearchComponent2'
 import InstructorSearchComponent3 from '../../components/InstructorSearchComponent3'
 
 import React from 'react'
 import moment from 'moment'
-
-import DatePicker, { registerLocale, setDefaultLocale } from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import TimeKeeper from 'react-timekeeper';
+import client from '../../apolloclient'
 
 import {
-
-    DELETE_LESSON_GQL,
     UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL,
     DELETE_LESSON_WITH_REQUEST_TYPE_GQL
 
 } from '../../common/gql_defs'
 
+import { DatePicker, TimePicker } from '@material-ui/pickers'
+
 class AllScheduleViewLessonModal extends React.Component {
 
     constructor(props) {
+
         super(props)
 
-
+        console.log('props')
+        console.log(this.props)
         this.state = {
             edit_mode: false,
             edit_info: {
                 lesson_date: new Date(parseInt(this.props.view_selected_lesson.starttime)),
-                start_time: moment(new Date(parseInt(this.props.view_selected_lesson.starttime))).format('HH:mm'),
-                end_time: moment(new Date(parseInt(this.props.view_selected_lesson.endtime))).format('HH:mm'),
+                start_time: new Date(parseInt(this.props.view_selected_lesson.starttime)),
+                end_time: new Date(parseInt(this.props.view_selected_lesson.endtime)),
                 instructorid: this.props.view_selected_lesson.instructorid,
 
                 show_delete_ask_modal: false
 
             }
-            
+
         }
 
         this.submit_edit_changes = this.submit_edit_changes.bind(this)
@@ -47,9 +44,9 @@ class AllScheduleViewLessonModal extends React.Component {
 
 
 
-    delete_lesson_with_request_type(request_type, ignore_warning=false){
+    delete_lesson_with_request_type(request_type, ignore_warning = false) {
 
-        this.props.apolloclient.mutate({
+        client.mutate({
             mutation: DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
             variables: {
                 lessonid: this.props.view_selected_lesson.id,
@@ -59,11 +56,11 @@ class AllScheduleViewLessonModal extends React.Component {
         }).then(d => {
             console.log(d)
 
-            if(d.data.delete_lesson_with_request_type.penalty_warning===true){
+            if (d.data.delete_lesson_with_request_type.penalty_warning === true) {
 
                 let ret = confirm(d.data.delete_lesson_with_request_type.msg)
 
-                if(ret){
+                if (ret) {
                     this.delete_lesson_with_request_type(request_type, true)
                 }
 
@@ -89,48 +86,39 @@ class AllScheduleViewLessonModal extends React.Component {
 
         let [start_m, end_m] = this.get_edit_info_start_end_moment()
 
-        if (!start_m.isBefore(end_m)) {
-            return "start time is after end time"
+        if(start_m >= end_m){
+            return 'start time is after end time'
         }
+
+        // if (!start_m.isBefore(end_m)) {
+        //     return "start time is after end time"
+        // }
 
         return null
 
     }
 
     get_edit_info_start_end_moment() {
-        // check time validation
-        let ei = this.state.edit_info
 
-        console.log(ei)
+        let start_date = new Date(this.state.edit_info.lesson_date)
+        let end_date = new Date(this.state.edit_info.lesson_date)
 
-        let date_m = moment(ei.lesson_date)
-        let start_time_m = moment(ei.start_time, 'HH:mm')
-        let end_time_m = moment(ei.end_time, 'HH:mm')
+        let start_h = this.state.edit_info.start_time.getHours()
+        let start_m = this.state.edit_info.start_time.getMinutes()
 
-        console.log(date_m)
-        console.log(start_time_m)
-        console.log(end_time_m)
-
-        let start_m = moment(date_m)
-        let end_m = moment(date_m)
-
-        console.log(start_time_m.hour())
-        console.log(start_time_m.minute())
-
-        start_m.hour(start_time_m.hour())
-        start_m.minute(start_time_m.minute())
-        start_m.second(start_time_m.second())
-
-        end_m.set({
-            hour: end_time_m.get('hour'),
-            minute: end_time_m.get('minute'),
-            second: end_time_m.get('second')
-        })
-        console.log('end_m')
-        console.log(end_m)
+        start_date.setHours(start_h)
+        start_date.setMinutes(start_m)
+        start_date.setMilliseconds(0)
 
 
-        return [start_m, end_m]
+        let end_h = this.state.edit_info.end_time.getHours()
+        let end_m = this.state.edit_info.end_time.getMinutes()
+
+        end_date.setHours(end_h)
+        end_date.setMinutes(end_m)
+        end_date.setMilliseconds(0)
+
+        return [start_date, end_date]
 
     }
 
@@ -150,16 +138,16 @@ class AllScheduleViewLessonModal extends React.Component {
 
         let _var = {
             lessonid: parseInt(this.props.view_selected_lesson.id),
-            start_time: start_m.toDate().toUTCString(),
-            end_time: end_m.toDate().toUTCString(),
+            start_time: start_m.toUTCString(),
+            end_time: end_m.toUTCString(),
             instructor_id: parseInt(this.state.edit_info.instructorid)
-
         }
 
+        console.log("mutate variables:")
         console.log(_var)
 
         // try to register lesson
-        this.props.apolloclient.mutate({
+        client.mutate({
             mutation: UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL,
             variables: _var
         }).then(d => {
@@ -223,29 +211,28 @@ class AllScheduleViewLessonModal extends React.Component {
                         <h2>수업시간선택</h2>
 
                         <div>
-                            <span className="bold small-margined">날짜선택</span>
+                            
                             <DatePicker
-                                selected={this.state.edit_info.lesson_date}
-                                locale="ko"
-
-                                onChange={e => {
-                                    let update_edit_info = this.state.edit_info
-                                    update_edit_info.lesson_date = e
-
+                                autoOk
+                                orientation="landscape"
+                                variant="static"
+                                openTo="date"
+                                value={this.state.edit_info.lesson_date}
+                                onChange={d => {
+                                    console.log(d)
+                                    let update_edit_info = {}
+                                    Object.assign(update_edit_info, this.state.edit_info)
+                                    update_edit_info.lesson_date = d
                                     this.setState({
                                         edit_info: update_edit_info
                                     })
-
-                                }
-                                }
-                                dateFormat="yyMMdd"
-
+                                }}
                             />
                         </div>
 
 
                         <div style={{ display: "flex", flexDirection: "row" }} className="small-margined">
-                            <span className="bold small-margined">시간선택</span>
+                            
 
                             <div style={{
                                 display: "flex",
@@ -254,21 +241,23 @@ class AllScheduleViewLessonModal extends React.Component {
                                 alignItems: "center"
                             }}>
                                 <span>시작</span>
-                                <TimeKeeper
-                                    hour24Mode="true"
-                                    coarseMinutes="5"
-                                    forceCoarseMinutes="true"
-                                    switchToMinuteOnHourSelect="true"
-                                    time={this.state.edit_info.start_time}
-                                    onChange={(data) => {
-                                        console.log(data)
-                                        let update_edit_info = this.state.edit_info
-                                        update_edit_info.start_time = data.formatted24
+                                
 
-                                        console.log('update start time')
-                                        console.log(update_edit_info)
+                                <TimePicker
+                                    autoOk
+                                    ampm={false}
+                                    variant="static"
+                                    orientation="portrait"
+                                    openTo="hours"
+                                    minutesStep="5"
+                                    value={this.state.edit_info.start_time}
+                                    onChange={d => {
+                                        console.log(d)
+                                        let new_info = {}
+                                        Object.assign(new_info, this.state.edit_info)
+                                        new_info.start_time = d
                                         this.setState({
-                                            edit_info: update_edit_info
+                                            edit_info: new_info
                                         })
                                     }}
                                 />
@@ -283,29 +272,27 @@ class AllScheduleViewLessonModal extends React.Component {
                                 alignItems: "center"
                             }}>
                                 <span>종료</span>
-                                <TimeKeeper
-
-                                    hour24Mode="true"
-                                    coarseMinutes="5"
-                                    forceCoarseMinutes="true"
-                                    switchToMinuteOnHourSelect="true"
-                                    time={this.state.edit_info.end_time}
-                                    onChange={(data) => {
-                                        console.log(data)
-                                        let update_edit_info = this.state.edit_info
-                                        update_edit_info.end_time = data.formatted24
-
-                                        console.log('update end time')
-                                        console.log(update_edit_info)
-
+                                
+                                <TimePicker
+                                    autoOk
+                                    ampm={false}
+                                    variant="static"
+                                    orientation="portrait"
+                                    openTo="hours"
+                                    minutesStep="5"
+                                    value={this.state.edit_info.end_time}
+                                    onChange={d => {
+                                        console.log(d)
+                                        let new_info = {}
+                                        Object.assign(new_info, this.state.edit_info)
+                                        new_info.end_time = d
                                         this.setState({
-                                            edit_info: update_edit_info
+                                            edit_info: new_info
                                         })
                                     }}
                                 />
 
                             </div>
-
 
                         </div>
 
@@ -415,9 +402,9 @@ class AllScheduleViewLessonModal extends React.Component {
             })}>
                 <Modal.Body>
                     <div className="col-gravity-center">
-                        <Button className="small-margined" onClick={e=>this.delete_lesson_with_request_type('CLIENT_REQUEST')}>고객요청</Button>
-                        <Button className="small-margined" onClick={e=>this.delete_lesson_with_request_type('INSTRUCTOR_REQUEST')}>강사요청</Button>
-                        <Button className="small-margined" onClick={e=>this.delete_lesson_with_request_type('ADMIN_REQUEST')}>관리자권한 강제요청</Button>
+                        <Button className="small-margined" onClick={e => this.delete_lesson_with_request_type('CLIENT_REQUEST')}>고객요청</Button>
+                        <Button className="small-margined" onClick={e => this.delete_lesson_with_request_type('INSTRUCTOR_REQUEST')}>강사요청</Button>
+                        <Button className="small-margined" onClick={e => this.delete_lesson_with_request_type('ADMIN_REQUEST')}>관리자권한 강제요청</Button>
                     </div>
 
                 </Modal.Body>
