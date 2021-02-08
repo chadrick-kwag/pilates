@@ -77,17 +77,31 @@ module.exports = {
             console.log(start_time)
             console.log(end_time)
 
-            let lessons = await pgclient.query("select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid  where  lesson.clientid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) ", [clientid, start_time, end_time]).then(res => {
+
+            /* 
+            "select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid  where  lesson.clientid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) "
+            */
+            let result = await pgclient.query(" select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, \
+            instructor.name as instructorname , subscription.activity_type, subscription.grouping_type \
+            from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid left join pilates.subscription_ticket on lesson.consuming_client_ss_ticket_id=subscription_ticket.id left join pilates.subscription on subscription_ticket.creator_subscription_id = subscription.id \
+             where  lesson.clientid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) and lesson.canceled_time is null ", [clientid, start_time, end_time]).then(res => {
                 console.log(res.rows)
-                return res.rows
+
+                return {
+                    success: true,
+                    lessons: res.rows
+                }
+                
             }).catch(e => {
                 console.log(e)
-                return []
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
             })
 
-            console.log(lessons)
 
-            return lessons
+            return result
         },
         query_lesson_with_timerange_by_instructorid: async (parent, args) => {
             console.log(args)
@@ -106,7 +120,7 @@ module.exports = {
             let lessons = await pgclient.query("select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, \
             instructor.name as instructorname , subscription.activity_type, subscription.grouping_type \
             from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid left join pilates.subscription_ticket on lesson.consuming_client_ss_ticket_id=subscription_ticket.id left join pilates.subscription on subscription_ticket.creator_subscription_id = subscription.id \
-             where  lesson.instructorid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) ", [instructorid, start_time, end_time]).then(res => {
+             where  lesson.instructorid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) and  lesson.canceled_time is null", [instructorid, start_time, end_time]).then(res => {
                 return res.rows
             }).catch(e => {
                 console.log(e)

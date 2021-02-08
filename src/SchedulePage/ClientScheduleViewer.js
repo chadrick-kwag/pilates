@@ -28,6 +28,7 @@ import {
 
 
 import { get_week_range_of_date } from '../common/date_fns'
+import {get_bg_fontcolor_for_activity_type} from './common'
 
 
 class ClientScheduleViewer extends React.Component {
@@ -77,9 +78,11 @@ class ClientScheduleViewer extends React.Component {
 
         }).then(d => {
             console.log(d)
-            if (d.data.query_lesson_with_timerange_by_clientid != null) {
+
+
+            if (d.data.query_lesson_with_timerange_by_clientid.success) {
                 this.setState({
-                    data: d.data.query_lesson_with_timerange_by_clientid
+                    data: d.data.query_lesson_with_timerange_by_clientid.lessons
                 })
 
             }
@@ -160,7 +163,9 @@ class ClientScheduleViewer extends React.Component {
             endtime = new Date(parseInt(endtime))
 
             let title = d.clientname + " 회원님 / " + d.instructorname + " 강사님"
-            console.log(i)
+
+            let [bgcolor, fontcolor ] = get_bg_fontcolor_for_activity_type(d.activity_type)
+            
             return {
                 id: parseInt(i),
                 calendarId: '0',
@@ -168,7 +173,9 @@ class ClientScheduleViewer extends React.Component {
                 category: 'time',
                 dueDateClass: '',
                 start: starttime,
-                end: endtime
+                end: endtime,
+                bgColor: bgcolor,
+                color: fontcolor
             }
         })
 

@@ -87,13 +87,18 @@ const ATTEMPT_UPDATE_SCHEDULE_TIME_GQL = gql`mutation blah($lessonid: Int!, $sta
 
 const QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL = gql`query($clientid: Int!, $start_time: String!, $end_time: String!){
     query_lesson_with_timerange_by_clientid(clientid: $clientid, start_time: $start_time, end_time: $end_time){
-        id,
-        clientid,
-        clientname,
-        instructorid,
-        instructorname,
-        starttime,
-        endtime
+        success
+        lessons{
+            id
+            clientid
+            clientname
+            instructorid
+            instructorname
+            starttime
+            endtime
+            activity_type
+            grouping_type
+        }
     }
 }`
 
