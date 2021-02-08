@@ -46,15 +46,26 @@ module.exports = {
             console.log(args)
 
             let result = await pgclient.query('select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, disabled from pilates.instructor where id=$1', [args.id]).then(res=>{
-                return {
-                    success: true,
-                    instructor: res.rows[0]
+
+                if(res.rowCount==1){
+                    return {
+                        success: true,
+                        instructor: res.rows[0]
+                    }
                 }
+                else{
+                    return {
+                        success: false,
+                        msg: "rowcount not 1"
+                    }
+                }
+
+                
             }).catch(e=>{
                 console.log(e)
                 return {
                     success: false,
-                    msg: "query erro"
+                    msg: "query error"
                 }
             })
 

@@ -60,6 +60,35 @@ module.exports = {
 
 
             return results
+        },
+        query_clientinfo_by_clientid: async (parent, args)=>{
+            let result = await pgclient.query("select * from pilates.client where id=$1", [args.clientid]).then(res => {
+                
+                if(res.rowCount==1){
+                    return {
+                        success: true,
+                        client: res.rows[0]
+                    }
+                }
+                else{
+                    return {
+                        success: false,
+                        msg: "row count not 1"
+                    }
+                }
+                
+                
+                
+            }).catch(e =>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
+            })
+
+
+            return result
         }
     },
     Mutation: {

@@ -4,6 +4,14 @@ type Query {
     fetch_clients: SuccessAndClients
     search_client_with_name(name: String!): [Client]
     query_clients_by_name(name: String!): SuccessAndClients
+    query_clientinfo_by_clientid(clientid: Int!): SuccessAndClient
+}
+
+
+type SuccessAndClient{
+    success: Boolean
+    msg: String
+    client: Client
 }
 
 

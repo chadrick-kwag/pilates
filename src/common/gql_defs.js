@@ -364,6 +364,17 @@ const FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID = gql`query fetch_instructor_with_i
             id
             name
             phonenumber
+            created
+            is_apprentice
+            birthdate
+            validation_date
+            level
+            job
+            gender
+            email
+            address
+            memo
+            disabled
         }
 
     }
@@ -439,6 +450,29 @@ const UPDATE_EXPDATE_OF_TICKETS = gql`
 }
 `
 
+
+const QUERY_CLIENTINFO_BY_CLIENTID = gql`
+    query($clientid: Int!){
+        query_clientinfo_by_clientid(clientid: $clientid){
+            success
+            msg
+            client{
+                id
+                name
+                phonenumber
+                created
+                job
+                gender
+                email
+                address
+                memo
+                birthdate
+                disabled
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -475,5 +509,6 @@ export {
     DISABLE_INSTURCTOR_BY_ID,
     ABLE_INSTRUCTOR_BY_ID,
     TRANSFER_TICKETS_TO_CLIENTID,
-    UPDATE_EXPDATE_OF_TICKETS
+    UPDATE_EXPDATE_OF_TICKETS,
+    QUERY_CLIENTINFO_BY_CLIENTID
 }
