@@ -31,9 +31,12 @@ hr {
     align-items: center;
 }
 
-/* .row-gravity-center *, .col-gravity-center * {
-    padding: 10px
-} */
+.row-gravity-left {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
 
 .col-gravity-center > .padded-block {
     padding: 10px
@@ -110,4 +113,22 @@ hr {
 .view-kv-table > tr >td:first-child {
     font-weight: bold;
     width: 150px;
+}
+
+.profilecard-bigname{
+    font-size: 2rem;
+    font-weight: bold;
+    padding: 10px;
+    margin: 10px;
+}
+
+.profile-search-comp-outerbox{
+    padding: 10px;
+    border-radius: 1em;
+    border-style: solid;
+    border-color: black;
+}
+
+.profilecard-top-area {
+    margin-bottom: 1em;
 }

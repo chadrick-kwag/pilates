@@ -1,8 +1,9 @@
 import React from 'react'
-import { Table, Button, Form } from 'react-bootstrap'
+import { Card, Table, Button, Form } from 'react-bootstrap'
 
 
-import {SEARCH_CLIENT_WITH_NAME} from '../common/gql_defs'
+import { SEARCH_CLIENT_WITH_NAME } from '../common/gql_defs'
+import client from '../apolloclient'
 
 
 
@@ -32,7 +33,7 @@ class ClientSearchComponent2 extends React.Component {
             return
         }
 
-        this.props.apolloclient.query({
+        client.query({
             query: SEARCH_CLIENT_WITH_NAME,
             variables: {
                 name: this.state.client_name
@@ -40,7 +41,7 @@ class ClientSearchComponent2 extends React.Component {
             fetchPolicy: 'no-cache'
         }).then(d => {
             console.log(d)
-            let fetched_data = d.data.search_client_with_name.filter(a=>a.disabled!==true)
+            let fetched_data = d.data.search_client_with_name.filter(a => a.disabled !== true)
 
             this.setState({
                 client_search_result: fetched_data
@@ -96,42 +97,47 @@ class ClientSearchComponent2 extends React.Component {
             searchmode = true
         }
         if (searchmode) {
-            return <div>
-                {this.state.selected_client == null ? null : <div><Button onClick={e => {
-                    this.setState({
-                        force_search: false
-                    })
-                }}>back</Button></div>}
-                <div style={{ display: "flex", flexDirection: "row" }}>
-                    <span>회원이름</span>
-                    <Form.Control value={this.state.client_name} onChange={e => this.setState({
-                        client_name: e.target.value
-                    })} style={{ width: "200px" }} />
-                    <Button onClick={e => this.search_clients()}>search</Button>
-                </div>
-                <div>
-                    {client_search_result_area}
-                </div>
-            </div>
+            return <Card>
+                <Card.Body>
+                    {this.state.selected_client == null ? null : <div className="row-gravity-left profilecard-top-area">
+                        <Button size='sm' variant='outline-dark' onClick={e => {
+                        this.setState({
+                            force_search: false
+                        })
+                    }}>back</Button></div>}
+
+                    <div className='row-gravity-center' >
+                        <span>회원이름</span>
+                        <Form.Control value={this.state.client_name} onChange={e => this.setState({
+                            client_name: e.target.value
+                        })} style={{ width: "200px" }} />
+                        <Button onClick={e => this.search_clients()}>search</Button>
+                    </div>
+                    <div style={{marginTop: '10px'}}>
+                        {client_search_result_area}
+                    </div>
+                </Card.Body>
+            </Card>
 
 
         }
         else {
             // show selected client info
-            return <div>
-                <div>
-                    <Button onClick={e => this.setState({
-                        force_search: true
-                    })}>회원찾기</Button>
-                </div>
-                <span>회원정보</span>
-                <div style={{display: "flex", flexDirection: "column"}}>
-                    <span>id: {this.state.selected_client.id}</span>
-                    <span>name: {this.state.selected_client.name}</span>
-                    <span>phone: {this.state.selected_client.phonenumber}</span>
-                </div>
+            return <Card>
+                <Card.Body>
+                    <div className="row-gravity-left profilecard-top-area">
+                        <Button variant='outline-dark' size='sm' onClick={e => this.setState({
+                            force_search: true
+                        })}>회원찾기</Button>
+                    </div>
 
-            </div>
+                    <Card.Title><span>{this.state.selected_client.name}</span></Card.Title>
+                    <div className='col-gravity-center'>
+
+                        <span>연락처 {this.state.selected_client.phonenumber}</span>
+                    </div>
+                </Card.Body>
+            </Card>
         }
 
     }
