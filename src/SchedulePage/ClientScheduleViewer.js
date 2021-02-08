@@ -18,6 +18,7 @@ import DayPicker from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
 
 import PartialOverlaySpinner from './PartialOverlaySpinner'
+import LessonInfoComponent from './LessonInfoComponent'
 
 import {
 
@@ -41,7 +42,7 @@ class ClientScheduleViewer extends React.Component {
         this.state = {
             selected_client: null,
             data: null,
-            show_create_modal: false,
+
             modal_info: null,
             show_view_modal: false,
             create_selected_client: null,
@@ -155,22 +156,22 @@ class ClientScheduleViewer extends React.Component {
 
         console.log("inside render")
 
-        
-        let schedule_formatted_data = [] 
-        if(this.state.data!==null){
+
+        let schedule_formatted_data = []
+        if (this.state.data !== null) {
             schedule_formatted_data = this.state.data.map((d, i) => {
 
                 let starttime = d.starttime
                 let endtime = d.endtime
-    
-    
+
+
                 starttime = new Date(parseInt(starttime))
                 endtime = new Date(parseInt(endtime))
-    
+
                 let title = d.clientname + " 회원님 / " + d.instructorname + " 강사님"
-    
+
                 let [bgcolor, fontcolor] = get_bg_fontcolor_for_activity_type(d.activity_type)
-    
+
                 return {
                     id: parseInt(i),
                     calendarId: '0',
@@ -185,7 +186,7 @@ class ClientScheduleViewer extends React.Component {
             })
 
         }
-        
+
 
 
 
@@ -283,73 +284,6 @@ class ClientScheduleViewer extends React.Component {
         }
 
 
-        let create_modal = null
-
-        console.log("show_create_modal")
-        console.log(this.state.show_create_modal)
-
-        if (this.state.show_create_modal) {
-
-            create_modal = <Modal show={this.state.show_create_modal} onHide={() => this.setState({
-                show_create_modal: false
-            })}>
-                <Modal.Body>
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                        <div>회원정보</div>
-                        <span>id: {this.state.selected_client.id}</span>
-                        <span>이름: {this.state.selected_client.name}</span>
-                        <span>연락처: {this.state.selected_client.phonenumber}</span>
-                    </div>
-
-                    <hr></hr>
-
-                    <InstructorSearchComponent2 apolloclient={this.props.apolloclient} instructorSelectedCallback={d => this.setState({
-                        create_selected_instructor: d
-                    })} />
-
-                    <hr></hr>
-
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span>수업날짜: </span>
-                        {datetimestr}
-                    </div>
-
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={e => {
-                        this.setState({
-                            show_create_modal: false
-                        })
-                    }}>
-                        close
-                    </Button>
-                    <Button onClick={e => {
-
-                        let check_res = this.create_input_check()
-                        if (!check_res) {
-                            alert("inputs not valid")
-                            return
-                        }
-
-                        this.create_lesson(() => {
-                            // do stuff
-                            this.setState({
-                                show_create_modal: false
-                            })
-                        })
-
-
-
-
-                    }}>OK</Button>
-                </Modal.Footer>
-
-            </Modal>
-        }
-
-        console.log("create_modal")
-        console.log(create_modal)
-
 
         // date picker div
 
@@ -389,7 +323,6 @@ class ClientScheduleViewer extends React.Component {
 
 
             {view_modal}
-            {create_modal}
 
             <div>
                 <ClientSearchComponent2 apolloclient={this.props.apolloclient} clientSelectedCallback={d => this.setState({
@@ -442,7 +375,7 @@ class ClientScheduleViewer extends React.Component {
                     </div>
 
                     <div>
-                        <PartialOverlaySpinner hide={this.state.data===null? true: false}>
+                        <PartialOverlaySpinner hide={this.state.data === null ? true : false}>
                             <Calendar
 
                                 ref={r => {
