@@ -15,6 +15,8 @@ import { DatePicker, TimePicker } from '@material-ui/pickers'
 import PersonProfileCard from '../../components/PersonProfileCard'
 import { activity_type_to_kor } from '../../common/consts'
 
+import LessonInfoComponent from '../LessonInfoComponent'
+
 class AllScheduleViewLessonModal extends React.Component {
 
     constructor(props) {
@@ -316,28 +318,29 @@ class AllScheduleViewLessonModal extends React.Component {
 
             datetimestr = datetimestr + endstr
 
+
+            let people = [
+                {
+                    type: 'client',
+                    name: this.props.view_selected_lesson.clientname,
+                    phonenumber: this.props.view_selected_lesson.client_phonenumber
+                },
+                {
+                    type: 'instructor',
+                    name: this.props.view_selected_lesson.instructorname,
+                    phonenumber: this.props.view_selected_lesson.instructor_phonenumber
+                }
+            ]
+
             modal_body = <Modal.Body>
-                <div className='row-gravity-center'>
-                    <div className='col-gravity-center'>
-                        <h2>회원</h2>
+                <LessonInfoComponent people={people} start_time={this.props.view_selected_lesson.starttime}
+                    end_time={this.props.view_selected_lesson.endtime}
+                    activity_type={this.props.view_selected_lesson.activity_type}
+                />
 
-                        <PersonProfileCard name={this.props.view_selected_lesson.clientname} phonenumber={this.props.view_selected_lesson.client_phonenumber} style={{ margin: '10px' }} />
-                    </div>
-                    <div className='col-gravity-center'>
-                        <h2>강사</h2>
-
-                        <PersonProfileCard variant='dark' name={this.props.view_selected_lesson.instructorname} phonenumber={this.props.view_selected_lesson.instructor_phonenumber} style={{ margin: '10px' }} />
-                    </div>
-
-                </div>
-                <div className='col-gravity-center'>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{datetimestr}</span>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{activity_type_to_kor[this.props.view_selected_lesson.activity_type]} 수업</span>
-                </div>
             </Modal.Body>
         }
 
-        console.log(this.props.view_selected_lesson)
 
         let modal_footer = null
 

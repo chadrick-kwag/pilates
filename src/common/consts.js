@@ -14,6 +14,11 @@ const grouping_type_to_kor={
     null: "!"
 }
 
+const person_type_to_kor={
+    'client': '회원',
+    'instructor': '강사'
+}
+
 
 const INSTRUCTOR_LEVEL_LIST = ['LV1', 'LV2', 'LV3']
 
@@ -21,5 +26,6 @@ const INSTRUCTOR_LEVEL_LIST = ['LV1', 'LV2', 'LV3']
 export {
     activity_type_to_kor,
     grouping_type_to_kor,
-    INSTRUCTOR_LEVEL_LIST
+    INSTRUCTOR_LEVEL_LIST,
+    person_type_to_kor
 }
