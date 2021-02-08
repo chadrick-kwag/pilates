@@ -66,7 +66,7 @@ class ListClientPage extends React.Component {
     }
 
 
-    able_client(clientid){
+    able_client(clientid) {
         this.props.apolloclient.mutate({
             mutation: ABLE_CLIENT_BY_CLIENTID,
             variables: {
@@ -122,21 +122,12 @@ class ListClientPage extends React.Component {
 
         if (this.state.show_detail_target_client != null) {
             detail_modal = <ClientDetailModal
-                clientid ={parseInt(this.state.show_detail_target_client.id)}
-                 onCancel={() => {
+                clientid={parseInt(this.state.show_detail_target_client.id)}
+                onCancel={() => {
                     this.setState({
                         show_detail_target_client: null
                     })
 
-                }}
-                onEditSuccess={() => {
-                    console.log('blablaalblaba')
-                    // this.setState({
-                    //     show_detail_target_client: null
-
-                    // }, () => {
-                    //     this.fetchdata_by_clientname()
-                    // })
                 }}
             />
         }
@@ -147,7 +138,7 @@ class ListClientPage extends React.Component {
             {detail_modal}
 
 
-            <div style={{ display: "flex", flexDirection: "row" }}>
+            <div className='row-gravity-center'>
                 <span>이름검색</span>
                 <Form.Control style={{ width: "200px" }} value={this.state.search_name} onChange={e => {
                     this.setState({
@@ -156,7 +147,7 @@ class ListClientPage extends React.Component {
                 }}></Form.Control>
                 <Button onClick={() => this.fetchdata_by_clientname()}>search</Button>
             </div>
-            {this.state.data.length == 0 ? <div>no results</div> : <div>
+            {this.state.data.length == 0 ? <div className='col-gravity-center'><span>no results</span></div> : <div>
                 <div className='row-gravity-right'>
                     <Form.Check checked={this.state.list_show_disabled_clients} onClick={() => this.setState({
                         list_show_disabled_clients: !this.state.list_show_disabled_clients
@@ -173,7 +164,7 @@ class ListClientPage extends React.Component {
                     </thead>
                     <tbody>
                         {this.state.data.map(d => {
-                            if(!this.state.list_show_disabled_clients && d.disabled){
+                            if (!this.state.list_show_disabled_clients && d.disabled) {
                                 return null
                             }
 
@@ -186,22 +177,22 @@ class ListClientPage extends React.Component {
                                 <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
                                 <td>
                                     <div>
-                                        {d.disabled ? <Button variant='success' onClick={e=>{
+                                        {d.disabled ? <Button variant='success' onClick={e => {
                                             let asked = confirm('활성화하시겠습니까?')
-                                            if(asked){
+                                            if (asked) {
                                                 this.able_client(d.id)
                                             }
                                             e.stopPropagation()
-                                        }}>활성화</Button> : 
-                                        <Button variant='danger' onClick={e => {
-                                            let asked = confirm('비활성화 하시겠습니까?')
-                                            if (asked) {
-                                                this.disable_client(d.id)
-                                            }
-                                            e.stopPropagation()
-                                        }}>비활성화</Button>
+                                        }}>활성화</Button> :
+                                            <Button variant='danger' onClick={e => {
+                                                let asked = confirm('비활성화 하시겠습니까?')
+                                                if (asked) {
+                                                    this.disable_client(d.id)
+                                                }
+                                                e.stopPropagation()
+                                            }}>비활성화</Button>
                                         }
-                                        
+
                                     </div>
                                 </td>
                             </tr>

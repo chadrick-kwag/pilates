@@ -19,10 +19,10 @@ class InstructorManagePage extends React.Component{
 
     render(){
         let mainview
-        if(this.state.viewmode=='list'){
+        if(this.state.viewmode==='list'){
             mainview = <ListInstructorPage apolloclient={this.props.apolloclient}/>
         }
-        else if(this.state.viewmode =='create'){
+        else if(this.state.viewmode ==='create'){
             mainview = <CreateInstructorPage onCancelClick={()=>this.setState({viewmode: 'list'})}
             onSubmitSuccess={()=>this.setState({viewmode: 'list'})}
             apolloclient={this.props.apolloclient}

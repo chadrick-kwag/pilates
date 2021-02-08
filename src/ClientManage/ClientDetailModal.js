@@ -332,7 +332,7 @@ class ClientDetailModal extends React.Component {
 
             if (this.state.base_client === null) {
                 body = <div>
-                    <Spinner />
+                    <Spinner animation='border'/>
                 </div>
             }
             else {

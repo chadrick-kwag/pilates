@@ -11,7 +11,7 @@ import {
     DISABLE_INSTURCTOR_BY_ID,
     ABLE_INSTRUCTOR_BY_ID,
     LIST_INSTRUCTOR_GQL
-   
+
 } from '../common/gql_defs'
 
 
@@ -87,8 +87,8 @@ class ListInstructorPage extends React.Component {
             console.log(d)
             if (d.data.fetch_instructors.success) {
                 let data = d.data.fetch_instructors.instructors
-                data.sort((a,b)=>{
-                    if (parseInt(a.id) < parseInt(b.id)){
+                data.sort((a, b) => {
+                    if (parseInt(a.id) < parseInt(b.id)) {
                         return -1
                     }
                     return 1
@@ -123,12 +123,12 @@ class ListInstructorPage extends React.Component {
         if (this.state.detail_target_instructor != null) {
             detail_view_modal = <InstructorDetailModal
 
-                instructorid = {parseInt(this.state.detail_target_instructor.id)}
-                
+                instructorid={parseInt(this.state.detail_target_instructor.id)}
+
                 onCancel={() => this.setState({
                     detail_target_instructor: null
                 })}
-                
+
             />
         }
 
@@ -199,13 +199,17 @@ class ListInstructorPage extends React.Component {
         return <div>
             {detail_view_modal}
 
-            <div style={{ display: "flex", flexDirection: "row" }}>
+            <div className='row-gravity-center'>
                 <span>이름검색</span>
                 <Form.Control style={{ width: "200px" }} value={this.state.search_name} onChange={e => this.setState({
                     search_name: e.target.value
                 })} />
             </div>
-            {table_area}
+
+            <div className='col-gravity-center'>
+                {table_area}
+            </div>
+
         </div>
     }
 }

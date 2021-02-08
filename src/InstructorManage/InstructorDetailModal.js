@@ -264,14 +264,6 @@ class InstructorDetailModal extends React.Component {
                 <tr>
                     <td>생년월일</td>
                     <td>
-                        {/* <Form.Control value={this.state.edit_instructor.birthdate} onChange={e => {
-                            let updated_instructor = this.state.edit_instructor
-                            updated_instructor.birthdate = e.target.value
-                            this.setState({
-                                edit_instructor: updated_instructor
-                            })
-                        }} /> */}
-
                         <KeyboardDatePicker
                             placeholder="19901127"
                             value={this.state.edit_instructor.birthdate}
@@ -418,7 +410,7 @@ class InstructorDetailModal extends React.Component {
             // not edit mode
 
             if (this.state.base_instructor === null) {
-                body = <div><Spinner /></div>
+                body = <div><Spinner animation='border'/></div>
             }
             else {
                 body = <Table className="view-kv-table">
