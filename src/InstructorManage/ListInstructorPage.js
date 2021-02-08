@@ -86,8 +86,15 @@ class ListInstructorPage extends React.Component {
         }).then(d => {
             console.log(d)
             if (d.data.fetch_instructors.success) {
+                let data = d.data.fetch_instructors.instructors
+                data.sort((a,b)=>{
+                    if (parseInt(a.id) < parseInt(b.id)){
+                        return -1
+                    }
+                    return 1
+                })
                 this.setState({
-                    data: d.data.fetch_instructors.instructors
+                    data: data
                 })
                 return
             }

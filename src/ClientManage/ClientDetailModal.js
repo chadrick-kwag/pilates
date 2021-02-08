@@ -46,7 +46,6 @@ class ClientDetailModal extends React.Component {
 
     componentDidMount() {
         this.fetch_clientinfo()
-        // this.fetch_subscription_info()
     }
 
     fetch_clientinfo() {
@@ -62,7 +61,7 @@ class ClientDetailModal extends React.Component {
                 let savedata = res.data.query_clientinfo_by_clientid.client
 
                 // manually change birthdate to Date object if exists
-                if(savedata.birthdate!==null){
+                if (savedata.birthdate !== null) {
                     let b = new Date(parseInt(savedata.birthdate))
                     savedata.birthdate = b
                 }
@@ -109,13 +108,6 @@ class ClientDetailModal extends React.Component {
         })
     }
 
-    modify_prop_client_for_init_edit_client(client) {
-        if (client.birthdate) {
-            client.birthdate = moment(new Date(parseInt(client.birthdate))).format('YYYYMMDD')
-        }
-
-        return client
-    }
 
     check_edit_inputs() {
         // return null if all pass
@@ -128,8 +120,6 @@ class ClientDetailModal extends React.Component {
         if (this.state.edit_client.phonenumber.trim() == "") {
             return 'invalid phonenumber'
         }
-
-        
 
         if ((this.state.edit_client.birthdate instanceof String) && (this.state.edit_client.birthdate.trim() === "")) {
             return 'invalid birthdate'
@@ -153,7 +143,7 @@ class ClientDetailModal extends React.Component {
         // submit to server
 
         let prep_birthdate = null
-        if(this.state.edit_client.birthdate===null){
+        if (this.state.edit_client.birthdate === null) {
             prep_birthdate = null
         }
         else if ((this.state.edit_client.birthdate instanceof String)) {
@@ -184,14 +174,12 @@ class ClientDetailModal extends React.Component {
             console.log(d)
 
             if (d.data.update_client.success) {
-                console.log('update success')
-                // this.props.onEditSuccess()
                 // exit edit mode and refetch data
                 this.setState({
                     edit_client: null,
                     edit_mode: false,
                     base_client: null
-                }, ()=>{
+                }, () => {
                     this.fetch_clientinfo()
                 })
             }
