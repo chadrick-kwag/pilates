@@ -122,18 +122,13 @@ class ListInstructorPage extends React.Component {
 
         if (this.state.detail_target_instructor != null) {
             detail_view_modal = <InstructorDetailModal
-                apolloclient={this.props.apolloclient}
-                instructor={this.state.detail_target_instructor}
+
+                instructorid = {parseInt(this.state.detail_target_instructor.id)}
+                
                 onCancel={() => this.setState({
                     detail_target_instructor: null
                 })}
-                onEditSuccess={() => {
-                    this.setState({
-                        detail_target_instructor: null
-                    }, () => {
-                        this.fetchdata()
-                    })
-                }}
+                
             />
         }
 

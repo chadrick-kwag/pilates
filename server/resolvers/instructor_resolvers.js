@@ -119,9 +119,20 @@ module.exports = {
 
 
         update_instructor: async (parent, args) => {
+            console.log('inside update instructor')
             console.log(args)
 
-            let _args = [args.name, args.phonenumber, parse_incoming_gender_str(args.gender), args.email, args.level, args.address, incoming_time_string_to_postgres_epoch_time(args.validation_date), incoming_time_string_to_postgres_epoch_time(args.birthdate), args.memo, args.is_apprentice, args.job, args.id]
+            let validation_date = args.validation_date
+            if(validation_date!==null){
+                validation_date = incoming_time_string_to_postgres_epoch_time(validation_date)
+            }
+
+            let birthdate = args.birthdate
+            if(birthdate !== null){
+                birthdate = incoming_time_string_to_postgres_epoch_time(birthdate)
+            }
+
+            let _args = [args.name, args.phonenumber, parse_incoming_gender_str(args.gender), args.email, args.level, args.address, validation_date, birthdate, args.memo, args.is_apprentice, args.job, args.id]
 
             console.log(_args)
 

@@ -2,10 +2,14 @@ import React from 'react'
 import { Form, Modal, Button, Table, Spinner, Dropdown, ToggleButton, DropdownButton, ButtonGroup } from 'react-bootstrap'
 import _ from 'lodash'
 import moment from 'moment'
-import { UPDATE_INSTRUCTOR_INFO_GQL } from '../common/gql_defs'
+import { UPDATE_INSTRUCTOR_INFO_GQL, FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID } from '../common/gql_defs'
 
 import { extract_date_from_birthdate_str } from '../ClientManage/CreateClientPage'
 import { INSTRUCTOR_LEVEL_LIST } from '../common/consts'
+import client from '../apolloclient'
+import { KeyboardDatePicker } from "@material-ui/pickers";
+
+
 
 function convert_is_apprentice_to_str(ia_val) {
     if (ia_val == null) {
@@ -42,29 +46,71 @@ class InstructorDetailModal extends React.Component {
         super(props)
 
         this.state = {
-            base_instructor: this.props.instructor,
+            base_instructor: null,
             edit_mode: false,
-            edit_instructor: this.modify_prop_instructor_for_init_edit_instructor(_.cloneDeep(this.props.instructor)),
+            edit_instructor: null,
         }
 
-        console.log('edit instructor')
-        console.log(this.state.edit_instructor)
 
         this.check_edit_inputs = this.check_edit_inputs.bind(this)
+        this.fetch_instructor_data = this.fetch_instructor_data.bind(this)
+
     }
 
 
-    modify_prop_instructor_for_init_edit_instructor(instructor) {
-        if (instructor.birthdate) {
-            instructor.birthdate = moment(new Date(parseInt(instructor.birthdate))).format('YYYYMMDD')
-        }
 
-        if(instructor.validation_date){
-            instructor.validation_date = moment(new Date(parseInt(instructor.validation_date))).format('YYYYMMDD')
-        }
+    fetch_instructor_data() {
+        client.query({
+            query: FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID,
+            variables: {
+                id: this.props.instructorid
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
 
-        return instructor
+            if (res.data.fetch_instructor_with_id.success) {
+                let savedata = res.data.fetch_instructor_with_id.instructor
+                console.log(savedata)
+                // convert birthdate to date object if possible
+                if (savedata.birthdate !== null) {
+                    savedata.birthdate = new Date(parseInt(savedata.birthdate))
+                }
+
+                if (savedata.validation_date !== null) {
+                    savedata.validation_date = new Date(parseInt(savedata.validation_date))
+                }
+
+                this.setState({
+                    base_instructor: savedata
+                })
+
+            }
+            else {
+                alert('instructor info fetch failed')
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            alert('instructor info fetch error')
+        })
     }
+
+    componentDidMount() {
+        this.fetch_instructor_data()
+    }
+
+
+    // modify_prop_instructor_for_init_edit_instructor(instructor) {
+    //     if (instructor.birthdate) {
+    //         instructor.birthdate = moment(new Date(parseInt(instructor.birthdate))).format('YYYYMMDD')
+    //     }
+
+    //     if (instructor.validation_date) {
+    //         instructor.validation_date = moment(new Date(parseInt(instructor.validation_date))).format('YYYYMMDD')
+    //     }
+
+    //     return instructor
+    // }
 
     check_edit_inputs() {
         // return null if all pass
@@ -80,24 +126,33 @@ class InstructorDetailModal extends React.Component {
         }
 
         if (this.state.edit_instructor.birthdate !== null) {
-            if (extract_date_from_birthdate_str(this.state.edit_instructor.birthdate) === null) {
+
+            if( (this.state.edit_instructor.birthdate instanceof Date) && (isNaN(this.state.edit_instructor.birthdate)) ){
                 return 'invalid birthdate'
             }
+            
         }
 
         if (this.state.edit_instructor.validation_date !== null) {
-            if (extract_date_from_birthdate_str(this.state.edit_instructor.validation_date) === null) {
-                return 'invalid validation_date'
+
+            console.log('validation date check')
+            console.log(this.state.edit_instructor.validation_date)
+
+            if( (this.state.edit_instructor.validation_date instanceof Date) && (isNaN(this.state.edit_instructor.validation_date))  ){
+                return 'invalid validation date'
             }
+            
         }
 
         return null
     }
 
     onsubmit() {
+
+        console.log(this.state.edit_instructor)
         let check = this.check_edit_inputs()
 
-        if (check != null) {
+        if (check !== null) {
             alert('invalid input\n' + check)
             return
         }
@@ -105,16 +160,21 @@ class InstructorDetailModal extends React.Component {
         // submit to server
 
         let prep_birthdate = null
-        if (this.state.edit_instructor.birthdate) {
-            prep_birthdate = extract_date_from_birthdate_str(this.state.edit_instructor.birthdate)
+        if (this.state.edit_instructor.birthdate!==null) {
+            // prep_birthdate = extract_date_from_birthdate_str(this.state.edit_instructor.birthdate)
+            prep_birthdate = this.state.edit_instructor.birthdate.toUTCString()
         }
 
         let prep_validation_date = null
-        if(this.state.edit_instructor.validation_date){
-            prep_validation_date = extract_date_from_birthdate_str(this.state.edit_instructor.validation_date)
+        if (this.state.edit_instructor.validation_date!==null) {
+            // prep_validation_date = extract_date_from_birthdate_str(this.state.edit_instructor.validation_date)
+            prep_validation_date = this.state.edit_instructor.validation_date.toUTCString()
         }
 
-        this.props.apolloclient.mutate({
+        console.log("prep_validation_date")
+        console.log(prep_validation_date)
+
+        client.mutate({
             mutation: UPDATE_INSTRUCTOR_INFO_GQL,
             variables: {
                 id: parseInt(this.state.edit_instructor.id),
@@ -134,8 +194,13 @@ class InstructorDetailModal extends React.Component {
             console.log(d)
 
             if (d.data.update_instructor.success) {
-                console.log('update success')
-                this.props.onEditSuccess()
+                this.setState({
+                    edit_mode: false,
+                    edit_instructor: null,
+                    base_instructor: null
+                }, () => {
+                    this.fetch_instructor_data()
+                })
             }
             else {
                 alert('edit update failed\n' + d.data.update_instructor.msg)
@@ -154,9 +219,9 @@ class InstructorDetailModal extends React.Component {
 
         let body = null
 
-        console.log(this.state.edit_instructor)
 
         if (this.state.edit_mode) {
+            // edit mode
             body = <Table className="view-kv-table">
                 <tr>
                     <td>이름</td>
@@ -187,8 +252,6 @@ class InstructorDetailModal extends React.Component {
                                 onClick={e => {
                                     let updated_instructor = this.state.edit_instructor
                                     updated_instructor.gender = 'FEMALE'
-                                    console.log('updated_client')
-                                    console.log(updated_instructor)
 
                                     this.setState({
                                         edit_instructor: updated_instructor
@@ -200,13 +263,29 @@ class InstructorDetailModal extends React.Component {
                 </tr>
                 <tr>
                     <td>생년월일</td>
-                    <td><Form.Control value={this.state.edit_instructor.birthdate} onChange={e => {
-                        let updated_instructor = this.state.edit_instructor
-                        updated_instructor.birthdate = e.target.value
-                        this.setState({
-                            edit_instructor: updated_instructor
-                        })
-                    }} /></td>
+                    <td>
+                        {/* <Form.Control value={this.state.edit_instructor.birthdate} onChange={e => {
+                            let updated_instructor = this.state.edit_instructor
+                            updated_instructor.birthdate = e.target.value
+                            this.setState({
+                                edit_instructor: updated_instructor
+                            })
+                        }} /> */}
+
+                        <KeyboardDatePicker
+                            placeholder="19901127"
+                            value={this.state.edit_instructor.birthdate}
+                            onChange={date => {
+                                let newinstructor = {}
+                                Object.assign(newinstructor, this.state.edit_instructor)
+                                newinstructor.birthdate = date
+                                this.setState({
+                                    edit_instructor: newinstructor
+                                })
+                            }}
+                            format="yyyyMMdd"
+                        />
+                    </td>
                 </tr>
                 <tr>
                     <td>연락처</td>
@@ -264,14 +343,22 @@ class InstructorDetailModal extends React.Component {
                 </tr>
                 <tr>
                     <td>자격증취득일</td>
-                    <td><Form.Control value={this.state.edit_instructor.validation_date} onChange={e => {
-                        let updated_instructor = this.state.edit_instructor
-                        updated_instructor.validation_date = e.target.value
+                    <td>
 
-                        this.setState({
-                            edit_instructor: updated_instructor
-                        })
-                    }} /></td>
+                        <KeyboardDatePicker
+                            placeholder="19901127"
+                            value={this.state.edit_instructor.validation_date}
+                            onChange={date => {
+                                let newinstructor = {}
+                                Object.assign(newinstructor, this.state.edit_instructor)
+                                newinstructor.validation_date = date
+                                this.setState({
+                                    edit_instructor: newinstructor
+                                })
+                            }}
+                            format="yyyyMMdd"
+                        />
+                    </td>
                 </tr>
                 <tr>
                     <td>주소</td>
@@ -328,66 +415,71 @@ class InstructorDetailModal extends React.Component {
         }
         else {
 
+            // not edit mode
 
-            body = <Table className="view-kv-table">
-                <tr>
-                    <td>id</td>
-                    <td>{this.props.instructor.id}</td>
-                </tr>
-                <tr>
-                    <td>이름</td>
-                    <td>{this.props.instructor.name}</td>
-                </tr>
-                <tr>
-                    <td>성별</td>
-                    <td>{convert_gender_type_to_kor_str(this.props.instructor.gender)}</td>
-                </tr>
-                <tr>
-                    <td>생년월일</td>
-                    <td>{
-                        this.props.instructor.birthdate == null ? null : moment(new Date(parseInt(this.props.instructor.birthdate))).format('YYYY-MM-DD')
-                    }</td>
-                </tr>
-                <tr>
-                    <td>연락처</td>
-                    <td>{this.props.instructor.phonenumber}</td>
-                </tr>
-                <tr>
-                    <td>레벨</td>
-                    <td>{this.props.instructor.level}</td>
-                </tr>
-                <tr>
-                    <td>견습생</td>
-                    <td>{convert_is_apprentice_to_str(this.props.instructor.is_apprentice)}</td>
-                </tr>
-                <tr>
-                    <td>자격증취득일</td>
-                    <td>{this.props.instructor.validation_date == null ? null : moment(new Date(parseInt(this.props.instructor.validation_date))).format('YYYY-MM-DD')}</td>
-                </tr>
-                <tr>
-                    <td>주소</td>
-                    <td>{this.props.instructor.address}</td>
-                </tr>
-                <tr>
-                    <td>이메일</td>
-                    <td>{this.props.instructor.email}</td>
-                </tr>
-                <tr>
-                    <td>직업</td>
-                    <td>{this.props.instructor.job}</td>
-                </tr>
-                <tr>
-                    <td>등록일</td>
-                    <td>{moment(new Date(parseInt(this.props.instructor.created))).format('YYYY-MM-DD HH:mm')}</td>
-                </tr>
-                <tr>
-                    <td>메모</td>
-                    <td><Form.Control readOnly value={this.props.instructor.memo} as='textarea' rows='5' /></td>
-                </tr>
+            if (this.state.base_instructor === null) {
+                body = <div><Spinner /></div>
+            }
+            else {
+                body = <Table className="view-kv-table">
+                    <tr>
+                        <td>id</td>
+                        <td>{this.state.base_instructor.id}</td>
+                    </tr>
+                    <tr>
+                        <td>이름</td>
+                        <td>{this.state.base_instructor.name}</td>
+                    </tr>
+                    <tr>
+                        <td>성별</td>
+                        <td>{convert_gender_type_to_kor_str(this.state.base_instructor.gender)}</td>
+                    </tr>
+                    <tr>
+                        <td>생년월일</td>
+                        <td>{
+                            this.state.base_instructor.birthdate == null ? null : moment(this.state.base_instructor.birthdate).format('YYYY-MM-DD')
+                        }</td>
+                    </tr>
+                    <tr>
+                        <td>연락처</td>
+                        <td>{this.state.base_instructor.phonenumber}</td>
+                    </tr>
+                    <tr>
+                        <td>레벨</td>
+                        <td>{this.state.base_instructor.level}</td>
+                    </tr>
+                    <tr>
+                        <td>견습생</td>
+                        <td>{convert_is_apprentice_to_str(this.state.base_instructor.is_apprentice)}</td>
+                    </tr>
+                    <tr>
+                        <td>자격증취득일</td>
+                        <td>{this.state.base_instructor.validation_date == null ? null : moment(this.state.base_instructor.validation_date).format('YYYY-MM-DD')}</td>
+                    </tr>
+                    <tr>
+                        <td>주소</td>
+                        <td>{this.state.base_instructor.address}</td>
+                    </tr>
+                    <tr>
+                        <td>이메일</td>
+                        <td>{this.state.base_instructor.email}</td>
+                    </tr>
+                    <tr>
+                        <td>직업</td>
+                        <td>{this.state.base_instructor.job}</td>
+                    </tr>
+                    <tr>
+                        <td>등록일</td>
+                        <td>{moment(new Date(parseInt(this.state.base_instructor.created))).format('YYYY-MM-DD HH:mm')}</td>
+                    </tr>
+                    <tr>
+                        <td>메모</td>
+                        <td><Form.Control readOnly value={this.state.base_instructor.memo} as='textarea' rows='5' /></td>
+                    </tr>
 
+                </Table>
+            }
 
-
-            </Table>
         }
 
 
@@ -396,10 +488,9 @@ class InstructorDetailModal extends React.Component {
         if (this.state.edit_mode) {
             footer = <div className='footer'>
                 <Button onClick={e => {
-
                     this.setState({
                         edit_mode: false,
-                        edit_instructor: this.modify_prop_instructor_for_init_edit_instructor(_.cloneDeep(this.props.instructor))
+                        edit_instructor: null
                     })
                 }}>cancel</Button>
                 <Button onClick={e => this.onsubmit()}>submit</Button>
@@ -408,9 +499,13 @@ class InstructorDetailModal extends React.Component {
         else {
             footer = <div className='footer'>
                 <Button onClick={e => this.props.onCancel()}>Back</Button>
-                <Button variant='warning' onClick={e => this.setState({
-                    edit_mode: true
-                })}>edit</Button>
+
+                {this.state.base_instructor === null ? null :
+                    <Button variant='warning' onClick={e => this.setState({
+                        edit_mode: true,
+                        edit_instructor: _.cloneDeep(this.state.base_instructor)
+                    })}>edit</Button>}
+
 
             </div>
         }
