@@ -1,8 +1,10 @@
 import React from 'react'
-import { Table, Button, Form } from 'react-bootstrap'
-import { gql } from '@apollo/client'
+import { Card, Table, Button, Form, Spinner } from 'react-bootstrap'
 
-import {SEARCH_INSTRUCTOR_WITH_NAME} from '../common/gql_defs'
+
+import { SEARCH_INSTRUCTOR_WITH_NAME } from '../common/gql_defs'
+import client from '../apolloclient'
+
 
 
 
@@ -17,7 +19,8 @@ class InstructorSearchComponent2 extends React.Component {
             instructor_name: "",
             instructor_search_result: null,
             selected_instructor: null,
-            force_search: false
+            force_search: false,
+            fetching: false
 
         }
 
@@ -33,7 +36,11 @@ class InstructorSearchComponent2 extends React.Component {
             return
         }
 
-        this.props.apolloclient.query({
+        this.setState({
+            fetching: true
+        })
+
+        client.query({
             query: SEARCH_INSTRUCTOR_WITH_NAME,
             variables: {
                 name: this.state.instructor_name
@@ -41,12 +48,13 @@ class InstructorSearchComponent2 extends React.Component {
             fetchPolicy: 'no-cache'
         }).then(d => {
             console.log(d)
-            let fetched_data = d.data.search_instructor_with_name.filter(a=>{
-                return a.disabled===true?  false:  true
+            let fetched_data = d.data.search_instructor_with_name.filter(a => {
+                return a.disabled === true ? false : true
             })
 
             this.setState({
-                instructor_search_result: fetched_data
+                instructor_search_result: fetched_data,
+                fetching: false
             })
 
         }).catch(e => {
@@ -84,7 +92,7 @@ class InstructorSearchComponent2 extends React.Component {
                         {this.state.instructor_search_result.map(d => <tr onClick={e => {
                             this.setState({
                                 force_search: false,
-                                selected_instructor : d
+                                selected_instructor: d
                             })
                             this.props.instructorSelectedCallback(d)
                         }}>
@@ -97,37 +105,43 @@ class InstructorSearchComponent2 extends React.Component {
             }
 
 
-            return <div>
-                {this.state.selected_instructor == null ? null : <div><Button onClick={e => this.setState({
-                    force_search: false
-                })}>close</Button></div>
-                }
-                <div style={{ display: "flex", flexDirection: "row" }}>
-                    <span>강사이름</span>
-                    <Form.Control value={this.state.instructor_name} onChange={e => this.setState({
-                        instructor_name: e.target.value
-                    })} style={{ width: "200px" }} />
-                    <Button onClick={e => this.search_instructors()}>search</Button>
-                </div>
-                <div>
-                    {instructor_search_result_area}
-                </div>
-            </div>
+            return <Card className='profilecard'>
+                <Card.Body>
+                    {this.state.selected_instructor == null ? null : <div className="row-gravity-left profilecard-top-area"><Button size='sm' variant='outline-dark' onClick={e => this.setState({
+                        force_search: false
+                    })}>close</Button></div>
+                    }
+                    <div className='row-gravity-center'>
+                        <span>강사이름</span>
+                        <Form.Control value={this.state.instructor_name} onChange={e => this.setState({
+                            instructor_name: e.target.value
+                        })} style={{ width: "200px" }} />
+                        <Button onClick={e => this.search_instructors()}>search</Button>
+                    </div>
+                    <div style={{ marginTop: '10px' }} className='col-gravity-center'>
+                        {this.state.fetching ? <Spinner animation='border' /> : instructor_search_result_area}
+
+                    </div>
+                </Card.Body>
+            </Card>
         }
         else {
 
-            return <div>
-                <div>
-                    <Button onClick={e => this.setState({
-                        force_search: true
-                    })}>강사찾기</Button>
-                </div>
-                <span>강사정보</span>
-                <div style={{display: "flex", flexDirection: "column"}}>
-                    <span>id: {this.state.selected_instructor.id}</span>
-                    <span>name: {this.state.selected_instructor.name}</span>
-                </div>
-            </div>
+            return <Card className='profilecard'>
+                <Card.Body>
+                    <div className="row-gravity-left profilecard-top-area">
+                        <Button variant='outline-dark' size='sm'
+                            onClick={e => this.setState({
+                                force_search: true
+                            })}>강사찾기</Button>
+                    </div>
+
+                    <div className='row-gravity-center profilecard-bigname'><span>{this.state.selected_instructor.name}</span></div>
+                    <div className='col-gravity-center'>
+                        <span>연락처 {this.state.selected_instructor.phonenumber}</span>
+                    </div>
+                </Card.Body>
+            </Card>
         }
 
 

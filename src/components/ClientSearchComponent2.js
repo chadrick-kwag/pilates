@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, Table, Button, Form } from 'react-bootstrap'
+import { Card, Table, Button, Form, Spinner } from 'react-bootstrap'
 
 
 import { SEARCH_CLIENT_WITH_NAME } from '../common/gql_defs'
@@ -17,6 +17,7 @@ class ClientSearchComponent2 extends React.Component {
         this.state = {
             client_name: "",
             client_search_result: null,
+            fetching: false,
             selected_client: null,
             force_search: false
         }
@@ -32,6 +33,9 @@ class ClientSearchComponent2 extends React.Component {
             console.log("client name is empty")
             return
         }
+        this.setState({
+            fetching: true
+        })
 
         client.query({
             query: SEARCH_CLIENT_WITH_NAME,
@@ -44,6 +48,7 @@ class ClientSearchComponent2 extends React.Component {
             let fetched_data = d.data.search_client_with_name.filter(a => a.disabled !== true)
 
             this.setState({
+                fetching: false,
                 client_search_result: fetched_data
             })
 
@@ -97,14 +102,14 @@ class ClientSearchComponent2 extends React.Component {
             searchmode = true
         }
         if (searchmode) {
-            return <Card>
+            return <Card className='profilecard'>
                 <Card.Body>
                     {this.state.selected_client == null ? null : <div className="row-gravity-left profilecard-top-area">
                         <Button size='sm' variant='outline-dark' onClick={e => {
-                        this.setState({
-                            force_search: false
-                        })
-                    }}>back</Button></div>}
+                            this.setState({
+                                force_search: false
+                            })
+                        }}>back</Button></div>}
 
                     <div className='row-gravity-center' >
                         <span>회원이름</span>
@@ -113,8 +118,9 @@ class ClientSearchComponent2 extends React.Component {
                         })} style={{ width: "200px" }} />
                         <Button onClick={e => this.search_clients()}>search</Button>
                     </div>
-                    <div style={{marginTop: '10px'}}>
-                        {client_search_result_area}
+                    <div className='col-gravity-center' style={{ marginTop: '10px' }}>
+                        {this.state.fetching ? <Spinner animation="border"></Spinner> : client_search_result_area}
+
                     </div>
                 </Card.Body>
             </Card>
@@ -123,7 +129,7 @@ class ClientSearchComponent2 extends React.Component {
         }
         else {
             // show selected client info
-            return <Card>
+            return <Card className='profilecard'>
                 <Card.Body>
                     <div className="row-gravity-left profilecard-top-area">
                         <Button variant='outline-dark' size='sm' onClick={e => this.setState({
@@ -131,9 +137,8 @@ class ClientSearchComponent2 extends React.Component {
                         })}>회원찾기</Button>
                     </div>
 
-                    <Card.Title><span>{this.state.selected_client.name}</span></Card.Title>
+                    <div className='row-gravity-center profilecard-bigname'><span>{this.state.selected_client.name}</span></div>
                     <div className='col-gravity-center'>
-
                         <span>연락처 {this.state.selected_client.phonenumber}</span>
                     </div>
                 </Card.Body>

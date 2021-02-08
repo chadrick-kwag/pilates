@@ -132,3 +132,7 @@ hr {
 .profilecard-top-area {
     margin-bottom: 1em;
 }
+
+.profilecard{
+    width: 25rem;
+}
