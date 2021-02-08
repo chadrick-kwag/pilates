@@ -12,6 +12,8 @@ import {
 } from '../../common/gql_defs'
 
 import { DatePicker, TimePicker } from '@material-ui/pickers'
+import PersonProfileCard from '../../components/PersonProfileCard'
+import { activity_type_to_kor } from '../../common/consts'
 
 class AllScheduleViewLessonModal extends React.Component {
 
@@ -86,13 +88,10 @@ class AllScheduleViewLessonModal extends React.Component {
 
         let [start_m, end_m] = this.get_edit_info_start_end_moment()
 
-        if(start_m >= end_m){
+        if (start_m >= end_m) {
             return 'start time is after end time'
         }
 
-        // if (!start_m.isBefore(end_m)) {
-        //     return "start time is after end time"
-        // }
 
         return null
 
@@ -211,7 +210,7 @@ class AllScheduleViewLessonModal extends React.Component {
                         <h2>수업시간선택</h2>
 
                         <div>
-                            
+
                             <DatePicker
                                 autoOk
                                 orientation="landscape"
@@ -232,7 +231,7 @@ class AllScheduleViewLessonModal extends React.Component {
 
 
                         <div style={{ display: "flex", flexDirection: "row" }} className="small-margined">
-                            
+
 
                             <div style={{
                                 display: "flex",
@@ -241,7 +240,7 @@ class AllScheduleViewLessonModal extends React.Component {
                                 alignItems: "center"
                             }}>
                                 <span>시작</span>
-                                
+
 
                                 <TimePicker
                                     autoOk
@@ -272,7 +271,7 @@ class AllScheduleViewLessonModal extends React.Component {
                                 alignItems: "center"
                             }}>
                                 <span>종료</span>
-                                
+
                                 <TimePicker
                                     autoOk
                                     ampm={false}
@@ -302,6 +301,7 @@ class AllScheduleViewLessonModal extends React.Component {
             </Modal.Body>
         }
         else {
+            // not edit mode
 
             let datetimestr
 
@@ -317,37 +317,27 @@ class AllScheduleViewLessonModal extends React.Component {
             datetimestr = datetimestr + endstr
 
             modal_body = <Modal.Body>
-                <div>
-                    <h2>회원</h2>
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: "column"
+                <div className='row-gravity-center'>
+                    <div className='col-gravity-center'>
+                        <h2>회원</h2>
 
-                    }}>
-                        <span>이름: {this.props.view_selected_lesson.clientname}</span>
-                        <span>연락처: {this.props.view_selected_lesson.client_phonenumber}</span>
-
+                        <PersonProfileCard name={this.props.view_selected_lesson.clientname} phonenumber={this.props.view_selected_lesson.client_phonenumber} style={{ margin: '10px' }} />
                     </div>
-                    <hr></hr>
+                    <div className='col-gravity-center'>
+                        <h2>강사</h2>
 
-                    <h2>강사</h2>
-
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: "column"
-
-                    }}>
-                        <span>이름: {this.props.view_selected_lesson.instructorname}</span>
-                        <span>연락처: {this.props.view_selected_lesson.instructor_phonenumber}</span>
-                    </div>
-                    <hr></hr>
-                    <div>
-                        <span>{datetimestr}</span>
+                        <PersonProfileCard variant='dark' name={this.props.view_selected_lesson.instructorname} phonenumber={this.props.view_selected_lesson.instructor_phonenumber} style={{ margin: '10px' }} />
                     </div>
 
                 </div>
+                <div className='col-gravity-center'>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{datetimestr}</span>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{activity_type_to_kor[this.props.view_selected_lesson.activity_type]} 수업</span>
+                </div>
             </Modal.Body>
         }
+
+        console.log(this.props.view_selected_lesson)
 
         let modal_footer = null
 
