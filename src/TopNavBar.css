@@ -2,11 +2,16 @@
     background-color: black;
     display: flex;
     flex-direction: row;
-    justify-content: start;
+    justify-content: space-between;
     align-items: center;
 }
 
-
+.bar-item-small-nonselected {
+    color: gray;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 10px;
+}
 
 .bar-item-selected {
     color: white;
@@ -38,4 +43,8 @@
        -moz-user-select: none; /* Old versions of Firefox */
         -ms-user-select: none; /* Internet Explorer/Edge */
             user-select: none;
+}
+
+.version {
+    padding: 0.5rem;
 }
