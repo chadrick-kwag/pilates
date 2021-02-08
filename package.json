@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "wds": "webpack serve --mode=development",
-    "deploy": ""
+    "deploy": "node server/mainserver.js"
   },
   "keywords": [],
   "author": "",
