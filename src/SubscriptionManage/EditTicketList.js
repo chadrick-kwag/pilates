@@ -114,6 +114,7 @@ function EditTicketList(props) {
             <div className='row-gravity-right'>
                 <Button disabled={!at_least_one_selected} onClick={_ => setShowTransferModal(true)}>양도</Button>
                 <Button disabled={!at_least_one_selected} onClick={_ => setShowExpDateChangeModal(true)}>유통기한 변경</Button>
+                <Button variant='warning' onClick={_=> props.onEscapeEditMode()}>변경취소</Button>
             </div>
 
 
