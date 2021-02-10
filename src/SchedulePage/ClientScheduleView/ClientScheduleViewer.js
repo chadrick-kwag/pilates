@@ -256,9 +256,16 @@ class ClientScheduleViewer extends React.Component {
                 this.setState({
                     show_view_modal: false
                 })
-
             }}
                 lesson={this.state.view_selected_lesson}
+                onDeleteSuccess = {()=>{
+                    this.setState({
+                        show_view_modal: false,
+                        view_selected_lesson: null
+                    },()=>{
+                        this.fetchdata()
+                    })
+                }}
             /> : null}
 
             <div>

@@ -1,27 +1,46 @@
 import React from 'react'
 
-import { Modal, Button } from 'react-bootstrap'
-import client from '../../apolloclient'
+import { Modal, DropdownButton, Dropdown, Button } from 'react-bootstrap'
 import {
-    DELETE_LESSON_GQL
+    DELETE_LESSON_WITH_REQUEST_TYPE_GQL
 } from '../../common/gql_defs'
+import client from '../../apolloclient'
 import LessonInfoComponent from '../LessonInfoComponent'
-import moment from 'moment'
+// import moment from 'moment'
 
 
 export default function ClientViewLessonModal(props) {
 
     console.log(props)
 
-    let datetimestr
+    const try_lesson_delete = (_ignore_warning=false, req_type) => {
+        client.mutate({
+            mutation: DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
+            variables: {
+                lessonid: props.lesson.id,
+                ignore_warning: _ignore_warning,
+                request_type: req_type
 
-    let moment_date = moment(new Date(parseInt(props.lesson.starttime)))
-    let end_moment = moment(new Date(parseInt(props.lesson.endtime)))
-    datetimestr = moment_date.format("MM월 DD일 hh:mm A - ")
-    let endstr = end_moment.format("hh:mm A")
-
-    datetimestr = datetimestr + endstr
-
+            }
+        }).then(d => {
+            console.log(d)
+            if (d.data.delete_lesson_with_request_type.success) {
+                props.onDeleteSuccess?.()
+            }
+            else if(d.data.delete_lesson_with_request_type.penalty_warning === true && _ignore_warning===false){
+                let ask = confirm('deleting will cause penalty. proceed?')
+                if(ask){
+                    try_lesson_delete(true, req_type)
+                }
+            }
+            else {
+                alert('failed to delete lesson')
+            }
+        }).catch(e => {
+            console.log('error deleting lesson')
+            alert('failed to delete lesson')
+        })
+    }
 
     let people = [
         {
@@ -39,57 +58,20 @@ export default function ClientViewLessonModal(props) {
 
     return <Modal show={props.show} onHide={props.onHide}>
         <Modal.Body>
-            {/* <div>
-                <h2>회원</h2>
-                <div>
-                    <span>이름: {this.state.view_selected_lesson.clientname}</span>
-
-                </div>
-                <hr></hr>
-
-                <h2>강사</h2>
-
-                <div>
-                    <span>이름: {this.state.view_selected_lesson.instructorname}</span>
-                </div>
-                <hr></hr>
-                <div>
-                    <span>{datetimestr}</span>
-                </div>
-
-            </div> */}
-
+           
             <LessonInfoComponent people={people} start_time={props.lesson.starttime} end_time={props.lesson.endtime}
                 activity_type={props.lesson.activity_type}
             />
         </Modal.Body>
         <Modal.Footer>
-            <Button onClick={e => {
-                console.log(this.state.view_selected_lesson)
-                client.mutate({
-                    mutation: DELETE_LESSON_GQL,
-                    variables: {
-                        lessonid: this.state.view_selected_lesson.id
-                    }
-                }).then(d => {
-                    console.log(d)
-                    if (d.data.delete_lesson.success) {
-
-                        this.setState({
-                            show_view_modal: false
-
-                        }, () => {
-                            this.fetchdata()
-                        })
-                    }
-                    else {
-                        alert('failed to delete lesson')
-                    }
-                }).catch(e => {
-                    console.log('error deleting lesson')
-                    alert('failed to delete lesson')
-                })
-            }}>delete</Button>
+        <DropdownButton drop='up' title='취소'>
+                <Dropdown.Item onClick={_=>{
+                    try_lesson_delete(false, 'CLIENT_REQUEST')
+                }}>회원요청 취소</Dropdown.Item>
+                <Dropdown.Item onClick={e=>{
+                    try_lesson_delete(false, 'ADMIN_REQUEST')
+                }}>관리자 취소</Dropdown.Item>
+            </DropdownButton>
             <Button onClick={props.onHide}>Close</Button>
         </Modal.Footer>
     </Modal>
