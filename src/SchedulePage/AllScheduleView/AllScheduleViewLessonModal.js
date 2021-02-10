@@ -1,4 +1,4 @@
-import { Button, Modal } from 'react-bootstrap'
+import { Button, Modal, Dropdown, DropdownButton } from 'react-bootstrap'
 import InstructorSearchComponent3 from '../../components/InstructorSearchComponent3'
 
 import React from 'react'
@@ -366,14 +366,16 @@ class AllScheduleViewLessonModal extends React.Component {
                 }}>
                     시간/강사변경
             </Button>
-                <Button onClick={e => {
-
-                    this.setState({
-                        show_delete_ask_modal: true
-                    })
-
-
-                }}>delete</Button>
+                <DropdownButton drop='up' title='취소'>
+                    <Dropdown.Item onClick={_ => {
+                        this.delete_lesson_with_request_type('CLIENT_REQUEST')
+                    }}>회원요청</Dropdown.Item>
+                    <Dropdown.Item onClick={_ => this.delete_lesson_with_request_type('INSTRUCTOR_REQUEST')}>
+                        강사요청
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={e => this.delete_lesson_with_request_type('ADMIN_REQUEST')}>
+                        관리자</Dropdown.Item>
+                </DropdownButton>
 
                 <Button onClick={e => {
                     this.props.onCancel()
@@ -389,25 +391,6 @@ class AllScheduleViewLessonModal extends React.Component {
                 {modal_footer}
             </Modal>
 
-            <Modal show={this.state.show_delete_ask_modal} onHide={() => this.setState({
-                show_delete_ask_modal: false
-            })}>
-                <Modal.Body>
-                    <div className="col-gravity-center">
-                        <Button className="small-margined" onClick={e => this.delete_lesson_with_request_type('CLIENT_REQUEST')}>고객요청</Button>
-                        <Button className="small-margined" onClick={e => this.delete_lesson_with_request_type('INSTRUCTOR_REQUEST')}>강사요청</Button>
-                        <Button className="small-margined" onClick={e => this.delete_lesson_with_request_type('ADMIN_REQUEST')}>관리자권한 강제요청</Button>
-                    </div>
-
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button onClick={e => {
-                        this.setState({
-                            show_delete_ask_modal: false
-                        })
-                    }}>cancel</Button>
-                </Modal.Footer>
-            </Modal>
         </div>
 
     }
