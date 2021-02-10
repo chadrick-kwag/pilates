@@ -10,7 +10,7 @@ import PersonProfileCard from '../../components/PersonProfileCard'
 import InstructorSearchComponent2 from '../../components/InstructorSearchComponent2'
 import moment from 'moment'
 import { DatePicker, TimePicker } from '@material-ui/pickers'
-import PanelSequenceComponent from '../../components/PanelSequenceComponent'
+import PanelSequenceComponent, { PanelSequenceChild } from '../../components/PanelSequenceComponent'
 
 
 export default function ClientViewLessonModal(props) {
@@ -75,79 +75,87 @@ export default function ClientViewLessonModal(props) {
             {editmode === true ? <div>
 
 
-                <PanelSequenceComponent>
-                    <div className='col-gravity-center' >
-                        <PersonProfileCard type='강사' name={editInfo.instructorname} phonenumber={editInfo.instructor_phonenumber} />
-                        <InstructorSearchComponent2 instructorSelectedCallback={d => {
-                            let newinfo = {}
-                            Object.assign(newinfo, editInfo)
-
-                            newinfo.instructor_phonenumber = d.phonenumber
-                            newinfo.instructorname = d.name
-                            newinfo.instructorid = d.id
-
-                            setEditInfo(newinfo)
-
-                        }} />
-                    </div>
-
-                    <div className='col-gravity-center' >
-
-                        <DatePicker
-                            autoOk
-                            orientation="landscape"
-                            variant="static"
-                            openTo="date"
-                            value={editInfo.lesson_date}
-                            onChange={d => {
-                                console.log(d)
+                <PanelSequenceComponent >
+                    <PanelSequenceChild prevBtnHide={true}>
+                        <div className='col-gravity-center' >
+                            <PersonProfileCard type='강사' name={editInfo.instructorname} phonenumber={editInfo.instructor_phonenumber} />
+                            <InstructorSearchComponent2 instructorSelectedCallback={d => {
                                 let newinfo = {}
                                 Object.assign(newinfo, editInfo)
-                                newinfo.lesson_date = d
+
+                                newinfo.instructor_phonenumber = d.phonenumber
+                                newinfo.instructorname = d.name
+                                newinfo.instructorid = d.id
+
                                 setEditInfo(newinfo)
-                            }}
 
-                        />
-                    </div>
+                            }} />
+                        </div>
+                    </PanelSequenceChild>
 
-                    <div>
-                        <div className='row-gravity-center'><h2>{moment(editInfo.lesson_date).format('YYYY.MM.DD')}</h2></div>
-                        <div className='row-gravity-center two-time-picker-parent'>
-                            <TimePicker size='small'
+                    <PanelSequenceChild>
+                        <div className='col-gravity-center' >
+
+                            <DatePicker
                                 autoOk
-                                ampm={false}
+                                orientation="landscape"
                                 variant="static"
-                                orientation="portrait"
-                                openTo="hours"
-                                
-                                value={editInfo.starttime}
+                                openTo="date"
+                                value={editInfo.lesson_date}
                                 onChange={d => {
                                     console.log(d)
                                     let newinfo = {}
                                     Object.assign(newinfo, editInfo)
-                                    newinfo.starttime = d
+                                    newinfo.lesson_date = d
                                     setEditInfo(newinfo)
                                 }}
-                            />
 
-                            <TimePicker
-                                autoOk
-                                ampm={false}
-                                variant="static"
-                                orientation="portrait"
-                                openTo="hours"
-                                
-                                value={editInfo.endtime}
-                                onChange={d => {
-                                    console.log(d)
-                                    let newinfo = {}
-                                    Object.assign(newinfo, editInfo)
-                                    newinfo.endtime = d
-                                    setEditInfo(newinfo)
-                                }}
                             />
                         </div>
-                    </div>
+                    </PanelSequenceChild>
+
+                    <PanelSequenceChild nextBtnClick={() => {
+                        console.log('final page clicked')
+                    }}  nextBtnText='submit'>
+                        <div>
+                            <div className='row-gravity-center'><h2>{moment(editInfo.lesson_date).format('YYYY.MM.DD')}</h2></div>
+                            <div className='row-gravity-center two-time-picker-parent'>
+                                <TimePicker size='small'
+                                    autoOk
+                                    ampm={false}
+                                    variant="static"
+                                    orientation="portrait"
+                                    openTo="hours"
+
+                                    value={editInfo.starttime}
+                                    onChange={d => {
+                                        console.log(d)
+                                        let newinfo = {}
+                                        Object.assign(newinfo, editInfo)
+                                        newinfo.starttime = d
+                                        setEditInfo(newinfo)
+                                    }}
+                                />
+
+                                <TimePicker
+                                    autoOk
+                                    ampm={false}
+                                    variant="static"
+                                    orientation="portrait"
+                                    openTo="hours"
+
+                                    value={editInfo.endtime}
+                                    onChange={d => {
+                                        console.log(d)
+                                        let newinfo = {}
+                                        Object.assign(newinfo, editInfo)
+                                        newinfo.endtime = d
+                                        setEditInfo(newinfo)
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </PanelSequenceChild>
 
 
                 </PanelSequenceComponent>

@@ -54,6 +54,7 @@ app.listen(MAIN_SERVE_PORT, function () {
 pgclient.connect(err => {
     if (err) {
         console.log("pgclient connect err")
+        console.log(err)
         process.exit()
     }
 

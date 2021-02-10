@@ -26,6 +26,7 @@ const typeDefs = mergeTypeDefs([ lesson_typedefs, client_typedefs, subscription_
 
 pgclient.connect(err => {
     if (err) {
+        console.log(err)
         console.log("pgclient connect err")
     }
 
