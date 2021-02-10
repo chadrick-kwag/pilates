@@ -266,6 +266,16 @@ class ClientScheduleViewer extends React.Component {
                         this.fetchdata()
                     })
                 }}
+
+                onEditSuccess={()=>{
+                    console.log('oneditsuccess')
+                    this.setState({
+                        show_view_modal: false,
+                        view_selected_lesson: null
+                    }, ()=>{
+                        this.fetchdata()
+                    })
+                }}
             /> : null}
 
             <div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 
 import { Modal, DropdownButton, Dropdown, Button } from 'react-bootstrap'
 import {
-    DELETE_LESSON_WITH_REQUEST_TYPE_GQL
+    DELETE_LESSON_WITH_REQUEST_TYPE_GQL, UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL
 } from '../../common/gql_defs'
 import client from '../../apolloclient'
 import LessonInfoComponent from '../LessonInfoComponent'
@@ -54,6 +54,41 @@ export default function ClientViewLessonModal(props) {
         })
     }
 
+
+    const change_lesson = () => {
+        // 강사가 변경되면, 무조건 기존 레슨 취소하고 새로운 레슨 만들어야 함.
+        // 시간만 변경되면, 기존 레슨 취소 없이, 기존 레슨 시간만 체크하고 변경해야함
+        // 강사, 시간 둘다 변경되는 거면, 1) 변경후 강사가 변경후 시간에 되는지를 체크하고 나서, 2) 기존 레슨 취소하고 3) 새로운 레슨 생성 해야됨.
+        // 아마 위 로직들은 백엔드에서 체크 후 가능여부를 알려줘야함
+        // 그러니까 여기서는 gql 쿼리 하나 잡고 일단 보내보는 걸로 처리.
+        client.mutate({
+            mutation: UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL,
+            //$lessonid: Int!, $start_time: String!, $end_time: String!, $instructor_id: Int!
+            variables: {
+                lessonid: editInfo.id,
+                start_time: editInfo.starttime.toUTCString(),
+                end_time: editInfo.endtime.toUTCString(),
+                instructor_id: editInfo.instructorid
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res=>{
+
+            console.log(res.data)
+
+            if(res.data.update_lesson_instructor_or_time.success){
+                console.log('change lesson success')
+                props.onEditSuccess?.()
+            }
+            else{
+                alert('change lesson failed')
+            }
+        }).catch(e=>{
+            console.log(JSON.stringify(e))
+            alert('change lesson error')
+        })
+
+    }
+
     let people = [
         {
             type: 'client',
@@ -80,12 +115,13 @@ export default function ClientViewLessonModal(props) {
                         <div className='col-gravity-center' >
                             <PersonProfileCard type='강사' name={editInfo.instructorname} phonenumber={editInfo.instructor_phonenumber} />
                             <InstructorSearchComponent2 instructorSelectedCallback={d => {
+                                console.log(d)
                                 let newinfo = {}
                                 Object.assign(newinfo, editInfo)
 
                                 newinfo.instructor_phonenumber = d.phonenumber
                                 newinfo.instructorname = d.name
-                                newinfo.instructorid = d.id
+                                newinfo.instructorid = parseInt(d.id)
 
                                 setEditInfo(newinfo)
 
@@ -116,7 +152,12 @@ export default function ClientViewLessonModal(props) {
 
                     <PanelSequenceChild nextBtnClick={() => {
                         console.log('final page clicked')
-                    }}  nextBtnText='submit'>
+                        console.log(editInfo)
+
+                        // attempt to update lesosn with editInfo
+                        change_lesson()
+
+                    }} nextBtnText='submit'>
                         <div>
                             <div className='row-gravity-center'><h2>{moment(editInfo.lesson_date).format('YYYY.MM.DD')}</h2></div>
                             <div className='row-gravity-center two-time-picker-parent'>
