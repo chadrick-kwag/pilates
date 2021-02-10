@@ -3,10 +3,16 @@ html *
    font-family: 'Noto Sans';
 }
 
+
+
 hr {
     border-width: 2px;
     border-color: rgba(100,100,100,0.3);
     width: 50%;
+}
+
+.two-time-picker {
+    min-width: 800px !important;
 }
 
 .block-header {
@@ -40,6 +46,13 @@ hr {
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
+    align-items: center;
+}
+
+.row-gravity-between {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
 }
 
