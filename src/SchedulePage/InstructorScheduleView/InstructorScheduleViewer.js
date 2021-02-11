@@ -10,13 +10,10 @@ import 'tui-calendar/dist/tui-calendar.css';
 import 'tui-date-picker/dist/tui-date-picker.css';
 import 'tui-time-picker/dist/tui-time-picker.css';
 
-import ClientSearchComponent2 from '../../components/ClientSearchComponent2'
-import InstructorSearchComponent2 from '../../components/InstructorSearchComponent2'
-import InstructorSearchComponent3 from '../../components/InstructorSearchComponent3'
-import moment from 'moment'
 
-import DayPicker from 'react-day-picker';
-import 'react-day-picker/lib/style.css';
+
+import InstructorSearchComponent3 from '../../components/InstructorSearchComponent3'
+
 import { get_bg_fontcolor_for_activity_type } from '../common'
 import { DatePicker } from '@material-ui/pickers'
 

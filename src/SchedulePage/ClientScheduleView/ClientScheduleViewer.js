@@ -28,6 +28,7 @@ import { get_week_range_of_date } from '../../common/date_fns'
 import { get_bg_fontcolor_for_activity_type } from '../common'
 import LessonColorToolTip from '../LessonColorTooltip'
 import ClientViewLessonModal from './ClientViewLessonModal'
+import ClientSearchComponent3 from '../../components/ClientSearchComponent3'
 
 
 
@@ -216,7 +217,13 @@ class ClientScheduleViewer extends React.Component {
             /> : null}
 
             <div>
-                <ClientSearchComponent2 apolloclient={this.props.apolloclient} clientSelectedCallback={d => this.setState({
+                {/* <ClientSearchComponent2 apolloclient={this.props.apolloclient} clientSelectedCallback={d => this.setState({
+                    selected_client: d
+                }, () => {
+                    this.fetchdata()
+                })
+                } /> */}
+                <ClientSearchComponent3 clientSelectedCallback={d => this.setState({
                     selected_client: d
                 }, () => {
                     this.fetchdata()
@@ -275,7 +282,7 @@ class ClientScheduleViewer extends React.Component {
                             })
                         }}>next week</Button>
 
-            
+
 
                         <LessonColorToolTip />
 
