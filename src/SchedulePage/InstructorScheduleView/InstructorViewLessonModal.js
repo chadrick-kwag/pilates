@@ -133,11 +133,27 @@ export default function InstructorViewLessonModal(props) {
                             orientation="landscape"
                             variant="static"
                             openTo="date"
-                            value={editInfo.lesson_date}
+                            value={editInfo.starttime}
                             onChange={d => {
                                 console.log(d)
+                                // copy year, month, day info to starttime and endtime
+                                let year = d.getFullYear()
+                                let month = d.getMonth()
+                                let date = d.getDate()
+
+
                                 let newinfo = {}
                                 Object.assign(newinfo, editInfo)
+
+                                newinfo.starttime.setFullYear(year)
+                                newinfo.starttime.setMonth(month)
+                                newinfo.starttime.setDate(date)
+
+                                newinfo.endtime.setFullYear(year)
+                                newinfo.endtime.setMonth(month)
+                                newinfo.endtime.setDate(date)
+
+
                                 newinfo.lesson_date = d
                                 setEditInfo(newinfo)
                             }}

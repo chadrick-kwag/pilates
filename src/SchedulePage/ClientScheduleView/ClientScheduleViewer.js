@@ -205,7 +205,8 @@ class ClientScheduleViewer extends React.Component {
                     console.log('oneditsuccess')
                     this.setState({
                         show_view_modal: false,
-                        view_selected_lesson: null
+                        view_selected_lesson: null,
+                        data: null
                     }, () => {
                         this.fetchdata()
                     })

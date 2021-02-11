@@ -157,6 +157,15 @@ class InstructorScheduleViewer extends React.Component {
                         this.fetchdata()
                     })
                 }}
+                onEditSuccess={()=>{
+                    this.setState({
+                        show_view_modal: false,
+                        view_selected_lesson: null,
+                        data: null
+                    }, ()=>{
+                        this.fetchdata()
+                    })
+                }}
             /> : null}
 
 

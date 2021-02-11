@@ -6,7 +6,6 @@ import { Card, Table, Button, Form, Spinner } from 'react-bootstrap'
 
 import { SEARCH_INSTRUCTOR_WITH_NAME } from '../common/gql_defs'
 import client from '../apolloclient'
-import { AiFillPhone } from "react-icons/ai";
 import Chip from '@material-ui/core/Chip';
 import CancelIcon from '@material-ui/icons/Cancel';
 import PhoneIcon from '@material-ui/icons/Phone';
@@ -36,6 +35,12 @@ class InstructorSearchComponent3 extends React.Component {
     }
 
     get_absolute_dim() {
+
+        let out = 100
+
+        if(this.card.current){
+            let rect = this.card.current.getBoundingClient
+        }
         return 100
     }
 

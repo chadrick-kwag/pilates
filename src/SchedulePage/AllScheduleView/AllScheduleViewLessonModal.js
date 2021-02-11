@@ -19,17 +19,15 @@ import { DatePicker, TimePicker } from '@material-ui/pickers'
 
 export default function AllScheduleViewLessonModal(props) {
 
-    console.log('AllScheduleViewLessonModal')
-    console.log(props)
-
-
     const [editmode, setEditMode] = useState(false)
 
 
     const initlesson = {}
     Object.assign(initlesson, props.view_selected_lesson)
+
     initlesson.starttime = new Date(parseInt(initlesson.starttime))
     initlesson.endtime = new Date(parseInt(initlesson.endtime))
+
     const [editInfo, setEditInfo] = useState(initlesson)
 
 
@@ -157,11 +155,27 @@ export default function AllScheduleViewLessonModal(props) {
                             orientation="landscape"
                             variant="static"
                             openTo="date"
-                            value={editInfo.lesson_date}
+                            value={editInfo.starttime}
                             onChange={d => {
                                 console.log(d)
+                                // copy year, month, day info to starttime and endtime
+                                let year = d.getFullYear()
+                                let month = d.getMonth()
+                                let date = d.getDate()
+
+
                                 let newinfo = {}
                                 Object.assign(newinfo, editInfo)
+
+                                newinfo.starttime.setFullYear(year)
+                                newinfo.starttime.setMonth(month)
+                                newinfo.starttime.setDate(date)
+
+                                newinfo.endtime.setFullYear(year)
+                                newinfo.endtime.setMonth(month)
+                                newinfo.endtime.setDate(date)
+
+
                                 newinfo.lesson_date = d
                                 setEditInfo(newinfo)
                             }}
