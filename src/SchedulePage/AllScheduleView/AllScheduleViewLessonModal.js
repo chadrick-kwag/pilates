@@ -377,10 +377,10 @@ class AllScheduleViewLessonModal extends React.Component {
                         관리자</Dropdown.Item>
                 </DropdownButton>
 
-                <Button onClick={e => {
+                <Button variant='danger' onClick={e => {
                     this.props.onCancel()
                 }
-                }>Close</Button>
+                }>닫기</Button>
             </Modal.Footer>
         }
 
