@@ -12,6 +12,7 @@ import 'tui-time-picker/dist/tui-time-picker.css';
 
 import ClientSearchComponent2 from '../../components/ClientSearchComponent2'
 import InstructorSearchComponent2 from '../../components/InstructorSearchComponent2'
+import InstructorSearchComponent3 from '../../components/InstructorSearchComponent3'
 import moment from 'moment'
 
 import DayPicker from 'react-day-picker';
@@ -163,7 +164,12 @@ class InstructorScheduleViewer extends React.Component {
 
 
             <div>
-                <InstructorSearchComponent2 apolloclient={this.props.apolloclient} instructorSelectedCallback={d => this.setState({
+                {/* <InstructorSearchComponent2 apolloclient={this.props.apolloclient} instructorSelectedCallback={d => this.setState({
+                    selected_instructor: d
+                }, () => {
+                    this.fetchdata()
+                })} /> */}
+                <InstructorSearchComponent3 instructorSelectedCallback={d => this.setState({
                     selected_instructor: d
                 }, () => {
                     this.fetchdata()
@@ -236,7 +242,7 @@ class InstructorScheduleViewer extends React.Component {
                                     this.calendar = r
 
                                 }}
-                                height="60%"
+                                height="30%"
                                 calendars={[
                                     {
                                         id: '0',
