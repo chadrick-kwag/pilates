@@ -216,165 +216,157 @@ class ClientScheduleViewer extends React.Component {
                 }}
             /> : null}
 
-            <div>
-                {/* <ClientSearchComponent2 apolloclient={this.props.apolloclient} clientSelectedCallback={d => this.setState({
-                    selected_client: d
-                }, () => {
-                    this.fetchdata()
-                })
-                } /> */}
+            <div className={this.state.selected_client === null ? 'row-gravity-left' : 'row-gravity-between'}>
+
                 <ClientSearchComponent3 clientSelectedCallback={d => this.setState({
                     selected_client: d
                 }, () => {
                     this.fetchdata()
                 })
                 } />
+
+                {this.state.selected_client === null ? null : <div className='row-gravity-center'>
+                    <Button onClick={e => {
+                        this.calendar.calendarInst.prev()
+                        // update current view date
+                        let new_date = new Date(this.state.view_date)
+                        new_date.setDate(this.state.view_date.getDate() - 7)
+                        this.setState({
+                            view_date: new_date,
+                            data: null
+                        }, () => {
+                            this.fetchdata()
+                        })
+
+                    }}>prev week</Button>
+                    <DatePicker
+                        style={{
+                            margin: '1rem'
+                        }}
+                        autoOk
+                        variant='inline'
+                        format='yy.MM.dd'
+                        showTodayButton
+                        value={this.state.view_date}
+                        onChange={(d) => {
+                            this.calendar.calendarInst.setDate(d)
+                            this.setState({
+                                view_date: d,
+                                show_date_picker: false,
+                                data: null
+                            }, () => {
+                                this.fetchdata()
+                            })
+                        }}
+
+                    />
+                    <Button onClick={e => {
+                        this.calendar.calendarInst.next()
+                        // update current view date
+                        let new_date = new Date(this.state.view_date)
+                        new_date.setDate(this.state.view_date.getDate() + 7)
+                        this.setState({
+                            view_date: new_date,
+                            data: null
+                        }, () => {
+                            this.fetchdata()
+                        })
+                    }}>next week</Button>
+
+
+
+                    <LessonColorToolTip />
+
+                </div>}
             </div>
 
 
             {this.state.selected_client == null ? null :
-                <div>
-                    <div className='row-gravity-center'>
-                        <Button onClick={e => {
-                            this.calendar.calendarInst.prev()
-                            // update current view date
-                            let new_date = new Date(this.state.view_date)
-                            new_date.setDate(this.state.view_date.getDate() - 7)
+
+                <PartialOverlaySpinner hide={this.state.data === null ? true : false}>
+                    <Calendar
+
+                        ref={r => {
+                            this.calendar = r
+
+                        }}
+                        height="60%"
+                        calendars={[
+                            {
+                                id: '0',
+                                name: 'Private',
+                                color: 'white',
+                                bgColor: '#4275ff',
+                                borderColor: '#9e5fff'
+                            }
+
+                        ]}
+                        useCreationPopup={false}
+                        useDetailPopup={false}
+                        disableDblClick={true}
+                        disableClick={false}
+                        isReadOnly={false}
+
+
+                        month={{
+                            startDayOfWeek: 0,
+                            daynames: ['일', '월', '화', '수', '목', '금', '토']
+                        }}
+                        schedules={schedule_formatted_data}
+                        taskView={false}
+                        scheduleView={['time']}
+
+                        template={{
+                            milestone(schedule) {
+                                return `<span style="color:#fff;background-color: ${schedule.bgColor};">${schedule.title
+                                    }</span>`;
+                            },
+                            milestoneTitle() {
+                                return 'Milestone';
+                            },
+                            allday(schedule) {
+                                return `${schedule.title}<i class="fa fa-refresh"></i>`;
+                            },
+                            alldayTitle() {
+                                return 'All Day';
+                            }
+                        }}
+
+                        timezones={[
+                            {
+                                timezoneOffset: +540,
+                                displayLabel: 'GMT+09:00',
+                                tooltip: 'Seoul'
+                            }
+
+                        ]}
+
+                        week={{
+                            showTimezoneCollapseButton: false,
+                            timezonesCollapsed: true
+                        }}
+
+
+                        onClickSchedule={e => {
+
+                            let sel_id = e.schedule.id
+
+                            if (sel_id == null || sel_id == "") {
+                                sel_id = 0
+                            }
+
+                            let sel_lesson = this.state.data[sel_id]
+
                             this.setState({
-                                view_date: new_date,
-                                data: null
-                            }, () => {
-                                this.fetchdata()
+
+                                show_view_modal: true,
+                                view_selected_lesson: sel_lesson
                             })
+                        }}
 
-                        }}>prev week</Button>
-                        <DatePicker
-                            style={{
-                                margin: '1rem'
-                            }}
-                            autoOk
-                            variant='inline'
-                            format='yy.MM.dd'
-                            showTodayButton
-                            value={this.state.view_date}
-                            onChange={(d) => {
-                                this.calendar.calendarInst.setDate(d)
-                                this.setState({
-                                    view_date: d,
-                                    show_date_picker: false,
-                                    data: null
-                                }, () => {
-                                    this.fetchdata()
-                                })
-                            }}
+                    />
+                </PartialOverlaySpinner>
 
-                        />
-                        <Button onClick={e => {
-                            this.calendar.calendarInst.next()
-                            // update current view date
-                            let new_date = new Date(this.state.view_date)
-                            new_date.setDate(this.state.view_date.getDate() + 7)
-                            this.setState({
-                                view_date: new_date,
-                                data: null
-                            }, () => {
-                                this.fetchdata()
-                            })
-                        }}>next week</Button>
-
-
-
-                        <LessonColorToolTip />
-
-                    </div>
-
-                    <div>
-                        <PartialOverlaySpinner hide={this.state.data === null ? true : false}>
-                            <Calendar
-
-                                ref={r => {
-                                    this.calendar = r
-
-                                }}
-                                height="60%"
-                                calendars={[
-                                    {
-                                        id: '0',
-                                        name: 'Private',
-                                        color: 'white',
-                                        bgColor: '#4275ff',
-                                        borderColor: '#9e5fff'
-                                    }
-
-                                ]}
-                                useCreationPopup={false}
-                                useDetailPopup={false}
-                                disableDblClick={true}
-                                disableClick={false}
-                                isReadOnly={false}
-
-
-                                month={{
-                                    startDayOfWeek: 0,
-                                    daynames: ['일', '월', '화', '수', '목', '금', '토']
-                                }}
-                                schedules={schedule_formatted_data}
-                                taskView={false}
-                                scheduleView={['time']}
-
-                                template={{
-                                    milestone(schedule) {
-                                        return `<span style="color:#fff;background-color: ${schedule.bgColor};">${schedule.title
-                                            }</span>`;
-                                    },
-                                    milestoneTitle() {
-                                        return 'Milestone';
-                                    },
-                                    allday(schedule) {
-                                        return `${schedule.title}<i class="fa fa-refresh"></i>`;
-                                    },
-                                    alldayTitle() {
-                                        return 'All Day';
-                                    }
-                                }}
-
-                                timezones={[
-                                    {
-                                        timezoneOffset: +540,
-                                        displayLabel: 'GMT+09:00',
-                                        tooltip: 'Seoul'
-                                    }
-
-                                ]}
-
-                                // view={selectedView} // You can also set the `defaultView` option.
-                                week={{
-                                    showTimezoneCollapseButton: false,
-                                    timezonesCollapsed: true
-                                }}
-
-
-                                onClickSchedule={e => {
-
-                                    let sel_id = e.schedule.id
-
-                                    if (sel_id == null || sel_id == "") {
-                                        sel_id = 0
-                                    }
-
-                                    let sel_lesson = this.state.data[sel_id]
-
-                                    this.setState({
-
-                                        show_view_modal: true,
-                                        view_selected_lesson: sel_lesson
-                                    })
-                                }}
-
-                            />
-                        </PartialOverlaySpinner>
-                    </div>
-                </div>
 
             }
 
