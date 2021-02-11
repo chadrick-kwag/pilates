@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { Spinner } from 'react-bootstrap'
 
 export default function PartialOverlaySpinner(props) {
 
-    let rootdiv = React.createRef()
+    const rootdiv = useRef(null)
     // let rootdiv = null
 
 
@@ -13,14 +13,14 @@ export default function PartialOverlaySpinner(props) {
     const [offsetTop, setOffsetTop] = useState(0)
 
     useEffect(() => {
-        // console.log('rootdiv')
-        // console.log(rootdiv)
-        if (rootdiv !== null) {
+        console.log('rootdiv')
+        console.log(rootdiv)
+        if (rootdiv.current !== null) {
 
-            setwidth(rootdiv.offsetWidth)
-            setHeight(rootdiv.offsetHeight)
-            setOffsetLeft(rootdiv.offsetLeft)
-            setOffsetTop(rootdiv.offsetTop)
+            setwidth(rootdiv.current.offsetWidth)
+            setHeight(rootdiv.current.offsetHeight)
+            setOffsetLeft(rootdiv.current.offsetLeft)
+            setOffsetTop(rootdiv.current.offsetTop)
 
             console.log(width)
             console.log(height)
@@ -30,8 +30,9 @@ export default function PartialOverlaySpinner(props) {
 
     })
 
+    console.log('rendering')
     return <div ref={rootdiv} {...props}>
-        {props.hide === true ? <div className='row-gravity-center custom-overlay' style={{ width: width, height: height, top: offsetTop, left: offsetleft }}><Spinner animation='border' /></div> : null}
+        {props.hide === true ? <div className='row-gravity-center custom-overlay' style={{  width: width, height: height, top: offsetTop, left: offsetleft }}><Spinner animation='border' /></div> : null}
 
         {props.children}
     </div>

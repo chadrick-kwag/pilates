@@ -45,8 +45,10 @@ class ScheduleViewer extends React.Component {
 
         // this.createlesson = this.createlesson.bind(this)
         this.fetchdata = this.fetchdata.bind(this)
+       
     }
 
+    
 
     fetchdata() {
 
@@ -122,11 +124,11 @@ class ScheduleViewer extends React.Component {
         }
 
 
-        let view_modal = null
 
-        if (this.state.show_view_modal) {
 
-            view_modal = <AllScheduleViewLessonModal apolloclient={this.props.apolloclient}
+        return <div>
+
+            {this.state.show_view_modal === true ? <AllScheduleViewLessonModal apolloclient={this.props.apolloclient}
                 view_selected_lesson={this.state.view_selected_lesson}
                 onCancel={() => this.setState({
                     show_view_modal: false
@@ -148,68 +150,7 @@ class ScheduleViewer extends React.Component {
                     }
                 }
 
-            />
-        }
-
-
-
-        // date picker div
-
-        let date_picker_element = null
-        if (this.state.show_date_picker) {
-            console.log(this.datebutton)
-            console.log(this.datebutton.getBoundingClientRect())
-            let bbox = this.datebutton.getBoundingClientRect()
-
-            let left_offset = bbox.left + bbox.width / 2
-            let top_offset = bbox.top + bbox.height / 2
-
-            console.log(left_offset)
-            console.log(top_offset)
-
-            date_picker_element = <div style={{
-                position: "absolute", top: top_offset + "px", left: left_offset + "px",
-                backgroundColor: "white",
-                zIndex: "200"
-            }}>
-                {/* <DayPicker
-                    selectedDays={this.state.view_date}
-                    onDayClick={(d, m, e) => {
-                        console.log(d)
-                        console.log("picked")
-                        this.calendar.calendarInst.setDate(d)
-                        this.setState({
-                            view_date: d,
-                            show_date_picker: false,
-                            data: null
-                        }, () => {
-                            this.fetchdata()
-                        })
-                    }} /> */}
-
-                <DatePicker
-                    variant='inline'
-
-                    value={this.state.view_date}
-                    onChange={(d) => {
-                        this.calendar.calendarInst.setDate(d)
-                        this.setState({
-                            view_date: d,
-                            show_date_picker: false,
-                            data: null
-                        }, () => {
-                            this.fetchdata()
-                        })
-                    }}
-
-                />
-            </div>
-        }
-
-
-        return <div>
-
-            {view_modal}
+            /> : null}
 
             <div>
                 <div className="row-gravity-center">
@@ -226,7 +167,7 @@ class ScheduleViewer extends React.Component {
                         })
 
                     }}>prev week</Button>
-                    
+
                     <DatePicker
                         style={{
                             margin: '1rem'
@@ -261,15 +202,15 @@ class ScheduleViewer extends React.Component {
                         })
                     }}>next week</Button>
 
-                    
+
 
                     <LessonColorToolTip />
 
                 </div>
 
-                <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
+                <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
 
-                    <PartialOverlaySpinner hide={this.state.data === null ? true : false} style={{flexGrow: '1'}} >
+                    <PartialOverlaySpinner hide={this.state.data === null ? true : false} style={{ flexGrow: '1' }} >
                         <Calendar
 
                             ref={r => {
