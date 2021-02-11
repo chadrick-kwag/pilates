@@ -163,76 +163,75 @@ class InstructorScheduleViewer extends React.Component {
             /> : null}
 
 
-            <div>
-                {/* <InstructorSearchComponent2 apolloclient={this.props.apolloclient} instructorSelectedCallback={d => this.setState({
-                    selected_instructor: d
-                }, () => {
-                    this.fetchdata()
-                })} /> */}
+            <div className={this.state.selected_instructor === null ? 'row-gravity-left' : 'row-gravity-between'}>
+
                 <InstructorSearchComponent3 instructorSelectedCallback={d => this.setState({
                     selected_instructor: d
                 }, () => {
                     this.fetchdata()
                 })} />
+                {this.state.selected_instructor === null ? null : <div className='row-gravity-center'>
+                    <Button onClick={e => {
+                        this.calendar.calendarInst.prev()
+                        // update current view date
+                        let new_date = new Date(this.state.view_date)
+                        new_date.setDate(this.state.view_date.getDate() - 7)
+                        this.setState({
+                            view_date: new_date,
+                            data: null
+                        }, () => {
+                            this.fetchdata()
+                        })
+
+                    }}>prev week</Button>
+                    <DatePicker
+                        style={{
+                            margin: '1rem'
+                        }}
+                        autoOk
+                        variant='inline'
+                        format='yy.MM.dd'
+                        showTodayButton
+                        value={this.state.view_date}
+                        onChange={(d) => {
+                            this.calendar.calendarInst.setDate(d)
+                            this.setState({
+                                view_date: d,
+                                show_date_picker: false,
+                                data: null
+                            }, () => {
+                                this.fetchdata()
+                            })
+                        }}
+
+                    />
+                    <Button onClick={e => {
+                        this.calendar.calendarInst.next()
+                        // update current view date
+                        let new_date = new Date(this.state.view_date)
+                        new_date.setDate(this.state.view_date.getDate() + 7)
+                        this.setState({
+                            view_date: new_date,
+                            data: null
+                        }, () => {
+                            this.fetchdata()
+                        })
+                    }}>next week</Button>
+
+                    <LessonColorToolTip />
+
+
+                </div>
+                }
+
 
             </div>
 
 
 
-            {this.state.selected_instructor == null ? null :
+            {this.state.selected_instructor === null ? null :
                 <div >
-                    <div className='row-gravity-center'>
-                        <Button onClick={e => {
-                            this.calendar.calendarInst.prev()
-                            // update current view date
-                            let new_date = new Date(this.state.view_date)
-                            new_date.setDate(this.state.view_date.getDate() - 7)
-                            this.setState({
-                                view_date: new_date,
-                                data: null
-                            }, () => {
-                                this.fetchdata()
-                            })
 
-                        }}>prev week</Button>
-                        <DatePicker
-                            style={{
-                                margin: '1rem'
-                            }}
-                            autoOk
-                            variant='inline'
-                            format='yy.MM.dd'
-                            showTodayButton
-                            value={this.state.view_date}
-                            onChange={(d) => {
-                                this.calendar.calendarInst.setDate(d)
-                                this.setState({
-                                    view_date: d,
-                                    show_date_picker: false,
-                                    data: null
-                                }, () => {
-                                    this.fetchdata()
-                                })
-                            }}
-
-                        />
-                        <Button onClick={e => {
-                            this.calendar.calendarInst.next()
-                            // update current view date
-                            let new_date = new Date(this.state.view_date)
-                            new_date.setDate(this.state.view_date.getDate() + 7)
-                            this.setState({
-                                view_date: new_date,
-                                data: null
-                            }, () => {
-                                this.fetchdata()
-                            })
-                        }}>next week</Button>
-
-                        
-                        <LessonColorToolTip />
-
-                    </div>
 
                     <div>
                         <PartialOverlaySpinner hide={this.state.data === null ? true : false}>
