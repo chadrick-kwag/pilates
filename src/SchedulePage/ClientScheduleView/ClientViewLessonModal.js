@@ -209,7 +209,7 @@ export default function ClientViewLessonModal(props) {
         {editmode === true ? <Modal.Footer>
             <Button onClick={_ => {
                 setEditMode(false)
-                setEditInfo(props.lesson)
+                setEditInfo(initlesson)
             }}>변경취소</Button>
         </Modal.Footer> : <Modal.Footer>
 
