@@ -275,16 +275,16 @@ class ScheduleViewer extends React.Component {
 
                 </div>
 
-                <div>
+                <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
 
-                    <PartialOverlaySpinner hide={this.state.data === null ? true : false}>
+                    <PartialOverlaySpinner hide={this.state.data === null ? true : false} style={{flexGrow: '1'}} >
                         <Calendar
 
                             ref={r => {
                                 this.calendar = r
 
                             }}
-                            height="80%"
+                            // height="80%"
                             calendars={[
                                 {
                                     id: '0',

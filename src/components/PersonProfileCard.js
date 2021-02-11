@@ -1,6 +1,7 @@
 import React from 'react'
 import { Card } from 'react-bootstrap'
 import './profilecard.css'
+import PhoneIcon from '@material-ui/icons/Phone';
 
 
 export default function PersonProfileCard(props) {
@@ -25,7 +26,7 @@ export default function PersonProfileCard(props) {
 
             <Card.Text className='card-name'>{props.name}</Card.Text>
             <Card.Text className="card-normal">
-                <span>연락처 {props.phonenumber} </span>
+                <span><PhoneIcon/>{props.phonenumber} </span>
             </Card.Text>
 
         </Card.Body>

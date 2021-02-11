@@ -230,15 +230,15 @@ class InstructorScheduleViewer extends React.Component {
                 <div >
 
 
-                    <div>
-                        <PartialOverlaySpinner hide={this.state.data === null ? true : false}>
+                    <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                        <PartialOverlaySpinner hide={this.state.data === null ? true : false} style={{ flexGrow: '1' }}>
                             <Calendar
 
                                 ref={r => {
                                     this.calendar = r
 
                                 }}
-                                height="30%"
+                                
                                 calendars={[
                                     {
                                         id: '0',
