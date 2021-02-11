@@ -1,7 +1,6 @@
 import { Button, Modal, Dropdown, DropdownButton } from 'react-bootstrap'
-import InstructorSearchComponent3 from '../../components/InstructorSearchComponent3'
 
-import React from 'react'
+import React, { useState } from 'react'
 import moment from 'moment'
 import client from '../../apolloclient'
 
@@ -11,48 +10,36 @@ import {
 
 } from '../../common/gql_defs'
 
-import { DatePicker, TimePicker } from '@material-ui/pickers'
-
-
 import LessonInfoComponent from '../LessonInfoComponent'
 
-class AllScheduleViewLessonModal extends React.Component {
+import PanelSequenceComponent, { PanelSequenceChild } from '../../components/PanelSequenceComponent'
+import PersonProfileCard from '../../components/PersonProfileCard'
+import InstructorSearchComponent2 from '../../components/InstructorSearchComponent2'
+import { DatePicker, TimePicker } from '@material-ui/pickers'
 
-    constructor(props) {
+export default function AllScheduleViewLessonModal(props) {
 
-        super(props)
+    console.log('AllScheduleViewLessonModal')
+    console.log(props)
 
-        console.log('props')
-        console.log(this.props)
-        this.state = {
-            edit_mode: false,
-            edit_info: {
-                lesson_date: new Date(parseInt(this.props.view_selected_lesson.starttime)),
-                start_time: new Date(parseInt(this.props.view_selected_lesson.starttime)),
-                end_time: new Date(parseInt(this.props.view_selected_lesson.endtime)),
-                instructorid: this.props.view_selected_lesson.instructorid,
 
-                show_delete_ask_modal: false
+    const [editmode, setEditMode] = useState(false)
 
-            }
 
-        }
-
-        this.submit_edit_changes = this.submit_edit_changes.bind(this)
-        this.valid_check_edit_info = this.valid_check_edit_info.bind(this)
-        this.get_edit_info_start_end_moment = this.get_edit_info_start_end_moment.bind(this)
-        this.delete_lesson_with_request_type = this.delete_lesson_with_request_type.bind(this)
-
-    }
+    const initlesson = {}
+    Object.assign(initlesson, props.view_selected_lesson)
+    initlesson.starttime = new Date(parseInt(initlesson.starttime))
+    initlesson.endtime = new Date(parseInt(initlesson.endtime))
+    const [editInfo, setEditInfo] = useState(initlesson)
 
 
 
-    delete_lesson_with_request_type(request_type, ignore_warning = false) {
+    const delete_lesson_with_request_type = (request_type, ignore_warning = false) => {
 
         client.mutate({
             mutation: DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
             variables: {
-                lessonid: this.props.view_selected_lesson.id,
+                lessonid: props.view_selected_lesson.id,
                 ignore_warning: ignore_warning,
                 request_type: request_type
             }
@@ -73,7 +60,7 @@ class AllScheduleViewLessonModal extends React.Component {
 
             if (d.data.delete_lesson_with_request_type.success) {
 
-                this.props.onDeleteSuccess()
+                props.onDeleteSuccess()
             }
             else {
                 alert('failed to delete lesson.' + d.data.delete_lesson_with_request_type.msg)
@@ -85,62 +72,16 @@ class AllScheduleViewLessonModal extends React.Component {
         })
     }
 
-    valid_check_edit_info() {
 
-        let [start_m, end_m] = this.get_edit_info_start_end_moment()
+    const change_lesson = () => {
 
-        if (start_m >= end_m) {
-            return 'start time is after end time'
-        }
-
-
-        return null
-
-    }
-
-    get_edit_info_start_end_moment() {
-
-        let start_date = new Date(this.state.edit_info.lesson_date)
-        let end_date = new Date(this.state.edit_info.lesson_date)
-
-        let start_h = this.state.edit_info.start_time.getHours()
-        let start_m = this.state.edit_info.start_time.getMinutes()
-
-        start_date.setHours(start_h)
-        start_date.setMinutes(start_m)
-        start_date.setMilliseconds(0)
-
-
-        let end_h = this.state.edit_info.end_time.getHours()
-        let end_m = this.state.edit_info.end_time.getMinutes()
-
-        end_date.setHours(end_h)
-        end_date.setMinutes(end_m)
-        end_date.setMilliseconds(0)
-
-        return [start_date, end_date]
-
-    }
-
-    submit_edit_changes() {
-
-
-        let check_result = this.valid_check_edit_info()
-
-        if (check_result != null) {
-            alert(check_result)
-            return
-        }
-
-        let [start_m, end_m] = this.get_edit_info_start_end_moment()
-
-
+        console.log(editInfo)
 
         let _var = {
-            lessonid: parseInt(this.props.view_selected_lesson.id),
-            start_time: start_m.toUTCString(),
-            end_time: end_m.toUTCString(),
-            instructor_id: parseInt(this.state.edit_info.instructorid)
+            lessonid: parseInt(props.view_selected_lesson.id),
+            start_time: editInfo.starttime.toUTCString(),
+            end_time: editInfo.endtime.toUTCString(),
+            instructor_id: editInfo.instructorid
         }
 
         console.log("mutate variables:")
@@ -149,12 +90,13 @@ class AllScheduleViewLessonModal extends React.Component {
         // try to register lesson
         client.mutate({
             mutation: UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL,
-            variables: _var
+            variables: _var,
+            fetchPolicy: 'no-cache'
         }).then(d => {
             console.log(d)
 
             if (d.data.update_lesson_instructor_or_time.success) {
-                this.props.onEditSuccess()
+                props.onEditSuccess?.()
             }
             else {
                 alert(`failed to submit edit\n${d.data.update_lesson_instructor_or_time.msg}`)
@@ -170,230 +112,145 @@ class AllScheduleViewLessonModal extends React.Component {
 
 
 
-    render() {
+    let people = [
+        {
+            type: 'client',
+            name: props.view_selected_lesson.clientname,
+            phonenumber: props.view_selected_lesson.client_phonenumber
+        },
+        {
+            type: 'instructor',
+            name: props.view_selected_lesson.instructorname,
+            phonenumber: props.view_selected_lesson.instructor_phonenumber
+        }
+    ]
 
 
-        console.log(this.state.edit_info)
-        // let datepicker_init_date = new Date(parseInt(this.state.edit_info.start_time))
-
-        // console.log(datepicker_init_date)
-        let modal_body = null
-
-        if (this.state.edit_mode) {
 
 
+    return <div>
+        <Modal show={true} onHide={() => props.onCancel()} dialogClassName='two-time-picker' >
+            {editmode ? <PanelSequenceComponent >
+                <PanelSequenceChild prevBtnHide={true}>
+                    <div className='col-gravity-center' >
+                        <PersonProfileCard type='강사' name={editInfo.instructorname} phonenumber={editInfo.instructor_phonenumber} />
+                        <InstructorSearchComponent2 instructorSelectedCallback={d => {
+                            console.log(d)
+                            let newinfo = {}
+                            Object.assign(newinfo, editInfo)
 
-            modal_body = <Modal.Body>
-                <div>
-                    <div className="flex-col-left-align">
-                        <h3>회원</h3>
-                        <span>이름: {this.props.view_selected_lesson.clientname}</span>
-                        <span>연락처: {this.props.view_selected_lesson.client_phonenumber}</span>
+                            newinfo.instructor_phonenumber = d.phonenumber
+                            newinfo.instructorname = d.name
+                            newinfo.instructorid = parseInt(d.id)
+
+                            setEditInfo(newinfo)
+
+                        }} />
                     </div>
+                </PanelSequenceChild>
 
-                    <hr></hr>
+                <PanelSequenceChild>
+                    <div className='col-gravity-center' >
 
-                    <InstructorSearchComponent3 apolloclient={this.props.apolloclient} init_instructor_id={this.props.view_selected_lesson.instructorid} instructorSelectedCallback={info => {
+                        <DatePicker
+                            autoOk
+                            orientation="landscape"
+                            variant="static"
+                            openTo="date"
+                            value={editInfo.lesson_date}
+                            onChange={d => {
+                                console.log(d)
+                                let newinfo = {}
+                                Object.assign(newinfo, editInfo)
+                                newinfo.lesson_date = d
+                                setEditInfo(newinfo)
+                            }}
 
-                        console.log(info)
-                        let existing_edit_info = this.state.edit_info
+                        />
+                    </div>
+                </PanelSequenceChild>
 
-                        existing_edit_info.instructorid = info.id
+                <PanelSequenceChild nextBtnClick={() => {
+                    console.log('final page clicked')
+                    console.log(editInfo)
 
-                        this.setState({
-                            edit_info: existing_edit_info
-                        })
-                    }} />
+                    // attempt to update lesosn with editInfo
+                    change_lesson()
 
-                    <hr></hr>
-
-                    <div className="padded-block col-gravity-center">
-                        <h2>수업시간선택</h2>
-
-                        <div>
-
-                            <DatePicker
+                }} nextBtnText='submit'>
+                    <div>
+                        <div className='row-gravity-center'><h2>{moment(editInfo.lesson_date).format('YYYY.MM.DD')}</h2></div>
+                        <div className='row-gravity-center'>
+                            <TimePicker size='small'
                                 autoOk
-                                orientation="landscape"
+                                ampm={false}
                                 variant="static"
-                                openTo="date"
-                                value={this.state.edit_info.lesson_date}
+                                orientation="portrait"
+                                openTo="hours"
+
+                                value={editInfo.starttime}
                                 onChange={d => {
                                     console.log(d)
-                                    let update_edit_info = {}
-                                    Object.assign(update_edit_info, this.state.edit_info)
-                                    update_edit_info.lesson_date = d
-                                    this.setState({
-                                        edit_info: update_edit_info
-                                    })
+                                    let newinfo = {}
+                                    Object.assign(newinfo, editInfo)
+                                    newinfo.starttime = d
+                                    setEditInfo(newinfo)
+                                }}
+                            />
+
+                            <TimePicker
+                                autoOk
+                                ampm={false}
+                                variant="static"
+                                orientation="portrait"
+                                openTo="hours"
+
+                                value={editInfo.endtime}
+                                onChange={d => {
+                                    console.log(d)
+                                    let newinfo = {}
+                                    Object.assign(newinfo, editInfo)
+                                    newinfo.endtime = d
+                                    setEditInfo(newinfo)
                                 }}
                             />
                         </div>
-
-
-                        <div style={{ display: "flex", flexDirection: "row" }} className="small-margined">
-
-
-                            <div style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "center",
-                                alignItems: "center"
-                            }}>
-                                <span>시작</span>
-
-
-                                <TimePicker
-                                    autoOk
-                                    ampm={false}
-                                    variant="static"
-                                    orientation="portrait"
-                                    openTo="hours"
-                                    minutesStep="5"
-                                    value={this.state.edit_info.start_time}
-                                    onChange={d => {
-                                        console.log(d)
-                                        let new_info = {}
-                                        Object.assign(new_info, this.state.edit_info)
-                                        new_info.start_time = d
-                                        this.setState({
-                                            edit_info: new_info
-                                        })
-                                    }}
-                                />
-
-                            </div>
-
-
-                            <div style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "center",
-                                alignItems: "center"
-                            }}>
-                                <span>종료</span>
-
-                                <TimePicker
-                                    autoOk
-                                    ampm={false}
-                                    variant="static"
-                                    orientation="portrait"
-                                    openTo="hours"
-                                    minutesStep="5"
-                                    value={this.state.edit_info.end_time}
-                                    onChange={d => {
-                                        console.log(d)
-                                        let new_info = {}
-                                        Object.assign(new_info, this.state.edit_info)
-                                        new_info.end_time = d
-                                        this.setState({
-                                            edit_info: new_info
-                                        })
-                                    }}
-                                />
-
-                            </div>
-
-                        </div>
-
                     </div>
-
-                </div>
-            </Modal.Body>
-        }
-        else {
-            // not edit mode
-
-            let datetimestr
-
-            let moment_date = moment(new Date(parseInt(this.props.view_selected_lesson.starttime)))
+                </PanelSequenceChild>
 
 
-            let end_moment = moment(new Date(parseInt(this.props.view_selected_lesson.endtime)))
+            </PanelSequenceComponent> : <LessonInfoComponent people={people} start_time={props.view_selected_lesson.starttime}
+                end_time={props.view_selected_lesson.endtime}
+                activity_type={props.view_selected_lesson.activity_type}
+                />}
 
+            {editmode ? <Modal.Footer>
+                <Button onClick={e => setEditMode(false)}>변경취소</Button>
 
-            datetimestr = moment_date.format("MM월 DD일 hh:mm A - ")
-            let endstr = end_moment.format("hh:mm A")
-
-            datetimestr = datetimestr + endstr
-
-
-            let people = [
-                {
-                    type: 'client',
-                    name: this.props.view_selected_lesson.clientname,
-                    phonenumber: this.props.view_selected_lesson.client_phonenumber
-                },
-                {
-                    type: 'instructor',
-                    name: this.props.view_selected_lesson.instructorname,
-                    phonenumber: this.props.view_selected_lesson.instructor_phonenumber
-                }
-            ]
-
-            modal_body = <Modal.Body>
-                <LessonInfoComponent people={people} start_time={this.props.view_selected_lesson.starttime}
-                    end_time={this.props.view_selected_lesson.endtime}
-                    activity_type={this.props.view_selected_lesson.activity_type}
-                />
-
-            </Modal.Body>
-        }
-
-
-        let modal_footer = null
-
-        if (this.state.edit_mode) {
-            modal_footer = <Modal.Footer>
-                <Button onClick={e => {
-                    this.setState({
-                        edit_mode: false
-                    })
-                }}>cancel</Button>
-                <Button onClick={e => {
-
-                    this.submit_edit_changes()
-
-                }}>Done</Button>
-            </Modal.Footer>
-        }
-        else {
-            modal_footer = <Modal.Footer>
-                <Button onClick={e => {
-                    this.setState({
-                        edit_mode: true
-                    })
-                }}>
-                    시간/강사변경
-            </Button>
-                <DropdownButton drop='up' title='취소'>
-                    <Dropdown.Item onClick={_ => {
-                        this.delete_lesson_with_request_type('CLIENT_REQUEST')
-                    }}>회원요청</Dropdown.Item>
-                    <Dropdown.Item onClick={_ => this.delete_lesson_with_request_type('INSTRUCTOR_REQUEST')}>
-                        강사요청
+            </Modal.Footer> : <Modal.Footer>
+                    <Button onClick={e => setEditMode(true)}>
+                        시간/강사변경
+                </Button>
+                    <DropdownButton drop='up' title='취소'>
+                        <Dropdown.Item onClick={_ => {
+                            delete_lesson_with_request_type('CLIENT_REQUEST')
+                        }}>회원요청</Dropdown.Item>
+                        <Dropdown.Item onClick={_ => delete_lesson_with_request_type('INSTRUCTOR_REQUEST')}>
+                            강사요청
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={e => this.delete_lesson_with_request_type('ADMIN_REQUEST')}>
-                        관리자</Dropdown.Item>
-                </DropdownButton>
+                        <Dropdown.Item onClick={e => delete_lesson_with_request_type('ADMIN_REQUEST')}>
+                            관리자</Dropdown.Item>
+                    </DropdownButton>
 
-                <Button variant='danger' onClick={e => {
-                    this.props.onCancel()
-                }
-                }>닫기</Button>
-            </Modal.Footer>
-        }
+                    <Button variant='danger' onClick={e => {
+                        props.onCancel()
+                    }}>닫기</Button>
+                </Modal.Footer>}
 
 
-        return <div>
-            <Modal show={true} onHide={() => this.props.onCancel()} dialogClassName="modal-90w" >
-                {modal_body}
-                {modal_footer}
-            </Modal>
+        </Modal>
 
-        </div>
+    </div>
 
-    }
+
 }
-
-export default AllScheduleViewLessonModal
