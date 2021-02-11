@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Spinner } from 'react-bootstrap'
+import { Button } from 'react-bootstrap'
 
 
 
@@ -9,12 +9,6 @@ import 'tui-calendar/dist/tui-calendar.css';
 // If you use the default popups, use this.
 import 'tui-date-picker/dist/tui-date-picker.css';
 import 'tui-time-picker/dist/tui-time-picker.css';
-
-
-import moment from 'moment'
-
-import DayPicker from 'react-day-picker';
-import 'react-day-picker/lib/style.css';
 
 import { DatePicker } from '@material-ui/pickers'
 
@@ -31,8 +25,6 @@ import client from '../../apolloclient'
 import { get_bg_fontcolor_for_activity_type } from '../common'
 import LessonColorToolTip from '../LessonColorTooltip'
 import PartialOverlaySpinner from '../PartialOverlaySpinner'
-
-
 
 
 class ScheduleViewer extends React.Component {
