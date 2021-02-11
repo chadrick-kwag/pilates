@@ -16,6 +16,8 @@ import moment from 'moment'
 import DayPicker from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
 
+import { DatePicker } from '@material-ui/pickers'
+
 import {
     QUERY_LESSON_WITH_DATERANGE_GQL
 } from '../../common/gql_defs'
@@ -29,6 +31,9 @@ import client from '../../apolloclient'
 import { get_bg_fontcolor_for_activity_type } from '../common'
 import LessonColorToolTip from '../LessonColorTooltip'
 import PartialOverlaySpinner from '../PartialOverlaySpinner'
+
+
+
 
 class ScheduleViewer extends React.Component {
 
@@ -174,7 +179,8 @@ class ScheduleViewer extends React.Component {
                 position: "absolute", top: top_offset + "px", left: left_offset + "px",
                 backgroundColor: "white",
                 zIndex: "200"
-            }}> <DayPicker
+            }}>
+                {/* <DayPicker
                     selectedDays={this.state.view_date}
                     onDayClick={(d, m, e) => {
                         console.log(d)
@@ -187,146 +193,181 @@ class ScheduleViewer extends React.Component {
                         }, () => {
                             this.fetchdata()
                         })
-                    }} /> </div>
+                    }} /> */}
+
+                <DatePicker
+                    variant='inline'
+
+                    value={this.state.view_date}
+                    onChange={(d) => {
+                        this.calendar.calendarInst.setDate(d)
+                        this.setState({
+                            view_date: d,
+                            show_date_picker: false,
+                            data: null
+                        }, () => {
+                            this.fetchdata()
+                        })
+                    }}
+
+                />
+            </div>
         }
 
 
         return <div>
 
             {view_modal}
-            
-                <div>
-                    <div>
-                        <Button onClick={e => {
-                            this.calendar.calendarInst.prev()
-                            // update current view date
-                            let new_date = new Date(this.state.view_date)
-                            new_date.setDate(this.state.view_date.getDate() - 7)
+
+            <div>
+                <div className="row-gravity-center">
+                    <Button onClick={e => {
+                        this.calendar.calendarInst.prev()
+                        // update current view date
+                        let new_date = new Date(this.state.view_date)
+                        new_date.setDate(this.state.view_date.getDate() - 7)
+                        this.setState({
+                            view_date: new_date,
+                            data: null
+                        }, () => {
+                            this.fetchdata()
+                        })
+
+                    }}>prev week</Button>
+                    
+                    <DatePicker
+                        style={{
+                            margin: '1rem'
+                        }}
+                        autoOk
+                        variant='inline'
+                        format='yy.MM.dd'
+                        showTodayButton
+                        value={this.state.view_date}
+                        onChange={(d) => {
+                            this.calendar.calendarInst.setDate(d)
                             this.setState({
-                                view_date: new_date,
+                                view_date: d,
+                                show_date_picker: false,
                                 data: null
                             }, () => {
                                 this.fetchdata()
                             })
+                        }}
 
-                        }}>prev week</Button>
-                        <Button ref={r => this.datebutton = r} onClick={e => {
-                            this.setState({
-                                show_date_picker: !this.state.show_date_picker
-                            })
-                        }}>{moment(this.state.view_date).format('YY-MM-DD')}</Button>
-                        <Button onClick={e => {
-                            this.calendar.calendarInst.next()
-                            // update current view date
-                            let new_date = new Date(this.state.view_date)
-                            new_date.setDate(this.state.view_date.getDate() + 7)
-                            this.setState({
-                                view_date: new_date,
-                                data: null
-                            }, () => {
-                                this.fetchdata()
-                            })
-                        }}>next week</Button>
+                    />
+                    <Button onClick={e => {
+                        this.calendar.calendarInst.next()
+                        // update current view date
+                        let new_date = new Date(this.state.view_date)
+                        new_date.setDate(this.state.view_date.getDate() + 7)
+                        this.setState({
+                            view_date: new_date,
+                            data: null
+                        }, () => {
+                            this.fetchdata()
+                        })
+                    }}>next week</Button>
 
-                        {date_picker_element}
+                    
 
-                        <LessonColorToolTip />
+                    <LessonColorToolTip />
 
-                    </div>
-
-                    <div>
-
-                        <PartialOverlaySpinner hide={this.state.data===null? true : false}>
-                            <Calendar
-
-                                ref={r => {
-                                    this.calendar = r
-
-                                }}
-                                height="80%"
-                                calendars={[
-                                    {
-                                        id: '0',
-                                        name: 'Private',
-                                        color: 'white',
-                                        bgColor: '#4275ff',
-                                        borderColor: '#9e5fff'
-                                    }
-
-                                ]}
-                                useCreationPopup={false}
-                                useDetailPopup={false}
-                                disableDblClick={true}
-                                disableClick={false}
-                                isReadOnly={false}
-
-
-                                month={{
-                                    startDayOfWeek: 0,
-                                    daynames: ['일', '월', '화', '수', '목', '금', '토']
-                                }}
-                                schedules={schedule_formatted_data}
-                                taskView={false}
-                                scheduleView={['time']}
-
-                                template={{
-                                    milestone(schedule) {
-                                        return `<span style="color:#fff;background-color: ${schedule.bgColor};">${schedule.title
-                                            }</span>`;
-                                    },
-                                    milestoneTitle() {
-                                        return 'Milestone';
-                                    },
-                                    allday(schedule) {
-                                        return `${schedule.title}<i class="fa fa-refresh"></i>`;
-                                    },
-                                    alldayTitle() {
-                                        return 'All Day';
-                                    }
-                                }}
-
-                                timezones={[
-                                    {
-                                        timezoneOffset: +540,
-                                        displayLabel: 'GMT+09:00',
-                                        tooltip: 'Seoul'
-                                    }
-
-                                ]}
-
-                                // view={selectedView} // You can also set the `defaultView` option.
-                                week={{
-                                    showTimezoneCollapseButton: false,
-                                    timezonesCollapsed: true
-                                }}
-
-
-                                onClickSchedule={e => {
-
-                                    let new_modal_info = {
-                                        schedule: e.schedule
-                                    }
-
-                                    let sel_id = e.schedule.id
-
-                                    if (sel_id == null || sel_id == "") {
-                                        sel_id = 0
-                                    }
-
-                                    let sel_lesson = this.state.data[sel_id]
-
-                                    this.setState({
-                                        modal_info: new_modal_info,
-                                        show_view_modal: true,
-                                        view_selected_lesson: sel_lesson
-                                    })
-                                }}
-
-                            />
-                        </PartialOverlaySpinner>
-                    </div>
                 </div>
-            
+
+                <div>
+
+                    <PartialOverlaySpinner hide={this.state.data === null ? true : false}>
+                        <Calendar
+
+                            ref={r => {
+                                this.calendar = r
+
+                            }}
+                            height="80%"
+                            calendars={[
+                                {
+                                    id: '0',
+                                    name: 'Private',
+                                    color: 'white',
+                                    bgColor: '#4275ff',
+                                    borderColor: '#9e5fff'
+                                }
+
+                            ]}
+                            useCreationPopup={false}
+                            useDetailPopup={false}
+                            disableDblClick={true}
+                            disableClick={false}
+                            isReadOnly={false}
+
+
+                            month={{
+                                startDayOfWeek: 0,
+                                daynames: ['일', '월', '화', '수', '목', '금', '토']
+                            }}
+                            schedules={schedule_formatted_data}
+                            taskView={false}
+                            scheduleView={['time']}
+
+                            template={{
+                                milestone(schedule) {
+                                    return `<span style="color:#fff;background-color: ${schedule.bgColor};">${schedule.title
+                                        }</span>`;
+                                },
+                                milestoneTitle() {
+                                    return 'Milestone';
+                                },
+                                allday(schedule) {
+                                    return `${schedule.title}<i class="fa fa-refresh"></i>`;
+                                },
+                                alldayTitle() {
+                                    return 'All Day';
+                                }
+                            }}
+
+                            timezones={[
+                                {
+                                    timezoneOffset: +540,
+                                    displayLabel: 'GMT+09:00',
+                                    tooltip: 'Seoul'
+                                }
+
+                            ]}
+
+                            // view={selectedView} // You can also set the `defaultView` option.
+                            week={{
+                                showTimezoneCollapseButton: false,
+                                timezonesCollapsed: true
+                            }}
+
+
+                            onClickSchedule={e => {
+
+                                let new_modal_info = {
+                                    schedule: e.schedule
+                                }
+
+                                let sel_id = e.schedule.id
+
+                                if (sel_id == null || sel_id == "") {
+                                    sel_id = 0
+                                }
+
+                                let sel_lesson = this.state.data[sel_id]
+
+                                this.setState({
+                                    modal_info: new_modal_info,
+                                    show_view_modal: true,
+                                    view_selected_lesson: sel_lesson
+                                })
+                            }}
+
+                        />
+                    </PartialOverlaySpinner>
+                </div>
+            </div>
+
 
         </div>
 

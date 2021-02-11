@@ -11,18 +11,14 @@ import 'tui-date-picker/dist/tui-date-picker.css';
 import 'tui-time-picker/dist/tui-time-picker.css';
 
 import ClientSearchComponent2 from '../../components/ClientSearchComponent2'
-import InstructorSearchComponent2 from '../../components/InstructorSearchComponent2'
+
 import moment from 'moment'
 
-import DayPicker from 'react-day-picker';
-import 'react-day-picker/lib/style.css';
 
 import PartialOverlaySpinner from '../PartialOverlaySpinner'
-import LessonInfoComponent from '../LessonInfoComponent'
+import { DatePicker } from '@material-ui/pickers'
 
 import {
-
-    DELETE_LESSON_GQL,
     CREATE_LESSON_GQL,
     QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL
 } from '../../common/gql_defs'
@@ -190,65 +186,6 @@ class ClientScheduleViewer extends React.Component {
 
 
 
-
-        let datetimestr
-        try {
-            console.log(this.state.modal_info.schedule.start.toString())
-            let date = this.state.modal_info.schedule.start.toDate()
-            let moment_date = moment(date)
-
-            let end_date = this.state.modal_info.schedule.end.toDate()
-            let end_moment = moment(end_date)
-
-
-            datetimestr = moment_date.format("MM월 DD일 hh:mm A - ")
-            let endstr = end_moment.format("hh:mm A")
-
-            datetimestr = datetimestr + endstr
-
-        }
-        catch (err) {
-            console.log('failed to create schedule start string')
-            console.log(err)
-            datetimestr = null
-        }
-
-
-
-        // date picker div
-
-        let date_picker_element = null
-        if (this.state.show_date_picker) {
-            console.log(this.datebutton)
-            console.log(this.datebutton.getBoundingClientRect())
-            let bbox = this.datebutton.getBoundingClientRect()
-
-            let left_offset = bbox.left + bbox.width / 2
-            let top_offset = bbox.top + bbox.height / 2
-
-            console.log(left_offset)
-            console.log(top_offset)
-
-            date_picker_element = <div style={{
-                position: "absolute", top: top_offset + "px", left: left_offset + "px",
-                backgroundColor: "white",
-                zIndex: "200"
-            }}> <DayPicker
-                    selectedDays={this.state.view_date}
-                    onDayClick={(d, m, e) => {
-                        console.log(d)
-                        console.log("picked")
-                        this.calendar.calendarInst.setDate(d)
-                        this.setState({
-                            view_date: d,
-                            show_date_picker: false,
-                            data: null
-                        }, () => {
-                            this.fetchdata()
-                        })
-                    }} /> </div>
-        }
-
         return <div>
 
 
@@ -258,21 +195,21 @@ class ClientScheduleViewer extends React.Component {
                 })
             }}
                 lesson={this.state.view_selected_lesson}
-                onDeleteSuccess = {()=>{
+                onDeleteSuccess={() => {
                     this.setState({
                         show_view_modal: false,
                         view_selected_lesson: null
-                    },()=>{
+                    }, () => {
                         this.fetchdata()
                     })
                 }}
 
-                onEditSuccess={()=>{
+                onEditSuccess={() => {
                     console.log('oneditsuccess')
                     this.setState({
                         show_view_modal: false,
                         view_selected_lesson: null
-                    }, ()=>{
+                    }, () => {
                         this.fetchdata()
                     })
                 }}
@@ -290,7 +227,7 @@ class ClientScheduleViewer extends React.Component {
 
             {this.state.selected_client == null ? null :
                 <div>
-                    <div>
+                    <div className='row-gravity-center'>
                         <Button onClick={e => {
                             this.calendar.calendarInst.prev()
                             // update current view date
@@ -304,11 +241,27 @@ class ClientScheduleViewer extends React.Component {
                             })
 
                         }}>prev week</Button>
-                        <Button ref={r => this.datebutton = r} onClick={e => {
-                            this.setState({
-                                show_date_picker: !this.state.show_date_picker
-                            })
-                        }}>{moment(this.state.view_date).format('YY-MM-DD')}</Button>
+                        <DatePicker
+                            style={{
+                                margin: '1rem'
+                            }}
+                            autoOk
+                            variant='inline'
+                            format='yy.MM.dd'
+                            showTodayButton
+                            value={this.state.view_date}
+                            onChange={(d) => {
+                                this.calendar.calendarInst.setDate(d)
+                                this.setState({
+                                    view_date: d,
+                                    show_date_picker: false,
+                                    data: null
+                                }, () => {
+                                    this.fetchdata()
+                                })
+                            }}
+
+                        />
                         <Button onClick={e => {
                             this.calendar.calendarInst.next()
                             // update current view date
@@ -322,7 +275,7 @@ class ClientScheduleViewer extends React.Component {
                             })
                         }}>next week</Button>
 
-                        {date_picker_element}
+            
 
                         <LessonColorToolTip />
 
@@ -405,7 +358,7 @@ class ClientScheduleViewer extends React.Component {
                                     let sel_lesson = this.state.data[sel_id]
 
                                     this.setState({
-                                       
+
                                         show_view_modal: true,
                                         view_selected_lesson: sel_lesson
                                     })

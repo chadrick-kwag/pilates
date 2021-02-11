@@ -17,6 +17,7 @@ import moment from 'moment'
 import DayPicker from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
 import { get_bg_fontcolor_for_activity_type } from '../common'
+import { DatePicker } from '@material-ui/pickers'
 
 
 import {
@@ -140,38 +141,6 @@ class InstructorScheduleViewer extends React.Component {
         }
 
 
-        let date_picker_element = null
-        if (this.state.show_date_picker) {
-            console.log(this.datebutton)
-            console.log(this.datebutton.getBoundingClientRect())
-            let bbox = this.datebutton.getBoundingClientRect()
-
-            let left_offset = bbox.left + bbox.width / 2
-            let top_offset = bbox.top + bbox.height / 2
-
-            console.log(left_offset)
-            console.log(top_offset)
-
-            date_picker_element = <div style={{
-                position: "absolute", top: top_offset + "px", left: left_offset + "px",
-                backgroundColor: "white",
-                zIndex: "200"
-            }}> <DayPicker
-                    selectedDays={this.state.view_date}
-                    onDayClick={(d, m, e) => {
-                        console.log(d)
-                        console.log("picked")
-                        this.calendar.calendarInst.setDate(d)
-                        this.setState({
-                            view_date: d,
-                            show_date_picker: false,
-                            data: null
-                        }, () => {
-                            this.fetchdata()
-                        })
-                    }} /> </div>
-        }
-
         return <div>
 
             {this.state.show_view_modal ? <InstructorViewLessonModal show={this.state.show_view_modal} onHide={(_) => {
@@ -205,8 +174,8 @@ class InstructorScheduleViewer extends React.Component {
 
 
             {this.state.selected_instructor == null ? null :
-                <div>
-                    <div>
+                <div >
+                    <div className='row-gravity-center'>
                         <Button onClick={e => {
                             this.calendar.calendarInst.prev()
                             // update current view date
@@ -220,11 +189,27 @@ class InstructorScheduleViewer extends React.Component {
                             })
 
                         }}>prev week</Button>
-                        <Button ref={r => this.datebutton = r} onClick={e => {
-                            this.setState({
-                                show_date_picker: !this.state.show_date_picker
-                            })
-                        }}>{moment(this.state.view_date).format('YY-MM-DD')}</Button>
+                        <DatePicker
+                            style={{
+                                margin: '1rem'
+                            }}
+                            autoOk
+                            variant='inline'
+                            format='yy.MM.dd'
+                            showTodayButton
+                            value={this.state.view_date}
+                            onChange={(d) => {
+                                this.calendar.calendarInst.setDate(d)
+                                this.setState({
+                                    view_date: d,
+                                    show_date_picker: false,
+                                    data: null
+                                }, () => {
+                                    this.fetchdata()
+                                })
+                            }}
+
+                        />
                         <Button onClick={e => {
                             this.calendar.calendarInst.next()
                             // update current view date
@@ -238,7 +223,7 @@ class InstructorScheduleViewer extends React.Component {
                             })
                         }}>next week</Button>
 
-                        {date_picker_element}
+                        
                         <LessonColorToolTip />
 
                     </div>
