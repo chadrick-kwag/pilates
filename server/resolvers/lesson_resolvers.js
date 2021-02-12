@@ -140,7 +140,7 @@ module.exports = {
             let lesson_startdate = parse_incoming_date_utc_string(args.start_time)
             let lesson_enddate = parse_incoming_date_utc_string(args.end_time)
 
-
+            // todo: add check for update req time and lesson's start time and check if penalty is needed or not.
 
             if (lesson_startdate >= lesson_enddate) {
                 return {
