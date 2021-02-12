@@ -19,7 +19,7 @@ type LessonDeleteResponse{
 
 type Mutation{
 
-    create_lesson(clientids:[Int!], instructorid: Int!, start_time: String!, end_time: String!, ticketid: Int!): SuccessResult
+    create_lesson(clientids:[Int!], instructorid: Int!, starttime: String!, endtime: String!, ticketids: [Int!]): SuccessResult
     delete_lesson(lessonid:Int!): SuccessResult
     delete_lesson_with_request_type(lessonid:Int!, request_type: String!, ignore_warning: Boolean!): LessonDeleteResponse
     attempt_update_lesson_time(lessonid:Int!, start_time: String!, end_time: String!): SuccessResult

@@ -13,10 +13,12 @@ const FETCH_LESSON_GQL = gql`query {
     }
 }`
 
-
-const CREATE_LESSON_GQL = gql`mutation createlesson($clientids:[Int!], $instructorid:Int!, $starttime: String!, $endtime:String!){
-    create_lesson(clientids: $clientids, instructorid: $instructorid, start_time: $starttime, end_time: $endtime){
+// instructorid: Int!, starttime: String!, endtime: String!, ticketids: [Int!]
+const CREATE_LESSON_GQL = gql`mutation createlesson($instructorid:Int!, $starttime: String!, $endtime:String!, $ticketids:[Int!]){
+    
+    create_lesson(ticketids: $ticketids, instructorid: $instructorid, start_time: $starttime, end_time: $endtime){
         success
+        msg
     }
 }`
 
@@ -301,16 +303,13 @@ const DELETE_SUBSCRITION_GQL = gql`mutation delete_subscription($id:Int!){
 const QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query query_subscriptions_with_remainrounds_for_clientid($clientid: Int!, $activity_type: String!, $grouping_type: String!){
     query_subscriptions_with_remainrounds_for_clientid(clientid: $clientid, activity_type: $activity_type, grouping_type: $grouping_type){
         success
-    subscriptions {
-      subscription{
-          id
-          created
-      }
-      tickets {
-        id
-        expire_time
-      }
-    }
+        msg
+        planandtickets{
+            planid
+            total_ticket_count
+            avail_ticket_count
+            avail_ticket_id_list
+        }
     }
 }`
 

@@ -35,7 +35,14 @@ module.exports = {
             start_time = start_time.getTime() / 1000
             end_time = end_time.getTime() / 1000
 
-            let results = await pgclient.query("select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, pilates.subscription.activity_type as activity_type, subscription.grouping_type as grouping_type,  client.phonenumber as client_phonenumber, instructor.name as instructorname, instructor.phonenumber as instructor_phonenumber from pilates.lesson left join pilates.subscription_ticket on consuming_client_ss_ticket_id=subscription_ticket.id left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid where lesson.starttime > to_timestamp($1) and lesson.endtime < to_timestamp($2) and canceled_time is null", [start_time, end_time]).then(res => {
+            console.log(start_time)
+            console.log(end_time)
+
+            /* 
+            "select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, pilates.subscription.activity_type as activity_type, subscription.grouping_type as grouping_type,  client.phonenumber as client_phonenumber, instructor.name as instructorname, instructor.phonenumber as instructor_phonenumber from pilates.lesson left join pilates.subscription_ticket on consuming_client_ss_ticket_id=subscription_ticket.id left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid where lesson.starttime > to_timestamp($1) and lesson.endtime < to_timestamp($2) and canceled_time is null"
+            */
+
+            let results = await pgclient.query("select lesson.id, lesson.instructorid, lesson.starttime, lesson.endtime from lesson where lesson.canceled_time is null AND tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($1), to_timestamp($2)) ", [start_time, end_time]).then(res => {
 
                 console.log(res)
 
@@ -182,41 +189,86 @@ module.exports = {
         create_lesson: async (parent, args) => {
             console.log(args)
 
+            if(args.ticketids.length===0){
+                return {
+                    successA: false,
+                    msg: "no clients given"
+                }
+            }
+
+
+
             let _args = [args.clientid, args.instructorid, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time), args.ticketid]
 
             console.log(_args)
 
-            let result = await pgclient.query("insert into pilates.lesson clientid, instructorid, starttime, endtime, consuming_client_ss_ticket_id values ($1, $2, $3, $4, $5) where not exists( \
-                select 1 from pilates.lesson where  (clientid=$1 or instructorid=$2) \
-                AND (tstzrange(to_timestamp($3), to_timestamp($4)) \
-                     && tstzrange(lesson.starttime, lesson.endtime)) \
-                     and predecessor_id is null \
-                     ) and exists (select 1 from pilates.subscription_ticket where id=$5 and expire_time > now() and destroyer_subscription_id is not null)", _args).then(res => {
+            let starttime = new Date(args.starttime).getTime() / 1000
+            let endtime = new Date(args.endtime).getTime() / 1000
+
+            let result = await pgclient.query('select create_lesson($1,$2,$3,$4)', [ args.ticketids, args.instructorid, starttime, endtime]).then(res=>{
                 console.log(res)
 
-                if (res.rowCount > 0) {
-                    return {
-                        success: true
-
-                    }
-                }
-                else {
+                if(res.rowCount!==1){
                     return {
                         success: false,
-                        msg: 'failed to insert query'
+                        msg: 'rowcount not 1'
                     }
+                }
+                else{
+                    if(res.rows[0].create_lesson===true){
+                        return {
+                            success: true
+
+                        }
+                    }
+                    else{
+                        return {
+                            success: false,
+                            msg: 'create lesson function fail'
+                        }
+                    }
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: "query error"
                 }
             })
-                .catch(e => {
-
-                    console.log(e)
-                    return {
-                        success: false,
-                        msg: "error query"
-                    }
-                })
 
             return result
+
+            // let result = await pgclient.query("insert into pilates.lesson clientid, instructorid, starttime, endtime, consuming_client_ss_ticket_id values ($1, $2, $3, $4, $5) where not exists( \
+            //     select 1 from pilates.lesson where  (clientid=$1 or instructorid=$2) \
+            //     AND (tstzrange(to_timestamp($3), to_timestamp($4)) \
+            //          && tstzrange(lesson.starttime, lesson.endtime)) \
+            //          and predecessor_id is null \
+            //          ) and exists (select 1 from pilates.subscription_ticket where id=$5 and expire_time > now() and destroyer_subscription_id is not null)", _args).then(res => {
+            //     console.log(res)
+
+            //     if (res.rowCount > 0) {
+            //         return {
+            //             success: true
+
+            //         }
+            //     }
+            //     else {
+            //         return {
+            //             success: false,
+            //             msg: 'failed to insert query'
+            //         }
+            //     }
+            // })
+            //     .catch(e => {
+
+            //         console.log(e)
+            //         return {
+            //             success: false,
+            //             msg: "error query"
+            //         }
+            //     })
+
+            // return result
         },
 
         delete_lesson: async (parent, args) => {

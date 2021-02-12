@@ -14,12 +14,14 @@ import { Button } from 'react-bootstrap'
 import { DatePicker, TimePicker } from '@material-ui/pickers'
 
 
-import { CREATE_INDIVIDUAL_LESSON_GQL } from '../common/gql_defs'
+import { CREATE_LESSON_GQL, CREATE_INDIVIDUAL_LESSON_GQL } from '../common/gql_defs'
 
 import SelectSubscriptionTicketComponent from '../components/SelectSubscriptionTicketComponent'
+import client from '../apolloclient'
+import ClientTicketSelectComponent from '../components/clientTicketSelectComponent'
 
 
-const zero_out_less_than_hours = (d)=>{
+const zero_out_less_than_hours = (d) => {
     let output = new Date(d)
     output.setMinutes(0)
     output.setSeconds(0)
@@ -29,9 +31,9 @@ const zero_out_less_than_hours = (d)=>{
 }
 
 
-const zero_out_less_than_minutes = (d)=>{
+const zero_out_less_than_minutes = (d) => {
     let output = new Date(d)
-    
+
     output.setSeconds(0)
     output.setMilliseconds(0)
 
@@ -50,12 +52,14 @@ class CreateLessonPage extends React.Component {
             selected_client: null,
             selected_subscription_ticket: null,
             selected_instructor: null,
+            selected_ticketinfo_arr: [],
             selected_date: new Date(),
             start_time: zero_out_less_than_hours(new Date()),
             end_time: zero_out_less_than_hours(new Date())
         }
 
         this.createlesson = this.createlesson.bind(this)
+        this.calc_client_slot_size = this.calc_client_slot_size.bind(this)
     }
 
 
@@ -100,7 +104,7 @@ class CreateLessonPage extends React.Component {
 
         let start_hour = this.state.start_time.getHours()
         let start_min = this.state.start_time.getMinutes()
-        
+
         start_datetime.setHours(start_hour)
         start_datetime.setMinutes(start_min)
         start_datetime = zero_out_less_than_minutes(start_datetime)
@@ -135,7 +139,7 @@ class CreateLessonPage extends React.Component {
 
         let start_hour = this.state.start_time.getHours()
         let start_min = this.state.start_time.getMinutes()
-        
+
         start_datetime.setHours(start_hour)
         start_datetime.setMinutes(start_min)
         start_datetime = zero_out_less_than_minutes(start_datetime)
@@ -159,7 +163,7 @@ class CreateLessonPage extends React.Component {
         console.log('sending vars:')
         console.log(vars)
 
-        this.props.apolloclient.mutate({
+        client.mutate({
             mutation: CREATE_INDIVIDUAL_LESSON_GQL,
             variables: vars
         }).then(d => {
@@ -182,6 +186,33 @@ class CreateLessonPage extends React.Component {
         })
     }
 
+
+    calc_client_slot_size(){
+        let size = 0
+
+        if(!this.state.selected_grouping_type){
+            return size
+        }
+        
+        let grouping_type = this.state.selected_grouping_type.toLowerCase()
+        if(grouping_type==='individual'){
+            return 1
+        }
+        else if(grouping_type==='semi'){
+            return 2
+        }
+        else if(grouping_type==='group'){
+            return 50
+        }
+        else{
+            console.log('invalid grouping type')
+            
+        }
+
+        return size
+
+    }
+
     render() {
 
 
@@ -190,7 +221,7 @@ class CreateLessonPage extends React.Component {
         if (this.state.selected_grouping_type != null && this.state.selected_activity_type != null && this.state.selected_client != null) {
             subscription_selector = <div className='padded-block col-gravity-center'>
                 <h3>플랜선택</h3>
-                <SelectSubscriptionTicketComponent apolloclient={this.props.apolloclient}
+                <SelectSubscriptionTicketComponent apolloclient={client}
                     clientid={this.state.selected_client.id}
                     activity_type={this.state.selected_activity_type}
                     grouping_type={this.state.selected_grouping_type}
@@ -220,21 +251,44 @@ class CreateLessonPage extends React.Component {
                 })} />
             </div>
 
-            <div className="padded-block col-gravity-center">
+
+
+            <div className="padded-block col-gravity-center" style={{
+                position: 'relative',
+                left: '0px',
+                top: '0px'
+            }}>
+                <div style={{
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    zIndex: '100',
+                    display: this.state.selected_activity_type !== null && this.state.selected_grouping_type !== null ? 'none' : 'inline'
+                }}></div>
                 <h3>회원선택</h3>
 
-                <ClientSearchComponent2 apolloclient={this.props.apolloclient} clientSelectedCallback={c => this.setState({
+                {/* <ClientSearchComponent2 clientSelectedCallback={c => this.setState({
                     selected_client: c
-                })} />
+                })} /> */}
+
+                <ClientTicketSelectComponent maxItemSize={this.calc_client_slot_size()} ticket_info_arr={this.state.selected_ticketinfo_arr} activity_type={this.state.selected_activity_type} grouping_type={this.state.selected_grouping_type} onTicketSelectSuccess={d=>{
+                    console.log(d)
+                    let new_ticket_list = this.state.selected_ticketinfo_arr.concat(d)
+                    this.setState({
+                        selected_ticketinfo_arr: new_ticket_list
+                    })
+                }}/>
 
             </div>
+
+
 
             {subscription_selector}
 
             <div className="padded-block col-gravity-center">
                 <h3>강사선택</h3>
 
-                <InstructorSearchComponent2 apolloclient={this.props.apolloclient} instructorSelectedCallback={i => {
+                <InstructorSearchComponent2 instructorSelectedCallback={i => {
                     console.log(i)
                     this.setState({
                         selected_instructor: i

@@ -138,7 +138,7 @@ class ClientSearchComponent3 extends React.Component {
 
                 </div>
                 <div style={{
-                    marginTop: '10px', position: 'absolute', zIndex: '100',
+                    marginTop: '10px', position: 'absolute', zIndex: '1400',
                     backgroundColor: 'white',
                     left: this.get_absolute_dim()
 

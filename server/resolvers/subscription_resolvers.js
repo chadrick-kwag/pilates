@@ -34,7 +34,7 @@ module.exports = {
 
         query_all_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
 
-           
+
 
             let result = await pgclient.query("select \
             json_build_object(\
@@ -184,77 +184,36 @@ module.exports = {
         query_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
             console.log(args)
 
-            /*
-            old query:
-
-            select array_agg(json_build_object(\'id\',subscription_ticket.id, \'expire_time\',subscription_ticket.expire_time)), subscription_ticket.creator_subscription_id as subscription_id, subscription.created  from pilates.subscription_ticket \
-             LEFT JOIN pilates.lesson ON subscription_ticket.id = lesson.consuming_client_ss_ticket_id  LEFT JOIN pilates.subscription ON subscription_ticket.creator_subscription_id = subscription.id where  destroyer_subscription_id is null and expire_time > now() and lesson.id is null and \
-              creator_subscription_id in ( select id from pilates.subscription where clientid=$1 and activity_type=$2 and grouping_type=$3) GROUP BY subscription_ticket.creator_subscription_id, subscription.created
-            */
-
-            let subscriptions = await pgclient.query("select \
-            array_agg(json_build_object('id',id, 'expire_time',expire_time)), \
-            creator_subscription_id as subscription_id, \
-            created \
-            from (\
-            select distinct on(subscription_ticket.id) \
-            subscription_ticket.id,\
-            expire_time,\
-            lesson.created as lesson_created,\
-            lesson.cancel_type,\
-            lesson.canceled_time,\
-            subscription_ticket.creator_subscription_id,\
-            subscription.created  as created\
-             from pilates.subscription_ticket \
-            left join pilates.lesson ON subscription_ticket.id = lesson.consuming_client_ss_ticket_id\
-            LEFT JOIN pilates.subscription ON subscription_ticket.creator_subscription_id = subscription.id \
-            where subscription.clientid=$1 \
-            and subscription.activity_type=$2 and subscription.grouping_type = $3\
-             and \
-             destroyer_subscription_id is null and expire_time > now() \
-            order by subscription_ticket.id,lesson.created desc\
-            ) AS a\
-            where get_ticket_consumed_time(a.cancel_type, a.canceled_time, a.lesson_created) is null\
-            GROUP BY creator_subscription_id, created", [args.clientid, args.activity_type, args.grouping_type]).then(res => {
-
-                let ret_arr = []
 
 
+            let result = await pgclient.query("WITH A AS (select plan.id as planid, plan.clientid, client.name as clientname, client.phonenumber as clientphonenumber, count(1)::int as total_ticket_count,  count( (ticket.expire_time > now() AND  assign_ticket.canceled_time is null) OR NULL )::int as avail_ticket_count, \
+            array_agg(ticket.id) filter (where ticket.expire_time > now() AND  assign_ticket.canceled_time is null) as avail_ticket_id_list \
+             from plan  \
+            left join client on plan.clientid = client.id  \
+            left join ticket on plan.id = ticket.creator_plan_id \
+            left join assign_ticket on assign_ticket.ticketid = ticket.id \
+            where clientid = $1 \
+            and activity_type = $2 \
+            and grouping_type = $3 \
+            group by plan.id, plan.clientid, client.name, client.phonenumber) \
+select * from A where avail_ticket_count >0", [args.clientid, args.activity_type, args.grouping_type]).then(res => {
 
-                res.rows.forEach(d => {
-                    let item_arrs = d.array_agg
-                    //   console.log(item_arrs)
+                console.log(res)
 
-                    let subscription_info = {
-                        id: d.subscription_id,
-                        created: d.created
-                    }
+                return {
+                    success: true,
+                    planandtickets: res.rows
+                }
 
-                    ret_arr.push({
-                        subscription: subscription_info,
-                        tickets: item_arrs
-                    })
-                })
-
-                return ret_arr
             }).catch(e => {
                 console.log(e)
-                return null
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
             })
 
-            if (subscriptions == null) {
-                return {
-                    success: false
-                }
-            }
-
-
-
-            return {
-                success: true,
-                subscriptions: subscriptions
-            }
-
+            return result
         },
     },
     Mutation: {
