@@ -12,14 +12,14 @@ module.exports = {
 
             console.log(args)
 
-            let result = await pgclient.query("SELECT DISTINCT ON (subscription_ticket.id)  subscription_ticket.id as id, expire_time, canceled_time, A.created as created_date, B.created as destroyed_date, get_ticket_consumed_time(cancel_type, canceled_time, lesson.created) as consumed_date from pilates.subscription_ticket  LEFT JOIN pilates.lesson on subscription_ticket.id = lesson.consuming_client_ss_ticket_id LEFT JOIN (select id, created from pilates.subscription) as A on subscription_ticket.creator_subscription_id = A.id LEFT JOIN (select id, created from pilates.subscription) as B on subscription_ticket.destroyer_subscription_id = B.id WHERE creator_subscription_id=$1 order by id , canceled_time desc nulls first", [args.subscription_id]).then(res=>{
+            let result = await pgclient.query("SELECT DISTINCT ON (subscription_ticket.id)  subscription_ticket.id as id, expire_time, canceled_time, A.created as created_date, B.created as destroyed_date, get_ticket_consumed_time(cancel_type, canceled_time, lesson.created) as consumed_date from pilates.subscription_ticket  LEFT JOIN pilates.lesson on subscription_ticket.id = lesson.consuming_client_ss_ticket_id LEFT JOIN (select id, created from pilates.subscription) as A on subscription_ticket.creator_subscription_id = A.id LEFT JOIN (select id, created from pilates.subscription) as B on subscription_ticket.destroyer_subscription_id = B.id WHERE creator_subscription_id=$1 order by id , canceled_time desc nulls first", [args.subscription_id]).then(res => {
                 console.log(res.rows)
 
                 return {
                     success: true,
                     tickets: res.rows
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
 
                 return {
@@ -34,30 +34,7 @@ module.exports = {
 
         query_all_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
 
-            // console.log(args)
-
-
-            /* old query
-select json_build_object('total_rounds', subscription.rounds, \
-            'activity_type', subscription.activity_type, \
-            'grouping_type', subscription.grouping_type, \
-            'remain_rounds', A.remain_rounds, \
-            'subscription_id', subscription.id, \
-            'created', subscription.created) \
-            from pilates.subscription left join \
-            (select count(subscription_ticket.id) as total_rounds, \
-            count(case when lesson.id is null then 1 else null end) as remain_rounds,  \
-            subscription_ticket.creator_subscription_id as subscription_id \
-            from pilates.subscription_ticket \
-            left join pilates.lesson on subscription_ticket.id = lesson.consuming_client_ss_ticket_id \
-            left join pilates.subscription on subscription_ticket.creator_subscription_id = subscription.id \
-            where creator_subscription_id in (select id from pilates.subscription where clientid=$1 order by created) \
-            group by subscription_id) as A \
-             \
-            on A.subscription_id=subscription.id \
-            where subscription.clientid = $1 \
-            order by created
-            */
+           
 
             let result = await pgclient.query("select \
             json_build_object(\
@@ -107,18 +84,18 @@ select json_build_object('total_rounds', subscription.rounds, \
 
             return result
         },
-        query_subscriptions_by_clientid: async (parent, args)=>{
+        query_subscriptions_by_clientid: async (parent, args) => {
             console.log('inside query_subscriptions_by_clientid')
-            
 
-            let subscriptions = await pgclient.query('select subscription.id, subscription.clientid, client.name as clientname, rounds, totalcost, subscription.created, subscription.activity_type, subscription.grouping_type, subscription.coupon_backed from pilates.subscription left join pilates.client on subscription.clientid=client.id where client.id=$1',[args.clientid])
-            .then(res=>{
-                console.log(res.rows)
-                return res.rows
-            }).catch(e=>{
-                console.log(e)
-                return null
-            })
+
+            let subscriptions = await pgclient.query('select plan.id, plan.clientid, client.name as clientname, rounds, totalcost, plan.created, plan.activity_type, plan.grouping_type, plan.coupon_backed from plan left join client on plan.clientid=client.id where client.id=$1', [args.clientid])
+                .then(res => {
+                    console.log(res.rows)
+                    return res.rows
+                }).catch(e => {
+                    console.log(e)
+                    return null
+                })
 
 
             if (subscriptions == null) {
@@ -131,27 +108,27 @@ select json_build_object('total_rounds', subscription.rounds, \
 
                 let retobj = {
                     success: true,
-                    "subscriptions": subscriptions
+                    subscriptions: subscriptions
                 }
                 console.log(retobj)
                 return retobj
             }
-            
+
         },
 
-        query_subscriptions_of_clientname: async (parent, args)=>{
+        query_subscriptions_of_clientname: async (parent, args) => {
 
             console.log('inside query_subscriptions_of_clientname')
             console.log(args)
 
-            let subscriptions = await pgclient.query('select subscription.id, subscription.clientid, client.name as clientname, rounds, totalcost, subscription.created, subscription.activity_type, subscription.grouping_type, subscription.coupon_backed from pilates.subscription left join pilates.client on subscription.clientid=client.id where client.name=$1',[args.clientname])
-            .then(res=>{
-                console.log(res.rows)
-                return res.rows
-            }).catch(e=>{
-                console.log(e)
-                return null
-            })
+            let subscriptions = await pgclient.query('select plan.id, plan.clientid, client.name as clientname, rounds, totalcost, plan.created, plan.activity_type, plan.grouping_type, plan.coupon_backed from plan left join client on plan.clientid=client.id where client.name=$1', [args.clientname])
+                .then(res => {
+                    console.log(res.rows)
+                    return res.rows
+                }).catch(e => {
+                    console.log(e)
+                    return null
+                })
 
 
             if (subscriptions == null) {
@@ -164,7 +141,7 @@ select json_build_object('total_rounds', subscription.rounds, \
 
                 let retobj = {
                     success: true,
-                    "subscriptions": subscriptions
+                    subscriptions: subscriptions
                 }
                 console.log(retobj)
                 return retobj
@@ -290,126 +267,76 @@ select json_build_object('total_rounds', subscription.rounds, \
                 }
             }
 
-            let ret = await pgclient.query('insert into pilates.subscription (clientid, rounds, totalcost, activity_type, grouping_type, coupon_backed) values ($1,$2,$3, $4, $5, $6) RETURNING id', [args.clientid, args.rounds, args.totalcost, args.activity_type, args.grouping_type, args.coupon_backed == "" ? null : args.coupon_backed]).then(res => {
-                if (res.rowCount > 0) {
-                    console.log(res)
+            let result = await pgclient.query('select create_plan_and_tickets($1, $2 , $3, $4, $5, $6)', [args.clientid, args.rounds, args.totalcost, args.activity_type, args.grouping_type, args.coupon_backed == "" ? null : args.coupon_backed]).then(res => {
 
-                    return [true, res.rows[0].id]
-                }
-                return [false, null]
-            }).catch(e => {
-                console.log(e)
-                return [false, null]
-            })
-
-            let [retbool, created_id] = ret
-            if (!retbool) {
-                return {
-                    success: false
-                }
-            }
-
-            // // create tickets
-
-
-
-            let value_str = ""
-
-            let expiredate = new Date()
-
-            expiredate.setDate(expiredate.getDate() + 30)
-
-
-
-
-
-            for (let i = 0; i < args.rounds; i++) {
-                // order::  expire_time, creator_ssid
-
-                let temp_value_str = `(to_timestamp(${expiredate.getTime() / 1000}), ${created_id})`
-                value_str += temp_value_str
-                if (i < args.rounds - 1) {
-                    value_str += ','
-                }
-            }
-
-            console.log(value_str)
-
-
-            ret = await pgclient.query(`insert into pilates.subscription_ticket (expire_time, creator_subscription_id) values ${value_str}`).then(res => {
                 console.log(res)
-
-                if (res.rowCount > 0) {
-                    return true
-                }
-
-                return false
-            })
-                .catch(e => {
-                    console.log(e)
-                    return false
-                })
-
-            // if failed to create tickets, we must remove created subscription
-
-            if (!ret) {
-                let delete_ret = await pgclient.query('delete from pilates.subscription where id=$1', [created_id]).then(res => {
-                    if (res.rowCount > 0) {
-                        return true
+                if (res.rowCount < 1) {
+                    return {
+                        success: false,
+                        msg: 'no rows returned'
                     }
-                    return false
-                }).catch(e => {
-                    console.log(e)
-                    return false
-                })
-
-                if (!delete_ret) {
-                    console.warn("inconsistency occured. failed to delete half created subscription. subscription id = " + created_id)
-                }
-            }
-
-            return {
-                success: ret
-            }
-        },
-        delete_subscription: async (parent, args) => {
-            console.log(args)
-
-            let ret = await pgclient.query('delete from pilates.subscription where id=$1', [args.id]).then(res => {
-                if (res.rowCount > 0) {
-                    return true
                 }
 
-                return false
-            }).catch(e => {
-                console.log(e)
-                return false
-            })
-
-
-            return {
-                success: ret
-            }
-        },
-        transfer_tickets_to_clientid: async (parent, args)=>{
-            console.log('transfer_tickets_to_clientid')
-
-            console.log(args)
-
-            let ret = await pgclient.query('select pilates.transfer_tickets($1, $2)', [args.ticket_id_list, args.clientid]).then(res=>{
-                console.log(res)
-
-                if(res.rows[0].transfer_tickets){
+                if (res.rows[0].create_plan_and_tickets === true) {
                     return {
                         success: true
                     }
                 }
-                
+                else {
+                    return {
+                        success: false,
+                        msg: 'function failed'
+                    }
+                }
+            }).catch(e => {
+                console.log(e)
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
+            })
+
+            return result
+
+        },
+        delete_subscription: async (parent, args) => {
+            console.log(args)
+
+            let ret = await pgclient.query('delete from plan where id=$1', [args.id]).then(res => {
+                if (res.rowCount > 0) {
+                    return true
+                }
+
+                return false
+            }).catch(e => {
+                console.log(e)
+                return false
+            })
+
+
+            return {
+                success: ret
+            }
+        },
+        transfer_tickets_to_clientid: async (parent, args) => {
+            console.log('transfer_tickets_to_clientid')
+
+            console.log(args)
+
+            let ret = await pgclient.query('select pilates.transfer_tickets($1, $2)', [args.ticket_id_list, args.clientid]).then(res => {
+                console.log(res)
+
+                if (res.rows[0].transfer_tickets) {
+                    return {
+                        success: true
+                    }
+                }
+
                 return {
                     success: false,
                     msg: 'query properly done. but result of query was bad.'
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
@@ -419,32 +346,32 @@ select json_build_object('total_rounds', subscription.rounds, \
 
             return ret
         },
-        update_expdate_of_tickets: async (parent, args)=>{
-            
+        update_expdate_of_tickets: async (parent, args) => {
+
             let new_expdate = parse_incoming_date_utc_string(args.new_expdate)
-            if(args.ticket_id_list.length===0){
+            if (args.ticket_id_list.length === 0) {
                 return {
                     success: false,
                     msg: 'no ticket ids given'
                 }
             }
 
-            let ticket_id_list = args.ticket_id_list.map(a=>parseInt(a))
+            let ticket_id_list = args.ticket_id_list.map(a => parseInt(a))
 
-            let ret = await pgclient.query('update pilates.subscription_ticket set expire_time=to_timestamp($1) where id in (select(unnest(cast($2 as int[]))) )', [new_expdate, ticket_id_list]).then(res=>{
+            let ret = await pgclient.query('update ticket set expire_time=to_timestamp($1) where id in (select(unnest(cast($2 as int[]))) )', [new_expdate, ticket_id_list]).then(res => {
 
-                if(res.rowCount>0){
+                if (res.rowCount > 0) {
                     return {
                         success: true
                     }
                 }
-                else{
+                else {
                     return {
                         success: false,
                         msg: 'rowcount =0'
                     }
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
@@ -453,7 +380,7 @@ select json_build_object('total_rounds', subscription.rounds, \
             })
 
             return ret
-            
+
         }
     }
 
