@@ -187,26 +187,26 @@ class CreateLessonPage extends React.Component {
     }
 
 
-    calc_client_slot_size(){
+    calc_client_slot_size() {
         let size = 0
 
-        if(!this.state.selected_grouping_type){
+        if (!this.state.selected_grouping_type) {
             return size
         }
-        
+
         let grouping_type = this.state.selected_grouping_type.toLowerCase()
-        if(grouping_type==='individual'){
+        if (grouping_type === 'individual') {
             return 1
         }
-        else if(grouping_type==='semi'){
+        else if (grouping_type === 'semi') {
             return 2
         }
-        else if(grouping_type==='group'){
+        else if (grouping_type === 'group') {
             return 50
         }
-        else{
+        else {
             console.log('invalid grouping type')
-            
+
         }
 
         return size
@@ -239,16 +239,37 @@ class CreateLessonPage extends React.Component {
         return <div className="col-gravity-center">
 
             <div className="padded-block col-gravity-center">
-                <ActivityTypeSelectComponent onItemClicked={d => this.setState({
-                    selected_activity_type: d
-                })} />
+                <ActivityTypeSelectComponent onItemClicked={d => {
+                    if (this.state.selected_activity_type !== d) {
+                        this.setState({
+                            selected_activity_type: d,
+                            selected_ticketinfo_arr: []
+                        })
+                    }
+                    else {
+                        this.setState({
+                            selected_activity_type: d
+                        })
+                    }
+                }} />
             </div>
 
 
             <div className="padded-block col-gravity-center">
-                <GroupingTypeSelectComponent onItemClicked={d => this.setState({
-                    selected_grouping_type: d
-                })} />
+                <GroupingTypeSelectComponent onItemClicked={d => {
+                    if (this.state.selected_grouping_type !== d) {
+                        this.setState({
+                            selected_grouping_type: d,
+                            selected_ticketinfo_arr: []
+                        })
+                    }
+                    else {
+                        this.setState({
+                            selected_grouping_type: d
+                        })
+                    }
+
+                }} />
             </div>
 
 
@@ -271,13 +292,13 @@ class CreateLessonPage extends React.Component {
                     selected_client: c
                 })} /> */}
 
-                <ClientTicketSelectComponent maxItemSize={this.calc_client_slot_size()} ticket_info_arr={this.state.selected_ticketinfo_arr} activity_type={this.state.selected_activity_type} grouping_type={this.state.selected_grouping_type} onTicketSelectSuccess={d=>{
+                <ClientTicketSelectComponent maxItemSize={this.calc_client_slot_size()} ticket_info_arr={this.state.selected_ticketinfo_arr} activity_type={this.state.selected_activity_type} grouping_type={this.state.selected_grouping_type} onTicketSelectSuccess={d => {
                     console.log(d)
                     let new_ticket_list = this.state.selected_ticketinfo_arr.concat(d)
                     this.setState({
                         selected_ticketinfo_arr: new_ticket_list
                     })
-                }}/>
+                }} />
 
             </div>
 
