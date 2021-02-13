@@ -118,7 +118,11 @@ class InstructorScheduleViewer extends React.Component {
                 starttime = new Date(parseInt(starttime))
                 endtime = new Date(parseInt(endtime))
 
-                let title = d.clientname + " 회원님 / " + d.instructorname + " 강사님"
+                let clients_str = ""
+                d.client_info_arr.forEach(a=>clients_str += a.clientname+ ' ')
+                
+
+                let title = clients_str + "회원님 / " + d.instructorname + " 강사님"
 
                 console.log(d)
 

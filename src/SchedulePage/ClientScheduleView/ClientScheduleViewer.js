@@ -161,8 +161,12 @@ class ClientScheduleViewer extends React.Component {
 
                 starttime = new Date(parseInt(starttime))
                 endtime = new Date(parseInt(endtime))
+                let clients_str = ""
+                d.client_info_arr.forEach(a=>clients_str += a.clientname+ ' ')
+                
 
-                let title = d.clientname + " 회원님 / " + d.instructorname + " 강사님"
+                let title = clients_str + "회원님 / " + d.instructorname + " 강사님"
+
 
                 let [bgcolor, fontcolor] = get_bg_fontcolor_for_activity_type(d.activity_type)
 

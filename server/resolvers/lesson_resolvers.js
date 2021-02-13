@@ -38,7 +38,7 @@ module.exports = {
             console.log(start_time)
             console.log(end_time)
 
-            let results = await pgclient.query(`WITH B AS (select  lesson.id as lessonid, instructor.id as instructorid,
+            let results = await pgclient.query(`WITH B AS (select  lesson.id as id, instructor.id as instructorid,
                 instructor.name as instructorname, 
                 instructor.phonenumber as instructorphonenumber,
                 lesson.starttime, lesson.endtime,
@@ -97,17 +97,36 @@ module.exports = {
             console.log(end_time)
 
 
-            let result = await pgclient.query(" select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, client.phonenumber as client_phonenumber,\
-            instructor.name as instructorname , instructor.phonenumber as instructor_phonenumber,  subscription.activity_type, subscription.grouping_type \
-            from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid left join pilates.subscription_ticket on lesson.consuming_client_ss_ticket_id=subscription_ticket.id left join pilates.subscription on subscription_ticket.creator_subscription_id = subscription.id \
-             where  lesson.clientid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) and lesson.canceled_time is null ", [clientid, start_time, end_time]).then(res => {
+            let result = await pgclient.query(`WITH B AS (select  lesson.id as id, instructor.id as instructorid,
+                instructor.name as instructorname, 
+                instructor.phonenumber as instructorphonenumber,
+                lesson.starttime, lesson.endtime,
+                lesson.activity_type,
+                lesson.grouping_type,
+                
+                 count(1) FILTER (where A.id is not null AND A.canceled_time is null) > 0  as valid_assign_exist ,
+                 lesson.canceled_time as lesson_canceled_time,
+                 array_agg(ticket.id) as ticket_id_arr,
+                 array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
+                from lesson 
+                left join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
+                left join ticket on A.ticketid = ticket.id
+                left join plan on ticket.creator_plan_id = plan.id
+                left join client on plan.clientid = client.id
+                left join instructor on lesson.instructorid = instructor.id
+                where lesson.canceled_time is null
+				AND client.id = $1
+                 AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
+                    
+                GROUP BY lesson.id, instructor.id)
+                select * from B where valid_assign_exist is true `, [clientid, start_time, end_time]).then(res => {
                 console.log(res.rows)
 
                 return {
                     success: true,
                     lessons: res.rows
                 }
-                
+
             }).catch(e => {
                 console.log(e)
                 return {
@@ -129,29 +148,45 @@ module.exports = {
             start_time = new Date(start_time).getTime() / 1000
             end_time = new Date(end_time).getTime() / 1000
 
-           
-            let lessons = await pgclient.query("select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.phonenumber as instructor_phonenumber, client.phonenumber as client_phonenumber, \
-            instructor.name as instructorname , subscription.activity_type, subscription.grouping_type \
-            from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid left join pilates.subscription_ticket on lesson.consuming_client_ss_ticket_id=subscription_ticket.id left join pilates.subscription on subscription_ticket.creator_subscription_id = subscription.id \
-             where  lesson.instructorid=$1 AND lesson.starttime >= to_timestamp($2) AND lesson.endtime <= to_timestamp($3) and  lesson.canceled_time is null", [instructorid, start_time, end_time]).then(res => {
-                return res.rows
-            }).catch(e => {
-                console.log(e)
-                return null
-            })
 
-            if (lessons == null) {
-                return {
-                    success: false,
-                    lessons: []
-                }
-            }
-            else {
+            let result = await pgclient.query(`WITH B AS (select  lesson.id as id, instructor.id as instructorid,
+                instructor.name as instructorname, 
+                instructor.phonenumber as instructorphonenumber,
+                lesson.starttime, lesson.endtime,
+                lesson.activity_type,
+                lesson.grouping_type,
+                
+                 count(1) FILTER (where A.id is not null AND A.canceled_time is null) > 0  as valid_assign_exist ,
+                 lesson.canceled_time as lesson_canceled_time,
+                 array_agg(ticket.id) as ticket_id_arr,
+                 array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
+                from lesson 
+                left join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
+                left join ticket on A.ticketid = ticket.id
+                left join plan on ticket.creator_plan_id = plan.id
+                left join client on plan.clientid = client.id
+                left join instructor on lesson.instructorid = instructor.id
+                where lesson.canceled_time is null
+				AND instructor.id = $1
+                 AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
+                    
+                GROUP BY lesson.id, instructor.id)
+                select * from B where valid_assign_exist is true `, [instructorid, start_time, end_time]).then(res => {
                 return {
                     success: true,
-                    lessons: lessons
+                    lessons: res.rows
                 }
-            }
+            }).catch(e => {
+                console.log(e)
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
+            })
+
+            console.log(result)
+
+            return result
         }
     },
     Mutation: {
@@ -207,7 +242,7 @@ module.exports = {
         create_lesson: async (parent, args) => {
             console.log(args)
 
-            if(args.ticketids.length===0){
+            if (args.ticketids.length === 0) {
                 return {
                     successA: false,
                     msg: "no clients given"
@@ -223,30 +258,30 @@ module.exports = {
             let starttime = new Date(args.starttime).getTime() / 1000
             let endtime = new Date(args.endtime).getTime() / 1000
 
-            let result = await pgclient.query('select create_lesson($1,$2,$3,$4)', [ args.ticketids, args.instructorid, starttime, endtime]).then(res=>{
+            let result = await pgclient.query('select create_lesson($1,$2,$3,$4)', [args.ticketids, args.instructorid, starttime, endtime]).then(res => {
                 console.log(res)
 
-                if(res.rowCount!==1){
+                if (res.rowCount !== 1) {
                     return {
                         success: false,
                         msg: 'rowcount not 1'
                     }
                 }
-                else{
-                    if(res.rows[0].create_lesson===true){
+                else {
+                    if (res.rows[0].create_lesson === true) {
                         return {
                             success: true
 
                         }
                     }
-                    else{
+                    else {
                         return {
                             success: false,
                             msg: 'create lesson function fail'
                         }
                     }
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
@@ -512,7 +547,7 @@ module.exports = {
             // admin request handled.
 
             // if req time is after lesson start time, then deleting is impossible.
-            if(current_time >= lesson_start_time){
+            if (current_time >= lesson_start_time) {
                 console.log('req time is after lesson start time')
 
                 return {
@@ -524,32 +559,32 @@ module.exports = {
 
             // handle client req, instructor req differently.
 
-            if(args.request_type==="CLIENT_REQUEST"){
-                
+            if (args.request_type === "CLIENT_REQUEST") {
 
-                let warning=null
+
+                let warning = null
                 let cancel_type = null
 
                 // check for warning cases first. if warning and ignore_warning=false, then just return with warning.
-                if(time_delta < 2* 3600){
+                if (time_delta < 2 * 3600) {
                     console.log('time buffer too small')
                     warning = true
                     cancel_type = "CRITICAL_CLIENT_REQ_CANCEL"
-                    if(!args.ignore_warning){
+                    if (!args.ignore_warning) {
                         console.log('return full penalty warning')
                         return {
                             success: false,
                             penalty_warning: true,
                             msg: "time buffer insufficient. forcing will cause full penalty"
-                        }   
+                        }
                     }
 
                 }
-                else if(!is_current_date_before_start_time_date){
+                else if (!is_current_date_before_start_time_date) {
                     console.log('client req, req date same as start date')
                     warning = true
                     cancel_type = "EMERGENCY_CLIENT_REQ_CANCEL"
-                    if(!args.ignore_warning){
+                    if (!args.ignore_warning) {
                         return {
                             success: false,
                             penalty_warning: true,
@@ -558,7 +593,7 @@ module.exports = {
                     }
 
                 }
-                else{
+                else {
                     // by here, timing is buffered enough.
                     warning = false
                     cancel_type = "BUFFERED_CLIENT_REQ_CANCEL"
@@ -595,7 +630,7 @@ module.exports = {
 
 
             } // end of client req case
-            else if(args.request_type==="INSTRUCTOR_REQUEST"){
+            else if (args.request_type === "INSTRUCTOR_REQUEST") {
                 // for instructore, currently the policy is to use "CANCEL_REQUEST_BY_INSTRUCTOR" as cancel type.
                 // only restriction is, request should come in before lesson start time. 
                 // but at this point, this restriction is already satisfied.
@@ -628,7 +663,7 @@ module.exports = {
 
                 return result
             }
-            else{
+            else {
                 console.log(`invalid req type: ${args.request_type}`)
 
                 return {
@@ -637,8 +672,8 @@ module.exports = {
                     msg: 'error. invalid req type'
                 }
             }
-            
-            
+
+
 
 
         },
