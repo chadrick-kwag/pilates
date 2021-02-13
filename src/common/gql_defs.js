@@ -16,7 +16,7 @@ const FETCH_LESSON_GQL = gql`query {
 // instructorid: Int!, starttime: String!, endtime: String!, ticketids: [Int!]
 const CREATE_LESSON_GQL = gql`mutation createlesson($instructorid:Int!, $starttime: String!, $endtime:String!, $ticketids:[Int!]){
     
-    create_lesson(ticketids: $ticketids, instructorid: $instructorid, start_time: $starttime, end_time: $endtime){
+    create_lesson(ticketids: $ticketids, instructorid: $instructorid, starttime: $starttime, endtime: $endtime){
         success
         msg
     }

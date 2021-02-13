@@ -58,6 +58,7 @@ class CreateLessonPage extends React.Component {
             end_time: zero_out_less_than_hours(new Date())
         }
 
+        this.checkinput = this.checkinput.bind(this)
         this.createlesson = this.createlesson.bind(this)
         this.calc_client_slot_size = this.calc_client_slot_size.bind(this)
     }
@@ -66,36 +67,45 @@ class CreateLessonPage extends React.Component {
 
     checkinput() {
 
-        if (this.state.selected_activity_type == null) {
+        if (this.state.selected_activity_type === null) {
             return 'no selected activity type'
         }
 
-        if (this.state.selected_grouping_type == null) {
+        if (this.state.selected_grouping_type === null) {
             return 'no selected grouping type'
         }
 
-        if (this.state.selected_client == null) {
-            console.log('no selected client')
-            return 'no selected client'
-        }
 
-        if (this.state.selected_subscription_ticket == null) {
-            return 'no subscription ticket selected'
-        }
-
-        if (this.state.selected_instructor == null) {
+        if (this.state.selected_instructor === null) {
             console.log('no selected instructor')
             return 'no selected instructor'
         }
 
-        if (this.state.start_time == null || this.state.end_time == null) {
+        if (this.state.start_time === null || this.state.end_time === null) {
             console.log('null start/end time')
             return 'null start /end time'
         }
 
-        if (this.state.selected_date == null) {
+        if (this.state.selected_date === null) {
             console.log('selected date is null')
             return 'selected date is null'
+        }
+
+        if (this.state.selected_ticketinfo_arr.length === 0 || !this.state.selected_ticketinfo_arr.length) {
+
+            return 'no tickets selected'
+        }
+
+        if(this.state.selected_grouping_type.toLowerCase()==='semi' && this.state.selected_ticketinfo_arr.length!==2){
+            return 'incorrect client num for semi'
+        }
+
+        if(this.state.selected_grouping_type.toLowerCase()==='group' && this.state.selected_ticketinfo_arr.length<2){
+            return 'not enough clients for group'
+        }
+
+        if(this.state.selected_grouping_type.toLowerCase()==='individual' && this.state.selected_ticketinfo_arr.length!==1){
+            return 'not one client for individual type'
         }
 
         // check start/end time
@@ -134,6 +144,9 @@ class CreateLessonPage extends React.Component {
             return
         }
 
+        console.log('inside create lesson')
+        console.log(this.state)
+
 
         let start_datetime = new Date(this.state.selected_date)
 
@@ -152,30 +165,36 @@ class CreateLessonPage extends React.Component {
         end_datetime.setMinutes(end_min)
         end_datetime = zero_out_less_than_minutes(end_datetime)
 
+        console.log('selected ticketinfo arr')
+        console.log(this.state.selected_ticketinfo_arr)
+
         let vars = {
-            clientid: parseInt(this.state.selected_client.id),
+            ticketids: this.state.selected_ticketinfo_arr.map(d => d.ticketid),
             instructorid: parseInt(this.state.selected_instructor.id),
             starttime: start_datetime.toUTCString(),
-            endtime: end_datetime.toUTCString(),
-            ticketid: parseInt(this.state.selected_subscription_ticket.id)
+            endtime: end_datetime.toUTCString()
+
         }
 
         console.log('sending vars:')
         console.log(vars)
 
         client.mutate({
-            mutation: CREATE_INDIVIDUAL_LESSON_GQL,
+            mutation: CREATE_LESSON_GQL,
             variables: vars
         }).then(d => {
             console.log(d)
-            if (d.data.create_individual_lesson.success) {
+            if (d.data.create_lesson.success) {
                 console.log('success creating lesson')
-                this.props.onCreateSuccess()
-                return
+                this.props.onCreateSuccess?.()
+
+            }
+            else {
+
+                console.log('failed to create lesson')
+                alert('failed to create lesson\n' + d.data.create_individual_lesson.msg)
             }
 
-            console.log('failed to create lesson')
-            alert('failed to create lesson\n' + d.data.create_individual_lesson.msg)
 
 
 
@@ -215,26 +234,6 @@ class CreateLessonPage extends React.Component {
 
     render() {
 
-
-        let subscription_selector = null
-
-        if (this.state.selected_grouping_type != null && this.state.selected_activity_type != null && this.state.selected_client != null) {
-            subscription_selector = <div className='padded-block col-gravity-center'>
-                <h3>플랜선택</h3>
-                <SelectSubscriptionTicketComponent apolloclient={client}
-                    clientid={this.state.selected_client.id}
-                    activity_type={this.state.selected_activity_type}
-                    grouping_type={this.state.selected_grouping_type}
-                    onSubscriptionTicketSelected={d => {
-                        console.log('setting selected subscription ticket  to:')
-                        console.log(d)
-                        this.setState({
-                            selected_subscription_ticket: d
-                        })
-                    }}
-                />
-            </div>
-        }
 
         return <div className="col-gravity-center">
 
@@ -304,7 +303,6 @@ class CreateLessonPage extends React.Component {
 
 
 
-            {subscription_selector}
 
             <div className="padded-block col-gravity-center">
                 <h3>강사선택</h3>

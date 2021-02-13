@@ -198,9 +198,9 @@ module.exports = {
 
 
 
-            let _args = [args.clientid, args.instructorid, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time), args.ticketid]
+            // let _args = [args.clientid, args.instructorid, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time), args.ticketid]
 
-            console.log(_args)
+            // console.log(_args)
 
             let starttime = new Date(args.starttime).getTime() / 1000
             let endtime = new Date(args.endtime).getTime() / 1000
