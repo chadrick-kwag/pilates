@@ -497,6 +497,17 @@ const QUERY_CLIENTINFO_BY_CLIENTID = gql`
     }
 `
 
+
+const CANCEL_INDIVIDUAL_LESSON = gql`
+    mutation ($clientid: Int!, $lessonid: Int!, $reqtype: String!, $force_penalty: Boolean!){
+        cancel_individual_lesson(clientid:$clientid, lessonid: $lessonid, reqtype: $reqtype, force_penalty: $force_penalty){
+            success
+            warning
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -534,5 +545,6 @@ export {
     ABLE_INSTRUCTOR_BY_ID,
     TRANSFER_TICKETS_TO_CLIENTID,
     UPDATE_EXPDATE_OF_TICKETS,
-    QUERY_CLIENTINFO_BY_CLIENTID
+    QUERY_CLIENTINFO_BY_CLIENTID,
+    CANCEL_INDIVIDUAL_LESSON
 }

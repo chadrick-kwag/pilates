@@ -255,21 +255,19 @@ module.exports = {
 
             if (args.ticketids.length === 0) {
                 return {
-                    successA: false,
+                    success: false,
                     msg: "no clients given"
                 }
             }
 
 
-
-            // let _args = [args.clientid, args.instructorid, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time), args.ticketid]
-
-            // console.log(_args)
-
             let starttime = new Date(args.starttime).getTime() / 1000
             let endtime = new Date(args.endtime).getTime() / 1000
 
-            let result = await pgclient.query('select create_lesson($1,$2,$3,$4)', [args.ticketids, args.instructorid, starttime, endtime]).then(res => {
+            let _args = [args.ticketids, args.instructorid, starttime, endtime]
+            console.log(_args)
+
+            let result = await pgclient.query('select success, msg from create_lesson($1,$2,$3,$4) as (success bool, msg text)', [args.ticketids, args.instructorid, starttime, endtime]).then(res => {
                 console.log(res)
 
                 if (res.rowCount !== 1) {
@@ -279,18 +277,7 @@ module.exports = {
                     }
                 }
                 else {
-                    if (res.rows[0].create_lesson === true) {
-                        return {
-                            success: true
-
-                        }
-                    }
-                    else {
-                        return {
-                            success: false,
-                            msg: 'create lesson function fail'
-                        }
-                    }
+                    return res.rows[0]
                 }
             }).catch(e => {
                 console.log(e)
@@ -302,37 +289,6 @@ module.exports = {
 
             return result
 
-            // let result = await pgclient.query("insert into pilates.lesson clientid, instructorid, starttime, endtime, consuming_client_ss_ticket_id values ($1, $2, $3, $4, $5) where not exists( \
-            //     select 1 from pilates.lesson where  (clientid=$1 or instructorid=$2) \
-            //     AND (tstzrange(to_timestamp($3), to_timestamp($4)) \
-            //          && tstzrange(lesson.starttime, lesson.endtime)) \
-            //          and predecessor_id is null \
-            //          ) and exists (select 1 from pilates.subscription_ticket where id=$5 and expire_time > now() and destroyer_subscription_id is not null)", _args).then(res => {
-            //     console.log(res)
-
-            //     if (res.rowCount > 0) {
-            //         return {
-            //             success: true
-
-            //         }
-            //     }
-            //     else {
-            //         return {
-            //             success: false,
-            //             msg: 'failed to insert query'
-            //         }
-            //     }
-            // })
-            //     .catch(e => {
-
-            //         console.log(e)
-            //         return {
-            //             success: false,
-            //             msg: "error query"
-            //         }
-            //     })
-
-            // return result
         },
 
         delete_lesson: async (parent, args) => {
@@ -751,6 +707,37 @@ module.exports = {
                 }
             }
 
+        },
+        cancel_individual_lesson: (parent, args)=>{
+            console.log('cancel_individual_lesson')
+
+            console.log(args)
+
+
+
+            let result = pgclient.query(`select * from cancel_individual_lesson($1,$2,$3,$4) as (success bool, warning bool, msg text)`, [args.lessonid, args.clientid, args.reqtype, args.force_penalty]).then(res=>{
+                console.log(res)
+
+                if(res.rowCount<1){
+                    return {
+                        success: false,
+                        warning: false,
+                        msg: 'no rows'
+                    }
+                }
+                else{
+                    return res.rows[0]
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    warning: false,
+                    msg: 'query error'
+                }
+            })
+
+            return result
         }
     }
 }

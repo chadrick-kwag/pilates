@@ -192,7 +192,7 @@ class CreateLessonPage extends React.Component {
             else {
 
                 console.log('failed to create lesson')
-                alert('failed to create lesson\n' + d.data.create_individual_lesson.msg)
+                alert(`failed to create lesson\n${d.data.create_lesson.msg}`)
             }
 
 

@@ -5,6 +5,7 @@ import moment from 'moment'
 import client from '../../apolloclient'
 
 import {
+    CANCEL_INDIVIDUAL_LESSON,
     UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL,
     DELETE_LESSON_WITH_REQUEST_TYPE_GQL
 
@@ -34,40 +35,92 @@ export default function AllScheduleViewLessonModal(props) {
 
     const delete_lesson_with_request_type = (request_type, ignore_warning = false) => {
 
-        client.mutate({
-            mutation: DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
-            variables: {
+
+        // if lesson is individual grouping type, then use CANCEL_INDIVIDUAL_LESSON
+
+        console.log(props.view_selected_lesson)
+
+
+
+        if (props.view_selected_lesson.grouping_type === 'INDIVIDUAL') {
+
+            let _var = {
                 lessonid: props.view_selected_lesson.id,
-                ignore_warning: ignore_warning,
-                request_type: request_type
+                clientid: props.view_selected_lesson.client_info_arr[0].clientid,
+                reqtype: request_type,
+                force_penalty: ignore_warning
             }
-        }).then(d => {
-            console.log(d)
 
-            if (d.data.delete_lesson_with_request_type.penalty_warning === true) {
+            console.log(_var)
 
-                let ret = confirm(d.data.delete_lesson_with_request_type.msg)
 
-                if (ret) {
-                    this.delete_lesson_with_request_type(request_type, true)
+            client.mutate({
+                mutation: CANCEL_INDIVIDUAL_LESSON,
+                variables: _var,
+                fetchPolicy: 'no-cache'
+            }).then(res => {
+                console.log(res)
+
+                if (res.data.cancel_individual_lesson.success) {
+                    props.onDeleteSuccess?.()
+                }
+                else {
+                    if (res.data.cancel_individual_lesson.warning && ignore_warning === false) {
+                        let ask = confirm('force penalty?')
+                        if (ask) {
+                            delete_lesson_with_request_type(request_type, true)
+                        }
+                    }
+                    else {
+                        alert('cancel lesson fail')
+                    }
+                }
+            }).catch(e => {
+                console.log(JSON.stringify(e))
+                alert('cancel lesson error')
+            })
+        }
+        else {
+            // for non individual types
+
+
+            client.mutate({
+                mutation: DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
+                variables: {
+                    lessonid: props.view_selected_lesson.id,
+                    ignore_warning: ignore_warning,
+                    request_type: request_type
+                }
+            }).then(d => {
+                console.log(d)
+
+                if (d.data.delete_lesson_with_request_type.penalty_warning === true) {
+
+                    let ret = confirm(d.data.delete_lesson_with_request_type.msg)
+
+                    if (ret) {
+                        this.delete_lesson_with_request_type(request_type, true)
+                    }
+
+                    // if do not proceed
+                    return
                 }
 
-                // if do not proceed
-                return
-            }
+                if (d.data.delete_lesson_with_request_type.success) {
 
-            if (d.data.delete_lesson_with_request_type.success) {
+                    props.onDeleteSuccess()
+                }
+                else {
+                    alert('failed to delete lesson.' + d.data.delete_lesson_with_request_type.msg)
+                }
+            }).catch(e => {
+                console.log(JSON.stringify(e))
+                console.log('error deleting lesson')
+                alert('failed to delete lesson')
+            })
+        }
 
-                props.onDeleteSuccess()
-            }
-            else {
-                alert('failed to delete lesson.' + d.data.delete_lesson_with_request_type.msg)
-            }
-        }).catch(e => {
-            console.log(JSON.stringify(e))
-            console.log('error deleting lesson')
-            alert('failed to delete lesson')
-        })
+
     }
 
 
@@ -243,12 +296,13 @@ export default function AllScheduleViewLessonModal(props) {
                 </Button>
                     <DropdownButton drop='up' title='취소'>
                         <Dropdown.Item onClick={_ => {
-                            delete_lesson_with_request_type('CLIENT_REQUEST')
+                            delete_lesson_with_request_type('client_req')
                         }}>회원요청</Dropdown.Item>
-                        <Dropdown.Item onClick={_ => delete_lesson_with_request_type('INSTRUCTOR_REQUEST')}>
+                        {props.view_selected_lesson.grouping_type !== 'INDIVIDUAL' ? <Dropdown.Item onClick={_ => delete_lesson_with_request_type('INSTRUCTOR_REQUEST')}>
                             강사요청
-                    </Dropdown.Item>
-                        <Dropdown.Item onClick={e => delete_lesson_with_request_type('ADMIN_REQUEST')}>
+                    </Dropdown.Item> : null}
+
+                        <Dropdown.Item onClick={e => delete_lesson_with_request_type('admin')}>
                             관리자</Dropdown.Item>
                     </DropdownButton>
 

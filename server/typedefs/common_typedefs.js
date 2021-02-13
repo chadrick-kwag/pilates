@@ -185,4 +185,10 @@ type SuccessResult {
     success: Boolean,
     msg: String
 }
+
+type SuccessWarningMsgResult{
+    success: Boolean
+    warning: Boolean
+    msg: String
+}
 `
