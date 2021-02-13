@@ -63,12 +63,14 @@ const QUERY_LESSON_WITH_DATERANGE_GQL = gql`query($start_time: String!, $end_tim
         msg
         lessons {
             id
-            clientid
-            clientname
-            client_phonenumber
+            client_info_arr {
+                clientid
+                clientname
+                clientphonenumber
+            }
             instructorid
             instructorname
-            instructor_phonenumber
+            instructorphonenumber
             starttime
             endtime
             activity_type

@@ -108,23 +108,19 @@ export default function AllScheduleViewLessonModal(props) {
 
     }
 
-
-
-    let people = [
-        {
+    let people = props.view_selected_lesson.client_info_arr.map(a => {
+        return {
             type: 'client',
-            name: props.view_selected_lesson.clientname,
-            phonenumber: props.view_selected_lesson.client_phonenumber
-        },
-        {
-            type: 'instructor',
-            name: props.view_selected_lesson.instructorname,
-            phonenumber: props.view_selected_lesson.instructor_phonenumber
+            name: a.clientname,
+            phonenumber: a.clientphonenumber
         }
-    ]
+    })
 
-
-
+    people.push({
+        type: 'instructor',
+        name: props.view_selected_lesson.instructorname,
+        phonenumber: props.view_selected_lesson.instructorphonenumber
+    })
 
     return <div>
         <Modal show={true} onHide={() => props.onCancel()} dialogClassName='two-time-picker' >

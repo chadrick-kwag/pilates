@@ -150,14 +150,19 @@ type SuccessAndTickets{
     tickets: [Ticket2]
 }
 
+
+type LessonClientInfo {
+    clientid: Int
+    clientname: String
+    clientphonenumber: String
+}
+
 type LessonWithMoreInfo {
   id: Int
-  clientid: Int
-  clientname: String
-  client_phonenumber: String
+  client_info_arr: [LessonClientInfo]
   instructorid: Int
   instructorname: String
-  instructor_phonenumber: String
+  instructorphonenumber: String
   starttime: String
   endtime: String
   activity_type: String
