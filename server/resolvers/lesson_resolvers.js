@@ -221,9 +221,20 @@ module.exports = {
 
             console.log([args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)])
 
-            let result = await pgclient.query('select func1($1,$2,$3,$4)', [args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)]).then(res => {
+            let result = await pgclient.query('select change_lesson_time_or_instructor($1, $2 ,$3,$4)', [args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)]).then(res => {
                 console.log(res)
-                return res.rows[0].func1;
+                if(res.rowCount>0){
+                    return {
+                        success: true,
+                        
+                    }
+                }
+                else{
+                    return {
+                        success: false,
+                        msg: "query fail"
+                    }
+                }
             })
                 .catch(e => {
                     console.log(e)
