@@ -186,17 +186,18 @@ module.exports = {
 
 
 
-            let result = await pgclient.query("WITH A AS (select plan.id as planid, plan.clientid, client.name as clientname, client.phonenumber as clientphonenumber, count(1)::int as total_ticket_count,  count( (ticket.expire_time > now() AND  assign_ticket.canceled_time is null) OR NULL )::int as avail_ticket_count, \
-            array_agg(ticket.id) filter (where ticket.expire_time > now() AND  assign_ticket.canceled_time is null) as avail_ticket_id_list \
+            let result = await pgclient.query("WITH B AS (select plan.id as planid, plan.clientid, client.name as clientname, client.phonenumber as clientphonenumber, count(1)::int as total_ticket_count,  count( (ticket.expire_time > now() AND  ( (A.canceled_time is not NULL AND A.id is not NULL) OR A.id is null)) OR NULL )::int as avail_ticket_count, \
+            array_agg(ticket.id) filter (where ticket.expire_time > now() AND  ( (A.canceled_time is not NULL AND A.id is not NULL) OR A.id is null)) as avail_ticket_id_list \
              from plan  \
             left join client on plan.clientid = client.id  \
             left join ticket on plan.id = ticket.creator_plan_id \
-            left join assign_ticket on assign_ticket.ticketid = ticket.id \
+            left join (select distinct on(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) AS A on A.ticketid = ticket.id \
             where clientid = $1 \
             and activity_type = $2 \
             and grouping_type = $3 \
-            group by plan.id, plan.clientid, client.name, client.phonenumber) \
-select * from A where avail_ticket_count >0", [args.clientid, args.activity_type, args.grouping_type]).then(res => {
+            group by plan.id, plan.clientid, client.name, client.phonenumber \
+) \
+select * from B where avail_ticket_count >0", [args.clientid, args.activity_type, args.grouping_type]).then(res => {
 
                 console.log(res)
 
