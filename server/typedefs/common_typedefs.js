@@ -129,7 +129,7 @@ type SuccessAndClients{
 }
 
 type AllSubscriptionsWithRemainRounds{
-  subscription_id: Int
+  planid: Int
   total_rounds: Int
   remain_rounds: Int
   created: String

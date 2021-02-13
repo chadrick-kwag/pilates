@@ -415,7 +415,7 @@ const FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query a($clie
         success
         msg
         allSubscriptionsWithRemainRounds{
-            subscription_id
+            planid
             total_rounds
             remain_rounds
             created
