@@ -3,7 +3,7 @@ import { Modal, Button, Table, Spinner } from 'react-bootstrap'
 import moment from 'moment'
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 import { FETCH_TICKETS_FOR_SUBSCRIPTION_ID } from '../common/gql_defs'
-import TicketList from './TicketList'
+
 import TicketListComponent from './TicketListComponent'
 
 

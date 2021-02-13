@@ -38,10 +38,6 @@ module.exports = {
             console.log(start_time)
             console.log(end_time)
 
-            /* 
-            "select lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, pilates.subscription.activity_type as activity_type, subscription.grouping_type as grouping_type,  client.phonenumber as client_phonenumber, instructor.name as instructorname, instructor.phonenumber as instructor_phonenumber from pilates.lesson left join pilates.subscription_ticket on consuming_client_ss_ticket_id=subscription_ticket.id left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid where lesson.starttime > to_timestamp($1) and lesson.endtime < to_timestamp($2) and canceled_time is null"
-            */
-
             let results = await pgclient.query(`WITH B AS (select  lesson.id as lessonid, instructor.id as instructorid,
                 instructor.name as instructorname, 
                 instructor.phonenumber as instructorphonenumber,
