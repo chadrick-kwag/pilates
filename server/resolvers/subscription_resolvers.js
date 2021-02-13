@@ -283,7 +283,7 @@ select * from B where avail_ticket_count >0", [args.clientid, args.activity_type
 
             console.log(args)
 
-            let ret = await pgclient.query('select pilates.transfer_tickets($1, $2)', [args.ticket_id_list, args.clientid]).then(res => {
+            let ret = await pgclient.query('select transfer_tickets($1, $2)', [args.ticket_id_list, args.clientid]).then(res => {
                 console.log(res)
 
                 if (res.rows[0].transfer_tickets) {
