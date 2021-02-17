@@ -97,29 +97,31 @@ module.exports = {
             console.log(end_time)
 
 
-            let result = await pgclient.query(`WITH B AS (select  lesson.id as id, instructor.id as instructorid,
-                instructor.name as instructorname, 
-                instructor.phonenumber as instructorphonenumber,
-                lesson.starttime, lesson.endtime,
-                lesson.activity_type,
-                lesson.grouping_type,
-                
-                 count(1) FILTER (where A.id is not null AND A.canceled_time is null) > 0  as valid_assign_exist ,
-                 lesson.canceled_time as lesson_canceled_time,
-                 array_agg(ticket.id) as ticket_id_arr,
-                 array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
-                from lesson 
-                left join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
+            let result = await pgclient.query(`WITH B AS (select lesson.id as lessonid 
+                , lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type,
+                instructor.id as instructorid, instructor.name as instructorname, instructor.phonenumber as instructorphonenumber
+                            
+                            from lesson
+                inner join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on lesson.id = A.lessonid
+                        left join instructor on lesson.instructorid = instructor.id
                 left join ticket on A.ticketid = ticket.id
                 left join plan on ticket.creator_plan_id = plan.id
+                where plan.clientid = $1
+                            AND lesson.canceled_time is null
+                            AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
+                        ),
+                
+                C AS (select B.lessonid as lessonid, array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
+                from B
+                inner join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on B.lessonid = A.lessonid
+                left join ticket on ticket.id = A.ticketid
+                left join plan on ticket.creator_plan_id = plan.id
                 left join client on plan.clientid = client.id
-                left join instructor on lesson.instructorid = instructor.id
-                where lesson.canceled_time is null
-				AND client.id = $1
-                 AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
-                    
-                GROUP BY lesson.id, instructor.id)
-                select * from B where valid_assign_exist is true `, [clientid, start_time, end_time]).then(res => {
+                GROUP BY B.lessonid)
+                
+                
+                select B.*, C.client_info_arr from B
+                left join C on B.lessonid = C.lessonid `, [clientid, start_time, end_time]).then(res => {
                 console.log(res.rows)
 
                 return {
@@ -223,13 +225,13 @@ module.exports = {
 
             let result = await pgclient.query('select change_lesson_time_or_instructor($1, $2 ,$3,$4)', [args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)]).then(res => {
                 console.log(res)
-                if(res.rowCount>0){
+                if (res.rowCount > 0) {
                     return {
                         success: true,
-                        
+
                     }
                 }
-                else{
+                else {
                     return {
                         success: false,
                         msg: "query fail"
@@ -708,27 +710,27 @@ module.exports = {
             }
 
         },
-        cancel_individual_lesson: (parent, args)=>{
+        cancel_individual_lesson: (parent, args) => {
             console.log('cancel_individual_lesson')
 
             console.log(args)
 
 
 
-            let result = pgclient.query(`select * from cancel_individual_lesson($1,$2,$3,$4) as (success bool, warning bool, msg text)`, [args.lessonid, args.clientid, args.reqtype, args.force_penalty]).then(res=>{
+            let result = pgclient.query(`select * from cancel_individual_lesson($1,$2,$3,$4) as (success bool, warning bool, msg text)`, [args.lessonid, args.clientid, args.reqtype, args.force_penalty]).then(res => {
                 console.log(res)
 
-                if(res.rowCount<1){
+                if (res.rowCount < 1) {
                     return {
                         success: false,
                         warning: false,
                         msg: 'no rows'
                     }
                 }
-                else{
+                else {
                     return res.rows[0]
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,

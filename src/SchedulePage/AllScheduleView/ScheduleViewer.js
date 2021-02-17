@@ -21,6 +21,8 @@ import { get_week_range_of_date } from '../../common/date_fns'
 
 
 import AllScheduleViewLessonModal from './AllScheduleViewLessonModal'
+import LessonDetailModal from '../LessonDetailModal'
+
 import client from '../../apolloclient'
 import { get_bg_fontcolor_for_activity_type } from '../common'
 import LessonColorToolTip from '../LessonColorTooltip'
@@ -132,7 +134,7 @@ class ScheduleViewer extends React.Component {
 
         return <div>
 
-            {this.state.show_view_modal === true ? <AllScheduleViewLessonModal apolloclient={this.props.apolloclient}
+            {this.state.show_view_modal === true ? <LessonDetailModal 
                 view_selected_lesson={this.state.view_selected_lesson}
                 onCancel={() => this.setState({
                     show_view_modal: false
