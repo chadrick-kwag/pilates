@@ -23,7 +23,7 @@ module.exports = {
             
             from plan
             left join ticket on ticket.creator_plan_id = plan.id
-            left join (select DISTINCT ON(id) * from assign_ticket order by id, assign_ticket.created) as A on A.ticketid = ticket.id
+            left join (select DISTINCT ON(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) as A on A.ticketid = ticket.id
             left join plan as C on ticket.destroyer_plan_id = C.id
             where plan.id = $1 ANd ticket.id is not null`, [args.subscription_id]).then(res => {
                 console.log(res.rows)
