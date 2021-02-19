@@ -19,6 +19,9 @@ import './clientTicketSelectComponent.css'
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Table } from 'react-bootstrap'
+import ClearIcon from '@material-ui/icons/Clear';
+
+
 
 const useStyles = makeStyles(theme => ({
     dialogpaper: {
@@ -156,13 +159,8 @@ export default function ClientTicketSelectComponent(props) {
 
             <div className={classes.root}>
                 <Grid container spacing={0}>
-                    {props.ticket_info_arr.map(d => <Grid item xs={3}>
-                        <Paper variant="outlined" square elevation={3} onClick={_ => setShowAddTicket(true)} className="card-item">
-                            <div>
-                                <span>{d.name}</span>
-                                <span>{d.phonenumber}</span>
-                            </div>
-                        </Paper>
+                    {props.ticket_info_arr.map((d, i) => <Grid item xs={3}>
+                        <TicketGridItem name={d.name} phonenumber={d.phonenumber} onClear={() => { props.removeTicketByIndex?.(i) }} />
                     </Grid>)}
 
                     {props.maxItemSize ? props.ticket_info_arr.length < props.maxItemSize ? <Grid item xs={3}>
@@ -182,4 +180,30 @@ export default function ClientTicketSelectComponent(props) {
 
         </div>
     )
+}
+
+
+
+function TicketGridItem(props) {
+
+    const [hover, setHover] = useState(false)
+
+
+    return <Paper variant="outlined" square elevation={3} className="card-item"
+        onMouseEnter={_ => setHover(true)}
+        onMouseLeave={_ => setHover(false)}
+    >
+        {hover ? <div className='card-overlay'>
+            <ClearIcon onClick={_ => {
+                console.log('clear clicked')
+                props.onClear?.()
+            }} />
+        </div> : null}
+        <div>
+            <span>{props.name}</span>
+            <span>{props.phonenumber}</span>
+        </div>
+    </Paper>
+
+
 }

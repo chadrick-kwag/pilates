@@ -17,6 +17,7 @@ import PanelSequenceComponent, { PanelSequenceChild } from '../components/PanelS
 import PersonProfileCard from '../components/PersonProfileCard'
 import InstructorSearchComponent2 from '../components/InstructorSearchComponent2'
 import { DatePicker, TimePicker } from '@material-ui/pickers'
+import ClientTicketSelectComponent from '../components/clientTicketSelectComponent'
 
 
 
@@ -301,7 +302,9 @@ export default function LessonDetailModal(props) {
                 activity_type={props.view_selected_lesson.activity_type}
             /> : null}
 
-            {editmode === EDITMODE.CLIENT_CHANGE? <div>client change</div> : null}
+            {editmode === EDITMODE.CLIENT_CHANGE? <div>
+               <ClientTicketSelectComponent  />
+            </div> : null}
 
             {editmode !== EDITMODE.NONE ? <Modal.Footer>
                 <Button variant='warning' onClick={e => setEditMode(EDITMODE.NONE)}>변경취소</Button>

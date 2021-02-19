@@ -253,6 +253,7 @@ module.exports = {
         },
 
         create_lesson: async (parent, args) => {
+            console.log('inside create_lesson')
             console.log(args)
 
             if (args.ticketids.length === 0) {

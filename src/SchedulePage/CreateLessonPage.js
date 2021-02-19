@@ -297,7 +297,19 @@ class CreateLessonPage extends React.Component {
                     this.setState({
                         selected_ticketinfo_arr: new_ticket_list
                     })
-                }} />
+                }} 
+
+                removeTicketByIndex={(i)=>{
+                    let new_ticket_list = [...this.state.selected_ticketinfo_arr]
+
+                    new_ticket_list.splice(i,1)
+
+                    this.setState({
+                        selected_ticketinfo_arr: new_ticket_list
+                    })
+                }}
+                
+                />
 
             </div>
 
