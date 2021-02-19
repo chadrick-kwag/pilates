@@ -59,7 +59,7 @@ module.exports = {
             plan.grouping_type
             from plan
             left join ticket on plan.id = ticket.creator_plan_id
-            left join (select DISTINCT ON (id) * from assign_ticket order by id, created desc) AS A on A.ticketid = ticket.id
+            left join (select DISTINCT ON (ticketid) * from assign_ticket order by ticketid, created desc) AS A on A.ticketid = ticket.id
             where plan.clientid = $1
             
             group by plan.id
