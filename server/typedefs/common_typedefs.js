@@ -155,7 +155,11 @@ type LessonClientInfo {
     clientid: Int
     clientname: String
     clientphonenumber: String
+    ticketid: Int
+
 }
+
+
 
 type LessonWithMoreInfo {
   id: Int

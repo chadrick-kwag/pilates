@@ -22,6 +22,8 @@ import { Table } from 'react-bootstrap'
 import ClearIcon from '@material-ui/icons/Clear';
 
 
+import {Modal} from 'react-bootstrap'
+
 
 const useStyles = makeStyles(theme => ({
     dialogpaper: {
@@ -92,18 +94,19 @@ export default function ClientTicketSelectComponent(props) {
         }
     }, [addSelectedClient])
 
-
+    console.log('rendering')
     return (
         <div style={{
             width: '800px'
         }}>
 
-            <Dialog className={classes.dialogpaper} maxWidth='lg' open={showAddTicket} onClose={_ => setShowAddTicket(false)} aria-labelledby="form-dialog-title">
-                <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
-                <DialogContent>
+            <Modal show={showAddTicket} className={classes.dialogpaper} maxWidth='lg' open={showAddTicket} onClose={_ => setShowAddTicket(false)} >
+                <Modal.Title>Subscribe</Modal.Title>
+                <Modal.Body>
 
 
                     <ClientSearchComponent3 clientSelectedCallback={d => {
+                        console.log('client selected')
                         console.log(d)
                         if (addSelectedClient === d) {
                             fetch_tickets()
@@ -129,7 +132,8 @@ export default function ClientTicketSelectComponent(props) {
                                     let new_ticketinfo = {
                                         ticketid: d.avail_ticket_id_list[0],
                                         name: addSelectedClient.name,
-                                        phonenumber: addSelectedClient.phonenumber
+                                        phonenumber: addSelectedClient.phonenumber,
+                                        clientid: addSelectedClient.id
                                     }
                                     props.onTicketSelectSuccess?.(new_ticketinfo)
                                     setShowAddTicket(false)
@@ -145,26 +149,31 @@ export default function ClientTicketSelectComponent(props) {
 
                     </div> : null}
 
-                </DialogContent>
-                <DialogActions>
+                </Modal.Body>
+                <Modal.Footer>
 
                     <Button onClick={_ => {
                         setShowAddTicket(false)
                     }} color="primary">
                         Cancel
-          </Button>
+                </Button>
 
-                </DialogActions>
-            </Dialog>
+                </Modal.Footer>
+            </Modal>
 
             <div className={classes.root}>
                 <Grid container spacing={0}>
                     {props.ticket_info_arr.map((d, i) => <Grid item xs={3}>
-                        <TicketGridItem name={d.name} phonenumber={d.phonenumber} onClear={() => { props.removeTicketByIndex?.(i) }} />
+                        <TicketGridItem name={d.name} phonenumber={d.phonenumber} onClear={() => { 
+                            console.log('onclear trigger')
+                            console.log(`onclear index: ${i}`)
+                            props.removeTicketByIndex?.(i) }} />
                     </Grid>)}
 
                     {props.maxItemSize ? props.ticket_info_arr.length < props.maxItemSize ? <Grid item xs={3}>
-                        <Paper variant="outlined" square elevation={3} onClick={_ => setShowAddTicket(true)} className="card-item">
+                        <Paper variant="outlined" square elevation={3} onClick={_ => {
+                            console.log('add clicked')
+                            setShowAddTicket(true)}} className="card-item">
                             <div className='row-gravity-center' style={{ width: '100%', height: '100%' }}>
                                 <span>add</span>
                             </div>

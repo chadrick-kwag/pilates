@@ -36,8 +36,8 @@ export default function LessonDetailModal(props) {
 
 
 
-    const initlesson = {}
-    Object.assign(initlesson, props.view_selected_lesson)
+    const initlesson = _.cloneDeep(props.view_selected_lesson)
+
 
     initlesson.starttime = new Date(parseInt(initlesson.starttime))
     initlesson.endtime = new Date(parseInt(initlesson.endtime))
@@ -188,6 +188,9 @@ export default function LessonDetailModal(props) {
         phonenumber: props.view_selected_lesson.instructorphonenumber
     })
 
+    console.log('editInfo')
+    console.log(editInfo)
+
     return <div>
         <Modal show={true} onHide={() => props.onCancel()} dialogClassName='two-time-picker' >
             {editmode === EDITMODE.TIME_INSTRUCTOR_CHANGE ? <PanelSequenceComponent >
@@ -196,8 +199,8 @@ export default function LessonDetailModal(props) {
                         <PersonProfileCard type='강사' name={editInfo.instructorname} phonenumber={editInfo.instructor_phonenumber} />
                         <InstructorSearchComponent2 instructorSelectedCallback={d => {
                             console.log(d)
-                            let newinfo = {}
-                            Object.assign(newinfo, editInfo)
+                            let newinfo = _.cloneDeep(editInfo)
+                            // Object.assign(newinfo, editInfo)
 
                             newinfo.instructor_phonenumber = d.phonenumber
                             newinfo.instructorname = d.name
@@ -225,9 +228,9 @@ export default function LessonDetailModal(props) {
                                 let month = d.getMonth()
                                 let date = d.getDate()
 
-
-                                let newinfo = {}
-                                Object.assign(newinfo, editInfo)
+                                let newinfo = _.cloneDeep(editInfo)
+                                // let newinfo = {}
+                                // Object.assign(newinfo, editInfo)
 
                                 newinfo.starttime.setFullYear(year)
                                 newinfo.starttime.setMonth(month)
@@ -267,8 +270,9 @@ export default function LessonDetailModal(props) {
                                 value={editInfo.starttime}
                                 onChange={d => {
                                     console.log(d)
-                                    let newinfo = {}
-                                    Object.assign(newinfo, editInfo)
+                                    let newinfo = _.cloneDeep(editInfo)
+                                    // let newinfo = {}
+                                    // Object.assign(newinfo, editInfo)
                                     newinfo.starttime = d
                                     setEditInfo(newinfo)
                                 }}
@@ -284,8 +288,9 @@ export default function LessonDetailModal(props) {
                                 value={editInfo.endtime}
                                 onChange={d => {
                                     console.log(d)
-                                    let newinfo = {}
-                                    Object.assign(newinfo, editInfo)
+                                    let newinfo = _.cloneDeep(editInfo)
+                                    // let newinfo = {}
+                                    // Object.assign(newinfo, editInfo)
                                     newinfo.endtime = d
                                     setEditInfo(newinfo)
                                 }}
@@ -302,12 +307,53 @@ export default function LessonDetailModal(props) {
                 activity_type={props.view_selected_lesson.activity_type}
             /> : null}
 
-            {editmode === EDITMODE.CLIENT_CHANGE? <div>
-               <ClientTicketSelectComponent  />
+            {editmode === EDITMODE.CLIENT_CHANGE ? <div>
+                <ClientTicketSelectComponent activity_type={props.view_selected_lesson.activity_type} grouping_type={props.view_selected_lesson.grouping_type}
+                    ticket_info_arr={editInfo.client_info_arr.map(d => {
+                        return {
+                            name: d.clientname,
+                            phonenumber: d.clientphonenumber,
+                            id: d.ticketid
+                        }
+                    })}
+                    maxItemSize={props.view_selected_lesson.grouping_type.toLowerCase() === 'semi' ? 2 : props.view_selected_lesson.grouping_type.toLowerCase() === 'group' ? 10 : 0}
+
+                    onTicketSelectSuccess={d => {
+                        let new_editinfo = _.cloneDeep(editInfo)
+
+                        new_editinfo.client_info_arr.push({
+                            clientname: d.name,
+                            clientphonenumber: d.phonenumber,
+                            ticketid: d.ticketid,
+                            clientid: parseInt(d.clientid)
+                        })
+                        setEditInfo(new_editinfo)
+                    }}
+
+                    removeTicketByIndex={i=>{
+                        console.log('inside removeTicketByIndex')
+                        console.log(editInfo)
+                        let client_info_arr = _.cloneDeep(editInfo.client_info_arr)
+
+                        console.log('client_info_arr')
+                        console.log(client_info_arr)
+
+                        client_info_arr.splice(i,1)
+
+                        let new_editinfo = _.cloneDeep(editInfo)
+                        new_editinfo.client_info_arr = client_info_arr
+
+                        setEditInfo(new_editinfo)
+                    }}
+
+                />
             </div> : null}
 
             {editmode !== EDITMODE.NONE ? <Modal.Footer>
-                <Button variant='warning' onClick={e => setEditMode(EDITMODE.NONE)}>변경취소</Button>
+                <Button onClick={e => console.log('submit edit')}>변경요청</Button>
+                <Button variant='warning' onClick={e => {
+                    setEditInfo(initlesson)
+                    setEditMode(EDITMODE.NONE)}}>변경취소</Button>
 
             </Modal.Footer> :
                 <Modal.Footer>

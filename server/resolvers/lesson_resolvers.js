@@ -38,28 +38,27 @@ module.exports = {
             console.log(start_time)
             console.log(end_time)
 
-            let results = await pgclient.query(`WITH B AS (select  lesson.id as id, instructor.id as instructorid,
-                instructor.name as instructorname, 
-                instructor.phonenumber as instructorphonenumber,
-                lesson.starttime, lesson.endtime,
-                lesson.activity_type,
-                lesson.grouping_type,
+            let results = await pgclient.query(`select  lesson.id as id, instructor.id as instructorid,
+            instructor.name as instructorname, 
+            instructor.phonenumber as instructorphonenumber,
+            lesson.starttime, lesson.endtime,
+            lesson.activity_type,
+            lesson.grouping_type,
+            
+           
+             lesson.canceled_time as lesson_canceled_time,
+             
+             array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber, 'ticketid', ticket.id )) as client_info_arr
+            from lesson 
+            inner join (select DISTINCT ON(ticketid) * from assign_ticket where assign_ticket.canceled_time is null ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
+            left join ticket on A.ticketid = ticket.id
+            left join plan on ticket.creator_plan_id = plan.id
+            left join client on plan.clientid = client.id
+            left join instructor on lesson.instructorid = instructor.id
+            where lesson.canceled_time is null
+             AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($1), to_timestamp($2)) )
                 
-                 count(1) FILTER (where A.id is not null AND A.canceled_time is null) > 0  as valid_assign_exist ,
-                 lesson.canceled_time as lesson_canceled_time,
-                 array_agg(ticket.id) as ticket_id_arr,
-                 array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
-                from lesson 
-                left join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
-                left join ticket on A.ticketid = ticket.id
-                left join plan on ticket.creator_plan_id = plan.id
-                left join client on plan.clientid = client.id
-                left join instructor on lesson.instructorid = instructor.id
-                where lesson.canceled_time is null
-                 AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($1), to_timestamp($2)) )
-                    
-                GROUP BY lesson.id, instructor.id)
-                select * from B where valid_assign_exist is true `, [start_time, end_time]).then(res => {
+            GROUP BY lesson.id, instructor.id `, [start_time, end_time]).then(res => {
 
                 console.log(res)
                 console.log(res.rows)

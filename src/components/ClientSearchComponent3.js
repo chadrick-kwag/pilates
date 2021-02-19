@@ -34,7 +34,7 @@ class ClientSearchComponent3 extends React.Component {
         this.get_absolute_dim = this.get_absolute_dim.bind(this)
 
         this.card = createRef()
-        this.search_inputbox = createRef()
+        // this.search_inputbox = createRef()
     }
 
     get_absolute_dim() {
@@ -127,7 +127,7 @@ class ClientSearchComponent3 extends React.Component {
 
                 <div className='row-gravity-center'>
                     <span>회원이름</span>
-                    <Form.Control ref={this.search_inputbox} value={this.state.client_name} onChange={e => this.setState({
+                    <Form.Control value={this.state.client_name} onChange={e => this.setState({
                         client_name: e.target.value
                     })} />
                     <Button onClick={e => this.search_clients()}>search</Button>
