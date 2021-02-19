@@ -26,6 +26,7 @@ type Mutation{
     attempt_update_lesson_time(lessonid:Int!, start_time: String!, end_time: String!): SuccessResult
     update_lesson_instructor_or_time(lessonid: Int!, start_time: String!, end_time: String!, instructor_id: Int!): SuccessResult
     create_individual_lesson(clientid: Int!, instructorid: Int!, ticketid: Int!, starttime: String!, endtime: String!): SuccessResult
+    change_clients_of_lesson(ticketid_arr: [Int!], lessonid: Int!): SuccessResult
 }
 `
 

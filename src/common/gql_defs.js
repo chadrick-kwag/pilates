@@ -509,6 +509,16 @@ const CANCEL_INDIVIDUAL_LESSON = gql`
     }
 `
 
+
+const CHANGE_CLIENTS_OF_LESSON = gql`
+    mutation ($ticketid_arr: [Int!], $lessonid: Int!){
+        change_clients_of_lesson(ticketid_arr: $ticketid_arr, lessonid: $lessonid){
+            success
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -547,5 +557,6 @@ export {
     TRANSFER_TICKETS_TO_CLIENTID,
     UPDATE_EXPDATE_OF_TICKETS,
     QUERY_CLIENTINFO_BY_CLIENTID,
-    CANCEL_INDIVIDUAL_LESSON
+    CANCEL_INDIVIDUAL_LESSON,
+    CHANGE_CLIENTS_OF_LESSON
 }

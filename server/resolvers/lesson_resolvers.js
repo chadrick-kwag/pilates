@@ -710,14 +710,14 @@ module.exports = {
             }
 
         },
-        cancel_individual_lesson: (parent, args) => {
+        cancel_individual_lesson: async (parent, args) => {
             console.log('cancel_individual_lesson')
 
             console.log(args)
 
 
 
-            let result = pgclient.query(`select * from cancel_individual_lesson($1,$2,$3,$4) as (success bool, warning bool, msg text)`, [args.lessonid, args.clientid, args.reqtype, args.force_penalty]).then(res => {
+            let result = await pgclient.query(`select * from cancel_individual_lesson($1,$2,$3,$4) as (success bool, warning bool, msg text)`, [args.lessonid, args.clientid, args.reqtype, args.force_penalty]).then(res => {
                 console.log(res)
 
                 if (res.rowCount < 1) {
@@ -738,6 +738,33 @@ module.exports = {
                     msg: 'query error'
                 }
             })
+
+            return result
+        },
+        change_clients_of_lesson: async  (parent, args) => {
+            console.log('change_clients_of_lesson')
+            console.log(args)
+
+            let result = await pgclient.query(`select * from change_tickets_of_lesson($1,$2) as (success bool, msg text)`, [args.ticketid_arr, args.lessonid])
+                .then(res => {
+                    console.log(res)
+
+                    if (res.rowCount !== 1) {
+                        return {
+                            success: false,
+                            msg: 'rowcount not 1'
+                        }
+                    }
+                    else {
+                        return res.rows[0]
+                    }
+                }).catch(e => {
+                    console.log(e)
+                    return {
+                        success: false,
+                        msg: 'query error'
+                    }
+                })
 
             return result
         }
