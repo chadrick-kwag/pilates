@@ -511,7 +511,7 @@ const CANCEL_INDIVIDUAL_LESSON = gql`
 
 
 const CHANGE_CLIENTS_OF_LESSON = gql`
-    mutation ($ticketid_arr: [Int!], $lessonid: Int!){
+    mutation ($ticketid_arr: [Int], $lessonid: Int!){
         change_clients_of_lesson(ticketid_arr: $ticketid_arr, lessonid: $lessonid){
             success
             msg

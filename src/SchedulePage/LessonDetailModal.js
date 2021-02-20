@@ -46,12 +46,12 @@ export default function LessonDetailModal(props) {
     const [editInfo, setEditInfo] = useState(initlesson)
 
 
-    const submit_client_change = ()=>{
+    const submit_client_change = () => {
 
         console.log(editInfo)
 
         let _var = {
-            ticketid_arr: editInfo.client_info_arr.map(d=>d.ticketid),
+            ticketid_arr: editInfo.client_info_arr.map(d => d.ticketid),
             lessonid: editInfo.id
         }
 
@@ -62,38 +62,39 @@ export default function LessonDetailModal(props) {
             mutation: CHANGE_CLIENTS_OF_LESSON,
             variables: _var,
             fetchPolicy: 'no-cache'
-        }).then(res=>{
+        }).then(res => {
             console.log(res)
 
-            if(res.data.change_clients_of_lesson.success){
+            if (res.data.change_clients_of_lesson.success) {
                 console.log('success')
+                props.onEditSuccess?.()
             }
-            else{
+            else {
                 console.log('fail')
                 alert('change fail')
             }
-        }).catch(e=>{
+        }).catch(e => {
             console.log(JSON.stringify(e))
             alert('change error')
         })
     }
 
-    const check_change_clients_submit_possible = ()=>{
+    const check_change_clients_submit_possible = () => {
 
         // check if ticket ids in edit info and props.view_selected_lesson are identical
         // if identical, then submit not allowed
         // first check length of two
-        if(editInfo.client_info_arr.length !== props.view_selected_lesson.client_info_arr.length){
+        if (editInfo.client_info_arr.length !== props.view_selected_lesson.client_info_arr.length) {
             return true;
         }
 
         console.log(editInfo.client_info_arr)
 
-        let edit_client_id_set = new Set(editInfo.client_info_arr.map(d=>d.clientid))
-        let prop_client_id_set = new Set(props.view_selected_lesson.client_info_arr.map(d=>d.clientid))
+        let edit_client_id_set = new Set(editInfo.client_info_arr.map(d => d.clientid))
+        let prop_client_id_set = new Set(props.view_selected_lesson.client_info_arr.map(d => d.clientid))
 
-        let diff_set = new Set([...edit_client_id_set].filter(x=>!prop_client_id_set.has(x)))
-        if(diff_set.size >0){
+        let diff_set = new Set([...edit_client_id_set].filter(x => !prop_client_id_set.has(x)))
+        if (diff_set.size > 0) {
             // different ticket id exists
             return true;
         }
@@ -385,7 +386,7 @@ export default function LessonDetailModal(props) {
                         setEditInfo(new_editinfo)
                     }}
 
-                    removeTicketByIndex={i=>{
+                    removeTicketByIndex={i => {
                         console.log('inside removeTicketByIndex')
                         console.log(editInfo)
                         let client_info_arr = _.cloneDeep(editInfo.client_info_arr)
@@ -393,7 +394,7 @@ export default function LessonDetailModal(props) {
                         console.log('client_info_arr')
                         console.log(client_info_arr)
 
-                        client_info_arr.splice(i,1)
+                        client_info_arr.splice(i, 1)
 
                         let new_editinfo = _.cloneDeep(editInfo)
                         new_editinfo.client_info_arr = client_info_arr
@@ -404,13 +405,18 @@ export default function LessonDetailModal(props) {
                 />
             </div> : null}
 
-            {editmode !== EDITMODE.NONE ? <Modal.Footer>
-                <Button disabled={!check_change_clients_submit_possible()} onClick={e => submit_client_change()}>변경요청</Button>
-                <Button variant='warning' onClick={e => {
-                    setEditInfo(initlesson)
-                    setEditMode(EDITMODE.NONE)}}>변경취소</Button>
+            {editmode !== EDITMODE.NONE ?
 
-            </Modal.Footer> :
+                editmode === EDITMODE.CLIENT_CHANGE ?
+                    <Modal.Footer>
+                        <Button disabled={!check_change_clients_submit_possible()} onClick={e => submit_client_change()}>변경요청</Button>
+                        <Button variant='warning' onClick={e => {
+                            setEditInfo(initlesson)
+                            setEditMode(EDITMODE.NONE)
+                        }}>변경취소</Button>
+
+                    </Modal.Footer> :
+                    null :
                 <Modal.Footer>
                     <Button onClick={e => setEditMode(EDITMODE.TIME_INSTRUCTOR_CHANGE)}>
                         시간/강사변경
