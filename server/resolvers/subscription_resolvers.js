@@ -285,18 +285,17 @@ module.exports = {
 
             console.log(args)
 
-            let ret = await pgclient.query('select transfer_tickets($1, $2)', [args.ticket_id_list, args.clientid]).then(res => {
+            let ret = await pgclient.query('select * from transfer_tickets($1, $2) as (success bool, msg text)', [args.ticket_id_list, args.clientid]).then(res => {
                 console.log(res)
 
-                if (res.rows[0].transfer_tickets) {
+                if(res.rowCount!==1){
                     return {
-                        success: true
+                        success: false,
+                        msg: 'row count not 1'
                     }
                 }
-
-                return {
-                    success: false,
-                    msg: 'query properly done. but result of query was bad.'
+                else{
+                    return res.rows[0]
                 }
             }).catch(e => {
                 console.log(e)
