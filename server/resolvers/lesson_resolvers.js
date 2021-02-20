@@ -96,7 +96,7 @@ module.exports = {
             console.log(end_time)
 
 
-            let result = await pgclient.query(`WITH B AS (select lesson.id as lessonid 
+            let result = await pgclient.query(`WITH B AS (select lesson.id as id
                 , lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type,
                 instructor.id as instructorid, instructor.name as instructorname, instructor.phonenumber as instructorphonenumber
                             
@@ -110,17 +110,17 @@ module.exports = {
                             AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
                         ),
                 
-                C AS (select B.lessonid as lessonid, array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
+                C AS (select B.id as lessonid, array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
                 from B
-                inner join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on B.lessonid = A.lessonid
+                inner join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on B.id = A.lessonid
                 left join ticket on ticket.id = A.ticketid
                 left join plan on ticket.creator_plan_id = plan.id
                 left join client on plan.clientid = client.id
-                GROUP BY B.lessonid)
+                GROUP BY B.id)
                 
                 
                 select B.*, C.client_info_arr from B
-                left join C on B.lessonid = C.lessonid `, [clientid, start_time, end_time]).then(res => {
+                left join C on B.id = C.lessonid `, [clientid, start_time, end_time]).then(res => {
                 console.log(res.rows)
 
                 return {

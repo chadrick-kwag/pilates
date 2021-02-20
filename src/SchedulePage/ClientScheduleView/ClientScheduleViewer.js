@@ -76,6 +76,7 @@ class ClientScheduleViewer extends React.Component {
 
 
         }).then(d => {
+            console.log('received')
             console.log(d)
 
 
