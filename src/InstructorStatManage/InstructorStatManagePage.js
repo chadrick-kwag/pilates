@@ -6,9 +6,9 @@ import { DatePicker } from "@material-ui/pickers";
 import client from '../apolloclient'
 import { Button, Table, Spinner } from 'react-bootstrap'
 import { QUERY_LESSON_DATA_OF_INSTRUCTORID } from '../common/gql_defs'
-import {DateTime} from 'luxon'
+import { DateTime } from 'luxon'
 
-import {activity_type_to_kor, grouping_type_to_kor} from '../common/consts'
+import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 import numeral from 'numeral'
 
 export default function InstructorStatManagePage(props) {
@@ -61,7 +61,7 @@ export default function InstructorStatManagePage(props) {
 
             if (res.data.query_lesson_data_of_instructorid.success) {
 
-                
+
                 let newstate = _.cloneDeep(state)
                 newstate.lesson_data = res.data.query_lesson_data_of_instructorid.lesson_info_arr
                 setState(newstate)
@@ -137,18 +137,18 @@ export default function InstructorStatManagePage(props) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {state.lesson_data.map((d,i)=>{
+                                {state.lesson_data.sort((a, b) => parseInt(a.starttime) - parseInt(b.starttime)).map((d, i) => {
                                     return <tr>
                                         <td>{i}</td>
                                         <td>{DateTime.fromMillis(parseInt(d.starttime)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')}</td>
-                                        <td>{d.client_info_arr.map(a=>a.name)}</td>
+                                        <td>{d.client_info_arr.map(a => a.name)}</td>
                                         <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
                                         <td>{numeral(d.netvalue).format('0,0')}</td>
                                     </tr>
                                 })}
                                 <tr>
                                     <td colSpan='4'><div className='row-gravity-right'><span>total</span></div></td>
-                                    <td>{numeral(state.lesson_data.reduce((total,a)=>total+parseInt(a.netvalue),0)).format('0,0')}</td>
+                                    <td>{numeral(state.lesson_data.reduce((total, a) => total + parseInt(a.netvalue), 0)).format('0,0')}</td>
                                 </tr>
                             </tbody>
                         </Table>
