@@ -4,7 +4,6 @@ import { Form, Modal, Button, Table, Spinner } from 'react-bootstrap'
 import moment from 'moment'
 import { UPDATE_CLIENT_INFO_GQL, FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID, QUERY_CLIENTINFO_BY_CLIENTID } from '../common/gql_defs'
 
-import { extract_date_from_birthdate_str } from './CreateClientPage'
 
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 import { KeyboardDatePicker } from "@material-ui/pickers";

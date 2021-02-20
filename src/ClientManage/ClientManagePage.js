@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from 'react-bootstrap'
 
-import ListClientPage from './ListClientPage'
+
 import CreateClientPage from './CreateClientPage'
 import ListClientPageV2 from './ListClientPage_v2'
 
