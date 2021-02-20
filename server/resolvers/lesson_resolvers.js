@@ -427,222 +427,31 @@ module.exports = {
             warning: Boolean
             msg: String
             */
-            console.log('inside delete_lesson_with_request_type')
 
+            console.log('delete_lesson_with_request_type')
             console.log(args)
+            
+            let result = await pgclient.query(`select * from cancel_lesson_with_reqtype($1, $2) as (success bool, msg text)`, [args.lessonid, args.request_type.toLowerCase()]).then(res=>{
+                console.log(res)
 
-            let current_time = new Date()
-
-            let request_type = args.request_type
-
-            let lesson_start_time = await pgclient.query('select starttime from pilates.lesson where id=$1', [args.lessonid]).then(res => {
-                if (res.rowCount == 0) {
-                    return null
+                if(res.rowCount!==1){
+                    return {
+                        success: false,
+                        msg: 'rowcount not 1'
+                    }
                 }
-
-                return res.rows[0].starttime
-            }).catch(e => {
+                else{
+                    return res.rows[0]
+                }
+            }).catch(e=>{
                 console.log(e)
-                return null
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
             })
 
-            console.log("lesson_start_time: " + lesson_start_time)
-
-            if (lesson_start_time == null) {
-
-                console.log('lesson start time is null')
-                return {
-                    success: false,
-                    msg: "failed to check start time of lesson"
-                }
-            }
-
-            lesson_start_time = moment(lesson_start_time)
-
-            console.log("current time")
-            console.log(current_time)
-
-            console.log("start time")
-            console.log(lesson_start_time)
-
-
-
-            let time_delta = lesson_start_time - current_time
-            time_delta /= 1000   // convert to seconds
-
-            console.log('time delta: ' + time_delta)
-
-            // check if the current date is day before start time
-
-            let start_time_zero_hour = moment(lesson_start_time)
-            start_time_zero_hour.set({
-                hours: 0
-            })
-
-            console.log("start_time_zero_hour")
-            console.log(start_time_zero_hour)
-
-            let is_current_date_before_start_time_date = current_time < start_time_zero_hour ? true : false
-
-            console.log("is_current_date_before_start_time_date")
-            console.log(is_current_date_before_start_time_date)
-
-            // if admin request, just do it regardless of req time and stuff.
-            if (request_type == "ADMIN_REQUEST") {
-
-                let result = await pgclient.query('update pilates.lesson set cancel_type=\'ADMIN_CANCEL\', canceled_time=now() where id=$1', [args.lessonid]).then(res => {
-                    if (res.rowCount == 0) {
-                        return {
-                            success: false,
-                            msg: "no lesson found matching lessonid"
-                        }
-                    }
-
-                    return {
-                        success: true
-                    }
-                })
-                    .catch(e => {
-                        console.log(e)
-
-                        return {
-                            success: false,
-                            msg: "query error updating"
-                        }
-                    })
-
-                return result
-            }
-            // admin request handled.
-
-            // if req time is after lesson start time, then deleting is impossible.
-            if (current_time >= lesson_start_time) {
-                console.log('req time is after lesson start time')
-
-                return {
-                    success: false,
-                    penalty_warning: false,
-                    msg: "req time is after lesson start time"
-                }
-            }
-
-            // handle client req, instructor req differently.
-
-            if (args.request_type === "CLIENT_REQUEST") {
-
-
-                let warning = null
-                let cancel_type = null
-
-                // check for warning cases first. if warning and ignore_warning=false, then just return with warning.
-                if (time_delta < 2 * 3600) {
-                    console.log('time buffer too small')
-                    warning = true
-                    cancel_type = "CRITICAL_CLIENT_REQ_CANCEL"
-                    if (!args.ignore_warning) {
-                        console.log('return full penalty warning')
-                        return {
-                            success: false,
-                            penalty_warning: true,
-                            msg: "time buffer insufficient. forcing will cause full penalty"
-                        }
-                    }
-
-                }
-                else if (!is_current_date_before_start_time_date) {
-                    console.log('client req, req date same as start date')
-                    warning = true
-                    cancel_type = "EMERGENCY_CLIENT_REQ_CANCEL"
-                    if (!args.ignore_warning) {
-                        return {
-                            success: false,
-                            penalty_warning: true,
-                            msg: "req date is same as lesson date. forcing will cause semi-penalty"
-                        }
-                    }
-
-                }
-                else {
-                    // by here, timing is buffered enough.
-                    warning = false
-                    cancel_type = "BUFFERED_CLIENT_REQ_CANCEL"
-                }
-
-
-                // execute lesson cancel query with determined cancel type.
-                let result = pgclient.query("update pilates.lesson set cancel_type=$1, canceled_time = now() where id=$2", [cancel_type, args.lessonid]).then(res => {
-                    if (res.rowCount == 0) {
-                        return {
-                            success: false,
-                            warning: false,
-                            msg: 'query effect no row'
-                        }
-                    }
-
-
-                    return {
-                        success: true,
-                        warning: false,
-                        msg: "success update"
-                    }
-                }).catch(e => {
-                    console.log(e)
-                    return {
-                        success: false,
-                        warning: false,
-                        msg: "query error"
-                    }
-                })
-
-                return result
-
-
-
-            } // end of client req case
-            else if (args.request_type === "INSTRUCTOR_REQUEST") {
-                // for instructore, currently the policy is to use "CANCEL_REQUEST_BY_INSTRUCTOR" as cancel type.
-                // only restriction is, request should come in before lesson start time. 
-                // but at this point, this restriction is already satisfied.
-
-                let cancel_type = "CANCEL_REQUEST_BY_INSTRUCTOR"
-
-                let result = pgclient.query("update pilates.lesson set cancel_type=$1, canceled_time = now() where id=$2", [cancel_type, args.lessonid]).then(res => {
-                    if (res.rowCount == 0) {
-                        return {
-                            success: false,
-                            warning: false,
-                            msg: 'query effect no row'
-                        }
-                    }
-
-
-                    return {
-                        success: true,
-                        warning: false,
-                        msg: "success update"
-                    }
-                }).catch(e => {
-                    console.log(e)
-                    return {
-                        success: false,
-                        warning: false,
-                        msg: "query error"
-                    }
-                })
-
-                return result
-            }
-            else {
-                console.log(`invalid req type: ${args.request_type}`)
-
-                return {
-                    success: false,
-                    warning: false,
-                    msg: 'error. invalid req type'
-                }
-            }
-
-
+            return result
 
 
         },

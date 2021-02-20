@@ -28,6 +28,7 @@ import LessonColorToolTip from '../LessonColorTooltip'
 
 import PartialOverlaySpinner from '../PartialOverlaySpinner'
 import InstructorViewLessonModal from './InstructorViewLessonModal'
+import LessonDetailModal from '../LessonDetailModal'
 
 
 class InstructorScheduleViewer extends React.Component {
@@ -145,28 +146,30 @@ class InstructorScheduleViewer extends React.Component {
 
         return <div>
 
-            {this.state.show_view_modal ? <InstructorViewLessonModal show={this.state.show_view_modal} onHide={(_) => {
+            {this.state.show_view_modal ? <LessonDetailModal cancel_options = {['instructor_req', 'admin_req']}
+            show={this.state.show_view_modal} 
+            onCancel={(_) => {
                 this.setState({
                     show_view_modal: false
                 })
-
             }}
-                lesson={this.state.view_selected_lesson}
+                view_selected_lesson={this.state.view_selected_lesson}
                 onDeleteSuccess={() => {
+                    this.setState({
+                        show_view_modal: false,
+                        view_selected_lesson: null
+                    }, () => {
+                        this.fetchdata()
+                    })
+                }}
+
+                onEditSuccess={() => {
+                    console.log('oneditsuccess')
                     this.setState({
                         show_view_modal: false,
                         view_selected_lesson: null,
                         data: null
                     }, () => {
-                        this.fetchdata()
-                    })
-                }}
-                onEditSuccess={()=>{
-                    this.setState({
-                        show_view_modal: false,
-                        view_selected_lesson: null,
-                        data: null
-                    }, ()=>{
                         this.fetchdata()
                     })
                 }}

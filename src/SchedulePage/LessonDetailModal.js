@@ -46,6 +46,35 @@ export default function LessonDetailModal(props) {
     const [editInfo, setEditInfo] = useState(initlesson)
 
 
+    const individual_lesson_client_req_cancel = () => {
+
+        let _var = {
+            ticketid_arr: [],
+            lessonid: editInfo.id
+        }
+
+
+        client.mutate({
+            mutation: CHANGE_CLIENTS_OF_LESSON,
+            variables: _var,
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.change_clients_of_lesson.success) {
+                console.log('success')
+                props.onEditSuccess?.()
+            }
+            else {
+                console.log('fail')
+                alert('change fail')
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            alert('change error')
+        })
+    }
+
     const submit_client_change = () => {
 
         console.log(editInfo)
@@ -110,84 +139,44 @@ export default function LessonDetailModal(props) {
         console.log(props.view_selected_lesson)
 
 
+        // for non individual types
 
-        if (props.view_selected_lesson.grouping_type === 'INDIVIDUAL') {
 
-            let _var = {
+        client.mutate({
+            mutation: DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
+            variables: {
                 lessonid: props.view_selected_lesson.id,
-                clientid: props.view_selected_lesson.client_info_arr[0].clientid,
-                reqtype: request_type,
-                force_penalty: ignore_warning
+                ignore_warning: ignore_warning,
+                request_type: request_type
+            }
+        }).then(d => {
+            console.log(d)
+
+            if (d.data.delete_lesson_with_request_type.penalty_warning === true) {
+
+                let ret = confirm(d.data.delete_lesson_with_request_type.msg)
+
+                if (ret) {
+                    this.delete_lesson_with_request_type(request_type, true)
+                }
+
+                // if do not proceed
+                return
             }
 
-            console.log(_var)
+            if (d.data.delete_lesson_with_request_type.success) {
 
+                props.onDeleteSuccess()
+            }
+            else {
+                alert('failed to delete lesson.' + d.data.delete_lesson_with_request_type.msg)
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            console.log('error deleting lesson')
+            alert('failed to delete lesson')
+        })
 
-            client.mutate({
-                mutation: CANCEL_INDIVIDUAL_LESSON,
-                variables: _var,
-                fetchPolicy: 'no-cache'
-            }).then(res => {
-                console.log(res)
-
-                if (res.data.cancel_individual_lesson.success) {
-                    props.onDeleteSuccess?.()
-                }
-                else {
-                    if (res.data.cancel_individual_lesson.warning && ignore_warning === false) {
-                        let ask = confirm('force penalty?')
-                        if (ask) {
-                            delete_lesson_with_request_type(request_type, true)
-                        }
-                    }
-                    else {
-                        alert('cancel lesson fail')
-                    }
-                }
-            }).catch(e => {
-                console.log(JSON.stringify(e))
-                alert('cancel lesson error')
-            })
-        }
-        else {
-            // for non individual types
-
-
-            client.mutate({
-                mutation: DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
-                variables: {
-                    lessonid: props.view_selected_lesson.id,
-                    ignore_warning: ignore_warning,
-                    request_type: request_type
-                }
-            }).then(d => {
-                console.log(d)
-
-                if (d.data.delete_lesson_with_request_type.penalty_warning === true) {
-
-                    let ret = confirm(d.data.delete_lesson_with_request_type.msg)
-
-                    if (ret) {
-                        this.delete_lesson_with_request_type(request_type, true)
-                    }
-
-                    // if do not proceed
-                    return
-                }
-
-                if (d.data.delete_lesson_with_request_type.success) {
-
-                    props.onDeleteSuccess()
-                }
-                else {
-                    alert('failed to delete lesson.' + d.data.delete_lesson_with_request_type.msg)
-                }
-            }).catch(e => {
-                console.log(JSON.stringify(e))
-                console.log('error deleting lesson')
-                alert('failed to delete lesson')
-            })
-        }
 
 
     }
@@ -426,20 +415,20 @@ export default function LessonDetailModal(props) {
             instad show 수강회원변경 to allow controlling client number
             */}
 
-                    {props.view_selected_lesson.grouping_type !== 'INDIVIDUAL' ? <Button onClick={e => setEditMode(EDITMODE.CLIENT_CHANGE)} >수강생변경</Button> :
+                    {props.view_selected_lesson.grouping_type !== 'INDIVIDUAL' ? <Button onClick={e => setEditMode(EDITMODE.CLIENT_CHANGE)} >수강생변경</Button> : null}
 
 
-                        <DropdownButton drop='up' title='취소'>
-                            {props.cancel_options.includes('client_req') ? <Dropdown.Item onClick={_ => {
-                                delete_lesson_with_request_type('client_req')
-                            }}>회원요청</Dropdown.Item> : null}
-                            {props.cancel_options.includes('instructor_req') ? <Dropdown.Item onClick={_ => delete_lesson_with_request_type('INSTRUCTOR_REQUEST')}>
-                                강사요청
-                    </Dropdown.Item> : null}
-                            {props.cancel_options.includes('admin_req') ? <Dropdown.Item onClick={e => delete_lesson_with_request_type('admin')}>
-                                관리자</Dropdown.Item> : null}
+                    <DropdownButton drop='up' title='취소'>
+                        {props.cancel_options.includes('client_req') && props.view_selected_lesson.grouping_type === 'INDIVIDUAL' ? <Dropdown.Item onClick={_ => {
+                            individual_lesson_client_req_cancel()
+                        }}>회원요청</Dropdown.Item> : null}
+                        {props.cancel_options.includes('instructor_req') ? <Dropdown.Item onClick={_ => delete_lesson_with_request_type('instructor_req')}>
+                            강사요청
+                        </Dropdown.Item> : null}
+                        {props.cancel_options.includes('admin_req') ? <Dropdown.Item onClick={e => delete_lesson_with_request_type('admin_req')}>
+                            관리자</Dropdown.Item> : null}
 
-                        </DropdownButton>}
+                    </DropdownButton>
 
 
 
