@@ -519,6 +519,30 @@ const CHANGE_CLIENTS_OF_LESSON = gql`
     }
 `
 
+
+const QUERY_LESSON_DATA_OF_INSTRUCTORID = gql`
+    query ($instructorid: Int!, $search_starttime:String!, $search_endtime: String!){
+        query_lesson_data_of_instructorid(instructorid:$instructorid, search_starttime: $search_starttime, search_endtime: $search_endtime){
+            success
+            msg
+            lesson_info_arr{
+                id
+                starttime
+                endtime
+                activity_type
+                grouping_type
+                client_info_arr {
+                    id 
+                    name
+                }
+                netvalue
+                canceled_time
+                cancel_type
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -558,5 +582,6 @@ export {
     UPDATE_EXPDATE_OF_TICKETS,
     QUERY_CLIENTINFO_BY_CLIENTID,
     CANCEL_INDIVIDUAL_LESSON,
-    CHANGE_CLIENTS_OF_LESSON
+    CHANGE_CLIENTS_OF_LESSON,
+    QUERY_LESSON_DATA_OF_INSTRUCTORID
 }

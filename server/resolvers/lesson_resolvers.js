@@ -188,6 +188,48 @@ module.exports = {
             console.log(result)
 
             return result
+        },
+        query_lesson_data_of_instructorid: async (parent, args)=>{
+            console.log('query_lesson_data_of_instructorid')
+
+            console.log(args)
+
+            let _args = [args.instructorid, new Date(args.search_starttime), new Date(args.search_endtime)]
+
+            console.log(_args)
+
+            let result = await pgclient.query(`WITH C AS (select lesson.id as id, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type,
+                lesson.canceled_time, lesson.cancel_type,
+                array_agg(json_build_object('id', B.clientid, 'name', client.name )) filter(where B.clientid is not null) as client_info_arr, sum(case when B.percost is null then 0 else B.percost end) as netvalue
+                from lesson 
+                left join (select * from assign_ticket where canceled_time is null) as A on A.lessonid = lesson.id
+                left join (select ticket.id, plan.clientid as clientid, plan.totalcost / plan.rounds as percost from ticket left join plan on ticket.creator_plan_id = plan.id) as B on B.id = A.ticketid
+                left join client on B.clientid = client.id
+                where lesson.instructorid = $1
+                and (lesson.cancel_type is null or lesson.cancel_type!='INSTRUCTOR_REQUEST') 
+                and tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3)
+                GROUP BY lesson.id)
+                
+                
+                select * from C where client_info_arr is not null`, _args).then(res=>{
+                    console.log(res)
+
+                    return {
+                        success: true,
+                        lesson_info_arr: res.rows
+                    }
+                }).catch(e=>{
+                    console.log(e)
+                    return {
+                        success: false,
+                        msg: 'query error'
+                    }
+                })
+
+            console.log('result')
+            console.log(result)
+
+            return result
         }
     },
     Mutation: {

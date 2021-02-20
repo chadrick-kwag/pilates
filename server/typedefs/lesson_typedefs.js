@@ -6,9 +6,32 @@ type Query{
     query_lesson_with_timerange_by_clientid(clientid: Int!, start_time: String!, end_time: String!): query_lesson_return
     query_lesson_with_timerange_by_instructorid(instructorid: Int!, start_time: String!, end_time: String!): query_lesson_return
 
-
+    query_lesson_data_of_instructorid(instructorid: Int!, search_starttime:String!, search_endtime: String!): query_stat_lesson_return
 }
 
+
+type stat_lesson_client_info {
+    id: Int
+    name: String
+}
+
+type stat_lesson_info {
+    id: Int
+    starttime: String
+    endtime: String
+    activity_type: String
+    grouping_type: String
+    client_info_arr : [stat_lesson_client_info]
+    netvalue: Int
+    canceled_time: String
+    cancel_type: String
+}
+
+type query_stat_lesson_return {
+    success: Boolean
+    msg: String
+    lesson_info_arr: [stat_lesson_info]
+}
 
 type LessonDeleteResponse{
 

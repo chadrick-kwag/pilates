@@ -22,6 +22,7 @@ import LuxonUtils from '@date-io/luxon';
 
 
 import client from './apolloclient'
+import InstructorStatManagePage from './InstructorStatManage/InstructorStatManagePage'
 
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
@@ -43,17 +44,20 @@ class App extends React.Component {
 
 
 
-        if (this.state.viewmode == "schedule") {
+        if (this.state.viewmode === "schedule") {
             mainview = <SchedulePage apolloclient={client} />
         }
-        else if (this.state.viewmode == "client_manage") {
+        else if (this.state.viewmode === "client_manage") {
             mainview = <ClientManagePage apolloclient={client} />
         }
-        else if (this.state.viewmode == 'instructor_manage') {
+        else if (this.state.viewmode === 'instructor_manage') {
             mainview = <InstructorManagePage apolloclient={client} />
         }
         else if (this.state.viewmode === "plan_manage") {
             mainview = <SubscriptionManagePage apolloclient={client} />
+        }
+        else if (this.state.viewmode === 'instructor_stat') {
+            mainview = <InstructorStatManagePage/>
         }
         else {
             mainview = <div>not yet implemented</div>
@@ -66,6 +70,7 @@ class App extends React.Component {
                 onInstructorManageClick={() => this.setState({ viewmode: "instructor_manage" })}
                 onPlanManageClick={() => this.setState({ viewmode: "plan_manage" })}
                 onScheduleManageClick={() => this.setState({ viewmode: "schedule" })}
+                onInstructorStatClick={() => this.setState({ viewmode: 'instructor_stat' })}
             />
 
             {mainview}

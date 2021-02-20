@@ -56,9 +56,15 @@ class TopNavBar extends React.Component {
                     })
                     this.props.onScheduleManageClick()
                 }}>스케쥴관리</div>
+                <div className={this.get_bar_item_classname('instructorstat')} onClick={e => {
+                    this.setState({
+                        selected: 'instructorstat'
+                    })
+                    this.props.onInstructorStatClick?.()
+                }}>강사통계</div>
             </div>
             <div>
-                <span className='version' style={{fontSize: '0.8rem', color: 'white'}}>ver {packagejson.version}</span>
+                <span className='version' style={{ fontSize: '0.8rem', color: 'white' }}>ver {packagejson.version}</span>
             </div>
 
         </div>
