@@ -117,6 +117,7 @@ class CreateSubscriptionView extends React.Component {
                     <thead>
                         <th>횟수</th>
                         <th>가격</th>
+                        <th>사용기간</th>
                     </thead>
                     <tbody>
                         {guideline.map(d => <tr onClick={e => {
@@ -127,6 +128,7 @@ class CreateSubscriptionView extends React.Component {
                         }}>
                             <td>{d.rounds + '회'}</td>
                             <td>{Number(d.cost).format() + '원'}</td>
+                            <td>{d.expire_countdown}</td>
                         </tr>)}
                     </tbody>
                 </Table>

@@ -4,7 +4,7 @@ import React from 'react'
 import GroupingTypeSelectComponent from '../components/GroupingTypeSelectComponent'
 import ActivityTypeSelectComponent from '../components/ActivityTypeSelectComponent'
 
-import ClientSearchComponent2 from '../components/ClientSearchComponent2'
+
 import InstructorSearchComponent2 from '../components/InstructorSearchComponent2'
 
 import { Button } from 'react-bootstrap'
@@ -14,9 +14,9 @@ import { Button } from 'react-bootstrap'
 import { DatePicker, TimePicker } from '@material-ui/pickers'
 
 
-import { CREATE_LESSON_GQL, CREATE_INDIVIDUAL_LESSON_GQL } from '../common/gql_defs'
+import { CREATE_LESSON_GQL } from '../common/gql_defs'
 
-import SelectSubscriptionTicketComponent from '../components/SelectSubscriptionTicketComponent'
+
 import client from '../apolloclient'
 import ClientTicketSelectComponent from '../components/clientTicketSelectComponent'
 
