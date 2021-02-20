@@ -231,27 +231,25 @@ module.exports = {
                 }
             }
 
-            let result = await pgclient.query('select create_plan_and_tickets($1, $2 , $3, $4, $5, $6)', [args.clientid, args.rounds, args.totalcost, args.activity_type, args.grouping_type, args.coupon_backed == "" ? null : args.coupon_backed]).then(res => {
+            let expire_date = new Date(args.expiredate)
+
+            let _args = [args.clientid, args.rounds, args.totalcost, args.activity_type, args.grouping_type, args.coupon_backed == "" ? null : args.coupon_backed, expire_date]
+
+            console.log(_args)
+
+            let result = await pgclient.query('select * from create_plan_and_tickets($1, $2 , $3, $4, $5, $6, $7) as (success bool, msg text)', _args).then(res => {
 
                 console.log(res)
-                if (res.rowCount < 1) {
+                if (res.rowCount !== 1) {
                     return {
                         success: false,
-                        msg: 'no rows returned'
+                        msg: 'row count not 1'
                     }
+                }
+                else{
+                    return res.rows[0]
                 }
 
-                if (res.rows[0].create_plan_and_tickets === true) {
-                    return {
-                        success: true
-                    }
-                }
-                else {
-                    return {
-                        success: false,
-                        msg: 'function failed'
-                    }
-                }
             }).catch(e => {
                 console.log(e)
                 return {

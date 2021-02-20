@@ -9,6 +9,7 @@ import { CREATE_SUBSCRIPTION_GQL } from '../common/gql_defs'
 import PREDEFINED_PLANS from './PredefinedPlans'
 
 import CheckCouponComponent from './CheckCouponComponent'
+import { DatePicker } from '@material-ui/pickers'
 
 
 class CreateSubscriptionView extends React.Component {
@@ -22,7 +23,8 @@ class CreateSubscriptionView extends React.Component {
             selected_client: null,
             coupon_backed: null,
             rounds: "",
-            totalcost: ""
+            totalcost: "",
+            expire_date: new Date()
         }
 
         this.check_input = this.check_input.bind(this)
@@ -31,11 +33,11 @@ class CreateSubscriptionView extends React.Component {
 
     check_input() {
 
-        if(this.state.activity_type==null){
+        if (this.state.activity_type == null) {
             return false
         }
 
-        if (this.state.grouping_type == null){
+        if (this.state.grouping_type == null) {
             return false
         }
 
@@ -71,6 +73,12 @@ class CreateSubscriptionView extends React.Component {
             return alert('invalid input')
         }
 
+        let _expiredate = this.state.expire_date
+        _expiredate.setHours(23)
+        _expiredate.setMinutes(59)
+        _expiredate.setSeconds(59)
+        _expiredate.setMilliseconds(0)
+
         this.props.apolloclient.mutate({
             mutation: CREATE_SUBSCRIPTION_GQL,
             variables: {
@@ -79,7 +87,8 @@ class CreateSubscriptionView extends React.Component {
                 totalcost: parseInt(this.state.totalcost),
                 activity_type: this.state.activity_type,
                 grouping_type: this.state.grouping_type,
-                coupon_backed: this.state.coupon_backed
+                coupon_backed: this.state.coupon_backed,
+                expiredate: _expiredate.toUTCString()
             }
         }).then(d => {
             console.log(d)
@@ -104,14 +113,10 @@ class CreateSubscriptionView extends React.Component {
 
         if (this.state.activity_type != null && this.state.grouping_type != null) {
 
-
-
-
-
             let guideline = PREDEFINED_PLANS[this.state.activity_type][this.state.grouping_type]
 
             console.log(guideline)
-            plan_guideline = <div className="col-gravity-center" style={{width: '50%'}}>
+            plan_guideline = <div className="col-gravity-center" style={{ width: '50%' }}>
                 <span>가격 가이드라인</span>
                 <Table className="row-clickable-table noselect">
                     <thead>
@@ -121,9 +126,13 @@ class CreateSubscriptionView extends React.Component {
                     </thead>
                     <tbody>
                         {guideline.map(d => <tr onClick={e => {
+
+                            let new_date = new Date()
+                            new_date.setDate(new_date.getDate() + d.expire_days)
                             this.setState({
                                 rounds: d.rounds,
-                                totalcost: d.cost
+                                totalcost: d.cost,
+                                expire_date: new_date
                             })
                         }}>
                             <td>{d.rounds + '회'}</td>
@@ -174,9 +183,9 @@ class CreateSubscriptionView extends React.Component {
 
             {plan_guideline}
 
-          <div className="block row-gravity-center">
-              <CheckCouponComponent disabled />
-          </div>
+            <div className="block row-gravity-center">
+                <CheckCouponComponent disabled />
+            </div>
 
             <div className="block row-gravity-center">
                 <span className="block-header">총횟수</span>
@@ -189,6 +198,23 @@ class CreateSubscriptionView extends React.Component {
                 <Form.Control value={this.state.totalcost} onChange={e => this.setState({
                     totalcost: e.target.value
                 })} />
+            </div>
+            <div className="block col-gravity-center">
+                <span className="block-header">만료기간</span>
+                <DatePicker
+                    autoOk
+                    orientation="landscape"
+                    variant="static"
+                    openTo="date"
+                    value={this.state.expire_date}
+                    onChange={d => {
+                        console.log(d)
+                        this.setState({
+                            expire_date: d
+                        })
+                    }}
+                />
+
             </div>
 
             <div className="block">
