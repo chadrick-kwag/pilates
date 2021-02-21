@@ -96,15 +96,15 @@ class CreateLessonPage extends React.Component {
             return 'no tickets selected'
         }
 
-        if(this.state.selected_grouping_type.toLowerCase()==='semi' && this.state.selected_ticketinfo_arr.length!==2){
+        if (this.state.selected_grouping_type.toLowerCase() === 'semi' && this.state.selected_ticketinfo_arr.length !== 2) {
             return 'incorrect client num for semi'
         }
 
-        if(this.state.selected_grouping_type.toLowerCase()==='group' && this.state.selected_ticketinfo_arr.length<2){
+        if (this.state.selected_grouping_type.toLowerCase() === 'group' && this.state.selected_ticketinfo_arr.length < 2) {
             return 'not enough clients for group'
         }
 
-        if(this.state.selected_grouping_type.toLowerCase()==='individual' && this.state.selected_ticketinfo_arr.length!==1){
+        if (this.state.selected_grouping_type.toLowerCase() === 'individual' && this.state.selected_ticketinfo_arr.length !== 1) {
             return 'not one client for individual type'
         }
 
@@ -291,24 +291,45 @@ class CreateLessonPage extends React.Component {
                     selected_client: c
                 })} /> */}
 
-                <ClientTicketSelectComponent maxItemSize={this.calc_client_slot_size()} ticket_info_arr={this.state.selected_ticketinfo_arr} activity_type={this.state.selected_activity_type} grouping_type={this.state.selected_grouping_type} onTicketSelectSuccess={d => {
-                    console.log(d)
-                    let new_ticket_list = this.state.selected_ticketinfo_arr.concat(d)
-                    this.setState({
-                        selected_ticketinfo_arr: new_ticket_list
-                    })
-                }} 
+                <ClientTicketSelectComponent maxItemSize={this.calc_client_slot_size()} ticket_info_arr={this.state.selected_ticketinfo_arr} activity_type={this.state.selected_activity_type}
+                    grouping_type={this.state.selected_grouping_type}
+                    onTicketSelectSuccess={d => {
 
-                removeTicketByIndex={(i)=>{
-                    let new_ticket_list = [...this.state.selected_ticketinfo_arr]
+                        let duplicate_check = false;
 
-                    new_ticket_list.splice(i,1)
 
-                    this.setState({
-                        selected_ticketinfo_arr: new_ticket_list
-                    })
-                }}
-                
+                        for (let i = 0; i < this.state.selected_ticketinfo_arr.length; i++) {
+
+                            if (this.state.selected_ticketinfo_arr[i].clientid === d.clientid) {
+                                duplicate_check = true
+                                break
+                            }
+                        }
+
+
+                        if (duplicate_check) {
+                            alert('cannot add more than one ticket for one client')
+                        }
+                        else {
+                            let new_ticket_list = this.state.selected_ticketinfo_arr.concat(d)
+                            this.setState({
+                                selected_ticketinfo_arr: new_ticket_list
+                            })
+                        }
+
+
+                    }}
+
+                    removeTicketByIndex={(i) => {
+                        let new_ticket_list = [...this.state.selected_ticketinfo_arr]
+
+                        new_ticket_list.splice(i, 1)
+
+                        this.setState({
+                            selected_ticketinfo_arr: new_ticket_list
+                        })
+                    }}
+
                 />
 
             </div>

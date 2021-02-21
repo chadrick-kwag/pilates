@@ -364,15 +364,35 @@ export default function LessonDetailModal(props) {
                     maxItemSize={props.view_selected_lesson.grouping_type.toLowerCase() === 'semi' ? 2 : props.view_selected_lesson.grouping_type.toLowerCase() === 'group' ? 10 : 0}
 
                     onTicketSelectSuccess={d => {
-                        let new_editinfo = _.cloneDeep(editInfo)
 
-                        new_editinfo.client_info_arr.push({
-                            clientname: d.name,
-                            clientphonenumber: d.phonenumber,
-                            ticketid: d.ticketid,
-                            clientid: parseInt(d.clientid)
-                        })
-                        setEditInfo(new_editinfo)
+
+                        // chech if ticket with same clientid already exists
+                        let duplicate_check = false;
+
+                        for (let i = 0; i < editInfo.client_info_arr.length; i++) {
+
+                            if (editInfo.client_info_arr[i].clientid === parseInt(d.clientid)) {
+                                duplicate_check = true
+                                break
+                            }
+                        }
+
+                        if (duplicate_check) {
+                            alert('cannot add more than one ticket for one client')
+                        }
+                        else {
+                            let new_editinfo = _.cloneDeep(editInfo)
+                            new_editinfo.client_info_arr.push({
+                                clientname: d.name,
+                                clientphonenumber: d.phonenumber,
+                                ticketid: d.ticketid,
+                                clientid: parseInt(d.clientid)
+                            })
+                            setEditInfo(new_editinfo)
+
+                        }
+
+
                     }}
 
                     removeTicketByIndex={i => {
