@@ -155,8 +155,8 @@ class CreateClientPage extends React.Component {
 
     render() {
         return <div>
-            <div>
-                회원생성
+            <div className='row-gravity-center'>
+                <h2>회원생성</h2>
             </div>
 
             <div>
@@ -265,9 +265,9 @@ class CreateClientPage extends React.Component {
                 </Table>
 
             </div>
-            <div>
-                <Button onClick={e => this.props.cancelBtnCallback()}>cancel</Button>
-                <Button onClick={e => this.submitcallback()}>submit</Button>
+            <div className='row-gravity-center children-padding'>
+                <Button onClick={e => this.props.cancelBtnCallback()}>취소</Button>
+                <Button onClick={e => this.submitcallback()}>생성</Button>
             </div>
         </div>
     }

@@ -69,6 +69,10 @@ hr {
     margin: 20px
 }
 
+.children-padding > * {
+    margin: 0.5rem;
+}
+
 .col-gravity-center {
     display: flex;
     flex-direction: column;

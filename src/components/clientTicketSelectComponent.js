@@ -217,6 +217,4 @@ function TicketGridItem(props) {
             <span className='card-content-phonenumber'><PhoneIcon/>{props.phonenumber}</span>
         </div>
     </Paper>
-
-
 }

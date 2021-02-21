@@ -109,9 +109,8 @@ class CreateInstructorPage extends React.Component {
 
     render() {
         return <div>
-            <div>
+            <div className='row-gravity-center'>
                 <h2>강사생성</h2>
-
             </div>
 
             <div>
@@ -272,9 +271,9 @@ class CreateInstructorPage extends React.Component {
                 </Table>
 
             </div>
-            <div>
-                <Button onClick={e => this.props.onCancelClick?.()}>cancel</Button>
-                <Button onClick={e => this.submitcallback?.()}>submit</Button>
+            <div className='row-gravity-center children-padding'>
+                <Button onClick={e => this.props.onCancelClick?.()}>취소</Button>
+                <Button onClick={e => this.submitcallback?.()}>생성</Button>
             </div>
         </div>
     }
