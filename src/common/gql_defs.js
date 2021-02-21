@@ -13,10 +13,12 @@ const FETCH_LESSON_GQL = gql`query {
     }
 }`
 
-
-const CREATE_LESSON_GQL = gql`mutation createlesson($clientids:[Int!], $instructorid:Int!, $starttime: String!, $endtime:String!){
-    create_lesson(clientids: $clientids, instructorid: $instructorid, start_time: $starttime, end_time: $endtime){
+// instructorid: Int!, starttime: String!, endtime: String!, ticketids: [Int!]
+const CREATE_LESSON_GQL = gql`mutation createlesson($instructorid:Int!, $starttime: String!, $endtime:String!, $ticketids:[Int!]){
+    
+    create_lesson(ticketids: $ticketids, instructorid: $instructorid, starttime: $starttime, endtime: $endtime){
         success
+        msg
     }
 }`
 
@@ -61,12 +63,15 @@ const QUERY_LESSON_WITH_DATERANGE_GQL = gql`query($start_time: String!, $end_tim
         msg
         lessons {
             id
-            clientid
-            clientname
-            client_phonenumber
+            client_info_arr {
+                clientid
+                clientname
+                clientphonenumber
+                ticketid
+            }
             instructorid
             instructorname
-            instructor_phonenumber
+            instructorphonenumber
             starttime
             endtime
             activity_type
@@ -89,14 +94,16 @@ const QUERY_LESSON_WITH_TIMERANGE_BY_CLIENTID_GQL = gql`query($clientid: Int!, $
     query_lesson_with_timerange_by_clientid(clientid: $clientid, start_time: $start_time, end_time: $end_time){
         success
         msg
-        lessons{
+        lessons {
             id
-            clientid
-            clientname
-            client_phonenumber
+            client_info_arr {
+                clientid
+                clientname
+                clientphonenumber
+            }
             instructorid
             instructorname
-            instructor_phonenumber
+            instructorphonenumber
             starttime
             endtime
             activity_type
@@ -110,18 +117,21 @@ const QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTORID_GQL = gql`query($instructorid:
     query_lesson_with_timerange_by_instructorid(instructorid: $instructorid, start_time: $start_time, end_time: $end_time){
         success
         msg
-        lessons{
+        lessons {
             id
-            clientid
-            clientname
-            client_phonenumber
+            client_info_arr {
+                clientid
+                clientname
+                clientphonenumber
+            }
             instructorid
             instructorname
-            instructor_phonenumber
+            instructorphonenumber
             starttime
             endtime
             activity_type
             grouping_type
+
         }
         
     }
@@ -281,11 +291,11 @@ const QUERY_SUBSCRIPTION_OF_CLIENTNAME = gql`
 `
 
 
-const CREATE_SUBSCRIPTION_GQL = gql`mutation create_subscription($clientid: Int!, $rounds: Int!, $totalcost: Int!, $activity_type: String!, $grouping_type: String!, $coupon_backed: String){
+const CREATE_SUBSCRIPTION_GQL = gql`mutation create_subscription($clientid: Int!, $rounds: Int!, $totalcost: Int!, $activity_type: String!, $grouping_type: String!, $coupon_backed: String, $expiredate: String!){
 
-    create_subscription(clientid: $clientid, rounds: $rounds, totalcost: $totalcost, activity_type: $activity_type, grouping_type: $grouping_type, coupon_backed: $coupon_backed){
+    create_subscription(clientid: $clientid, rounds: $rounds, totalcost: $totalcost, activity_type: $activity_type, grouping_type: $grouping_type, coupon_backed: $coupon_backed, expiredate: $expiredate){
         success
-        
+        msg
     }
 
 }`
@@ -301,16 +311,13 @@ const DELETE_SUBSCRITION_GQL = gql`mutation delete_subscription($id:Int!){
 const QUERY_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query query_subscriptions_with_remainrounds_for_clientid($clientid: Int!, $activity_type: String!, $grouping_type: String!){
     query_subscriptions_with_remainrounds_for_clientid(clientid: $clientid, activity_type: $activity_type, grouping_type: $grouping_type){
         success
-    subscriptions {
-      subscription{
-          id
-          created
-      }
-      tickets {
-        id
-        expire_time
-      }
-    }
+        msg
+        planandtickets{
+            planid
+            total_ticket_count
+            avail_ticket_count
+            avail_ticket_id_list
+        }
     }
 }`
 
@@ -414,7 +421,7 @@ const FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query a($clie
         success
         msg
         allSubscriptionsWithRemainRounds{
-            subscription_id
+            planid
             total_rounds
             remain_rounds
             created
@@ -491,6 +498,51 @@ const QUERY_CLIENTINFO_BY_CLIENTID = gql`
     }
 `
 
+
+const CANCEL_INDIVIDUAL_LESSON = gql`
+    mutation ($clientid: Int!, $lessonid: Int!, $reqtype: String!, $force_penalty: Boolean!){
+        cancel_individual_lesson(clientid:$clientid, lessonid: $lessonid, reqtype: $reqtype, force_penalty: $force_penalty){
+            success
+            warning
+            msg
+        }
+    }
+`
+
+
+const CHANGE_CLIENTS_OF_LESSON = gql`
+    mutation ($ticketid_arr: [Int], $lessonid: Int!){
+        change_clients_of_lesson(ticketid_arr: $ticketid_arr, lessonid: $lessonid){
+            success
+            msg
+        }
+    }
+`
+
+
+const QUERY_LESSON_DATA_OF_INSTRUCTORID = gql`
+    query ($instructorid: Int!, $search_starttime:String!, $search_endtime: String!){
+        query_lesson_data_of_instructorid(instructorid:$instructorid, search_starttime: $search_starttime, search_endtime: $search_endtime){
+            success
+            msg
+            lesson_info_arr{
+                id
+                starttime
+                endtime
+                activity_type
+                grouping_type
+                client_info_arr {
+                    id 
+                    name
+                }
+                netvalue
+                canceled_time
+                cancel_type
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -528,5 +580,8 @@ export {
     ABLE_INSTRUCTOR_BY_ID,
     TRANSFER_TICKETS_TO_CLIENTID,
     UPDATE_EXPDATE_OF_TICKETS,
-    QUERY_CLIENTINFO_BY_CLIENTID
+    QUERY_CLIENTINFO_BY_CLIENTID,
+    CANCEL_INDIVIDUAL_LESSON,
+    CHANGE_CLIENTS_OF_LESSON,
+    QUERY_LESSON_DATA_OF_INSTRUCTORID
 }

@@ -109,7 +109,7 @@ class InstructorSearchComponent3 extends React.Component {
                             force_search: false,
                             selected_instructor: d
                         })
-                        this.props.instructorSelectedCallback(d)
+                        this.props.instructorSelectedCallback?.(d)
                     }}>
                         <td>{d.id}</td>
                         <td>{d.name}</td>

@@ -9,7 +9,7 @@ module.exports = {
     Query: {
         
         fetch_instructors: async () => {
-            let result = await pgclient.query("select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, disabled from pilates.instructor").then(res => {
+            let result = await pgclient.query("select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, disabled from instructor").then(res => {
 
                 console.log(res)
 
@@ -31,7 +31,7 @@ module.exports = {
         },
         
         search_instructor_with_name: async (parent, args, context, info) => {
-            let results = await pgclient.query("select * from pilates.instructor where name=$1", [args.name]).then(res => {
+            let results = await pgclient.query("select * from instructor where name=$1", [args.name]).then(res => {
                 return res.rows
             })
                 .catch(e => [])
@@ -45,7 +45,7 @@ module.exports = {
 
             console.log(args)
 
-            let result = await pgclient.query('select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, disabled from pilates.instructor where id=$1', [args.id]).then(res=>{
+            let result = await pgclient.query('select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, disabled from instructor where id=$1', [args.id]).then(res=>{
 
                 if(res.rowCount==1){
                     return {
@@ -82,7 +82,7 @@ module.exports = {
 
             console.log(_args)
 
-            let ret = await pgclient.query('insert into pilates.instructor (name, phonenumber, gender, email, job, validation_date, is_apprentice, memo, address, birthdate, level) values ($1, $2, $3, $4, $5, to_timestamp($6), $7, $8, $9, to_timestamp($10), $11) ON CONFLICT (name, phonenumber) DO NOTHING', _args).then(res => {
+            let ret = await pgclient.query('insert into instructor (name, phonenumber, gender, email, job, validation_date, is_apprentice, memo, address, birthdate, level) values ($1, $2, $3, $4, $5, to_timestamp($6), $7, $8, $9, to_timestamp($10), $11) ON CONFLICT (name, phonenumber) DO NOTHING', _args).then(res => {
 
                 console.log(res)
                 if (res.rowCount > 0) return {
@@ -106,7 +106,7 @@ module.exports = {
 
         },
         deleteinstructor: async (parent, args) => {
-            let ret = await pgclient.query('delete from pilates.instructor where id=$1', [args.id]).then(res => {
+            let ret = await pgclient.query('delete from instructor where id=$1', [args.id]).then(res => {
                 if (res.rowCount > 0) {
                     return true
                 }
@@ -136,7 +136,7 @@ module.exports = {
 
             console.log(_args)
 
-            let ret = await pgclient.query('update pilates.instructor set name=$1, phonenumber=$2, gender=$3, email=$4, level=$5, address=$6, validation_date=to_timestamp($7), birthdate=to_timestamp($8), memo=$9, is_apprentice=$10, job=$11 where id=$12', _args).then(res => {
+            let ret = await pgclient.query('update instructor set name=$1, phonenumber=$2, gender=$3, email=$4, level=$5, address=$6, validation_date=to_timestamp($7), birthdate=to_timestamp($8), memo=$9, is_apprentice=$10, job=$11 where id=$12', _args).then(res => {
                 if (res.rowCount > 0) {
                     return {
                         success: true
@@ -158,7 +158,7 @@ module.exports = {
             return ret
         },
         disable_instructor_by_id: async (parent, args)=>{
-            let result = pgclient.query('update pilates.instructor set disabled=true where id=$1',[args.id]).then(res=>{
+            let result = pgclient.query('update instructor set disabled=true where id=$1',[args.id]).then(res=>{
                 if(res.rowCount==1){
                     return {
                         success: true
@@ -181,7 +181,7 @@ module.exports = {
             return result
         },
         able_instructor_by_id: async (parent, args)=>{
-            let result = pgclient.query('update pilates.instructor set disabled=false where id=$1',[args.id]).then(res=>{
+            let result = pgclient.query('update instructor set disabled=false where id=$1',[args.id]).then(res=>{
                 if(res.rowCount==1){
                     return {
                         success: true

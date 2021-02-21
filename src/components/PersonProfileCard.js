@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card } from 'react-bootstrap'
 import './profilecard.css'
 import PhoneIcon from '@material-ui/icons/Phone';
 
 
 export default function PersonProfileCard(props) {
+
 
     const get_text_color = () => {
         if (props.variant === undefined) {
@@ -21,14 +22,20 @@ export default function PersonProfileCard(props) {
         text={get_text_color()}
         style={props.style}
     >
-        <Card.Header style={{padding: '1px'}}>{props.type}</Card.Header>
-        <Card.Body className='col-gravity-center' >
 
-            <Card.Text className='card-name'>{props.name}</Card.Text>
-            <Card.Text className="card-normal">
-                <span><PhoneIcon/>{props.phonenumber} </span>
-            </Card.Text>
+        <div className='hover-container'>
 
-        </Card.Body>
+            <Card.Header style={{ padding: '1px' }}>{props.type}</Card.Header>
+            <Card.Body className='col-gravity-center' >
+
+                <Card.Text className='card-name'>{props.name}</Card.Text>
+                <Card.Text className="card-normal">
+                    <span><PhoneIcon />{props.phonenumber} </span>
+                </Card.Text>
+
+            </Card.Body>
+
+        </div>
+
     </Card>
 }

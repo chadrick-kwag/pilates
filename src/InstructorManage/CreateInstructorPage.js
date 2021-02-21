@@ -273,8 +273,8 @@ class CreateInstructorPage extends React.Component {
 
             </div>
             <div>
-                <Button onClick={e => this.props.cancelBtnCallback()}>cancel</Button>
-                <Button onClick={e => this.submitcallback()}>submit</Button>
+                <Button onClick={e => this.props.onCancelClick?.()}>cancel</Button>
+                <Button onClick={e => this.submitcallback?.()}>submit</Button>
             </div>
         </div>
     }

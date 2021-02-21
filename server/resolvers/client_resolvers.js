@@ -12,7 +12,7 @@ module.exports = {
     Query: {
 
         fetch_clients: async (parent, args) => {
-            let results = await pgclient.query("select id, name, phonenumber, created, job, email, birthdate, address, gender, memo, disabled from pilates.client").then(res => {
+            let results = await pgclient.query("select id, name, phonenumber, created, job, email, birthdate, address, gender, memo, disabled from client").then(res => {
 
                 return {
                     success: true,
@@ -29,7 +29,7 @@ module.exports = {
         },
         search_client_with_name: async (parent, args, context, info) => {
             console.log(args)
-            let results = await pgclient.query("select * from pilates.client where name=$1", [args.name]).then(res => {
+            let results = await pgclient.query("select * from client where name=$1", [args.name]).then(res => {
                 
                 return res.rows
                 
@@ -43,7 +43,7 @@ module.exports = {
             return results
         },
         query_clients_by_name: async (parent, args)=>{
-            let results = await pgclient.query("select * from pilates.client where name=$1", [args.name]).then(res => {
+            let results = await pgclient.query("select * from client where name=$1", [args.name]).then(res => {
                 
                 return {
                     success: true,
@@ -62,7 +62,7 @@ module.exports = {
             return results
         },
         query_clientinfo_by_clientid: async (parent, args)=>{
-            let result = await pgclient.query("select * from pilates.client where id=$1", [args.clientid]).then(res => {
+            let result = await pgclient.query("select * from client where id=$1", [args.clientid]).then(res => {
                 
                 if(res.rowCount==1){
                     return {
@@ -113,7 +113,7 @@ module.exports = {
 
             let pre_args = [args.name, args.phonenumber, gender, args.job, args.address, args.memo, args.email, birthdate]
 
-            let ret = await pgclient.query("insert into pilates.client (name, phonenumber, gender, job, address, memo, email, birthdate) values ($1, $2, $3, $4, $5, $6, $7, CASE WHEN $8 = -1 THEN NULL ELSE to_timestamp($8) END ) ON CONFLICT (name, phonenumber) DO NOTHING", pre_args).then(res => {
+            let ret = await pgclient.query("insert into client (name, phonenumber, gender, job, address, memo, email, birthdate) values ($1, $2, $3, $4, $5, $6, $7, CASE WHEN $8 = -1 THEN NULL ELSE to_timestamp($8) END ) ON CONFLICT (name, phonenumber) DO NOTHING", pre_args).then(res => {
                 console.log(res)
 
                 if (res.rowCount > 0) {
@@ -139,7 +139,7 @@ module.exports = {
         },
 
         disable_client_by_clientid: async (parent, args)=>{
-            let ret = await pgclient.query('update pilates.client set disabled=true where id=$1',[args.clientid]).then(res=>{
+            let ret = await pgclient.query('update client set disabled=true where id=$1',[args.clientid]).then(res=>{
                 console.log(res)
                 if(res.rowCount==1){
                     return {
@@ -164,7 +164,7 @@ module.exports = {
         },
 
         able_client_by_clientid: async (parent, args)=>{
-            let ret = await pgclient.query('update pilates.client set disabled=false where id=$1',[args.clientid]).then(res=>{
+            let ret = await pgclient.query('update client set disabled=false where id=$1',[args.clientid]).then(res=>{
                 console.log(res)
                 if(res.rowCount==1){
                     return {
@@ -190,7 +190,7 @@ module.exports = {
 
         deleteclient: async (parent, args) => {
             console.log('delete client inside')
-            let ret = await pgclient.query('delete from pilates.client where id=$1', [args.id]).then(res => {
+            let ret = await pgclient.query('delete from client where id=$1', [args.id]).then(res => {
                 // console.log(res)
                 if (res.rowCount > 0) return true
 
@@ -234,7 +234,7 @@ module.exports = {
                 args.id
             ]
 
-            let ret = await pgclient.query('update pilates.client set name=$1, phonenumber=$2, email=$3, memo=$4, address=$5, gender=$6, job=$7, birthdate=to_timestamp($8) where id=$9', prep_args).then(res => {
+            let ret = await pgclient.query('update client set name=$1, phonenumber=$2, email=$3, memo=$4, address=$5, gender=$6, job=$7, birthdate=to_timestamp($8) where id=$9', prep_args).then(res => {
                 console.log(res)
                 if (res.rowCount > 0) {
                     return {

@@ -26,6 +26,8 @@ import LessonColorToolTip from '../LessonColorTooltip'
 import ClientViewLessonModal from './ClientViewLessonModal'
 import ClientSearchComponent3 from '../../components/ClientSearchComponent3'
 
+import LessonDetailModal from '../LessonDetailModal'
+
 
 
 class ClientScheduleViewer extends React.Component {
@@ -74,6 +76,7 @@ class ClientScheduleViewer extends React.Component {
 
 
         }).then(d => {
+            console.log('received')
             console.log(d)
 
 
@@ -161,8 +164,12 @@ class ClientScheduleViewer extends React.Component {
 
                 starttime = new Date(parseInt(starttime))
                 endtime = new Date(parseInt(endtime))
+                let clients_str = ""
+                d.client_info_arr.forEach(a => clients_str += a.clientname + ' ')
 
-                let title = d.clientname + " 회원님 / " + d.instructorname + " 강사님"
+
+                let title = clients_str + "회원님 / " + d.instructorname + " 강사님"
+
 
                 let [bgcolor, fontcolor] = get_bg_fontcolor_for_activity_type(d.activity_type)
 
@@ -186,12 +193,15 @@ class ClientScheduleViewer extends React.Component {
         return <div>
 
 
-            {this.state.show_view_modal ? <ClientViewLessonModal show={this.state.show_view_modal} onHide={(_) => {
+            {this.state.show_view_modal ? <LessonDetailModal 
+            cancel_options = {['client_req', 'admin_req']}
+            show={this.state.show_view_modal} 
+            onCancel={(_) => {
                 this.setState({
                     show_view_modal: false
                 })
             }}
-                lesson={this.state.view_selected_lesson}
+                view_selected_lesson={this.state.view_selected_lesson}
                 onDeleteSuccess={() => {
                     this.setState({
                         show_view_modal: false,
@@ -287,7 +297,7 @@ class ClientScheduleViewer extends React.Component {
                                 this.calendar = r
 
                             }}
-                            
+
                             calendars={[
                                 {
                                     id: '0',

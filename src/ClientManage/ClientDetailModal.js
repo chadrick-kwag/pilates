@@ -4,7 +4,6 @@ import { Form, Modal, Button, Table, Spinner } from 'react-bootstrap'
 import moment from 'moment'
 import { UPDATE_CLIENT_INFO_GQL, FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID, QUERY_CLIENTINFO_BY_CLIENTID } from '../common/gql_defs'
 
-import { extract_date_from_birthdate_str } from './CreateClientPage'
 
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 import { KeyboardDatePicker } from "@material-ui/pickers";
@@ -340,7 +339,7 @@ class ClientDetailModal extends React.Component {
                     <Spinner animation='border' />
                 </div>
 
-                if (this.state.subscription_info_arr != null) {
+                if (this.state.subscription_info_arr !== null) {
                     if (this.state.subscription_info_arr.length == 0) {
                         plan_list_comp = <div>
                             <span>no plans found</span>
@@ -356,7 +355,7 @@ class ClientDetailModal extends React.Component {
                             </thead>
                             <tbody>
                                 {this.state.subscription_info_arr.map(d => <tr>
-                                    <td>{moment(new Date(d.created)).format('YYYY-MM-DD HH:mm')}</td>
+                                    <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
                                     <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
                                     <td>{d.remain_rounds}/{d.total_rounds}</td>
                                 </tr>)}

@@ -129,7 +129,7 @@ type SuccessAndClients{
 }
 
 type AllSubscriptionsWithRemainRounds{
-  subscription_id: Int
+  planid: Int
   total_rounds: Int
   remain_rounds: Int
   created: String
@@ -150,14 +150,23 @@ type SuccessAndTickets{
     tickets: [Ticket2]
 }
 
+
+type LessonClientInfo {
+    clientid: Int
+    clientname: String
+    clientphonenumber: String
+    ticketid: Int
+
+}
+
+
+
 type LessonWithMoreInfo {
   id: Int
-  clientid: Int
-  clientname: String
-  client_phonenumber: String
+  client_info_arr: [LessonClientInfo]
   instructorid: Int
   instructorname: String
-  instructor_phonenumber: String
+  instructorphonenumber: String
   starttime: String
   endtime: String
   activity_type: String
@@ -178,6 +187,12 @@ type ResultInstructor{
 
 type SuccessResult {
     success: Boolean,
+    msg: String
+}
+
+type SuccessWarningMsgResult{
+    success: Boolean
+    warning: Boolean
     msg: String
 }
 `

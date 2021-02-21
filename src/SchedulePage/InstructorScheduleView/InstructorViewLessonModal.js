@@ -26,18 +26,19 @@ export default function InstructorViewLessonModal(props) {
     const [editInfo, setEditInfo] = useState(initlesson)
 
 
-    let people = [
-        {
+    let people = props.lesson.client_info_arr.map(a => {
+        return {
             type: 'client',
-            name: props.lesson.clientname,
-            phonenumber: props.lesson.client_phonenumber
-        },
-        {
-            type: 'instructor',
-            name: props.lesson.instructorname,
-            phonenumber: props.lesson.instructor_phonenumber
+            name: a.clientname,
+            phonenumber: a.clientphonenumber
         }
-    ]
+    })
+
+    people.push({
+        type: 'instructor',
+        name: props.lesson.instructorname,
+        phonenumber: props.lesson.instructorphonenumber
+    })
 
     const try_lesson_delete = (_ignore_warning = false, req_type) => {
         client.mutate({
