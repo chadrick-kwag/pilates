@@ -5,3 +5,5 @@ teststuff
 backup
 config.js
 *.log
+dist_backup
+others
