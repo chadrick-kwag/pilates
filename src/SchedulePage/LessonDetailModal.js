@@ -22,6 +22,7 @@ import ClientTicketSelectComponent from '../components/clientTicketSelectCompone
 
 
 
+
 const EDITMODE = {
     NONE: 'NONE',
     TIME_INSTRUCTOR_CHANGE: 'TIME_INSTRUCTOR_CHANGE',
@@ -352,7 +353,7 @@ export default function LessonDetailModal(props) {
                 activity_type={props.view_selected_lesson.activity_type}
             /> : null}
 
-            {editmode === EDITMODE.CLIENT_CHANGE ? <div>
+            {editmode === EDITMODE.CLIENT_CHANGE ? <div style={{padding: '1rem'}}>
                 <ClientTicketSelectComponent activity_type={props.view_selected_lesson.activity_type} grouping_type={props.view_selected_lesson.grouping_type}
                     ticket_info_arr={editInfo.client_info_arr.map(d => {
                         return {

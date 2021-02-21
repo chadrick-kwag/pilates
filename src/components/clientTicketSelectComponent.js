@@ -21,6 +21,8 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { Table } from 'react-bootstrap'
 import ClearIcon from '@material-ui/icons/Clear';
 import PhoneIcon from '@material-ui/icons/Phone';
+import AddBoxIcon from '@material-ui/icons/AddBox';
+
 
 
 import { Modal } from 'react-bootstrap'
@@ -101,11 +103,11 @@ export default function ClientTicketSelectComponent(props) {
             width: '800px'
         }}>
 
-            <Modal show={showAddTicket} className={classes.dialogpaper} maxWidth='lg' open={showAddTicket} onClose={_ => setShowAddTicket(false)} >
-                <Modal.Title>Subscribe</Modal.Title>
+            <Modal show={showAddTicket} className={classes.dialogpaper} maxWidth='lg' open={showAddTicket}
+                onHide={_ => setShowAddTicket(false)}
+                onClose={_ => setShowAddTicket(false)} >
+                <Modal.Title>회원검색</Modal.Title>
                 <Modal.Body>
-
-
                     <ClientSearchComponent3 clientSelectedCallback={d => {
                         console.log('client selected')
                         console.log(d)
@@ -156,7 +158,7 @@ export default function ClientTicketSelectComponent(props) {
                     <Button onClick={_ => {
                         setShowAddTicket(false)
                     }} color="primary">
-                        Cancel
+                        취소
                 </Button>
 
                 </Modal.Footer>
@@ -176,7 +178,8 @@ export default function ClientTicketSelectComponent(props) {
                             setShowAddTicket(true)
                         }} className="card-item">
                             <div className='row-gravity-center' style={{ width: '100%', height: '100%' }}>
-                                <span>add</span>
+                                <AddBoxIcon className='icon' fontSize='large' />
+
                             </div>
 
                         </Paper>
@@ -204,14 +207,14 @@ function TicketGridItem(props) {
         onMouseLeave={_ => setHover(false)}
     >
         {hover ? <div className='card-overlay'>
-            <ClearIcon onClick={_ => {
+            <ClearIcon className='icon' fontSize='large' onClick={_ => {
                 console.log('clear clicked')
                 props.onClear?.()
             }} />
         </div> : null}
         <div className='card-content'>
             <span>{props.name}</span>
-            <span className='card-content-phonenumber'><PhoneIcon />{props.phonenumber}</span>
+            <span className='card-content-phonenumber'><PhoneIcon/>{props.phonenumber}</span>
         </div>
     </Paper>
 

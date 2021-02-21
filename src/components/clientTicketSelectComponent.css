@@ -16,6 +16,10 @@
     .card-item > .card-content-phonenumber {
         overflow: hidden;
     }
+
+    .icon:hover {
+        transform: scale(1.2);
+    }
 }
 
 @media only screen and (min-width: 600px){
@@ -36,6 +40,9 @@
 
     .card-item > .card-content-phonenumber {
         overflow: hidden;
+    }
+    .icon:hover {
+        transform: scale(1.2);
     }
 
     .card-overlay {
