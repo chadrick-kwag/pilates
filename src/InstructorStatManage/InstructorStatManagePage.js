@@ -87,7 +87,7 @@ export default function InstructorStatManagePage(props) {
 
     return (
         <div>
-            <div className='row-gravity-left'>
+            <div className='row-gravity-left children-padding'>
                 <InstructorSearchComponent3
                     instructorSelectedCallback={d => {
                         let newstate = _.cloneDeep(state)
@@ -141,7 +141,7 @@ export default function InstructorStatManagePage(props) {
                                     return <tr>
                                         <td>{i}</td>
                                         <td>{DateTime.fromMillis(parseInt(d.starttime)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')}</td>
-                                        <td>{d.client_info_arr.map(a => a.name)}</td>
+                                        <td>{d.client_info_arr.map(a => a.name).join(',')}</td>
                                         <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
                                         <td>{numeral(d.netvalue).format('0,0')}</td>
                                     </tr>

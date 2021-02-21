@@ -226,8 +226,8 @@ class CreateSubscriptionView extends React.Component {
             </div>
 
             <div className="block footer">
-                <Button onClick={e => this.props.onCancelClick()}>cancel</Button>
-                <Button onClick={e => this.submit()}>submit</Button>
+                <Button onClick={e => this.props.onCancelClick()}>취소</Button>
+                <Button onClick={e => this.submit()}>생성</Button>
             </div>
         </div>
     }

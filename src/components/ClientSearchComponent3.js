@@ -130,7 +130,7 @@ class ClientSearchComponent3 extends React.Component {
                     <Form.Control value={this.state.client_name} onChange={e => this.setState({
                         client_name: e.target.value
                     })} />
-                    <Button onClick={e => this.search_clients()}>search</Button>
+                    <Button onClick={e => this.search_clients()}>검색</Button>
                     {this.state.selected_client == null ? null : <CancelIcon onClick={_ => this.setState({
                         force_search: false
                     })} />}
