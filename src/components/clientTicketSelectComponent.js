@@ -20,9 +20,10 @@ import './clientTicketSelectComponent.css'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Table } from 'react-bootstrap'
 import ClearIcon from '@material-ui/icons/Clear';
+import PhoneIcon from '@material-ui/icons/Phone';
 
 
-import {Modal} from 'react-bootstrap'
+import { Modal } from 'react-bootstrap'
 
 
 const useStyles = makeStyles(theme => ({
@@ -164,16 +165,16 @@ export default function ClientTicketSelectComponent(props) {
             <div className={classes.root}>
                 <Grid container spacing={0}>
                     {props.ticket_info_arr.map((d, i) => <Grid item xs={3}>
-                        <TicketGridItem name={d.name} phonenumber={d.phonenumber} onClear={() => { 
-                            console.log('onclear trigger')
-                            console.log(`onclear index: ${i}`)
-                            props.removeTicketByIndex?.(i) }} />
+                        <TicketGridItem name={d.name} phonenumber={d.phonenumber} onClear={() => {
+                            props.removeTicketByIndex?.(i)
+                        }} />
                     </Grid>)}
 
                     {props.maxItemSize ? props.ticket_info_arr.length < props.maxItemSize ? <Grid item xs={3}>
                         <Paper variant="outlined" square elevation={3} onClick={_ => {
-                            console.log('add clicked')
-                            setShowAddTicket(true)}} className="card-item">
+
+                            setShowAddTicket(true)
+                        }} className="card-item">
                             <div className='row-gravity-center' style={{ width: '100%', height: '100%' }}>
                                 <span>add</span>
                             </div>
@@ -208,9 +209,9 @@ function TicketGridItem(props) {
                 props.onClear?.()
             }} />
         </div> : null}
-        <div>
+        <div className='card-content'>
             <span>{props.name}</span>
-            <span>{props.phonenumber}</span>
+            <span className='card-content-phonenumber'><PhoneIcon />{props.phonenumber}</span>
         </div>
     </Paper>
 
