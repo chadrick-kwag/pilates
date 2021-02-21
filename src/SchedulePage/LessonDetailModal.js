@@ -5,7 +5,7 @@ import moment from 'moment'
 import client from '../apolloclient'
 
 import {
-    CANCEL_INDIVIDUAL_LESSON,
+    
     UPDATE_LESSON_INSTRUCTOR_OR_TIME_GQL,
     DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
     CHANGE_CLIENTS_OF_LESSON
