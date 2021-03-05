@@ -2,26 +2,12 @@ import React from 'react'
 import { Form, Modal, Button, Table, Spinner, Dropdown, ToggleButton, DropdownButton, ButtonGroup } from 'react-bootstrap'
 import _ from 'lodash'
 import moment from 'moment'
-import { UPDATE_INSTRUCTOR_INFO_GQL, FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID } from '../common/gql_defs'
+import { UPDATE_INSTRUCTOR_INFO_GQL, FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID, FETCH_INSTRUCTOR_LEVEL_INFO } from '../common/gql_defs'
 
 import { INSTRUCTOR_LEVEL_LIST } from '../common/consts'
 import client from '../apolloclient'
 import { KeyboardDatePicker } from "@material-ui/pickers";
 
-
-
-function convert_is_apprentice_to_str(ia_val) {
-    if (ia_val == null) {
-        return 'N/A'
-    }
-    else if (ia_val == true) {
-        return '예'
-    }
-    else if (ia_val == false) {
-        return '아니오'
-    }
-
-}
 
 
 
@@ -48,14 +34,38 @@ class InstructorDetailModal extends React.Component {
             base_instructor: null,
             edit_mode: false,
             edit_instructor: null,
+            level_info_list: null
         }
 
 
         this.check_edit_inputs = this.check_edit_inputs.bind(this)
         this.fetch_instructor_data = this.fetch_instructor_data.bind(this)
+        this.fetch_instructor_level_info = this.fetch_instructor_level_info.bind(this)
 
     }
 
+    fetch_instructor_level_info(){
+
+        client.query({
+            query: FETCH_INSTRUCTOR_LEVEL_INFO,
+            fetchPolicy: 'no-cache'
+        }).then(res=>{
+            console.log(res)
+
+            if(res.data.fetch_instructor_level_info.success){
+                this.setState({
+                    level_info_list: res.data.fetch_instructor_level_info.info_list
+                })
+            }
+            else{
+                alert('instructor level info fetch failed')
+            }
+        })
+        .catch(e=>{
+            console.log(JSON.stringify(e))
+            alert('instructor level info fetch error')
+        })
+    }
 
 
     fetch_instructor_data() {
@@ -99,17 +109,6 @@ class InstructorDetailModal extends React.Component {
     }
 
 
-    // modify_prop_instructor_for_init_edit_instructor(instructor) {
-    //     if (instructor.birthdate) {
-    //         instructor.birthdate = moment(new Date(parseInt(instructor.birthdate))).format('YYYYMMDD')
-    //     }
-
-    //     if (instructor.validation_date) {
-    //         instructor.validation_date = moment(new Date(parseInt(instructor.validation_date))).format('YYYYMMDD')
-    //     }
-
-    //     return instructor
-    // }
 
     check_edit_inputs() {
         // return null if all pass
@@ -293,8 +292,21 @@ class InstructorDetailModal extends React.Component {
                 <tr>
                     <td>레벨</td>
                     <td>
-                        <DropdownButton title={this.state.edit_instructor.level == null ? 'select' : this.state.edit_instructor.level}>
-                            {INSTRUCTOR_LEVEL_LIST.map(d => <Dropdown.Item onClick={e => {
+                        <DropdownButton title={this.state.edit_instructor.level == null ? 'select' : this.state.edit_instructor.level_string} onClick={e=>{
+                            if(this.state.level_info_list===null){
+                                this.fetch_instructor_level_info()
+                            }
+                        }}>
+                            {this.state.level_info_list===null ? <Dropdown.Item>loading...</Dropdown.Item> : this.state.level_info_list.map(d=><Dropdown.Item onClick={e=>{
+                                let new_inst = _.cloneDeep(this.state.edit_instructor)
+                                new_inst.level = d.id
+                                new_inst.level_string = d.level_string
+                                this.setState({
+                                    edit_instructor: new_inst
+                                })
+
+                            }}>{d.level_string}</Dropdown.Item>)}
+                            {/* {INSTRUCTOR_LEVEL_LIST.map(d => <Dropdown.Item onClick={e => {
                                 let updated_instructor = this.state.edit_instructor
                                 updated_instructor.level = d
                                 this.setState({
@@ -302,37 +314,11 @@ class InstructorDetailModal extends React.Component {
                                 })
                             }}>
                                 {d}
-                            </Dropdown.Item>)}
+                            </Dropdown.Item>)} */}
                         </DropdownButton>
                     </td>
                 </tr>
-                <tr>
-                    <td>견습생</td>
-                    <td>
-                        <ButtonGroup toggle>
-                            {[['예', true], ['아니오', false]].map((d, i) => {
-
-                                return <ToggleButton
-                                    key={i}
-                                    type="radio"
-                                    value={d[1]}
-                                    checked={this.state.edit_instructor.is_apprentice == d[1]}
-                                    onChange={e => {
-                                        let updated = this.state.edit_instructor
-
-                                        updated.is_apprentice = d[1]
-                                        this.setState({
-                                            edit_instructor: updated
-                                        })
-                                    }}
-                                >
-                                    {d[0]}
-                                </ToggleButton>
-                            })}
-
-                        </ButtonGroup>
-                    </td>
-                </tr>
+               
                 <tr>
                     <td>자격증취득일</td>
                     <td>
@@ -438,12 +424,9 @@ class InstructorDetailModal extends React.Component {
                     </tr>
                     <tr>
                         <td>레벨</td>
-                        <td>{this.state.base_instructor.level}</td>
+                        <td>{this.state.base_instructor.level_string}</td>
                     </tr>
-                    <tr>
-                        <td>견습생</td>
-                        <td>{convert_is_apprentice_to_str(this.state.base_instructor.is_apprentice)}</td>
-                    </tr>
+                   
                     <tr>
                         <td>자격증취득일</td>
                         <td>{this.state.base_instructor.validation_date == null ? null : moment(this.state.base_instructor.validation_date).format('YYYY-MM-DD')}</td>

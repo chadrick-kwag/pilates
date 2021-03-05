@@ -9,9 +9,12 @@ module.exports = {
     Query: {
         
         fetch_instructors: async () => {
-            let result = await pgclient.query("select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, disabled from instructor").then(res => {
+            let result = await pgclient.query(`select instructor.id as id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, instructor_level.level_string as level_string, disabled from instructor
+            left join instructor_level on level=instructor_level.id
+            `).then(res => {
 
                 console.log(res)
+                console.log(res.rows)
 
                 return {
                     success: true,
@@ -45,7 +48,7 @@ module.exports = {
 
             console.log(args)
 
-            let result = await pgclient.query('select id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, disabled from instructor where id=$1', [args.id]).then(res=>{
+            let result = await pgclient.query('select instructor.id as id, name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, instructor_level.level_string as level_string, disabled from instructor left join instructor_level on level = instructor_level.id where instructor.id=$1', [args.id]).then(res=>{
 
                 if(res.rowCount==1){
                     return {
@@ -66,6 +69,25 @@ module.exports = {
                 return {
                     success: false,
                     msg: "query error"
+                }
+            })
+
+            return result
+        },
+        fetch_instructor_level_info: async (parent, args)=>{
+            console.log('fetch_instructor_level_info')
+            console.log(args)
+
+            let result = await pgclient.query(`select id, level_string from instructor_level where active=true`).then(res=>{
+                return {
+                    success: true,
+                    info_list: res.rows
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: 'query error'
                 }
             })
 

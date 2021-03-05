@@ -84,7 +84,8 @@ type Instructor {
     validation_date: String
     birthdate: String
     is_apprentice: Boolean
-    level: String
+    level: Int
+    level_string: String
     address: String
     gender: String
     disabled: Boolean

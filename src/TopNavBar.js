@@ -62,6 +62,12 @@ class TopNavBar extends React.Component {
                     })
                     this.props.onInstructorStatClick?.()
                 }}>강사통계</div>
+                <div className={this.get_bar_item_classname('adminpage')} onClick={e => {
+                    this.setState({
+                        selected: 'adminpage'
+                    })
+                    this.props.onAdminPageClick?.()
+                }}>관리자설정</div>
             </div>
             <div>
                 <span className='version' style={{ fontSize: '0.8rem', color: 'white' }}>ver {packagejson.version}</span>

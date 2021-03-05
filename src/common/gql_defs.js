@@ -187,6 +187,7 @@ const LIST_INSTRUCTOR_GQL = gql`query instructors{
             memo
             address
             level
+            level_string
             validation_date
             gender
             email
@@ -224,7 +225,7 @@ const DELETE_INSTRUCTOR_GQL = gql`mutation di($id: Int!){
     }
 }`
 
-const UPDATE_INSTRUCTOR_INFO_GQL = gql`mutation updateinstructor($id: Int!, $name: String!, $phonenumber: String!, $memo: String, $address: String, $is_apprentice: Boolean, $level: String, $birthdate: String, $validation_date: String, $email: String, $job: String, $gender: String){
+const UPDATE_INSTRUCTOR_INFO_GQL = gql`mutation updateinstructor($id: Int!, $name: String!, $phonenumber: String!, $memo: String, $address: String, $is_apprentice: Boolean, $level: Int, $birthdate: String, $validation_date: String, $email: String, $job: String, $gender: String){
     update_instructor(id: $id, name: $name, phonenumber: $phonenumber, memo: $memo, address: $address, is_apprentice: $is_apprentice, level: $level, birthdate: $birthdate, validation_date: $validation_date, email: $email, job: $job, gender: $gender){
         success
         msg
@@ -394,6 +395,7 @@ const FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID = gql`query fetch_instructor_with_i
             birthdate
             validation_date
             level
+            level_string
             job
             gender
             email
@@ -543,6 +545,20 @@ const QUERY_LESSON_DATA_OF_INSTRUCTORID = gql`
     }
 `
 
+
+const FETCH_INSTRUCTOR_LEVEL_INFO = gql`
+    query{
+        fetch_instructor_level_info{
+            success
+            msg
+            info_list {
+                id
+                level_string
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -583,5 +599,6 @@ export {
     QUERY_CLIENTINFO_BY_CLIENTID,
     CANCEL_INDIVIDUAL_LESSON,
     CHANGE_CLIENTS_OF_LESSON,
-    QUERY_LESSON_DATA_OF_INSTRUCTORID
+    QUERY_LESSON_DATA_OF_INSTRUCTORID,
+    FETCH_INSTRUCTOR_LEVEL_INFO
 }
