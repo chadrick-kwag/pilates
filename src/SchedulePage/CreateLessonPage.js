@@ -387,8 +387,12 @@ class CreateLessonPage extends React.Component {
                             value={this.state.start_time}
                             onChange={d => {
                                 console.log(d)
+
+                                let new_end_time = _.cloneDeep(d)
+                                new_end_time.setHours(d.getHours()+1)
                                 this.setState({
-                                    start_time: d
+                                    start_time: d,
+                                    end_time: new_end_time
                                 })
                             }}
                         />
