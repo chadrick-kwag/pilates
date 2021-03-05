@@ -180,7 +180,7 @@ module.exports = {
             return ret
         },
         disable_instructor_by_id: async (parent, args)=>{
-            let result = pgclient.query('update instructor set disabled=true where id=$1',[args.id]).then(res=>{
+            let result = await pgclient.query('update instructor set disabled=true where id=$1',[args.id]).then(res=>{
                 if(res.rowCount==1){
                     return {
                         success: true
@@ -203,7 +203,7 @@ module.exports = {
             return result
         },
         able_instructor_by_id: async (parent, args)=>{
-            let result = pgclient.query('update instructor set disabled=false where id=$1',[args.id]).then(res=>{
+            let result = await pgclient.query('update instructor set disabled=false where id=$1',[args.id]).then(res=>{
                 if(res.rowCount==1){
                     return {
                         success: true
@@ -224,6 +224,81 @@ module.exports = {
             })
 
             return result
+        },
+        update_instructor_level: async (parent, args)=>{
+            let result = await pgclient.query(`update instructor_level set level_string=$2 where id=$1`,[args.id, args.level_string]).then(res=>{
+                if(res.rowCount>0){
+                    return {
+                        success: true
+                    }
+                }
+                else{
+                    return {
+                        success: false,
+                        msg: 'row count zero'
+                    }
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
+            })
+
+            return result
+        },
+        add_instructor_level: async (parent, args) => {
+            let result = await pgclient.query(`insert into instructor_level (level_string, active) values ($1, $2) returning id`, [args.level_string, true]).then(res=>{
+                if(res.rowCount>0){
+
+                    console.log(res.rows)
+                    let returnid = res.rows[0]['id']
+
+                    return {
+                        success: true,
+                        id: returnid
+                    }
+                }
+                else{
+                    return {
+                        success: false,
+                        msg: "insert failed"
+                    }
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: "query error"
+                }
+            })
+
+            return result
+        },
+        delete_instructor_level: async (parent, args) =>{
+            let result = await pgclient.query(`delete from instructor_level where id=$1`, [args.id]).then(res=>{
+                if(res.rowCount>0){
+                    return {
+                        success: true
+                    }
+                }
+                else{
+                    return {
+                        success: false,
+                        msg: "query failed"
+                    }
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: "query error"
+                }
+            })
+
+            return result
         }
+
     }
 }

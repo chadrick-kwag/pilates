@@ -19,6 +19,12 @@ type SuccessAndInstructorLevels{
     info_list: [InstructorLevel]
 }
 
+type SuccessResultWithId{
+    success: Boolean
+    msg: String
+    id: Int
+}
+
 type Mutation {
     
     create_instructor(name: String!, phonenumber: String!, email: String, job: String, validation_date: String, memo: String, address: String, birthdate: String, is_apprentice: Boolean, level: String, gender: String): SuccessResult
@@ -29,6 +35,10 @@ type Mutation {
     able_instructor_by_id(id:Int!): SuccessResult
     
     update_instructor(id: Int!, name: String!, phonenumber: String!, birthdate: String, validation_date: String, memo: String, address: String, is_apprentice: Boolean, email: String, job: String, level: Int, gender: String): SuccessResult
+
+    update_instructor_level(id:Int!, level_string:String!): SuccessResult
+    add_instructor_level(level_string:String!): SuccessResultWithId
+    delete_instructor_level(id:Int!): SuccessResult
     
 }
 `

@@ -559,6 +559,35 @@ const FETCH_INSTRUCTOR_LEVEL_INFO = gql`
     }
 `
 
+
+const UPDATE_INSTRUCTOR_LEVEL = gql`
+    mutation ($id:Int!, $level_string: String!){
+        update_instructor_level(id:$id, level_string:$level_string){
+            success
+            msg
+        }
+    }
+`
+
+const ADD_INSTRUCTOR_LEVEL = gql`
+    mutation ($level_string:String!){
+        add_instructor_level(level_string: $level_string){
+            success
+            msg
+            id
+        }
+    }
+`
+
+const DELETE_INSTRUCTOR_LEVEL = gql`
+    mutation($id:Int!){
+        delete_instructor_level(id:$id){
+            success
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -600,5 +629,8 @@ export {
     CANCEL_INDIVIDUAL_LESSON,
     CHANGE_CLIENTS_OF_LESSON,
     QUERY_LESSON_DATA_OF_INSTRUCTORID,
-    FETCH_INSTRUCTOR_LEVEL_INFO
+    FETCH_INSTRUCTOR_LEVEL_INFO,
+    UPDATE_INSTRUCTOR_LEVEL,
+    ADD_INSTRUCTOR_LEVEL,
+    DELETE_INSTRUCTOR_LEVEL
 }
