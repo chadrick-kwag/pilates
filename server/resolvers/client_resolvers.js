@@ -29,7 +29,10 @@ module.exports = {
         },
         search_client_with_name: async (parent, args, context, info) => {
             console.log(args)
-            let results = await pgclient.query("select * from client where name=$1", [args.name]).then(res => {
+
+            let pattern = '%'+args.name + '%'
+            console.log(pattern)
+            let results = await pgclient.query("select * from client where name like $1", [pattern]).then(res => {
                 
                 return res.rows
                 
