@@ -21,6 +21,7 @@ export default function PanelSequenceComponent(props) {
 
     return (
         <div>
+            <div>
             {props.children.map((d, i) => {
                 let panel_display = i === pageno ? 'inline' : 'none'
                 let prevbtn_display = d.props.prevBtnHide === true ? 'none' : 'inline'
@@ -76,6 +77,13 @@ export default function PanelSequenceComponent(props) {
                     </div>
                 )
             })}
+            </div>
+            <div className='row-gravity-center' style={{
+                marginTop: '1rem'
+            }}>
+                <Button onClick={e=>props.onClose?.()}>close</Button>
+            </div>
+           
 
         </div>
     )

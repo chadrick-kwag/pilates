@@ -239,7 +239,7 @@ export default function LessonDetailModal(props) {
 
     return <div>
         <Modal show={true} onHide={() => props.onCancel()} dialogClassName='two-time-picker' >
-            {editmode === EDITMODE.TIME_INSTRUCTOR_CHANGE ? <PanelSequenceComponent >
+            {editmode === EDITMODE.TIME_INSTRUCTOR_CHANGE ? <PanelSequenceComponent onClose={e=>setEditMode(EDITMODE.NONE)} >
                 <PanelSequenceChild prevBtnHide={true}>
                     <div className='col-gravity-center' >
                         <PersonProfileCard type='강사' name={editInfo.instructorname} phonenumber={editInfo.instructor_phonenumber} />
