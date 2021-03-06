@@ -153,9 +153,9 @@ export default function InstructorConfig(props) {
     return (
 
         <div>
-            insturctor config
+            <h1>강사관련 설정</h1>
             <div>
-                <span>강사 레벨 설정</span>
+                <h2>강사 레벨 설정</h2>
 
                 <MaterialTable
                     icons={tableIcons}

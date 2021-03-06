@@ -2,6 +2,7 @@
 export const PILATES_BGCOLOR = '#4287f5'
 export const GYROTONIC_BGCOLOR = '#d8e310'
 export const BALLET_BGCOLOR = '#d6890d'
+export const GYROKINESIS_BGCOLOR = '#32a852'
 
 export function get_bg_fontcolor_for_activity_type(activity_type){
 
@@ -20,6 +21,11 @@ export function get_bg_fontcolor_for_activity_type(activity_type){
             bgcolor = BALLET_BGCOLOR
             fontcolor = 'black'
             break
+        case 'GYROKINESIS':
+            bgcolor = GYROKINESIS_BGCOLOR
+            fontcolor = 'white'
+            break
+
             
     }
 

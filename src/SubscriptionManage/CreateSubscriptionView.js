@@ -57,7 +57,7 @@ class CreateSubscriptionView extends React.Component {
 
         try {
             let int_totalcost = parseInt(this.state.totalcost)
-            if (int_totalcost <= 0) {
+            if (int_totalcost < 0) {
                 return false
             }
         }
@@ -113,35 +113,51 @@ class CreateSubscriptionView extends React.Component {
 
         if (this.state.activity_type != null && this.state.grouping_type != null) {
 
-            let guideline = PREDEFINED_PLANS[this.state.activity_type][this.state.grouping_type]
+            let activity_type_predefined = PREDEFINED_PLANS[this.state.activity_type]
+            let guideline = null
+            if(activity_type_predefined===undefined){
+                guideline = null
+            }
+            else{
+                guideline = PREDEFINED_PLANS[this.state.activity_type][this.state.grouping_type]
+            }
 
             console.log(guideline)
-            plan_guideline = <div className="col-gravity-center" style={{ width: '50%' }}>
-                <span>가격 가이드라인</span>
-                <Table className="row-clickable-table noselect">
-                    <thead>
-                        <th>횟수</th>
-                        <th>가격</th>
-                        <th>사용기간</th>
-                    </thead>
-                    <tbody>
-                        {guideline.map(d => <tr onClick={e => {
 
-                            let new_date = new Date()
-                            new_date.setDate(new_date.getDate() + d.expire_days)
-                            this.setState({
-                                rounds: d.rounds,
-                                totalcost: d.cost,
-                                expire_date: new_date
-                            })
-                        }}>
-                            <td>{d.rounds + '회'}</td>
-                            <td>{Number(d.cost).format() + '원'}</td>
-                            <td>{d.expire_countdown}</td>
-                        </tr>)}
-                    </tbody>
-                </Table>
-            </div>
+            if (guideline === undefined || guideline === null) {
+                plan_guideline = <div>
+                    <span>no guideline</span>
+                </div>
+            }
+            else {
+                plan_guideline = <div className="col-gravity-center" style={{ width: '50%' }}>
+                    <span>가격 가이드라인</span>
+                    <Table className="row-clickable-table noselect">
+                        <thead>
+                            <th>횟수</th>
+                            <th>가격</th>
+                            <th>사용기간</th>
+                        </thead>
+                        <tbody>
+                            {guideline.map(d => <tr onClick={e => {
+
+                                let new_date = new Date()
+                                new_date.setDate(new_date.getDate() + d.expire_days)
+                                this.setState({
+                                    rounds: d.rounds,
+                                    totalcost: d.cost,
+                                    expire_date: new_date
+                                })
+                            }}>
+                                <td>{d.rounds + '회'}</td>
+                                <td>{Number(d.cost).format() + '원'}</td>
+                                <td>{d.expire_countdown}</td>
+                            </tr>)}
+                        </tbody>
+                    </Table>
+                </div>
+            }
+
         }
 
         return <div className="col-gravity-center">
@@ -177,6 +193,9 @@ class CreateSubscriptionView extends React.Component {
                     <Button variant={this.state.activity_type == "BALLET" ? 'warning' : 'light'} onClick={e => this.setState({
                         activity_type: 'BALLET'
                     })}>발레</Button>
+                    <Button variant={this.state.activity_type == "GYROKINESIS" ? 'warning' : 'light'} onClick={e => this.setState({
+                        activity_type: 'GYROKINESIS'
+                    })}>자이로키네시스</Button>
                 </div>
 
             </div>

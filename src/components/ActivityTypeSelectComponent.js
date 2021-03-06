@@ -28,6 +28,9 @@ class ActivityTypeSelectComponent extends React.Component {
                 <Button variant={this.state.activity_type == "BALLET" ? 'warning' : 'light'} onClick={e => this.setState({
                     activity_type: 'BALLET'
                 }, ()=>this.props.onItemClicked('BALLET'))}>발레</Button>
+                <Button variant={this.state.activity_type == "GYROKINESIS" ? 'warning' : 'light'} onClick={e => this.setState({
+                    activity_type: 'GYROKINESIS'
+                }, ()=>this.props.onItemClicked('GYROKINESIS'))}>자이로키네시스</Button>
             </div>
 
         </div>

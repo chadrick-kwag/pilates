@@ -2,6 +2,7 @@ export const activity_type_to_kor = {
     'PILATES': '필라테스',
     'BALLET': '발레',
     'GYROTONIC': '자이로토닉',
+    'GYROKINESIS': '자이로키네시스',
     "": "!",
     null: "!"
 }

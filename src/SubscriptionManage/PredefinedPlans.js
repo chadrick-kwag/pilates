@@ -273,6 +273,96 @@ const PREDEFINED_PLANS = {
                 expire_days: 90
             }
         ]
+    },
+    'GYROKINESIS': {
+        'INDIVIDUAL': [
+            {
+                rounds: 1,
+                cost: 65000,
+                expire_countdown: '1개월',
+                expire_days: 30
+
+            }, {
+                rounds: 5,
+                cost: 270000,
+                expire_countdown: '1개월',
+                expire_days: 30
+
+            },
+            {
+                rounds: 10,
+                cost: 480000,
+                expire_countdown: '1개월',
+                expire_days: 30
+            }
+
+        ],
+        'SEMI': [
+            {
+                rounds: 1,
+                cost: 40000,
+                expire_countdown: '1개월',
+                expire_days: 30
+            },
+            {
+                rounds: 5,
+                cost: 180000,
+                expire_countdown: '1개월',
+                expire_days: 30
+            }, {
+                rounds: 10,
+                cost: 300000,
+                expire_countdown: '1개월',
+                expire_days: 30
+            }
+
+        ],
+        'GROUP': [
+            {
+                rounds: 1,
+                cost: 30000,
+                expire_countdown: '1개월',
+                expire_days: 30
+
+            },
+            {
+                rounds: 4,
+                cost: 100000,
+                expire_countdown: '1개월',
+                expire_days: 30
+            },
+            {
+                rounds: 8,
+                cost: 160000,
+                expire_countdown: '1개월',
+                expire_days: 30
+            },
+            {
+                rounds: 12,
+                cost: 210000,
+                expire_countdown: '3개월',
+                expire_days: 90
+            },
+            {
+                rounds: 16,
+                cost: 240000,
+                expire_countdown: '3개월',
+                expire_days: 90
+
+            },
+            {
+                rounds: 20,
+                cost: 270000,
+                expire_countdown: '3개월',
+                expire_days: 90
+            },
+            {
+                rounds: 40,
+                cost: 450000,
+                expire_countdown: '3개월',
+                expire_days: 90
+            }
+        ]
     }
 }
 
