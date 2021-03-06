@@ -10,6 +10,7 @@ import PREDEFINED_PLANS from './PredefinedPlans'
 
 import CheckCouponComponent from './CheckCouponComponent'
 import { DatePicker } from '@material-ui/pickers'
+import RecentPlanList from './RecentPlanList'
 
 
 class CreateSubscriptionView extends React.Component {
@@ -243,6 +244,8 @@ class CreateSubscriptionView extends React.Component {
                     })}
                 />
             </div>
+
+            {this.state.selected_client !== null ? <RecentPlanList clientid={this.state.selected_client.id}/> : null}
 
             <div className="block footer">
                 <Button onClick={e => this.props.onCancelClick()}>취소</Button>
