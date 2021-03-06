@@ -138,7 +138,10 @@ class ListInstructorPage extends React.Component {
             visible_data = this.state.data
         }
         else {
-            visible_data = this.state.data.filter(d => d.name == this.state.search_name)
+
+            
+            let re = new RegExp('.*'+this.state.search_name.trim()+'.*')
+            visible_data = this.state.data.filter(d => re.test(d.name))
         }
 
         let table_area

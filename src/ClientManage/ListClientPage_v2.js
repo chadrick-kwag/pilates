@@ -135,11 +135,17 @@ class ListClientPageV2 extends React.Component {
         // calculate filtered data
         let filter_name = this.state.search_name.trim()
         let filtered_data = []
+
+        
+        let re = new RegExp('.*'+filter_name+'.*')
+        
         if (filter_name !== "") {
             filtered_data = this.state.data.filter(d => {
-                if (d.name.trim() === filter_name) {
+                console.log(d.name.trim())
+                if(re.test(d.name.trim())){
                     return true
                 }
+                
                 return false
             })
         }
