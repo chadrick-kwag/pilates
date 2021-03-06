@@ -252,25 +252,22 @@ module.exports = {
                 }
             }
 
-            console.log(`currdate: ${currdate}`)
-            console.log(`lesson_startdate: ${lesson_startdate}`)
+            // console.log(`currdate: ${currdate}`)
+            // console.log(`lesson_startdate: ${lesson_startdate}`)
 
-            if (currdate > lesson_startdate) {
-                return {
-                    success: false,
-                    msg: 'cannot change time of lesson that is already past'
-                }
-            }
+            // if (currdate > lesson_startdate) {
+            //     return {
+            //         success: false,
+            //         msg: 'cannot change time of lesson that is already past'
+            //     }
+            // }
 
             console.log([args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)])
 
-            let result = await pgclient.query('select change_lesson_time_or_instructor($1, $2 ,$3,$4)', [args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)]).then(res => {
+            let result = await pgclient.query('select * from change_lesson_time_or_instructor($1, $2 ,$3,$4) as (success bool, msg text)', [args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)]).then(res => {
                 console.log(res)
                 if (res.rowCount > 0) {
-                    return {
-                        success: true,
-
-                    }
+                    return res.rows[0]
                 }
                 else {
                     return {
