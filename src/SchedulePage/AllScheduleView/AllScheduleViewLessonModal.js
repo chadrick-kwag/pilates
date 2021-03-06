@@ -302,7 +302,7 @@ export default function AllScheduleViewLessonModal(props) {
                             강사요청
                     </Dropdown.Item> : null}
 
-                        <Dropdown.Item onClick={e => delete_lesson_with_request_type('admin')}>
+                        <Dropdown.Item onClick={e => delete_lesson_with_request_type('ADMIN_REQUEST')}>
                             관리자</Dropdown.Item>
                     </DropdownButton>
 

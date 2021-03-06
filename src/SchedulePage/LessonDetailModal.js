@@ -68,11 +68,11 @@ export default function LessonDetailModal(props) {
             }
             else {
                 console.log('fail')
-                alert('change fail')
+                alert(`lesson cancel fail. ${res.data.change_clients_of_lesson.msg} `)
             }
         }).catch(e => {
             console.log(JSON.stringify(e))
-            alert('change error')
+            alert('lesson cancel error')
         })
     }
 
