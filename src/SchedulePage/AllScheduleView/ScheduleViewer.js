@@ -28,6 +28,9 @@ import { get_bg_fontcolor_for_activity_type } from '../common'
 import LessonColorToolTip from '../LessonColorTooltip'
 import PartialOverlaySpinner from '../PartialOverlaySpinner'
 
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+
 
 class ScheduleViewer extends React.Component {
 
@@ -41,16 +44,19 @@ class ScheduleViewer extends React.Component {
             show_view_modal: false,
             view_selected_lesson: null,
             view_date: new Date(),
-            show_date_picker: false
+            show_date_picker: false,
+            show_individual_lessons: true,
+            show_semi_lessons: true,
+            show_group_lessons: true
 
         }
 
         // this.createlesson = this.createlesson.bind(this)
         this.fetchdata = this.fetchdata.bind(this)
-       
+
     }
 
-    
+
 
     fetchdata() {
 
@@ -98,7 +104,25 @@ class ScheduleViewer extends React.Component {
 
         let schedule_formatted_data = []
         if (this.state.data !== null) {
-            schedule_formatted_data = this.state.data.map((d, i) => {
+            this.state.data.forEach((d, i) => {
+
+                // check grouping type and visibility
+                let grouping_type = d.grouping_type
+
+                console.log('grouping_type')
+                console.log(grouping_type)
+
+                if (grouping_type === 'INDIVIDUAL' && !this.state.show_individual_lessons) {
+                    return
+                }
+
+                if(grouping_type === 'SEMI' && !this.state.show_semi_lessons){
+                    return
+                }
+
+                if(grouping_type === 'GROUP' && !this.state.show_group_lessons){
+                    return
+                }
 
                 let starttime = d.starttime
                 let endtime = d.endtime
@@ -108,14 +132,14 @@ class ScheduleViewer extends React.Component {
                 endtime = new Date(parseInt(endtime))
 
                 let clients_str = ""
-                d.client_info_arr.forEach(a=>clients_str += a.clientname+ ' ')
-                
+                d.client_info_arr.forEach(a => clients_str += a.clientname + ' ')
+
 
                 let title = clients_str + "회원님 / " + d.instructorname + " 강사님"
 
                 let [bgcolor, fontcolor] = get_bg_fontcolor_for_activity_type(d.activity_type)
 
-                return {
+                schedule_formatted_data.push({
                     id: parseInt(i),
                     calendarId: '0',
                     title: title,
@@ -125,16 +149,19 @@ class ScheduleViewer extends React.Component {
                     end: endtime,
                     bgColor: bgcolor,
                     color: fontcolor
-                }
+                })
             })
         }
+
+        console.log('schedule_formatted_data')
+        console.log(schedule_formatted_data)
 
 
 
 
         return <div>
 
-            {this.state.show_view_modal === true ? <LessonDetailModal 
+            {this.state.show_view_modal === true ? <LessonDetailModal
                 view_selected_lesson={this.state.view_selected_lesson}
                 onCancel={() => this.setState({
                     show_view_modal: false
@@ -159,58 +186,100 @@ class ScheduleViewer extends React.Component {
             /> : null}
 
             <div>
-                <div className="row-gravity-center">
-                    <Button onClick={e => {
-                        this.calendar.calendarInst.prev()
-                        // update current view date
-                        let new_date = new Date(this.state.view_date)
-                        new_date.setDate(this.state.view_date.getDate() - 7)
-                        this.setState({
-                            view_date: new_date,
-                            data: null
-                        }, () => {
-                            this.fetchdata()
-                        })
+                <div className="row-gravity-between">
 
-                    }}>prev week</Button>
+                    <div className='className="row-gravity-center"'>
 
-                    <DatePicker
-                        style={{
-                            margin: '1rem'
-                        }}
-                        autoOk
-                        variant='inline'
-                        format='yy.MM.dd'
-                        showTodayButton
-                        value={this.state.view_date}
-                        onChange={(d) => {
-                            this.calendar.calendarInst.setDate(d)
+                        <FormControlLabel control={<Checkbox checked={this.state.show_individual_lessons} onChange={d => {
+
+
+                            let new_val = d.target.checked
+
                             this.setState({
-                                view_date: d,
-                                show_date_picker: false,
+                                show_individual_lessons: new_val
+                            })
+
+                        }} />} label='개별레슨' />
+                        <FormControlLabel control={<Checkbox checked={this.state.show_semi_lessons} onChange={d => {
+
+
+                            let new_val = d.target.checked
+
+                            this.setState({
+                                show_semi_lessons: new_val
+                            })
+
+                        }} />} label='세미레슨' />
+                        <FormControlLabel control={<Checkbox checked={this.state.show_group_lessons} onChange={d => {
+
+
+                            let new_val = d.target.checked
+
+                            this.setState({
+                                show_group_lessons: new_val
+                            })
+
+                        }} />} label='그룹레슨' />
+
+                    </div>
+                    <div className="row-gravity-center">
+                        <Button onClick={e => {
+                            this.calendar.calendarInst.prev()
+                            // update current view date
+                            let new_date = new Date(this.state.view_date)
+                            new_date.setDate(this.state.view_date.getDate() - 7)
+                            this.setState({
+                                view_date: new_date,
                                 data: null
                             }, () => {
                                 this.fetchdata()
                             })
-                        }}
 
-                    />
-                    <Button onClick={e => {
-                        this.calendar.calendarInst.next()
-                        // update current view date
-                        let new_date = new Date(this.state.view_date)
-                        new_date.setDate(this.state.view_date.getDate() + 7)
-                        this.setState({
-                            view_date: new_date,
-                            data: null
-                        }, () => {
-                            this.fetchdata()
-                        })
-                    }}>next week</Button>
+                        }}>prev week</Button>
+
+                        <DatePicker
+                            style={{
+                                margin: '1rem'
+                            }}
+                            autoOk
+                            variant='inline'
+                            format='yy.MM.dd'
+                            showTodayButton
+                            value={this.state.view_date}
+                            onChange={(d) => {
+                                this.calendar.calendarInst.setDate(d)
+                                this.setState({
+                                    view_date: d,
+                                    show_date_picker: false,
+                                    data: null
+                                }, () => {
+                                    this.fetchdata()
+                                })
+                            }}
+
+                        />
+                        <Button onClick={e => {
+                            this.calendar.calendarInst.next()
+                            // update current view date
+                            let new_date = new Date(this.state.view_date)
+                            new_date.setDate(this.state.view_date.getDate() + 7)
+                            this.setState({
+                                view_date: new_date,
+                                data: null
+                            }, () => {
+                                this.fetchdata()
+                            })
+                        }}>next week</Button>
+                    </div>
+
+                    <div>
+                        <LessonColorToolTip />
+                    </div>
 
 
 
-                    <LessonColorToolTip />
+
+
 
                 </div>
 
