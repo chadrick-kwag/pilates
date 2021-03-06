@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -53,10 +53,7 @@ export default function ClientTicketSelectComponent(props) {
 
     const classes = useStyles()
 
-
-    console.log('classes')
-    console.log(classes)
-
+    const client_name_search_input_ref = useRef(null)
 
     const fetch_tickets = () => {
         console.log('fetch tickets')
@@ -97,6 +94,10 @@ export default function ClientTicketSelectComponent(props) {
         }
     }, [addSelectedClient])
 
+    useEffect(() => {
+        client_name_search_input_ref?.current?.focus()
+    }, [showAddTicket])
+
     console.log('rendering')
     return (
         <div style={{
@@ -108,17 +109,19 @@ export default function ClientTicketSelectComponent(props) {
                 onClose={_ => setShowAddTicket(false)} >
                 <Modal.Title>회원검색</Modal.Title>
                 <Modal.Body>
-                    <ClientSearchComponent3 clientSelectedCallback={d => {
-                        console.log('client selected')
-                        console.log(d)
-                        if (addSelectedClient === d) {
-                            fetch_tickets()
+                    <ClientSearchComponent3
+                        client_name_search_input_ref={client_name_search_input_ref}
+                        clientSelectedCallback={d => {
+                            console.log('client selected')
+                            console.log(d)
+                            if (addSelectedClient === d) {
+                                fetch_tickets()
+                            }
+                            setAddSelectedClient(d)
+
+
                         }
-                        setAddSelectedClient(d)
-
-
-                    }
-                    } />
+                        } />
                     {addSelectedClient !== null ? planandticketlist === null ? <CircularProgress /> : <div className='col-gravity-center'>
                         <div className='plan-select-title'>플랜 선택</div>
 
@@ -214,7 +217,7 @@ function TicketGridItem(props) {
         </div> : null}
         <div className='card-content'>
             <span>{props.name}</span>
-            <span className='card-content-phonenumber'><PhoneIcon/>{props.phonenumber}</span>
+            <span className='card-content-phonenumber'><PhoneIcon />{props.phonenumber}</span>
         </div>
     </Paper>
 }

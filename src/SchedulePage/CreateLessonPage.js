@@ -288,9 +288,6 @@ class CreateLessonPage extends React.Component {
 
                 <h3>회원선택</h3>
 
-                {/* <ClientSearchComponent2 clientSelectedCallback={c => this.setState({
-                    selected_client: c
-                })} /> */}
                 {this.state.selected_grouping_type !== null && this.state.selected_activity_type !== null ? <ClientTicketSelectComponent maxItemSize={this.calc_client_slot_size()} ticket_info_arr={this.state.selected_ticketinfo_arr} activity_type={this.state.selected_activity_type}
                     grouping_type={this.state.selected_grouping_type}
                     onTicketSelectSuccess={d => {

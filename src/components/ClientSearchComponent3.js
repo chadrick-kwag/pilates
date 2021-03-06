@@ -34,14 +34,13 @@ class ClientSearchComponent3 extends React.Component {
         this.get_absolute_dim = this.get_absolute_dim.bind(this)
 
         this.card = createRef()
-        // this.search_inputbox = createRef()
     }
 
     get_absolute_dim() {
 
         let out = 100
 
-        if(this.card.current){
+        if (this.card.current) {
             let rect = this.card.current.getBoundingClient
         }
         return 100
@@ -83,13 +82,15 @@ class ClientSearchComponent3 extends React.Component {
 
     render() {
 
+        console.log('render')
+
         let search_mode = false
 
         if (this.state.force_search || this.state.selected_client == null) {
             search_mode = true
         }
         let search_result_area
-        if (search_mode!==true){
+        if (search_mode !== true) {
             search_result_area = null
         }
         else if (this.state.client_search_result == null) {
@@ -127,9 +128,16 @@ class ClientSearchComponent3 extends React.Component {
 
                 <div className='row-gravity-center'>
                     <span>회원이름</span>
-                    <Form.Control value={this.state.client_name} onChange={e => this.setState({
-                        client_name: e.target.value
-                    })} />
+                    <Form.Control
+                        ref={r => {
+                            if (this.props.client_name_search_input_ref) {
+                                this.props.client_name_search_input_ref.current = r
+                            }
+                        }}
+                        value={this.state.client_name}
+                        onChange={e => this.setState({
+                            client_name: e.target.value
+                        })} />
                     <Button onClick={e => this.search_clients()}>검색</Button>
                     {this.state.selected_client == null ? null : <CancelIcon onClick={_ => this.setState({
                         force_search: false
@@ -144,7 +152,7 @@ class ClientSearchComponent3 extends React.Component {
 
                 }} className='col-gravity-center'>
                     {this.state.fetching ? <Spinner animation='border' /> : search_result_area}
-                    
+
 
                 </div>
             </Card.Body> : <Card.Body>
@@ -156,7 +164,7 @@ class ClientSearchComponent3 extends React.Component {
                             })}>회원찾기</Button>
                     </div>
 
-                </Card.Body> }
+                </Card.Body>}
         </Card>
 
     }
