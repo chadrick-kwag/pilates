@@ -5,16 +5,8 @@ import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 import { FETCH_TICKETS_FOR_SUBSCRIPTION_ID } from '../common/gql_defs'
 
 import TicketListComponent from './TicketListComponent'
+import client from '../apolloclient'
 
-
-
-function get_null_safe_date_format(val, nullval = '') {
-    if (val == null) {
-        return nullval
-    }
-
-    return moment(new Date(parseInt(val))).format('YYYY-MM-DD HH:mm')
-}
 
 
 class ViewSubscriptionDetailModal extends React.Component {
@@ -36,7 +28,7 @@ class ViewSubscriptionDetailModal extends React.Component {
 
 
     fetch_tickets() {
-        this.props.apolloclient.query({
+        client.query({
             query: FETCH_TICKETS_FOR_SUBSCRIPTION_ID,
             variables: {
                 subscription_id: this.props.data.id

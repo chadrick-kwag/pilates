@@ -17,15 +17,16 @@ module.exports = {
             CASE
             WHEN A.id is null THEN null
             WHEN A.id is not null AND A.canceled_time is not null THEN null
-            ELSE A.created
+            WHEN lesson.canceled_time is not null THEN null
+            ELSE lesson.starttime
             END as consumed_date,
             C.created as destroyed_date
-            
             from plan
             left join ticket on ticket.creator_plan_id = plan.id
+            left join (select id, created from plan) as C on C.id = ticket.destroyer_plan_id
             left join (select DISTINCT ON(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) as A on A.ticketid = ticket.id
-            left join plan as C on ticket.destroyer_plan_id = C.id
-            where plan.id = $1 ANd ticket.id is not null`, [args.subscription_id]).then(res => {
+            left join lesson on lesson.id = A.lessonid
+            where plan.id = $1 AND ticket.id is not null`, [args.subscription_id]).then(res => {
                 console.log(res.rows)
 
                 return {

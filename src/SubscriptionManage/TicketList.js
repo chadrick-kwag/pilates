@@ -51,11 +51,31 @@ function TicketList(props) {
                     <th>#</th>
                     <th>만료 일시</th>
                     <th>생성 일시</th>
-                    <th>소모 일시</th>
+                    <th>소모 수업 시작일시</th>
                     <th>양도 일시</th>
                 </thead>
                 <tbody>
-                    {props.tickets.map((d, index) => {
+                    {props.tickets.sort((a,b)=>{
+                        if(a.consumed_date!==null && b.consumed_date !== null){
+                            let res =  a.consumed_date < b.consumed_date
+
+                            if(res){
+                                return -1
+                            }
+                            else{
+                                return 1
+                            }
+                        }
+                        else if(a.consumed_date===null && b.consumed_date !==null){
+                            return 1
+                        }
+                        else if(a.consumed_date!==null && b.consumed_date === null){
+                            return -1
+                        }
+                        else{
+                            return 0
+                        }
+                    }).map((d, index) => {
                         let tr_classname = ""
                         let expire_date = new Date(parseInt(d.expire_time))
                         if (expire_date < new Date()) {
