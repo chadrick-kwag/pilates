@@ -350,7 +350,9 @@ class ClientScheduleViewer extends React.Component {
 
                             week={{
                                 showTimezoneCollapseButton: false,
-                                timezonesCollapsed: true
+                                timezonesCollapsed: true,
+                                hourStart: 7,
+                                hourEnd: 23
                             }}
 
 

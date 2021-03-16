@@ -346,7 +346,9 @@ class ScheduleViewer extends React.Component {
                             // view={selectedView} // You can also set the `defaultView` option.
                             week={{
                                 showTimezoneCollapseButton: false,
-                                timezonesCollapsed: true
+                                timezonesCollapsed: true,
+                                hourStart: 7,
+                                hourEnd: 23
                             }}
 
 

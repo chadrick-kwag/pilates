@@ -305,17 +305,15 @@ class InstructorScheduleViewer extends React.Component {
 
                                 ]}
 
-                                // view={selectedView} // You can also set the `defaultView` option.
                                 week={{
                                     showTimezoneCollapseButton: false,
-                                    timezonesCollapsed: true
+                                    timezonesCollapsed: true,
+                                    hourStart: 7,
+                                    hourEnd: 23
                                 }}
 
                                 onClickSchedule={e => {
 
-                                    // let new_modal_info = {
-                                    //     schedule: e.schedule
-                                    // }
                                     console.log('clicked schedule')
                                     console.log(e)
 
