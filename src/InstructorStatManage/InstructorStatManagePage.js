@@ -20,6 +20,9 @@ export default function InstructorStatManagePage(props) {
         lesson_data: 'init'
     })
 
+    const [viewedInstructor, setViewedInstructor] = useState(null)
+    const [viewedMonth, setViewedMonth] = useState(null)
+
 
 
     const fetch_month_lesson_data = () => {
@@ -87,7 +90,7 @@ export default function InstructorStatManagePage(props) {
 
     return (
         <div>
-            <div className='row-gravity-left children-padding'>
+            <div className='row-gravity-center children-padding'>
                 <InstructorSearchComponent3
                     instructorSelectedCallback={d => {
                         let newstate = _.cloneDeep(state)
@@ -117,41 +120,53 @@ export default function InstructorStatManagePage(props) {
 
                     }}
                 />
-                <Button disabled={check_view_request_button_disabled()} onClick={_ => fetch_month_lesson_data()}>조회</Button>
+                <Button disabled={check_view_request_button_disabled()} onClick={_ => {
+                    setViewedInstructor(state.selected_instructor)
+                    setViewedMonth(state.selected_month)
+                    fetch_month_lesson_data()}}>조회</Button>
 
             </div>
             <div>
 
                 {state.lesson_data === null ? <Spinner animation='border' /> : null}
                 {state.lesson_data !== null && state.lesson_data !== 'init' ?
+                    <div>
+                        <div>
+                            <h3>{viewedInstructor.name} 강사 / {viewedMonth.getFullYear() + '년 ' + (viewedMonth.getMonth() + 1) + '월'}</h3>
+                        </div>
+                        {state.lesson_data.length === 0 ? <div>no lesson data</div> :
+                            <div>
 
-                    state.lesson_data.length === 0 ? <div>no lesson data</div> :
-                        <Table>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>수업일시</th>
-                                    <th>회원</th>
-                                    <th>수업종류</th>
-                                    <th>수강료합산</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {state.lesson_data.sort((a, b) => parseInt(a.starttime) - parseInt(b.starttime)).map((d, i) => {
-                                    return <tr>
-                                        <td>{i}</td>
-                                        <td>{DateTime.fromMillis(parseInt(d.starttime)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')}</td>
-                                        <td>{d.client_info_arr.map(a => a.name).join(',')}</td>
-                                        <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
-                                        <td>{numeral(d.netvalue).format('0,0')}</td>
-                                    </tr>
-                                })}
-                                <tr>
-                                    <td colSpan='4'><div className='row-gravity-right'><span>total</span></div></td>
-                                    <td>{numeral(state.lesson_data.reduce((total, a) => total + parseInt(a.netvalue), 0)).format('0,0')}</td>
-                                </tr>
-                            </tbody>
-                        </Table>
+                                <Table>
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>수업일시</th>
+                                            <th>회원</th>
+                                            <th>수업종류</th>
+                                            <th>수강료합산</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {state.lesson_data.sort((a, b) => parseInt(a.starttime) - parseInt(b.starttime)).map((d, i) => {
+                                            return <tr>
+                                                <td>{i}</td>
+                                                <td>{DateTime.fromMillis(parseInt(d.starttime)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')}</td>
+                                                <td>{d.client_info_arr.map(a => a.name).join(',')}</td>
+                                                <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
+                                                <td>{numeral(d.netvalue).format('0,0')}</td>
+                                            </tr>
+                                        })}
+                                        <tr>
+                                            <td colSpan='4'><div className='row-gravity-right'><span>total</span></div></td>
+                                            <td>{numeral(state.lesson_data.reduce((total, a) => total + parseInt(a.netvalue), 0)).format('0,0')}</td>
+                                        </tr>
+                                    </tbody>
+                                </Table>
+                            </div>
+                        }
+                    </div>
+
                     : null}
 
             </div>
