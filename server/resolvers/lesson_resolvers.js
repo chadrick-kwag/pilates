@@ -203,10 +203,11 @@ module.exports = {
                 lesson.canceled_time, lesson.cancel_type,
                 array_agg(json_build_object('id', B.clientid, 'name', client.name )) filter(where B.clientid is not null) as client_info_arr, sum(case when B.percost is null then 0 else B.percost end) as netvalue
                 from lesson 
-                left join (select * from assign_ticket where canceled_time is null) as A on A.lessonid = lesson.id
+                left join (select DISTINCT ON (ticketid) * from assign_ticket  order by ticketid, created desc) as A on A.lessonid = lesson.id
                 left join (select ticket.id, plan.clientid as clientid, plan.totalcost / plan.rounds as percost from ticket left join plan on ticket.creator_plan_id = plan.id) as B on B.id = A.ticketid
                 left join client on B.clientid = client.id
                 where lesson.instructorid = $1
+				and A.canceled_time is null
                 and (lesson.cancel_type is null or lesson.cancel_type!='INSTRUCTOR_REQUEST') 
                 and tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3)
                 GROUP BY lesson.id)
