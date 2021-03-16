@@ -11,6 +11,8 @@ import PREDEFINED_PLANS from './PredefinedPlans'
 import CheckCouponComponent from './CheckCouponComponent'
 import { DatePicker } from '@material-ui/pickers'
 import RecentPlanList from './RecentPlanList'
+import { numberToKorean } from 'number-to-korean'
+import numeral from 'numeral'
 
 
 class CreateSubscriptionView extends React.Component {
@@ -116,10 +118,10 @@ class CreateSubscriptionView extends React.Component {
 
             let activity_type_predefined = PREDEFINED_PLANS[this.state.activity_type]
             let guideline = null
-            if(activity_type_predefined===undefined){
+            if (activity_type_predefined === undefined) {
                 guideline = null
             }
-            else{
+            else {
                 guideline = PREDEFINED_PLANS[this.state.activity_type][this.state.grouping_type]
             }
 
@@ -218,9 +220,20 @@ class CreateSubscriptionView extends React.Component {
                 <Form.Control value={this.state.totalcost} onChange={e => this.setState({
                     totalcost: e.target.value
                 })} />
+                {this.state.totalcost !== "" ? <span>{numberToKorean(this.state.totalcost)}</span> : null}
             </div>
+            {this.state.totalcost !== "" ? <div className='row-gravity-center'>
+                <span>회당 가격: </span>
+                <span>{numeral(parseInt(this.state.totalcost) / this.state.rounds).format('0,0')}원</span>
+
+            </div> : null}
+
             <div className="block col-gravity-center">
-                <span className="block-header">만료기간</span>
+                <div className='row-gravity-center'>
+                    <span className="block-header">만료기간</span>
+                    <span>(만료기한: {Math.ceil((this.state.expire_date.getTime() - (new Date()).getTime()) / (1000 * 60 * 60 * 24))}일)</span>
+                </div>
+
                 <DatePicker
                     autoOk
                     orientation="landscape"
@@ -245,7 +258,7 @@ class CreateSubscriptionView extends React.Component {
                 />
             </div>
 
-            {this.state.selected_client !== null ? <RecentPlanList clientid={this.state.selected_client.id}/> : null}
+            {this.state.selected_client !== null ? <RecentPlanList clientid={this.state.selected_client.id} /> : null}
 
             <div className="block footer">
                 <Button onClick={e => this.props.onCancelClick()}>취소</Button>
