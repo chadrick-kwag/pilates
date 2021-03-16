@@ -113,7 +113,7 @@ module.exports = {
 
                 return {
                     success: false,
-                    msg: 'query failed'
+                    msg: 'query failed. possibly duplicate exist'
                 }
             }).catch(e => {
                 console.log(e)

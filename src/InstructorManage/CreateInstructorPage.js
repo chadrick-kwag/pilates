@@ -1,5 +1,5 @@
 import React from 'react'
-import { Form, Button, Table, DropdownButton, Dropdown, ButtonGroup, ToggleButton } from 'react-bootstrap'
+import { Form, Button, Table, DropdownButton, Dropdown, ButtonGroup, ToggleButton, Alert } from 'react-bootstrap'
 import { CREATE_INSTRUCTOR_GQL } from '../common/gql_defs'
 import { INSTRUCTOR_LEVEL_LIST } from '../common/consts'
 import client from '../apolloclient'
@@ -22,7 +22,8 @@ class CreateInstructorPage extends React.Component {
             birthdate: null,
             level: null,
             validation_date: null,
-            is_apprentice: null
+            is_apprentice: null,
+
         }
 
         this.submitcallback = this.submitcallback.bind(this)
@@ -88,13 +89,11 @@ class CreateInstructorPage extends React.Component {
         }).then(d => {
             console.log(d)
             if (d.data.create_instructor.success) {
-                this.props.onSubmitSuccess()
+                this.props.onSubmitSuccess?.()
             }
             else {
-                alert('fail to create\n' + d.data.create_instructor.msg)
-                if (this.props.onSubmitFail !== undefined) {
-                    this.props.onSubmitFail()
-                }
+                alert('fail to create instructor.' + d.data.create_instructor.msg)
+                this.props.onSubmitFail?.()
 
             }
         })
@@ -102,7 +101,8 @@ class CreateInstructorPage extends React.Component {
                 console.log(e)
                 console.log(JSON.stringify(e))
                 alert('error creating instructor')
-                this.props.onSubmitFail()
+                this.props.onSubmitFail?.()
+
             })
     }
 
@@ -275,6 +275,8 @@ class CreateInstructorPage extends React.Component {
                 <Button onClick={e => this.props.onCancelClick?.()}>취소</Button>
                 <Button onClick={e => this.submitcallback?.()}>생성</Button>
             </div>
+            
+            
         </div>
     }
 }

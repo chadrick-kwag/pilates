@@ -2,7 +2,7 @@ import React from 'react'
 import ListInstructorPage from './ListInstructorPage'
 import CreateInstructorPage from './CreateInstructorPage'
 
-import { Button } from 'react-bootstrap'
+import { Button, Alert } from 'react-bootstrap'
 
 
 class InstructorManagePage extends React.Component {
