@@ -22,7 +22,7 @@ import { get_week_range_of_date } from '../../common/date_fns'
 import LessonDetailModal from '../LessonDetailModal'
 
 import client from '../../apolloclient'
-import { get_bg_fontcolor_for_activity_type } from '../common'
+import { get_bg_fontcolor_for_activity_type, get_border_color_for_grouping_type } from '../common'
 import LessonColorToolTip from '../LessonColorTooltip'
 import PartialOverlaySpinner from '../PartialOverlaySpinner'
 
@@ -146,7 +146,9 @@ class ScheduleViewer extends React.Component {
                     start: starttime,
                     end: endtime,
                     bgColor: bgcolor,
-                    color: fontcolor
+                    color: fontcolor,
+                    borderColor: get_border_color_for_grouping_type(d.grouping_type)
+                    
                 })
             })
         }

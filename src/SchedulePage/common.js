@@ -31,3 +31,26 @@ export function get_bg_fontcolor_for_activity_type(activity_type){
 
     return [bgcolor, fontcolor]
 }
+
+
+export const BORDER_INDIVIDUAL = 'black'
+export const BORDER_SEMI = 'red'
+export const BORDER_GROUP = '#03fc17'
+
+export function get_border_color_for_grouping_type(grouping_type){
+
+    let color = null
+    switch(grouping_type){
+        case 'INDIVIDUAL':
+            color = BORDER_INDIVIDUAL
+            break
+        case 'SEMI':
+            color = BORDER_SEMI
+            break
+        case 'GROUP':
+            color = BORDER_GROUP
+            break
+    }
+
+    return color
+}

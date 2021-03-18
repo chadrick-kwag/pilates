@@ -40,6 +40,17 @@ const zero_out_less_than_minutes = (d) => {
     return output
 }
 
+
+const get_one_hour_later_than_now_date = () => {
+    let d = new Date()
+    let new_h = d.getHours() + 1
+    if (new_h >= 24) {
+        new_h = 24
+    }
+    d.setHours(new_h)
+    return d
+}
+
 class CreateLessonPage extends React.Component {
 
 
@@ -55,7 +66,7 @@ class CreateLessonPage extends React.Component {
             selected_ticketinfo_arr: [],
             selected_date: new Date(),
             start_time: zero_out_less_than_hours(new Date()),
-            end_time: zero_out_less_than_hours(new Date())
+            end_time: zero_out_less_than_hours(get_one_hour_later_than_now_date())
         }
 
         this.checkinput = this.checkinput.bind(this)
@@ -97,11 +108,11 @@ class CreateLessonPage extends React.Component {
         }
 
         if (this.state.selected_grouping_type.toLowerCase() === 'semi' && this.state.selected_ticketinfo_arr.length !== 2) {
-            return 'incorrect client num for semi'
+            return 'semi grouping type require 2 clients'
         }
 
-        if (this.state.selected_grouping_type.toLowerCase() === 'group' && this.state.selected_ticketinfo_arr.length < 2) {
-            return 'not enough clients for group'
+        if (this.state.selected_grouping_type.toLowerCase() === 'group' && this.state.selected_ticketinfo_arr.length < 1) {
+            return 'at least one client should be added'
         }
 
         if (this.state.selected_grouping_type.toLowerCase() === 'individual' && this.state.selected_ticketinfo_arr.length !== 1) {
@@ -386,7 +397,7 @@ class CreateLessonPage extends React.Component {
                                 console.log(d)
 
                                 let new_end_time = _.cloneDeep(d)
-                                new_end_time.setHours(d.getHours()+1)
+                                new_end_time.setHours(d.getHours() + 1)
                                 this.setState({
                                     start_time: d,
                                     end_time: new_end_time
