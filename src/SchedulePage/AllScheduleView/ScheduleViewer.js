@@ -19,8 +19,6 @@ import {
 
 import { get_week_range_of_date } from '../../common/date_fns'
 
-
-import AllScheduleViewLessonModal from './AllScheduleViewLessonModal'
 import LessonDetailModal from '../LessonDetailModal'
 
 import client from '../../apolloclient'

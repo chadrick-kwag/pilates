@@ -351,6 +351,7 @@ export default function LessonDetailModal(props) {
             {editmode === EDITMODE.NONE ? <LessonInfoComponent people={people} start_time={props.view_selected_lesson.starttime}
                 end_time={props.view_selected_lesson.endtime}
                 activity_type={props.view_selected_lesson.activity_type}
+                grouping_type = {props.view_selected_lesson.grouping_type}
             /> : null}
 
             {editmode === EDITMODE.CLIENT_CHANGE ? <div style={{padding: '1rem'}}>

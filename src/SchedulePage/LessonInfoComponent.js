@@ -1,7 +1,7 @@
 import React from 'react'
 import PersonProfileCard from '../components/PersonProfileCard'
 import moment from 'moment'
-import { activity_type_to_kor, person_type_to_kor } from '../common/consts'
+import { activity_type_to_kor, person_type_to_kor, grouping_type_to_kor } from '../common/consts'
 
 export default function LessonInfoComponent(props) {
 
@@ -52,7 +52,7 @@ export default function LessonInfoComponent(props) {
         </div>
         <div className='col-gravity-center'>
             <span style={{ fontSize: '1.5rem' }}>{datetimestr}</span>
-            <span style={{ fontSize: '1.5rem' }}>{activity_type_to_kor[props.activity_type]} 수업</span>
+            <span style={{ fontSize: '1.5rem' }}>{activity_type_to_kor[props.activity_type]}/{grouping_type_to_kor[props.grouping_type]} 수업</span>
         </div>
 
     </div>
