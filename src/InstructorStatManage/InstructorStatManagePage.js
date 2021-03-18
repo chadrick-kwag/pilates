@@ -150,7 +150,7 @@ export default function InstructorStatManagePage(props) {
                                     <tbody>
                                         {state.lesson_data.sort((a, b) => parseInt(a.starttime) - parseInt(b.starttime)).map((d, i) => {
                                             return <tr>
-                                                <td>{i}</td>
+                                                <td>{i+1}</td>
                                                 <td>{DateTime.fromMillis(parseInt(d.starttime)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')}</td>
                                                 <td>{d.client_info_arr.map(a => a.name).join(',')}</td>
                                                 <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
