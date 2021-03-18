@@ -14,6 +14,9 @@ import moment from 'moment'
 import ClientDetailModal from './ClientDetailModal'
 import client from '../apolloclient'
 
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+
 
 
 class ListClientPageV2 extends React.Component {
@@ -26,6 +29,7 @@ class ListClientPageV2 extends React.Component {
             search_name: "",
             data: null,
             show_detail_target_client: null,
+            list_show_enabled_clients: true,
             list_show_disabled_clients: false
         }
 
@@ -136,16 +140,16 @@ class ListClientPageV2 extends React.Component {
         let filter_name = this.state.search_name.trim()
         let filtered_data = []
 
-        
-        let re = new RegExp('.*'+filter_name+'.*')
-        
+
+        let re = new RegExp('.*' + filter_name + '.*')
+
         if (filter_name !== "") {
             filtered_data = this.state.data.filter(d => {
                 console.log(d.name.trim())
-                if(re.test(d.name.trim())){
+                if (re.test(d.name.trim())) {
                     return true
                 }
-                
+
                 return false
             })
         }
@@ -155,7 +159,7 @@ class ListClientPageV2 extends React.Component {
             }
         }
 
-        filtered_data = filtered_data.sort((a, b) =>  parseInt(a.id) > parseInt(b.id) ? 1 : -1 )
+        filtered_data = filtered_data.sort((a, b) => parseInt(a.id) > parseInt(b.id) ? 1 : -1)
 
 
         return <div className='row-gravity-center' style={{ width: '100%' }}>
@@ -177,10 +181,12 @@ class ListClientPageV2 extends React.Component {
                         </div>
                         <div>
                             <div className='row-gravity-right'>
-                                <Form.Check checked={this.state.list_show_disabled_clients} onClick={() => this.setState({
+                                <FormControlLabel control={<Checkbox checked={this.state.list_show_disabled_clients} onChange={() => this.setState({
                                     list_show_disabled_clients: !this.state.list_show_disabled_clients
-                                })} />
-                                <span>비활성 회원 표시</span>
+                                })} />} label='비활성 회원 표시' />
+                                <FormControlLabel control={<Checkbox checked={this.state.list_show_enabled_clients} onChange={() => this.setState({
+                                    list_show_enabled_clients: !this.state.list_show_enabled_clients
+                                })} />} label='활성 회원 표시' />
                             </div>
                             <Table className='row-clickable-table'>
                                 <thead>
@@ -193,6 +199,10 @@ class ListClientPageV2 extends React.Component {
                                 <tbody>
                                     {filtered_data.map(d => {
                                         if (!this.state.list_show_disabled_clients && d.disabled) {
+                                            return null
+                                        }
+
+                                        if (!this.state.list_show_enabled_clients && !d.disabled) {
                                             return null
                                         }
 
