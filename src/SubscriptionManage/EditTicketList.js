@@ -5,15 +5,78 @@ import { get_null_safe_date_format } from '../common/date_fns'
 import TicketTransferModal from './TicketTransferModal'
 import TicketExpDateChangeModal from './TicketExpDateChangeModal'
 
+import client from '../apolloclient'
+import {DELETE_TICKETS} from '../common/gql_defs'
+
+import {DateTime} from 'luxon'
+
+
+
+function get_date_string(dt){
+    if(dt===null){
+        return '-'
+    }
+    else{
+        return dt.toFormat('y-LL-dd HH:mm')
+    }
+}
+
 
 function EditTicketList(props) {
 
     console.log(`edit ticket list props: `)
     console.log(props)
 
+    const delete_selected_tickets = () => {
+
+        
+        console.log('delete_selected_tickets')
+
+        // check at least one is selected
+
+        let selected_ticket_id_arr = []
+
+        selectlist.forEach((d,i)=>{
+            if(d){
+                selected_ticket_id_arr.push(props.tickets[i].id)
+
+
+            }
+        })
+
+        console.log(`selected_ticket_id_arr : ${selected_ticket_id_arr}`)
+
+        client.mutate({
+            mutation: DELETE_TICKETS,
+            variables: {
+                ticketid_arr: selected_ticket_id_arr
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res=>{
+            console.log(res)
+
+            if(res.data.delete_tickets.success){
+                console.log('delete tickets success')
+                props.refreshdata?.()
+            }
+            else{
+                alert(`delete tickets fail. ${res.data.delete_tickets.msg}`)
+            }
+        }).catch(e=>{
+            console.log(JSON.stringify(e))
+            alert('delete tickets error')
+        })
+
+
+    }
+
+    const create_more_tickets = ()=>{
+        console.log('create_more_tickets')
+    }
+
     const calc_init_selectlist = () => {
         let init_selectlist = []
-        let curr_date = new Date()
+        let curr_date = DateTime.local()
         if (props.tickets !== null && props.tickets !== undefined) {
             for (let i = 0; i < props.tickets.length; i++) {
                 let sel_ticket = props.tickets[i]
@@ -25,7 +88,7 @@ function EditTicketList(props) {
                 if (sel_ticket.consumed_date !== null) {
                     is_edit_possible = false
                 }
-                let expdate = new Date(parseInt(sel_ticket.expire_time))
+                let expdate = sel_ticket.expire_time
                 if (curr_date > expdate) {
                     is_edit_possible = false
                 }
@@ -55,7 +118,7 @@ function EditTicketList(props) {
     const [allselect, setAllSelect] = useState(false)
 
 
-    useEffect(()=>{
+    useEffect(() => {
         let new_selectlist = calc_init_selectlist()
         setSelectList(new_selectlist)
     }, [props.tickets])
@@ -103,7 +166,8 @@ function EditTicketList(props) {
             /> : null}
             {showExpDateChangeModal ? <TicketExpDateChangeModal
                 selected_ticket_id_list={selected_ticket_id_list}
-                default_date={new Date(parseInt(props.tickets[selectlist.indexOf(true)].expire_time))}
+                // default_date={new Date(parseInt(props.tickets[selectlist.indexOf(true)].expire_time))}
+                default_date={props.tickets[selectlist.indexOf(true)].expire_time}
                 onCancel={_ => setShowExpDateChangeModal(false)}
                 onSuccess={_ => {
                     setShowExpDateChangeModal(false)
@@ -112,9 +176,11 @@ function EditTicketList(props) {
             /> : null}
 
             <div className='row-gravity-right'>
+                <Button disabled={!at_least_one_selected} onClick={_ => create_more_tickets()}>추가</Button>
+                <Button disabled={!at_least_one_selected} onClick={_ => delete_selected_tickets()}>삭제</Button>
                 <Button disabled={!at_least_one_selected} onClick={_ => setShowTransferModal(true)}>양도</Button>
                 <Button disabled={!at_least_one_selected} onClick={_ => setShowExpDateChangeModal(true)}>유통기한 변경</Button>
-                <Button variant='warning' onClick={_=> props.onEscapeEditMode()}>변경취소</Button>
+                <Button variant='warning' onClick={_ => props.onEscapeEditMode()}>변경취소</Button>
             </div>
 
 
@@ -151,11 +217,10 @@ function EditTicketList(props) {
                 <tbody>
                     {props.tickets.map((d, index) => {
                         let tr_classname = ""
-                        let expire_date = new Date(parseInt(d.expire_time))
-                        if (expire_date < new Date()) {
+                        let expire_date = d.expire_time
+                        if (expire_date < DateTime.local()) {
                             tr_classname = "table-row-expired"
                         }
-                        // let is_expired = expire_date < new Date()
 
                         return <tr className={tr_classname}>
                             <td><Form.Check disabled={selectlist[index] === null}
@@ -167,10 +232,11 @@ function EditTicketList(props) {
                                     setSelectList(new_select_list)
 
                                 }} /></td>
-                            <td>{get_null_safe_date_format(d.expire_time, '-')}</td>
-                            <td>{get_null_safe_date_format(d.created_date, '-')}</td>
-                            <td>{get_null_safe_date_format(d.consumed_date, '-')}</td>
-                            <td>{get_null_safe_date_format(d.destroyed_date, '-')}</td>
+
+                            <td>{get_date_string(d.expire_time)}</td>
+                            <td>{get_date_string(d.created_date)}</td>
+                            <td>{get_date_string(d.consumed_date)}</td>
+                            <td>{get_date_string(d.destroyed_date)}</td>
                         </tr>
                     })}
                 </tbody>

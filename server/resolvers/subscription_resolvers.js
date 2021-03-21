@@ -8,6 +8,68 @@ const {
 module.exports = {
     Query: {
 
+        query_subscription_info_with_ticket_info: async (parent, args) => {
+            console.log('query_subscription_info_with_ticket_info')
+            console.log(args)
+
+
+            let result = await pgclient.query(`with A as (select ticket.id as id, plan.created as created_date, ticket.expire_time ,
+                    plan.id as planid,
+                    CASE
+                    WHEN A.id is null THEN null
+                    WHEN A.id is not null AND A.canceled_time is not null THEN null
+                    WHEN lesson.canceled_time is not null THEN null
+                    ELSE lesson.starttime
+                    END as consumed_date,
+                    C.created as destroyed_date
+                    from plan
+                    left join ticket on ticket.creator_plan_id = plan.id
+                    left join (select id, created from plan) as C on C.id = ticket.destroyer_plan_id
+                    left join (select DISTINCT ON(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) as A on A.ticketid = ticket.id
+                    left join lesson on lesson.id = A.lessonid
+                    where plan.id = $1 AND ticket.id is not null)
+                    
+                    select plan.id, plan.clientid, (array_agg(client.name))[1] as clientname, rounds, totalcost, plan.created, 
+                    plan.activity_type, plan.grouping_type, plan.coupon_backed ,
+                    json_agg(json_build_object('id',A.id,
+                                    'created_date', A.created_date,
+                                    'expire_time', A.expire_time,
+                                    'consumed_date', A.consumed_date,
+                                    'destroyed_date', A.destroyed_date
+                                    )) as tickets
+                    from plan
+                    left join client on plan.clientid=client.id 
+                    left join A on A.planid = plan.id
+                    where plan.id = $1
+                    group by plan.id`, [args.id]).then(res => {
+                if (res.rowCount === 1) {
+                    return {
+                        success: true,
+                        subscription_info: res.rows[0]
+
+                    }
+
+                }
+                else {
+                    return {
+                        success: false,
+                        msg: 'row count not 1'
+                    }
+                }
+            }).catch(e => {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
+            })
+
+            console.log(result)
+
+            return result
+        },
+
         fetch_tickets_for_subscription_id: async (parent, args) => {
 
             console.log(args)
@@ -247,7 +309,7 @@ module.exports = {
                         msg: 'row count not 1'
                     }
                 }
-                else{
+                else {
                     return res.rows[0]
                 }
 
@@ -289,13 +351,13 @@ module.exports = {
             let ret = await pgclient.query('select * from transfer_tickets($1, $2) as (success bool, msg text)', [args.ticket_id_list, args.clientid]).then(res => {
                 console.log(res)
 
-                if(res.rowCount!==1){
+                if (res.rowCount !== 1) {
                     return {
                         success: false,
                         msg: 'row count not 1'
                     }
                 }
-                else{
+                else {
                     return res.rows[0]
                 }
             }).catch(e => {

@@ -588,6 +588,43 @@ const DELETE_INSTRUCTOR_LEVEL = gql`
     }
 `
 
+const DELETE_TICKETS = gql`
+    mutation($ticketid_arr: [Int]){
+        delete_tickets(ticketid_arr: $ticketid_arr){
+            success
+            msg
+        }
+    }
+`
+
+
+const QUERY_SUBSCRIPTION_INFO_WITH_TICKET_INFO = gql`
+    query($id:Int!){
+        query_subscription_info_with_ticket_info(id:$id){
+            success
+            msg
+            subscription_info{
+                id
+                clientid
+                clientname
+                rounds
+                totalcost
+                created
+                activity_type
+                grouping_type
+                coupon_backed
+                tickets {
+                    id
+                    created_date
+                    expire_time
+                    destroyed_date
+                    consumed_date
+                }
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -632,5 +669,7 @@ export {
     FETCH_INSTRUCTOR_LEVEL_INFO,
     UPDATE_INSTRUCTOR_LEVEL,
     ADD_INSTRUCTOR_LEVEL,
-    DELETE_INSTRUCTOR_LEVEL
+    DELETE_INSTRUCTOR_LEVEL,
+    DELETE_TICKETS,
+    QUERY_SUBSCRIPTION_INFO_WITH_TICKET_INFO
 }

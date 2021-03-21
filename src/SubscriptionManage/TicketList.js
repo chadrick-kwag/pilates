@@ -3,6 +3,18 @@ import { Spinner, Table, Button } from 'react-bootstrap'
 
 import {get_null_safe_date_format} from '../common/date_fns'
 
+import {DateTime} from 'luxon'
+
+
+function get_date_string(dt){
+    if(dt===null){
+        return '-'
+    }
+    else{
+        return dt.toFormat('y-LL-dd HH:mm')
+    }
+}
+
 
 function TicketList(props) {
 
@@ -23,7 +35,7 @@ function TicketList(props) {
         let consumed_count = 0
         let destroyed_count = 0
         let expired_count = 0
-        let curr_date = new Date()
+        let curr_date = DateTime.local()
 
         props.tickets.forEach(a => {
             if (a.consumed_date !== null) {
@@ -34,7 +46,7 @@ function TicketList(props) {
                 destroyed_count +=1
                 return
             }
-            if(curr_date > new Date(parseInt(a.expire_time))){
+            if(curr_date > a.expire_time){
                 expired_count +=1
                 return
             }
@@ -77,16 +89,20 @@ function TicketList(props) {
                         }
                     }).map((d, index) => {
                         let tr_classname = ""
-                        let expire_date = new Date(parseInt(d.expire_time))
-                        if (expire_date < new Date()) {
+                        // let expire_date = new Date(parseInt(d.expire_time))
+
+                        console.log('datetime now')
+                        // console.log(DateTime())
+                        
+                        if (d.expire_time < DateTime.local()) {
                             tr_classname = "table-row-expired"
                         }
                         return <tr className={tr_classname}>
                             <td>{index + 1}</td>
-                            <td>{get_null_safe_date_format(d.expire_time, '-')}</td>
-                            <td>{get_null_safe_date_format(d.created_date, '-')}</td>
-                            <td>{get_null_safe_date_format(d.consumed_date, '-')}</td>
-                            <td>{get_null_safe_date_format(d.destroyed_date, '-')}</td>
+                            <td>{get_date_string(d.expire_time)}</td>
+                            <td>{get_date_string(d.created_date)}</td>
+                            <td>{get_date_string(d.consumed_date)}</td>
+                            <td>{get_date_string(d.destroyed_date)}</td>
                         </tr>
                     })}
                 </tbody>

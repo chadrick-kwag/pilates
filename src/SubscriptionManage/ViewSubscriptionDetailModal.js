@@ -2,10 +2,12 @@ import React from 'react'
 import { Modal, Button, Table, Spinner } from 'react-bootstrap'
 import moment from 'moment'
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
-import { FETCH_TICKETS_FOR_SUBSCRIPTION_ID } from '../common/gql_defs'
+import { FETCH_TICKETS_FOR_SUBSCRIPTION_ID, QUERY_SUBSCRIPTION_INFO_WITH_TICKET_INFO } from '../common/gql_defs'
 
 import TicketListComponent from './TicketListComponent'
 import client from '../apolloclient'
+
+import {DateTime} from 'luxon'
 
 
 
@@ -16,14 +18,79 @@ class ViewSubscriptionDetailModal extends React.Component {
         super(props)
 
         this.state = {
+            clientid: null,
+            clientname: null,
+            created: null,
+            rounds: null,
+            totalcost: null,
+            activity_type: null,
+            grouping_type: null,
             tickets: null
         }
 
         this.fetch_tickets = this.fetch_tickets.bind(this)
+        this.fetch_plan_data = this.fetch_plan_data.bind(this)
     }
 
     componentDidMount() {
-        this.fetch_tickets()
+        this.fetch_plan_data()
+        // this.fetch_tickets()
+    }
+
+
+    fetch_plan_data() {
+        client.query({
+            query: QUERY_SUBSCRIPTION_INFO_WITH_TICKET_INFO,
+            variables: {
+                id: this.props.data.id
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+            if (res.data.query_subscription_info_with_ticket_info.success) {
+                console.log('success')
+                let plan_data = res.data.query_subscription_info_with_ticket_info.subscription_info
+
+                let tickets = plan_data.tickets
+
+                let new_tickets = []
+
+                tickets.forEach(d=>{
+                    d.created_date = DateTime.fromISO(d.created_date).setZone('UTC+9')
+                    d.expire_time = DateTime.fromISO(d.expire_time).setZone('UTC+9')
+                    if(d.destroyed_date !==null){
+                        d.destroyed_date = DateTime.fromISO(d.destroyed_date).setZone('UTC+9')
+                    }
+
+                    if(d.consumed_date !==null){
+                        d.consumed_date = DateTime.fromISO(d.consumed_date).setZone('UTC+9')
+                    }
+                    // console.log(d.created_date)
+                    new_tickets.push(d)
+                })
+                console.log('new tickets')
+                console.log(new_tickets)
+
+                this.setState({
+                    id: plan_data.id,
+                    clientid: plan_data.clientid,
+                    clientname: plan_data.clientname,
+                    totalcost: plan_data.totalcost,
+                    rounds: plan_data.rounds,
+                    created: plan_data.created,
+                    grouping_type: plan_data.grouping_type,
+                    activity_type: plan_data.activity_type,
+                    tickets: new_tickets
+                })
+            }
+            else {
+                alert('fetch info fail')
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            console.log(e)
+            alert('fetch info error')
+        })
     }
 
 
@@ -37,6 +104,8 @@ class ViewSubscriptionDetailModal extends React.Component {
         }).then(d => {
             console.log(d)
             if (d.data.fetch_tickets_for_subscription_id.success) {
+
+                let plan_data = d.data.fetch_tickets_for_subscription_id
                 this.setState({
                     tickets: d.data.fetch_tickets_for_subscription_id.tickets
                 })
@@ -54,6 +123,8 @@ class ViewSubscriptionDetailModal extends React.Component {
 
     render() {
 
+        console.log(this.state)
+
         return <Modal dialogClassName="modal-90w" show={true} onHide={e => { this.props.onCancel() }}>
             <Modal.Body>
 
@@ -65,32 +136,32 @@ class ViewSubscriptionDetailModal extends React.Component {
                     </tr>
                     <tr>
                         <td>회원명</td>
-                        <td>{this.props.data.clientname}</td>
+                        <td>{this.state.clientname}</td>
                     </tr>
                     <tr>
                         <td>수업운동</td>
-                        <td>{activity_type_to_kor[this.props.data.activity_type]}</td>
+                        <td>{activity_type_to_kor[this.state.activity_type]}</td>
                     </tr>
                     <tr>
                         <td>수업인원</td>
-                        <td>{grouping_type_to_kor[this.props.data.grouping_type]}</td>
+                        <td>{grouping_type_to_kor[this.state.grouping_type]}</td>
                     </tr>
                     <tr>
                         <td>총횟수</td>
-                        <td>{this.props.data.rounds}</td>
+                        <td>{this.state.rounds}</td>
                     </tr>
                     <tr>
                         <td>총액</td>
-                        <td>{this.props.data.totalcost.format() + '원'}</td>
+                        <td>{this.state.totalcost + '원'}  <span>(회당단가: {Math.ceil(this.state.totalcost / this.state.rounds)}원)</span></td>
                     </tr>
                     <tr>
                         <td>생성일</td>
-                        <td>{moment(new Date(parseInt(this.props.data.created))).format('YYYY-MM-DD HH:mm')}</td>
+                        <td>{moment(new Date(parseInt(this.state.created))).format('YYYY-MM-DD HH:mm')}</td>
                     </tr>
 
                     <tr>
                         <td>소진내역</td>
-                        <td><TicketListComponent tickets={this.state.tickets} refreshdata={this.fetch_tickets} /></td>
+                        <td><TicketListComponent tickets={this.state.tickets} refreshdata={this.fetch_plan_data} /></td>
                     </tr>
 
 

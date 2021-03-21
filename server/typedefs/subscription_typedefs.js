@@ -16,6 +16,28 @@ type PlanAndTicketsResponse{
     planandtickets: [PlanAndTickets]
 }
 
+
+
+
+type PlanDetail {
+    id: Int
+    clientid: Int
+    clientname: String
+    rounds: Int
+    totalcost: Int
+    created: String
+    activity_type: String
+    grouping_type: String
+    coupon_backed: String
+    tickets: [Ticket2]
+}
+
+type PlanDetailAndTicketDetailResponse{
+    success: Boolean
+    msg: String
+    subscription_info: PlanDetail
+}
+
 type Query{
     query_subscriptions_of_clientname(clientname:String): SuccessAndSubscriptions
     query_subscriptions_by_clientid(clientid:Int!): SuccessAndSubscriptions
@@ -23,6 +45,7 @@ type Query{
     query_subscriptions_with_remainrounds_for_clientid(clientid: Int!, activity_type: String!, grouping_type: String!): PlanAndTicketsResponse
     query_all_subscriptions_with_remainrounds_for_clientid(clientid: Int!): ReturnAllSubscriptionsWithRemainRounds
     fetch_tickets_for_subscription_id(subscription_id: Int!): SuccessAndTickets
+    query_subscription_info_with_ticket_info(id:Int!): PlanDetailAndTicketDetailResponse
 }
 
 type Mutation{
