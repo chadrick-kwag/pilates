@@ -6,17 +6,18 @@ import TicketTransferModal from './TicketTransferModal'
 import TicketExpDateChangeModal from './TicketExpDateChangeModal'
 
 import client from '../apolloclient'
-import {DELETE_TICKETS} from '../common/gql_defs'
+import { DELETE_TICKETS } from '../common/gql_defs'
 
-import {DateTime} from 'luxon'
+import { DateTime } from 'luxon'
+import TicketAddModal from './TicketAddModal'
 
 
 
-function get_date_string(dt){
-    if(dt===null){
+function get_date_string(dt) {
+    if (dt === null) {
         return '-'
     }
-    else{
+    else {
         return dt.toFormat('y-LL-dd HH:mm')
     }
 }
@@ -29,15 +30,15 @@ function EditTicketList(props) {
 
     const delete_selected_tickets = () => {
 
-        
+
         console.log('delete_selected_tickets')
 
         // check at least one is selected
 
         let selected_ticket_id_arr = []
 
-        selectlist.forEach((d,i)=>{
-            if(d){
+        selectlist.forEach((d, i) => {
+            if (d) {
                 selected_ticket_id_arr.push(props.tickets[i].id)
 
 
@@ -52,17 +53,17 @@ function EditTicketList(props) {
                 ticketid_arr: selected_ticket_id_arr
             },
             fetchPolicy: 'no-cache'
-        }).then(res=>{
+        }).then(res => {
             console.log(res)
 
-            if(res.data.delete_tickets.success){
+            if (res.data.delete_tickets.success) {
                 console.log('delete tickets success')
                 props.refreshdata?.()
             }
-            else{
+            else {
                 alert(`delete tickets fail. ${res.data.delete_tickets.msg}`)
             }
-        }).catch(e=>{
+        }).catch(e => {
             console.log(JSON.stringify(e))
             alert('delete tickets error')
         })
@@ -70,8 +71,9 @@ function EditTicketList(props) {
 
     }
 
-    const create_more_tickets = ()=>{
+    const create_more_tickets = () => {
         console.log('create_more_tickets')
+        setShowAddTicketModal(true)
     }
 
     const calc_init_selectlist = () => {
@@ -116,6 +118,7 @@ function EditTicketList(props) {
     const [showTransferMOdal, setShowTransferModal] = useState(false)
     const [showExpDateChangeModal, setShowExpDateChangeModal] = useState(false)
     const [allselect, setAllSelect] = useState(false)
+    const [showAddTicketModal, setShowAddTicketModal] = useState(false)
 
 
     useEffect(() => {
@@ -166,7 +169,6 @@ function EditTicketList(props) {
             /> : null}
             {showExpDateChangeModal ? <TicketExpDateChangeModal
                 selected_ticket_id_list={selected_ticket_id_list}
-                // default_date={new Date(parseInt(props.tickets[selectlist.indexOf(true)].expire_time))}
                 default_date={props.tickets[selectlist.indexOf(true)].expire_time}
                 onCancel={_ => setShowExpDateChangeModal(false)}
                 onSuccess={_ => {
@@ -176,12 +178,19 @@ function EditTicketList(props) {
             /> : null}
 
             <div className='row-gravity-right'>
-                <Button disabled={!at_least_one_selected} onClick={_ => create_more_tickets()}>추가</Button>
+                <Button onClick={_ => create_more_tickets()}>추가</Button>
                 <Button disabled={!at_least_one_selected} onClick={_ => delete_selected_tickets()}>삭제</Button>
                 <Button disabled={!at_least_one_selected} onClick={_ => setShowTransferModal(true)}>양도</Button>
                 <Button disabled={!at_least_one_selected} onClick={_ => setShowExpDateChangeModal(true)}>유통기한 변경</Button>
                 <Button variant='warning' onClick={_ => props.onEscapeEditMode()}>변경취소</Button>
             </div>
+
+            {showAddTicketModal ? <TicketAddModal onCancel={() => setShowAddTicketModal(false)}
+                onSuccess={() => {
+                    setShowAddTicketModal(false)
+                    props.refreshdata?.()
+                }}
+            /> : null}
 
 
             <Table >
