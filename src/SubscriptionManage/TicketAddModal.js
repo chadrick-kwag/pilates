@@ -5,6 +5,7 @@ import { DateTime } from 'luxon'
 import client from '../apolloclient'
 import { DateTimePicker } from "@material-ui/pickers";
 import { DatePicker } from '@material-ui/pickers'
+import { ADD_TICKETS } from '../common/gql_defs'
 
 
 export default function TicketAddModal(props) {
@@ -15,7 +16,32 @@ export default function TicketAddModal(props) {
 
 
     const submit_add_tickets = () => {
+
+        let v = {
+            planid: props.planid,
+            addsize: parseInt(createCount),
+            expire_datetime: expireDate.setZone('UTC+9').toISO()
+        }
+        console.log(v)
         console.log('aa')
+        client.mutate({
+            mutation: ADD_TICKETS,
+            variables: v,
+            fetchPolicy: 'no-cache'
+        }).then(res=>{
+            console.log(res)
+
+            if(res.data.add_tickets.success){
+                props.onSuccess?.()
+            }
+            else{
+                alert('add ticket failed')
+            }
+        }).catch(e=>{
+            console.log(JSON.stringify(e))
+            alert('add ticket error')
+        })
+
     }
 
 

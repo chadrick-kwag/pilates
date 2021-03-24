@@ -405,6 +405,55 @@ module.exports = {
 
             return ret
 
+        },
+        delete_tickets: async (parent, args) => {
+            console.log('delete_tickets')
+
+            console.log(args)
+
+            let result = await pgclient.query(`select * from delete_tickets($1) as (success bool, msg text)`, [args.ticketid_arr]).then(res => {
+                if (res.rowCount !== 1) {
+                    return {
+                        success: false,
+                        msg: 'rowcount not 1'
+                    }
+                }
+
+                return res.rows[0]
+            }).catch(e => {
+                console.log(e)
+                return {
+                    success: false,
+                    msg: "query error"
+                }
+            })
+
+            return result
+
+        },
+        add_tickets: async (parent, args) => {
+            console.log('add tickets')
+            console.log(args)
+
+            let result = await pgclient.query(`select * from add_tickets($1, $2,$3) as (success bool, msg text)`, [args.planid, args.addsize, args.expire_datetime]).then(res=>{
+                if(res.rowCount!==1){
+                    return {
+                        success: false,
+                        msg: 'rowcount not one'
+                    }
+                }
+                else{
+                    return res.rows[0]
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
+            })
+
+            return result
         }
     }
 

@@ -21,7 +21,7 @@ export default function TicketListComponent(props) {
             </div>
             :
             <div>
-                <EditTicketList tickets={props.tickets} onEscapeEditMode={()=>setEditMode(false)} refreshdata={props.refreshdata} />
+                <EditTicketList planid={props.planid} tickets={props.tickets} onEscapeEditMode={()=>setEditMode(false)} refreshdata={props.refreshdata} />
             </div>}
 
 

@@ -625,6 +625,16 @@ const QUERY_SUBSCRIPTION_INFO_WITH_TICKET_INFO = gql`
     }
 `
 
+
+const ADD_TICKETS = gql`
+    mutation($planid:Int!, $addsize: Int!, $expire_datetime: String!){
+        add_tickets(planid:$planid, addsize:$addsize, expire_datetime: $expire_datetime){
+            success 
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -671,5 +681,6 @@ export {
     ADD_INSTRUCTOR_LEVEL,
     DELETE_INSTRUCTOR_LEVEL,
     DELETE_TICKETS,
-    QUERY_SUBSCRIPTION_INFO_WITH_TICKET_INFO
+    QUERY_SUBSCRIPTION_INFO_WITH_TICKET_INFO,
+    ADD_TICKETS
 }

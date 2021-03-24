@@ -185,7 +185,9 @@ function EditTicketList(props) {
                 <Button variant='warning' onClick={_ => props.onEscapeEditMode()}>변경취소</Button>
             </div>
 
-            {showAddTicketModal ? <TicketAddModal onCancel={() => setShowAddTicketModal(false)}
+            {showAddTicketModal ? <TicketAddModal 
+            planid={props.planid}
+            onCancel={() => setShowAddTicketModal(false)}
                 onSuccess={() => {
                     setShowAddTicketModal(false)
                     props.refreshdata?.()
