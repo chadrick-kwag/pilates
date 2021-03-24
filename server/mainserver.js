@@ -70,6 +70,7 @@ let resolvers = mergeResolvers([lesson_resolver, client_resolver, subscription_r
 
 const server = new ApolloServer({ typeDefs, resolvers });
 
+console.log(`GRAPHQL_SUBPATH: ${GRAPHQL_SUBPATH}`)
 server.applyMiddleware({app, path: GRAPHQL_SUBPATH})
 
 
