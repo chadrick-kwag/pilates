@@ -55,5 +55,6 @@ type Mutation{
     update_expdate_of_tickets(ticket_id_list: [Int], new_expdate: String!): SuccessResult
     delete_tickets(ticketid_arr: [Int]): SuccessResult
     add_tickets(planid: Int!, addsize: Int!, expire_datetime: String!): SuccessResult
+    change_plan_totalcost(planid: Int!, totalcost: Int!): SuccessResult
 }
 `

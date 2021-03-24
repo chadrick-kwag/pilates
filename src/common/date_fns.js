@@ -9,6 +9,7 @@ export function get_null_safe_date_format(val, nullval = '') {
 }
 
 
+
 export function get_week_range_of_date(date) {
     let lower_sun, higher_sat
 

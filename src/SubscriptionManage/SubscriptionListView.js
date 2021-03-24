@@ -6,6 +6,7 @@ import { QUERY_SUBSCRIPTIONS_BY_CLIENTID, SEARCH_CLIENT_WITH_NAME, DELETE_SUBSCR
 
 import ViewSubscriptionDetailModal from './ViewSubscriptionDetailModal'
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
+import numeral from 'numeral'
 
 
 
@@ -46,8 +47,6 @@ class SubscriptionListView extends React.Component {
             console.log(res)
 
             let client_infos = res.data.search_client_with_name
-
-            console.log(client_infos)
 
             if (client_infos.length == 0) {
                 alert('no client found by that name')
@@ -188,11 +187,11 @@ class SubscriptionListView extends React.Component {
                                     <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
 
                                     <td>{d.rounds}</td>
-                                    <td>{d.totalcost}</td>
+                                    <td>{numeral(d.totalcost).format('0,0')}원</td>
                                     <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
                                     <td><div>
                                         <Button disabled onClick={e => {
-                                            let result = confirm("delete?")
+                                            let result = confirm("플랜을 삭제하시겠습니까?")
                                             if (result) {
                                                 this.props.apolloclient.mutate({
                                                     mutation: DELETE_SUBSCRITION_GQL,

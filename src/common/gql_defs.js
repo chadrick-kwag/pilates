@@ -635,6 +635,15 @@ const ADD_TICKETS = gql`
     }
 `
 
+const CHANGE_PLAN_TOTALCOST = gql`
+    mutation($planid: Int!, $totalcost: Int!){
+        change_plan_totalcost(planid:$planid, totalcost:$totalcost){
+            success 
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -682,5 +691,6 @@ export {
     DELETE_INSTRUCTOR_LEVEL,
     DELETE_TICKETS,
     QUERY_SUBSCRIPTION_INFO_WITH_TICKET_INFO,
-    ADD_TICKETS
+    ADD_TICKETS,
+    CHANGE_PLAN_TOTALCOST
 }

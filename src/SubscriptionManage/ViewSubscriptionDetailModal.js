@@ -7,7 +7,10 @@ import { FETCH_TICKETS_FOR_SUBSCRIPTION_ID, QUERY_SUBSCRIPTION_INFO_WITH_TICKET_
 import TicketListComponent from './TicketListComponent'
 import client from '../apolloclient'
 
-import {DateTime} from 'luxon'
+import { DateTime } from 'luxon'
+
+import TotalCostEditModal from './TotalCostEditModal'
+import numeral from 'numeral'
 
 
 
@@ -25,7 +28,8 @@ class ViewSubscriptionDetailModal extends React.Component {
             totalcost: null,
             activity_type: null,
             grouping_type: null,
-            tickets: null
+            tickets: null,
+            show_totalcost_edit: false
         }
 
         this.fetch_tickets = this.fetch_tickets.bind(this)
@@ -55,14 +59,14 @@ class ViewSubscriptionDetailModal extends React.Component {
 
                 let new_tickets = []
 
-                tickets.forEach(d=>{
+                tickets.forEach(d => {
                     d.created_date = DateTime.fromISO(d.created_date).setZone('UTC+9')
                     d.expire_time = DateTime.fromISO(d.expire_time).setZone('UTC+9')
-                    if(d.destroyed_date !==null){
+                    if (d.destroyed_date !== null) {
                         d.destroyed_date = DateTime.fromISO(d.destroyed_date).setZone('UTC+9')
                     }
 
-                    if(d.consumed_date !==null){
+                    if (d.consumed_date !== null) {
                         d.consumed_date = DateTime.fromISO(d.consumed_date).setZone('UTC+9')
                     }
                     // console.log(d.created_date)
@@ -125,7 +129,7 @@ class ViewSubscriptionDetailModal extends React.Component {
 
         console.log(this.state)
 
-        return <Modal dialogClassName="modal-90w" show={true} onHide={e => { this.props.onCancel() }}>
+        return <><Modal dialogClassName="modal-90w" show={true} onHide={e => { this.props.onCancel() }}>
             <Modal.Body>
 
 
@@ -152,7 +156,7 @@ class ViewSubscriptionDetailModal extends React.Component {
                     </tr>
                     <tr>
                         <td>총액</td>
-                        <td>{this.state.totalcost + '원'}  <span>(회당단가: {Math.ceil(this.state.totalcost / this.state.rounds)}원)</span></td>
+                        <td>{numeral(this.state.totalcost).format('0,0') + '원'}  <span>(회당단가: {numeral(Math.ceil(this.state.totalcost / this.state.rounds)).format('0,0')}원)</span> <Button onClick={_ => this.setState({ show_totalcost_edit: true })}>수정</Button></td>
                     </tr>
                     <tr>
                         <td>생성일</td>
@@ -174,6 +178,13 @@ class ViewSubscriptionDetailModal extends React.Component {
                 </div>
             </Modal.Footer>
         </Modal>
+            {this.state.show_totalcost_edit ? <TotalCostEditModal planid={this.props.data.id}
+                totalcost={this.state.totalcost} rounds={this.state.rounds}
+                onCancel={_ => this.setState({ show_totalcost_edit: false })}
+                onSuccess={_ => this.setState({
+                    show_totalcost_edit: false
+                }, this.fetch_plan_data)} /> : null}
+        </>
     }
 
 

@@ -454,6 +454,29 @@ module.exports = {
             })
 
             return result
+        },
+        change_plan_totalcost: async (parent, args)=>{
+            let result = await pgclient.query(`update plan set totalcost=$1 where id = $2`, [args.totalcost, args.planid]).then(res=>{
+                if(res.rowCount!==1){
+                    return {
+                        success: false,
+                        msg: "rowcount not 1"
+                    }
+                }
+                else{
+                    return {
+                        success: true
+                    }
+                }
+            }).catch(e=>{
+                console.log(e)
+                return {
+                    success: false,
+                    msg: "query error"
+                }
+            })
+
+            return result
         }
     }
 
