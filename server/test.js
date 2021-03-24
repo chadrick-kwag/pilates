@@ -1,5 +1,6 @@
 
 const { ApolloServer, gql } = require('apollo-server');
+// const { ApolloServer, gql } = require('apollo-server-express');
 
 const moment = require('moment-timezone');
 const { mergeTypeDefs, mergeResolvers } = require('@graphql-tools/merge');
@@ -41,6 +42,7 @@ pgclient.connect(err => {
 let resolvers = mergeResolvers([lesson_resolver, client_resolver, subscription_resolver, instructor_resolver])
 
 const server = new ApolloServer({ typeDefs, resolvers });
+
 
 // The `listen` method launches a web server.
 server.listen(graphql_server_options).then(({ url }) => {

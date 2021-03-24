@@ -1,11 +1,12 @@
 const express = require('express');
 const path = require('path');
-const {MAIN_SERVE_PORT}= require('../config')
+const {MAIN_SERVE_PORT, GRAPHQL_SUBPATH}= require('../config')
 const app = express();
 
 
 
-const { ApolloServer, gql } = require('apollo-server');
+// const { ApolloServer, gql } = require('apollo-server');
+const { ApolloServer, gql } = require('apollo-server-express');
 
 
 const { mergeTypeDefs, mergeResolvers } = require('@graphql-tools/merge');
@@ -45,9 +46,7 @@ app.use(express.static(DIST_DIR));
 app.get('/', (req, res) => {
     res.sendFile(HTML_FILE);
 });
-app.listen(MAIN_SERVE_PORT, function () {
-    console.log('App listening on port: ' + MAIN_SERVE_PORT);
-});
+
 
 
 
@@ -70,11 +69,10 @@ pgclient.connect(err => {
 let resolvers = mergeResolvers([lesson_resolver, client_resolver, subscription_resolver, instructor_resolver])
 
 const server = new ApolloServer({ typeDefs, resolvers });
-console.log(graphql_server_options)
-// The `listen` method launches a web server.
-server.listen(graphql_server_options).then(({ url }) => {
-    console.log(`Server ready at ${url}`);
-}).catch(e=>{
-    console.log(e)
-    process.exit()
+
+server.applyMiddleware({app, path: GRAPHQL_SUBPATH})
+
+
+app.listen(MAIN_SERVE_PORT, function () {
+    console.log('App listening on port: ' + MAIN_SERVE_PORT);
 });
