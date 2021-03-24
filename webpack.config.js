@@ -1,5 +1,6 @@
 const hwp = require('html-webpack-plugin')
 const path = require('path')
+const {DEV_GRAPHQL_PORT} = require('./config.js')
 
 module.exports = {
     entry: './src/app.js',
@@ -34,6 +35,9 @@ module.exports = {
     devServer: {
         open: "chrome",
         host: 'localhost',
-        compress: false
+        compress: false,
+        proxy: {
+            '/graphql': `http://localhost:${DEV_GRAPHQL_PORT}`
+        }
     }
 }
