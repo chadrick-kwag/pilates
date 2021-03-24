@@ -325,6 +325,7 @@ module.exports = {
 
         },
         delete_subscription: async (parent, args) => {
+            console.log('delete subscription')
             console.log(args)
 
             let ret = await pgclient.query('delete from plan where id=$1', [args.id]).then(res => {

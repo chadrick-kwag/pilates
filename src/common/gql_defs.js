@@ -305,6 +305,7 @@ const CREATE_SUBSCRIPTION_GQL = gql`mutation create_subscription($clientid: Int!
 const DELETE_SUBSCRITION_GQL = gql`mutation delete_subscription($id:Int!){
     delete_subscription(id: $id){
         success
+        msg
     }
 }`
 
