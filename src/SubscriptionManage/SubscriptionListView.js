@@ -20,8 +20,9 @@ class SubscriptionListView extends React.Component {
             delete_target_subscription: null,
             view_selected_subscription: null,
             search_client_name: "",
+            search_client_id: null,
             client_candidates: []
-            
+
 
         }
 
@@ -54,6 +55,9 @@ class SubscriptionListView extends React.Component {
             else if (client_infos.length == 1) {
                 let client_id = client_infos[0].id
                 console.log('need to proceed!')
+                this.setState({
+                    search_client_id: client_id
+                })
                 this.fetchdata(parseInt(client_id))
             }
             else {
@@ -73,11 +77,15 @@ class SubscriptionListView extends React.Component {
 
     fetchdata(_clientid) {
 
+        let v = {
+            clientid: _clientid
+        }
+
+        console.log(v)
+
         this.props.apolloclient.query({
             query: QUERY_SUBSCRIPTIONS_BY_CLIENTID,
-            variables: {
-                clientid: _clientid
-            },
+            variables: v,
             fetchPolicy: 'no-cache'
         }).then(res => {
             console.log(res)
@@ -85,7 +93,7 @@ class SubscriptionListView extends React.Component {
             if (res.data.query_subscriptions_by_clientid.success) {
                 this.setState({
                     client_candidates: [],
-                    data: res.data.query_subscriptions_by_clientid.subscriptions.sort(a=>-parseInt(a.created))
+                    data: res.data.query_subscriptions_by_clientid.subscriptions.sort(a => -parseInt(a.created))
                 })
             }
             else {
@@ -147,11 +155,12 @@ class SubscriptionListView extends React.Component {
 
                         this.setState({
                             client_candidates: [],
-                            data: null
+                            data: null,
+                            search_client_id: null
                         }, () => {
                             this.fetchclient()
                         })
-                        // this.fetchclient()
+
                     }
                 }}>search</Button>
             </div>
@@ -190,31 +199,34 @@ class SubscriptionListView extends React.Component {
                                     <td>{numeral(d.totalcost).format('0,0')}원</td>
                                     <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
                                     <td><div>
-                                        <Button disabled onClick={e => {
-                                            let result = confirm("플랜을 삭제하시겠습니까?")
-                                            if (result) {
-                                                this.props.apolloclient.mutate({
-                                                    mutation: DELETE_SUBSCRITION_GQL,
-                                                    variables: {
-                                                        id: parseInt(d.id)
-                                                    }
-                                                }).then(d => {
-                                                    console.log(d)
+                                        <Button
+                                            variant='danger'
+                                            onClick={e => {
+                                                let result = confirm("플랜을 삭제하시겠습니까?")
+                                                if (result) {
+                                                    this.props.apolloclient.mutate({
+                                                        mutation: DELETE_SUBSCRITION_GQL,
+                                                        variables: {
+                                                            id: parseInt(d.id)
+                                                        }
+                                                    }).then(d => {
+                                                        console.log(d)
 
-                                                    if (d.data.delete_subscription.success) {
-                                                        this.fetchdata()
-                                                    }
-                                                    else {
-                                                        alert('failed to delete')
-                                                    }
-                                                }).catch(e => {
-                                                    console.log(e)
-                                                    alert('error while deleting')
-                                                })
-                                            }
+                                                        if (d.data.delete_subscription.success) {
+                                                            this.fetchdata(parseInt(this.state.search_client_id))
+                                                        }
+                                                        else {
+                                                            let msg = d.data.delete_subscription.msg
+                                                            alert(`failed to delete. ${msg}`)
+                                                        }
+                                                    }).catch(e => {
+                                                        console.log(e)
+                                                        alert('error while deleting')
+                                                    })
+                                                }
 
-                                            e.stopPropagation()
-                                        }}>delete</Button>
+                                                e.stopPropagation()
+                                            }}>삭제</Button>
                                     </div></td>
                                 </tr>
                             })}
@@ -237,7 +249,12 @@ class SubscriptionListView extends React.Component {
                         </thead>
                         <tbody>
                             {this.state.client_candidates.map(d => {
-                                return <tr onClick={() => this.fetchdata(parseInt(d.id))}>
+                                return <tr onClick={() => {
+                                    this.setState({
+                                        search_client_id: d.id
+                                    })
+                                    this.fetchdata(parseInt(d.id))
+                                }}>
                                     <td>{d.id}</td>
                                     <td>{d.name}</td>
                                     <td>{d.phonenumber}</td>

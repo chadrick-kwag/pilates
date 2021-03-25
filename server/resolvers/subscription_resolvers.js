@@ -1,3 +1,4 @@
+
 const pgclient = require('../pgclient')
 const {
     parse_incoming_date_utc_string,
@@ -328,21 +329,64 @@ module.exports = {
             console.log('delete subscription')
             console.log(args)
 
-            let ret = await pgclient.query('delete from plan where id=$1', [args.id]).then(res => {
-                if (res.rowCount > 0) {
-                    return true
-                }
+            let result = await pgclient.query('BEGIN').then(async res => {
 
-                return false
-            }).catch(e => {
+                return await pgclient.query(`select count(1) filter(where B.canceled_time is null AND B.created is not null)::int as undelete_count from plan
+                left join ticket on ticket.creator_plan_id = plan.id
+                left join (select DISTINCT ON(ticketid) * from assign_ticket order by ticketid, created desc) as B 
+                on B.ticketid = ticket.id
+                where plan.id = $1;`, [args.id]).then(async res => {
+
+                    let undelete_count = res.rows[0].undelete_count
+
+                    console.log(undelete_count)
+
+                    if (undelete_count > 0) {
+                        return {
+                            success: false,
+                            msg: 'undeletable ticket exist'
+                        }
+                    }
+
+                    // delete assign tickets that are cancelled
+
+                    return await pgclient.query(`delete from plan where plan.id=$1`, [args.id]).then(async res => {
+                        return await pgclient.query('COMMIT').then(res => {
+                            return {
+                                success: true
+                            }
+                        })
+                    })
+
+                })
+            }).catch(async e => {
                 console.log(e)
-                return false
+
+
+                return await pgclient.query('rollback').then(res => {
+
+                    if(e.code==='23503'){
+                        return {
+                            success: false,
+                            msg: 'undeletable connected elements exist'
+                        }
+                    }
+                    
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }).catch(err => {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                })
+
             })
 
+            return result
 
-            return {
-                success: ret
-            }
         },
         transfer_tickets_to_clientid: async (parent, args) => {
             console.log('transfer_tickets_to_clientid')
@@ -362,7 +406,8 @@ module.exports = {
                     return res.rows[0]
                 }
             }).catch(e => {
-                console.log(e)
+                // console.log(e)
+                console.log(e.error)
                 return {
                     success: false,
                     msg: 'query error'
@@ -436,17 +481,17 @@ module.exports = {
             console.log('add tickets')
             console.log(args)
 
-            let result = await pgclient.query(`select * from add_tickets($1, $2,$3) as (success bool, msg text)`, [args.planid, args.addsize, args.expire_datetime]).then(res=>{
-                if(res.rowCount!==1){
+            let result = await pgclient.query(`select * from add_tickets($1, $2,$3) as (success bool, msg text)`, [args.planid, args.addsize, args.expire_datetime]).then(res => {
+                if (res.rowCount !== 1) {
                     return {
                         success: false,
                         msg: 'rowcount not one'
                     }
                 }
-                else{
+                else {
                     return res.rows[0]
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
@@ -456,20 +501,20 @@ module.exports = {
 
             return result
         },
-        change_plan_totalcost: async (parent, args)=>{
-            let result = await pgclient.query(`update plan set totalcost=$1 where id = $2`, [args.totalcost, args.planid]).then(res=>{
-                if(res.rowCount!==1){
+        change_plan_totalcost: async (parent, args) => {
+            let result = await pgclient.query(`update plan set totalcost=$1 where id = $2`, [args.totalcost, args.planid]).then(res => {
+                if (res.rowCount !== 1) {
                     return {
                         success: false,
                         msg: "rowcount not 1"
                     }
                 }
-                else{
+                else {
                     return {
                         success: true
                     }
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
