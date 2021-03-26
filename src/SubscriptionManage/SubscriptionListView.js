@@ -133,8 +133,9 @@ class SubscriptionListView extends React.Component {
                 data={this.state.view_selected_subscription}
                 onCancel={() => {
                     this.setState({
+                        data: null,
                         view_selected_subscription: null
-                    })
+                    }, this.fetchdata(parseInt(this.state.search_client_id)))
                 }} />
         }
 

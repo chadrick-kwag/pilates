@@ -30,7 +30,6 @@ function EditTicketList(props) {
 
     const delete_selected_tickets = () => {
 
-
         console.log('delete_selected_tickets')
 
         // check at least one is selected
@@ -40,8 +39,6 @@ function EditTicketList(props) {
         selectlist.forEach((d, i) => {
             if (d) {
                 selected_ticket_id_arr.push(props.tickets[i].id)
-
-
             }
         })
 
@@ -55,10 +52,11 @@ function EditTicketList(props) {
             fetchPolicy: 'no-cache'
         }).then(res => {
             console.log(res)
+            console.log('inside response of delete tickets')
 
             if (res.data.delete_tickets.success) {
                 console.log('delete tickets success')
-                props.refreshdata?.()
+                props.onDeleteTicketSuccess?.()
             }
             else {
                 alert(`delete tickets fail. ${res.data.delete_tickets.msg}`)
@@ -90,10 +88,12 @@ function EditTicketList(props) {
                 if (sel_ticket.consumed_date !== null) {
                     is_edit_possible = false
                 }
-                let expdate = sel_ticket.expire_time
-                if (curr_date > expdate) {
-                    is_edit_possible = false
-                }
+
+                // not allow edit for expired tickets
+                // let expdate = sel_ticket.expire_time
+                // if (curr_date > expdate) {
+                //     is_edit_possible = false
+                // }
 
                 console.log(sel_ticket.destroyed_date)
                 if (sel_ticket.destroyed_date !== null) {

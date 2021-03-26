@@ -43,6 +43,8 @@ class ViewSubscriptionDetailModal extends React.Component {
 
 
     fetch_plan_data() {
+        console.log('fetch plan data')
+        console.log(this.props)
         client.query({
             query: QUERY_SUBSCRIPTION_INFO_WITH_TICKET_INFO,
             variables: {

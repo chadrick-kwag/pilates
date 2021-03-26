@@ -21,7 +21,12 @@ export default function TicketListComponent(props) {
             </div>
             :
             <div>
-                <EditTicketList planid={props.planid} tickets={props.tickets} onEscapeEditMode={()=>setEditMode(false)} refreshdata={props.refreshdata} />
+                <EditTicketList planid={props.planid} tickets={props.tickets} onEscapeEditMode={() => setEditMode(false)} refreshdata={props.refreshdata}
+                    onDeleteTicketSuccess={() => {
+                        setEditMode()
+                        props.refreshdata?.()
+                    }}
+                />
             </div>}
 
 
