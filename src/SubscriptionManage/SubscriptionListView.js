@@ -29,6 +29,7 @@ class SubscriptionListView extends React.Component {
         this.fetchdata = this.fetchdata.bind(this)
         this.check_search_input = this.check_search_input.bind(this)
         this.fetchclient = this.fetchclient.bind(this)
+        this.search_btn_click_handler = this.search_btn_click_handler.bind(this)
     }
 
 
@@ -123,6 +124,21 @@ class SubscriptionListView extends React.Component {
         return true
     }
 
+    search_btn_click_handler() {
+        let check = this.check_search_input()
+        if (check) {
+
+            this.setState({
+                client_candidates: [],
+                data: null,
+                search_client_id: null
+            }, () => {
+                this.fetchclient()
+            })
+
+        }
+    }
+
 
     render() {
 
@@ -146,12 +162,20 @@ class SubscriptionListView extends React.Component {
 
             <div className='row-gravity-center'>
                 <span>회원이름</span>
-                <Form.Control value={this.state.search_client_name} onChange={e => this.setState({ search_client_name: e.target.value })} />
+                <Form.Control value={this.state.search_client_name} onChange={e => {
+                    console.log(e)
+                    this.setState({ search_client_name: e.target.value })
+                }
+                }
+                    onKeyDown={e => {
+                        console.log(e)
+                        if (e.nativeEvent.key === 'Enter') {
+                            this.search_btn_click_handler()
+                        }
+                    }}
+                />
                 <Button onClick={_ => {
                     let check = this.check_search_input()
-
-
-
                     if (check) {
 
                         this.setState({
@@ -163,7 +187,7 @@ class SubscriptionListView extends React.Component {
                         })
 
                     }
-                }}>search</Button>
+                }}>검색</Button>
             </div>
 
             {this.state.client_candidates.length == 0 ? (this.state.data === null ? <div>no results</div> :

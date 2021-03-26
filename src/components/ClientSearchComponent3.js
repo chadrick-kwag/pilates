@@ -137,7 +137,15 @@ class ClientSearchComponent3 extends React.Component {
                         value={this.state.client_name}
                         onChange={e => this.setState({
                             client_name: e.target.value
-                        })} />
+                        })}
+
+                        onKeyDown={e => {
+                            console.log(e)
+                            if (e.nativeEvent.key === 'Enter') {
+                                this.search_clients()
+                            }
+                        }}
+                    />
                     <Button onClick={e => this.search_clients()}>검색</Button>
                     {this.state.selected_client == null ? null : <CancelIcon onClick={_ => this.setState({
                         force_search: false
@@ -156,15 +164,15 @@ class ClientSearchComponent3 extends React.Component {
 
                 </div>
             </Card.Body> : <Card.Body>
-                    <div className='row-gravity-between'>
-                        <span className='row-gravity-left'><Chip label="회원" /> {this.state.selected_client.name} (<PhoneIcon />{this.state.selected_client.phonenumber})</span>
-                        <Button variant='outline-dark' size='sm'
-                            onClick={e => this.setState({
-                                force_search: true
-                            })}>회원찾기</Button>
-                    </div>
+                <div className='row-gravity-between'>
+                    <span className='row-gravity-left'><Chip label="회원" /> {this.state.selected_client.name} (<PhoneIcon />{this.state.selected_client.phonenumber})</span>
+                    <Button variant='outline-dark' size='sm'
+                        onClick={e => this.setState({
+                            force_search: true
+                        })}>회원찾기</Button>
+                </div>
 
-                </Card.Body>}
+            </Card.Body>}
         </Card>
 
     }

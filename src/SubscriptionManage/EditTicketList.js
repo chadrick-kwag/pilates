@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Spinner, Table, Form, Button } from 'react-bootstrap'
 
-import { get_null_safe_date_format } from '../common/date_fns'
 import TicketTransferModal from './TicketTransferModal'
 import TicketExpDateChangeModal from './TicketExpDateChangeModal'
 

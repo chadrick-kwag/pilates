@@ -139,8 +139,8 @@ class ListInstructorPage extends React.Component {
         }
         else {
 
-            
-            let re = new RegExp('.*'+this.state.search_name.trim()+'.*')
+
+            let re = new RegExp('.*' + this.state.search_name.trim() + '.*')
             visible_data = this.state.data.filter(d => re.test(d.name))
         }
 
@@ -206,7 +206,9 @@ class ListInstructorPage extends React.Component {
                 <span>이름검색</span>
                 <Form.Control style={{ width: "200px" }} value={this.state.search_name} onChange={e => this.setState({
                     search_name: e.target.value
-                })} />
+                })}
+
+                />
             </div>
 
             <div className='col-gravity-center'>

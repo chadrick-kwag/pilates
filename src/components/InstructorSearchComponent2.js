@@ -115,7 +115,15 @@ class InstructorSearchComponent2 extends React.Component {
                         <span>강사이름</span>
                         <Form.Control value={this.state.instructor_name} onChange={e => this.setState({
                             instructor_name: e.target.value
-                        })} style={{ width: "200px" }} />
+                        })} style={{ width: "200px" }}
+
+                            onKeyDown={e => {
+                                console.log(e)
+                                if (e.nativeEvent.key === 'Enter') {
+                                    this.search_instructors()
+                                }
+                            }}
+                        />
                         <Button onClick={e => this.search_instructors()}>search</Button>
                     </div>
                     <div style={{ marginTop: '10px' }} className='col-gravity-center'>

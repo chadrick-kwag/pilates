@@ -127,7 +127,14 @@ class InstructorSearchComponent3 extends React.Component {
                     <span>강사이름</span>
                     <Form.Control ref={this.search_inputbox} value={this.state.instructor_name} onChange={e => this.setState({
                         instructor_name: e.target.value
-                    })} />
+                    })} 
+                    onKeyDown={e => {
+                        console.log(e)
+                        if (e.nativeEvent.key === 'Enter') {
+                            this.search_instructors()
+                        }
+                    }}
+                    />
                     <Button onClick={e => this.search_instructors()}>검색</Button>
                     {this.state.selected_instructor == null ? null : <CancelIcon onClick={_ => this.setState({
                         force_search: false

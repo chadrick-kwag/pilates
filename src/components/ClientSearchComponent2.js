@@ -115,7 +115,14 @@ class ClientSearchComponent2 extends React.Component {
                         <span>회원이름</span>
                         <Form.Control value={this.state.client_name} onChange={e => this.setState({
                             client_name: e.target.value
-                        })} style={{ width: "200px" }} />
+                        })} style={{ width: "200px" }}
+                            onKeyDown={e => {
+                                console.log(e)
+                                if (e.nativeEvent.key === 'Enter') {
+                                    this.search_clients()
+                                }
+                            }}
+                        />
                         <Button onClick={e => this.search_clients()}>search</Button>
                     </div>
                     <div className='col-gravity-center' style={{ marginTop: '10px' }}>
