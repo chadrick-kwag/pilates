@@ -7,7 +7,7 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 
-import { FETCH_APPRENTICE_COURSES } from '../../common/gql_defs'
+import { FETCH_APPRENTICE_COURSES, CREATE_APPRENTICE_INSTRUCTOR } from '../../common/gql_defs'
 
 import client from '../../apolloclient'
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -56,6 +56,37 @@ export default function CreateApprenticeComponent(props) {
             alert('invalid inputs')
             return
         }
+        console.log('course')
+        console.log(course)
+
+
+        let _var = {
+            name: name,
+            phonenumber: phonenumber,
+            gender: gender,
+            course_id: course===null? null : course.id
+        }
+
+        console.log(_var)
+
+        client.mutate({
+            mutation: CREATE_APPRENTICE_INSTRUCTOR,
+            variables: _var,
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.create_apprentice_instructor.success) {
+                console.log('success')
+                props.onSuccess?.()
+            }
+            else {
+                alert(`create instructor fail. msg:${res.data.create_apprentice_instructor.msg}`)
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            alert('error creating instructor')
+        })
 
     }
 
@@ -78,12 +109,12 @@ export default function CreateApprenticeComponent(props) {
                         </td>
                         <td>
                             <Radio
-                                checked={gender === 'male'}
-                                onChange={_ => setGender('male')}
+                                checked={gender === 'MALE'}
+                                onChange={_ => setGender('MALE')}
                             />남자
                             <Radio
-                                checked={gender === 'female'}
-                                onChange={_ => setGender('female')}
+                                checked={gender === 'FEMALE'}
+                                onChange={_ => setGender('FEMALE')}
                             />여자
                         </td>
                     </tr>
@@ -96,8 +127,13 @@ export default function CreateApprenticeComponent(props) {
                     <tr>
                         <td>과정</td>
                         <td>
-                            <Select value={course} onChange={e => setCourse(e.target.value)}>
-                                {courseList === null ? <MenuItem><CircularProgress size={20} /></MenuItem> : courseList.map(d => <MenuItem value={d.name}>{d.name}</MenuItem>)}
+                            <Select value={course?.name} onChange={e => setCourse(courseList[e.target.value])}>
+                                {courseList === null ? <MenuItem><CircularProgress size={20} /></MenuItem> : courseList.map( (d,i) => {
+                                    console.log(d)
+
+                                    return <MenuItem value={i}>{d.name}</MenuItem>
+
+                                })}
                             </Select>
                         </td>
                     </tr>

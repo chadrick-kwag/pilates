@@ -669,6 +669,33 @@ const FETCH_APPRENTICE_COURSES = gql`
     }
 `
 
+
+const FETCH_APPRENTICE_INSTRUCTORS = gql`
+    query{
+        fetch_apprentice_instructors{
+            success
+            msg
+
+            apprenticeInstructors{
+                id 
+                name 
+                gender 
+                course_name
+                phonenumber
+            }
+        }
+    }
+`
+
+const CREATE_APPRENTICE_INSTRUCTOR = gql`
+    mutation($name:String!, $phonenumber: String!, $gender: String, $course_id: Int){
+        create_apprentice_instructor(name:$name, phonenumber:$phonenumber, gender:$gender, course_id:$course_id){
+            success 
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -719,5 +746,7 @@ export {
     ADD_TICKETS,
     CHANGE_PLAN_TOTALCOST,
     CREATE_APPRENTICE_COURSE,
-    FETCH_APPRENTICE_COURSES
+    FETCH_APPRENTICE_COURSES,
+    FETCH_APPRENTICE_INSTRUCTORS,
+    CREATE_APPRENTICE_INSTRUCTOR
 }
