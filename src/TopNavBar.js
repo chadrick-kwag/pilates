@@ -1,7 +1,8 @@
 import React from 'react'
-import { OverlayTrigger, Tooltip } from 'react-bootstrap'
+import { OverlayTrigger, Tooltip, Dropdown } from 'react-bootstrap'
 import './TopNavBar.css'
 import packagejson from '../package.json'
+import { BorderColor } from '@material-ui/icons'
 
 class TopNavBar extends React.Component {
 
@@ -9,7 +10,8 @@ class TopNavBar extends React.Component {
         super(props)
 
         this.state = {
-            selected: 'client'
+            selected: 'client',
+            apprentice_dropdown_show: false
         }
 
         this.get_bar_item_classname = this.get_bar_item_classname.bind(this)
@@ -50,6 +52,34 @@ class TopNavBar extends React.Component {
                     })
                     this.props.onPlanManageClick()
                 }}>플랜관리</div>
+                <div>
+                    <Dropdown>
+                        <Dropdown.Toggle style={{
+                            backgroundColor: 'black',
+                            borderColor: 'black'
+                        }}><div className={this.get_bar_item_classname('apprentice_manage')}>견습관리</div></Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            <Dropdown.Item onClick={e => {
+                                this.setState({
+                                    selected: 'apprentice_manage'
+                                })
+                                this.props.onApprenticePersonnelManageClick?.()
+                            }}>견습강사관리</Dropdown.Item>
+                            <Dropdown.Item onClick={e => {
+                                this.setState({
+                                    selected: 'apprentice_manage'
+                                })
+                                this.props.onApprenticeCourseManageClick?.()
+                            }}>견습과정관리</Dropdown.Item>
+                            <Dropdown.Item onClick={e => {
+                                this.setState({
+                                    selected: 'apprentice_manage'
+                                })
+                                this.props.onApprenticePlanManageClick?.()
+                            }}>견습플랜관리</Dropdown.Item>
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </div>
                 <div className={this.get_bar_item_classname('schedule')} onClick={e => {
                     this.setState({
                         selected: 'schedule'

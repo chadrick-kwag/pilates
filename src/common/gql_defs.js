@@ -645,6 +645,30 @@ const CHANGE_PLAN_TOTALCOST = gql`
     }
 `
 
+
+const CREATE_APPRENTICE_COURSE = gql`
+    mutation($name: String!){
+        create_apprentice_course(name:$name){
+            success
+            msg
+        }
+    }
+`
+
+
+const FETCH_APPRENTICE_COURSES = gql`
+    query{
+        fetch_apprentice_courses{
+            success
+            msg
+            courses {
+                id 
+                name
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -693,5 +717,7 @@ export {
     DELETE_TICKETS,
     QUERY_SUBSCRIPTION_INFO_WITH_TICKET_INFO,
     ADD_TICKETS,
-    CHANGE_PLAN_TOTALCOST
+    CHANGE_PLAN_TOTALCOST,
+    CREATE_APPRENTICE_COURSE,
+    FETCH_APPRENTICE_COURSES
 }

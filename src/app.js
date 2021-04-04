@@ -24,6 +24,8 @@ import LuxonUtils from '@date-io/luxon';
 import client from './apolloclient'
 import InstructorStatManagePage from './InstructorStatManage/InstructorStatManagePage'
 import AdminPage from './adminpage/AdminPage'
+import ApprenticePersonnelPage from './ApprenticeManage/ApprenticePersonnel/ApprenticePersonnelPage'
+import ApprenticeCoursePage from './ApprenticeManage/ApprenticeCourse/ApprenticeCoursePage'
 
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
@@ -58,10 +60,16 @@ class App extends React.Component {
             mainview = <SubscriptionManagePage apolloclient={client} />
         }
         else if (this.state.viewmode === 'instructor_stat') {
-            mainview = <InstructorStatManagePage/>
+            mainview = <InstructorStatManagePage />
         }
-        else if(this.state.viewmode=== 'adminpage'){
-            mainview = <AdminPage/>
+        else if (this.state.viewmode === 'adminpage') {
+            mainview = <AdminPage />
+        }
+        else if (this.state.viewmode === 'apprentice_personnel') {
+            mainview = <ApprenticePersonnelPage />
+        }
+        else if (this.state.viewmode === 'apprentice_course') {
+            mainview = <ApprenticeCoursePage />
         }
         else {
             mainview = <div>not yet implemented</div>
@@ -76,6 +84,9 @@ class App extends React.Component {
                 onScheduleManageClick={() => this.setState({ viewmode: "schedule" })}
                 onInstructorStatClick={() => this.setState({ viewmode: 'instructor_stat' })}
                 onAdminPageClick={() => this.setState({ viewmode: 'adminpage' })}
+                onApprenticePersonnelManageClick={() => this.setState({ viewmode: 'apprentice_personnel' })}
+                onApprenticeCourseManageClick={() => this.setState({ viewmode: 'apprentice_course' })}
+                onApprenticePlanManageClick={() => this.setState({ viewmode: 'apprentice_plan' })}
             />
 
             {mainview}
