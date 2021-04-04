@@ -10,25 +10,25 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 
 import client from '../../apolloclient'
-import {CREATE_APPRENTICE_COURSE} from '../../common/gql_defs'
+import { CREATE_APPRENTICE_COURSE } from '../../common/gql_defs'
 
 export default function CreateApprenticeComponent(props) {
 
     const [name, setName] = useState(null)
 
 
-    const checkinput = ()=>{
-        if(name === null || name.trim() === ""){
+    const checkinput = () => {
+        if (name === null || name.trim() === "") {
             return false
         }
 
         return true
     }
 
-    const submit = ()=>{
+    const submit = () => {
         // check input
 
-        if(!checkinput()){
+        if (!checkinput()) {
             alert('invalid input')
             return
         }
@@ -40,15 +40,15 @@ export default function CreateApprenticeComponent(props) {
                 name: name
             },
             fetchPolicy: 'no-cache'
-    
-        }).then(res=>{
-            if(res.data.create_apprentice_course.success){
+
+        }).then(res => {
+            if (res.data.create_apprentice_course.success) {
                 props.onSuccess?.()
             }
-            else{
-                alert('create failed')
+            else {
+                alert(`create failed. msg: ${res.data.create_apprentice_course.msg}`)
             }
-        }).catch(e=>{
+        }).catch(e => {
             console.log(JSON.stringify(e))
             alert('create error')
         })
@@ -57,30 +57,29 @@ export default function CreateApprenticeComponent(props) {
     }
 
     return (
-        <div>
+        <div className='col-gravity-center'>
             <h2>과정 생성</h2>
-            <Table>
-                <TableBody>
-                    <TableRow>
-
-                        <TableCell>
-                            과정명
+            <div>
+                <Table>
+                    <TableBody>
+                        <TableRow>
+                            <TableCell>
+                                과정명
                     </TableCell>
-                        <TableCell>
-                            <TextField variant='outlined' value={name} onChange={e => setName(e.target.value)} />
-                        </TableCell>
-                    </TableRow>
+                            <TableCell>
+                                <TextField variant='outlined' value={name} onChange={e => setName(e.target.value)} />
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
 
 
+                </Table>
+            </div>
 
-                </TableBody>
-
-
-            </Table>
 
             <div className='row-gravity-center'>
-                <Button variant='outlined' color='secondary' onClick={_=>props.onCancel?.()}>취소</Button>
-                <Button variant='outlined' onClick={e=>submit()}>생성</Button>
+                <Button variant='outlined' color='secondary' onClick={_ => props.onCancel?.()}>취소</Button>
+                <Button variant='outlined' onClick={e => submit()}>생성</Button>
             </div>
         </div>
     )

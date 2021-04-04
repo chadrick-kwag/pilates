@@ -5,6 +5,7 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import TableHead from '@material-ui/core/TableHead';
+import Grid from '@material-ui/core/Grid';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
@@ -38,12 +39,21 @@ export default function ListApprenticeCourseComponent(props) {
 
     return (
         <div>
-            <h2>견습과정</h2>
+            <Grid container>
+                <Grid item xs>
+                    <Button variant="contained" color='primary' onClick={e => {
+                        props.onCreateCourse?.()
+                        console.log('clicked')
+                    }}>과정생성</Button>
+                </Grid>
+                <Grid item xs>
+                    <div className='row-gravity-center'>
+                        <h2>견습과정</h2>
+                    </div>
 
-            <Button variant="contained" color='primary' onClick={e => {
-                props.onCreateCourse?.()
-                console.log('clicked')
-            }}>과정생성</Button>
+                </Grid>
+                <Grid item xs></Grid>
+            </Grid>
 
             <div>
 

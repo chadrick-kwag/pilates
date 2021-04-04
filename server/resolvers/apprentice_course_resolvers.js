@@ -19,7 +19,7 @@ module.exports = {
                 console.log(e)
                 return {
                     success: false,
-                    msg: e.details
+                    msg: e.detail
                 }
             })
 
@@ -49,7 +49,7 @@ module.exports = {
                 console.log(e)
                 return {
                     success: false,
-                    msg: e.details
+                    msg: e.detail
                 }
             })
 

@@ -10,9 +10,7 @@ export default function ApprenticePersonnelPage(props) {
 
     return (
         <div>
-            <h2>견습강사관리</h2>
             
-
             {viewmode === 'list' ? <ListPersonnelComponent onCreateApprentice={()=>setViewMode('create')}/> : <CreateApprenticeComponent onCancel={()=>setViewMode('list')} />}
 
         </div>
