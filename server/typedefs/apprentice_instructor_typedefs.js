@@ -2,6 +2,7 @@ module.exports = `
 
 type Query {
     fetch_apprentice_instructors: SuccessAndApprenticeInstructorResult
+    query_apprentice_instructor_by_name(name:String!): SuccessAndApprenticeInstructorResult
 }
 
 type SuccessAndApprenticeInstructorResult{

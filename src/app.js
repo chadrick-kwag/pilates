@@ -26,6 +26,7 @@ import InstructorStatManagePage from './InstructorStatManage/InstructorStatManag
 import AdminPage from './adminpage/AdminPage'
 import ApprenticePersonnelPage from './ApprenticeManage/ApprenticePersonnel/ApprenticePersonnelPage'
 import ApprenticeCoursePage from './ApprenticeManage/ApprenticeCourse/ApprenticeCoursePage'
+import ApprenticePlanPage from './ApprenticeManage/ApprenticePlan/ApprenticePlanPage'
 
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
@@ -70,6 +71,9 @@ class App extends React.Component {
         }
         else if (this.state.viewmode === 'apprentice_course') {
             mainview = <ApprenticeCoursePage />
+        }
+        else if (this.state.viewmode === 'apprentice_plan') {
+            mainview = <ApprenticePlanPage />
         }
         else {
             mainview = <div>not yet implemented</div>

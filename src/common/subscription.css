@@ -172,3 +172,7 @@ hr {
     opacity: 0.3;
     background-color: grey;
 }
+
+.search-result:hover{
+    background-color: grey;
+} 
