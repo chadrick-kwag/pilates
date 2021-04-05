@@ -726,16 +726,43 @@ const QUERY_APPRENTICE_INSTRUCTOR_BY_NAME = gql`
                 name
                 gender
                 course_name
+                course_id
                 phonenumber
             }
         }
     }
 `
 
+const FETCH_APPRENTICE_INSTRUCTOR_BY_ID = gql`
+    query($id:Int!){
+        fetch_apprentice_instructor_by_id(id:$id){
+            success
+            msg
+            apprenticeInstructors{
+                id
+                name
+                gender
+                course_name
+                phonenumber
+                course_id
+            }
+        }
+    }
+`
 
 const CREATE_APPRENTICE_PLAN = gql`
     mutation($apprentice_instructor_id:Int!, $totalcost:Int!, $rounds:Int!, $activity_type:String!, $grouping_type:String!){
         create_apprentice_plan(apprentice_instructor_id: $apprentice_instructor_id, totalcost: $totalcost, rounds: $rounds, activity_type: $activity_type, grouping_type: $grouping_type){
+            success
+            msg
+        }
+    }
+`
+
+
+const UPDATE_APPRENTICE_INSTRUCTOR = gql`
+    mutation($id:Int!,$name:String!, $phonenumber: String!, $gender: String, $course_id: Int){
+        update_apprentice_instructor(id:$id,name:$name, phonenumber:$phonenumber, gender:$gender, course_id:$course_id){
             success
             msg
         }
@@ -797,5 +824,7 @@ export {
     CREATE_APPRENTICE_INSTRUCTOR,
     FETCH_APPRENTICE_INSTRUCTOR_PLANS,
     QUERY_APPRENTICE_INSTRUCTOR_BY_NAME,
-    CREATE_APPRENTICE_PLAN
+    CREATE_APPRENTICE_PLAN,
+    FETCH_APPRENTICE_INSTRUCTOR_BY_ID,
+    UPDATE_APPRENTICE_INSTRUCTOR
 }

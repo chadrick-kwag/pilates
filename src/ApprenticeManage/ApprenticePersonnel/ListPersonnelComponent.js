@@ -16,15 +16,15 @@ import { FETCH_APPRENTICE_INSTRUCTORS } from '../../common/gql_defs'
 import ErrorIcon from '@material-ui/icons/Error';
 
 
-const gender_to_kor = (g)=>{
-    if(g===null){
+const gender_to_kor = (g) => {
+    if (g === null) {
         return null
     }
 
-    if(g.toLowerCase()==='male'){
+    if (g.toLowerCase() === 'male') {
         return '남'
     }
-    if(g.toLowerCase()==='female'){
+    if (g.toLowerCase() === 'female') {
         return '여'
     }
 
@@ -37,7 +37,6 @@ export default function ListPersonnelComponent(props) {
 
     const [apprenticeInstructors, setApprenticeInstructors] = useState(null)
 
-
     useEffect(() => {
         client.query({
             query: FETCH_APPRENTICE_INSTRUCTORS,
@@ -46,7 +45,7 @@ export default function ListPersonnelComponent(props) {
             console.log(res)
 
             if (res.data.fetch_apprentice_instructors.success) {
-                let data = res.data.fetch_apprentice_instructors.apprenticeInstructors    
+                let data = res.data.fetch_apprentice_instructors.apprenticeInstructors
                 setApprenticeInstructors(data)
 
             }
@@ -86,12 +85,12 @@ export default function ListPersonnelComponent(props) {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {apprenticeInstructors.map( d=> <TableRow>
+                                {apprenticeInstructors.map(d => <TableRow className='search-result' onClick={e => props.onSelectViewPersonnel?.(d)}>
                                     <TableCell>{d.name}</TableCell>
                                     <TableCell>{d.phonenumber}</TableCell>
                                     <TableCell>{gender_to_kor(d.gender)}</TableCell>
                                     <TableCell>{d.course_name}</TableCell>
-                                    </TableRow> )}
+                                </TableRow>)}
                             </TableBody>
                         </Table>
                 }
