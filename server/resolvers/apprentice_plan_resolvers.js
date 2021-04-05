@@ -38,29 +38,34 @@ module.exports = {
             console.log(result)
             return result
         },
-        query_apprentice_instructor_by_name: async (parent, args) => {
-            let result = await pgclient.query(`select array_agg(json_build_object('id', id,
-            'phonenumber', phonenumber,
-            'name', name,
-            'gender', gender
-           )) as data from apprentice_instructor where name=$1`, [args.name]).then(res => {
-                console.log(res.rows)
+        fetch_apprentice_plan_by_id: async (parent, args) => {
+            let result = await pgclient.query(`select array_agg(json_build_object(
+                'id', apprentice_instructor_plan.id,
+                'apprentice_instructor_name', apprentice_instructor.name,
+                'apprentice_instructor_id', apprentice_instructor.id,
+                'activity_type', activity_type,
+                'grouping_type', grouping_type,
+                'created', apprentice_instructor_plan.created,
+                'totalcost', apprentice_instructor_plan.totalcost,
+                'rounds', apprentice_instructor_plan.rounds
+                
+            )) as data from apprentice_instructor_plan
+            left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id where apprentice_instructor_plan.id=$1`, [args.id]).then(res => {
                 return {
                     success: true,
-                    apprenticeInstructors: res.rows[0].data
+                    plans: res.rows[0].data
                 }
             }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: e.detail
                 }
             })
 
-            console.log(result)
-
             return result
         }
+
     },
     Mutation: {
         create_apprentice_plan: async (parent, args) => {

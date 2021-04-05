@@ -59,7 +59,7 @@ export default function ListPlanComponent(props) {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {plans.map(d => <TableRow>
+                    {plans.map(d => <TableRow className='search-result' onClick={e => props.onSelect?.(d)}>
                         <TableCell>{d.apprentice_instructor_name}</TableCell>
                         <TableCell>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</TableCell>
                         <TableCell>{d.rounds}회</TableCell>

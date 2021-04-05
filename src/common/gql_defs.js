@@ -703,6 +703,7 @@ const FETCH_APPRENTICE_INSTRUCTOR_PLANS = gql`
             success 
             msg
             plans {
+                id
                 apprentice_instructor_name
                 apprentice_instructor_id
                 activity_type
@@ -769,6 +770,26 @@ const UPDATE_APPRENTICE_INSTRUCTOR = gql`
     }
 `
 
+
+const FETCH_APPRENTICE_PLAN_BY_ID = gql`
+    query($id:Int!){
+        fetch_apprentice_plan_by_id(id:$id){
+            success
+            msg
+            plans{
+                id
+                apprentice_instructor_name
+                apprentice_instructor_id
+                activity_type
+                grouping_type
+                created
+                rounds
+                totalcost
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -826,5 +847,6 @@ export {
     QUERY_APPRENTICE_INSTRUCTOR_BY_NAME,
     CREATE_APPRENTICE_PLAN,
     FETCH_APPRENTICE_INSTRUCTOR_BY_ID,
-    UPDATE_APPRENTICE_INSTRUCTOR
+    UPDATE_APPRENTICE_INSTRUCTOR,
+    FETCH_APPRENTICE_PLAN_BY_ID
 }
