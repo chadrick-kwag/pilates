@@ -16,6 +16,7 @@ type ApprenticePlan {
     id: Int
     apprentice_instructor_name: String
     apprentice_instructor_id: Int
+    apprentice_instructor_phonenumber: String
     activity_type: String
     grouping_type: String
     created: String

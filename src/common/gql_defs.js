@@ -780,6 +780,7 @@ const FETCH_APPRENTICE_PLAN_BY_ID = gql`
                 id
                 apprentice_instructor_name
                 apprentice_instructor_id
+                apprentice_instructor_phonenumber
                 activity_type
                 grouping_type
                 created

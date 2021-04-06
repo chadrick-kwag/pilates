@@ -3,7 +3,7 @@ import { Table, TableCell, TableRow, Button, CircularProgress } from '@material-
 import client from '../../apolloclient'
 
 import { FETCH_APPRENTICE_PLAN_BY_ID } from '../../common/gql_defs'
-import numeral from 'numeral'
+
 
 import DetailView from './DetailView'
 import DetailEdit from './DetailEdit'
@@ -39,7 +39,8 @@ export default function DetailViewComponent(props) {
                 setTotalCost(d.totalcost)
                 setAppInst({
                     id: d.apprentice_instructor_id,
-                    name: d.apprentice_instructor_name
+                    name: d.apprentice_instructor_name,
+                    phonenumber: d.apprentice_instructor_phonenumber
                 })
                 setActivityType(d.activity_type)
                 setGroupingType(d.grouping_type)

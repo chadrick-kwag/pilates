@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { Table, TableCell, TableRow, Button, TextField, Select, MenuItem } from '@material-ui/core'
-
+import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
 import client from '../../apolloclient'
 import numeral from 'numeral'
-
+import PhoneIcon from '@material-ui/icons/Phone';
+import ErrorIcon from '@material-ui/icons/Error';
 
 
 export default function DetailEdit(props) {
@@ -25,6 +26,24 @@ export default function DetailEdit(props) {
 
     }
 
+
+    const show_safe_numeral_number = (a) => {
+        console.log(a)
+
+        if (isFinite(a)) {
+            return numeral(Math.ceil(a)).format('0,0')
+        }
+
+        if (isNaN(a)) {
+            return <ErrorIcon fontSize='small'/>
+        }
+
+        console.log(a)
+        return <ErrorIcon fontSize='small'/>
+
+
+    }
+
     return (
         <div>
             <Table>
@@ -33,7 +52,7 @@ export default function DetailEdit(props) {
                         견습강사
                     </TableCell>
                     <TableCell>
-                        blah
+                        <span>{appInst.name}(<PhoneIcon fontSize='small' />{appInst.phonenumber})</span>
                     </TableCell>
                 </TableRow>
                 <TableRow>
@@ -41,10 +60,7 @@ export default function DetailEdit(props) {
                         액티비티 종류
                     </TableCell>
                     <TableCell>
-                        <Select value={activityType} onChange={e => setActivityType(e.target.value)}>
-                            <MenuItem value='PILATES'>필라테스</MenuItem>
-                            <MenuItem value='GYROTONIC'>자이로토닉</MenuItem>
-                        </Select>
+                        <span>{activity_type_to_kor[activityType]}</span>
 
                     </TableCell>
                 </TableRow>
@@ -53,11 +69,7 @@ export default function DetailEdit(props) {
                         그룹 종류
                     </TableCell>
                     <TableCell>
-                        <Select value={groupingType} onChange={e => setGroupingType(e.target.value)}>
-                            <MenuItem value='INDIVIDUAL'>개별</MenuItem>
-                            <MenuItem value='SEMI'>세미</MenuItem>
-                            <MenuItem value='GROUP'>그룹</MenuItem>
-                        </Select>
+                        <span>{grouping_type_to_kor[groupingType]}</span>
 
                     </TableCell>
                 </TableRow>
@@ -66,7 +78,7 @@ export default function DetailEdit(props) {
                         횟수
                     </TableCell>
                     <TableCell>
-                        <TextField value={rounds} onChange={e => setRounds(e.target.value)} />
+                        <span>{rounds}회</span>
                     </TableCell>
                 </TableRow>
                 <TableRow>
@@ -75,7 +87,7 @@ export default function DetailEdit(props) {
                     </TableCell>
                     <TableCell>
                         <TextField value={totalCost} onChange={e => setTotalCost(e.target.value)} />
-                        <span>회당단가:{numeral(Math.ceil(totalCost / rounds)).format('0,0')}원</span>
+                        <span>회당단가:{show_safe_numeral_number(totalCost / rounds)}원</span>
                     </TableCell>
                 </TableRow>
             </Table>

@@ -15,7 +15,8 @@ module.exports = {
                 'grouping_type', grouping_type,
                 'created', apprentice_instructor_plan.created,
                 'totalcost', apprentice_instructor_plan.totalcost,
-                'rounds', apprentice_instructor_plan.rounds
+                'rounds', apprentice_instructor_plan.rounds,
+                'apprentice_instructor_phonenumber',apprentice_instructor.phonenumber
                 
             )) as data from apprentice_instructor_plan
             left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id`).then(
@@ -47,7 +48,8 @@ module.exports = {
                 'grouping_type', grouping_type,
                 'created', apprentice_instructor_plan.created,
                 'totalcost', apprentice_instructor_plan.totalcost,
-                'rounds', apprentice_instructor_plan.rounds
+                'rounds', apprentice_instructor_plan.rounds,
+                'apprentice_instructor_phonenumber',apprentice_instructor.phonenumber
                 
             )) as data from apprentice_instructor_plan
             left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id where apprentice_instructor_plan.id=$1`, [args.id]).then(res => {

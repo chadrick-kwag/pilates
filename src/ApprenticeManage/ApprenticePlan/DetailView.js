@@ -1,5 +1,7 @@
 import React from 'react'
 import { Table, TableCell, TableRow, Button } from '@material-ui/core'
+import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
+import PhoneIcon from '@material-ui/icons/Phone';
 
 import numeral from 'numeral'
 export default function DetailView(props) {
@@ -11,12 +13,12 @@ export default function DetailView(props) {
             <Table>
 
                 <TableRow>
-                    <TableCell>견습강사 이름</TableCell>
-                    <TableCell>{props.data.appInst.name}</TableCell>
+                    <TableCell>견습강사</TableCell>
+                    <TableCell><span>{props.data.appInst.name}(<PhoneIcon fontSize='small'/>{props.data.appInst.phonenumber})</span></TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell>수업종류</TableCell>
-                    <TableCell>{props.data.activityType}/{props.data.groupingType}</TableCell>
+                    <TableCell>{activity_type_to_kor[props.data.activityType]}/{grouping_type_to_kor[props.data.groupingType]}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell>횟수</TableCell>
