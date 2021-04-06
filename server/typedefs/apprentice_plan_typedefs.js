@@ -3,6 +3,19 @@ module.exports = `
 type Query {
     fetch_apprentice_instructor_plans: SuccessAndApprenticePlanResult
     fetch_apprentice_plan_by_id(id:Int!): SuccessAndApprenticePlanResult
+    fetch_apprentice_tickets_of_plan(id:Int!): SuccessAndApprenticeTicketResult
+}
+
+type SuccessAndApprenticeTicketResult{
+    success: Boolean
+    msg: String
+    tickets: [ApprenticeTicket]
+}
+
+type ApprenticeTicket{
+    id: Int
+    expire_time: String
+    consumed_time: String
 }
 
 type SuccessAndApprenticePlanResult{

@@ -1,7 +1,9 @@
 import React from 'react'
-import { Table, TableCell, TableRow, Button } from '@material-ui/core'
+import { Table, TableCell, TableRow, Button, CircularProgress } from '@material-ui/core'
 import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
 import PhoneIcon from '@material-ui/icons/Phone';
+import ViewTicketTable from './ViewTicketTable'
+
 
 import numeral from 'numeral'
 export default function DetailView(props) {
@@ -14,7 +16,7 @@ export default function DetailView(props) {
 
                 <TableRow>
                     <TableCell>견습강사</TableCell>
-                    <TableCell><span>{props.data.appInst.name}(<PhoneIcon fontSize='small'/>{props.data.appInst.phonenumber})</span></TableCell>
+                    <TableCell><span>{props.data.appInst.name}(<PhoneIcon fontSize='small' />{props.data.appInst.phonenumber})</span></TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell>수업종류</TableCell>
@@ -27,6 +29,14 @@ export default function DetailView(props) {
                 <TableRow>
                     <TableCell>총비용</TableCell>
                     <TableCell>{numeral(props.data.totalCost).format('0,0')}회</TableCell>
+                </TableRow>
+                <TableRow>
+                    <TableCell>티켓</TableCell>
+                    <TableCell>
+                        {props.data.tickets === null ? <CircularProgress /> :
+                            props.data.tickets.length === 0 ? <span>no tickets</span> :
+                                <ViewTicketTable tickets={props.data.tickets} />}
+                    </TableCell>
                 </TableRow>
             </Table>
 

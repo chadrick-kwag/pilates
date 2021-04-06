@@ -791,6 +791,20 @@ const FETCH_APPRENTICE_PLAN_BY_ID = gql`
     }
 `
 
+const FETCH_APPRENTICE_TICKETS_OF_PLAN = gql`
+    query($id:Int!){
+        fetch_apprentice_tickets_of_plan(id:$id){
+            success 
+            msg
+            tickets {
+                id
+                expire_time
+                consumed_time
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -849,5 +863,6 @@ export {
     CREATE_APPRENTICE_PLAN,
     FETCH_APPRENTICE_INSTRUCTOR_BY_ID,
     UPDATE_APPRENTICE_INSTRUCTOR,
-    FETCH_APPRENTICE_PLAN_BY_ID
+    FETCH_APPRENTICE_PLAN_BY_ID,
+    FETCH_APPRENTICE_TICKETS_OF_PLAN
 }
