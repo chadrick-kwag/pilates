@@ -42,7 +42,8 @@ export default function DetailView(props) {
 
             <div className='row-gravity-center'>
                 <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>이전</Button>
-                <Button variant='outlined' onClick={e => props.onEdit?.()}>수정</Button>
+                <Button variant='outlined' onClick={e => props.onEdit?.()}>기본수정</Button>
+                <Button variant='outlined' onClick={e => props.onTicketEdit?.()}>티켓수정</Button>
             </div>
 
         </div>

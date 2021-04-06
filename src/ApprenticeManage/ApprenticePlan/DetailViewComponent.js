@@ -7,6 +7,7 @@ import { FETCH_APPRENTICE_PLAN_BY_ID, FETCH_APPRENTICE_TICKETS_OF_PLAN } from '.
 
 import DetailView from './DetailView'
 import DetailEdit from './DetailEdit'
+import TicketEdit from './TicketEdit'
 
 export default function DetailViewComponent(props) {
 
@@ -19,26 +20,26 @@ export default function DetailViewComponent(props) {
     const [groupingType, setGroupingType] = useState(null)
     const [tickets, setTickets] = useState(null)
 
-    const [editMode, setEditMode] = useState(false)
+    const [editMode, setEditMode] = useState('none')
 
 
-    const fetch_tickets = ()=>{
+    const fetch_tickets = () => {
         client.query({
             query: FETCH_APPRENTICE_TICKETS_OF_PLAN,
             variables: {
                 id: props.id
             },
             fetchPolicy: 'no-cache'
-        }).then(res=>{
+        }).then(res => {
             console.log(res)
 
-            if(res.data.fetch_apprentice_tickets_of_plan.success){
+            if (res.data.fetch_apprentice_tickets_of_plan.success) {
                 setTickets(res.data.fetch_apprentice_tickets_of_plan.tickets)
             }
-            else{
+            else {
                 alert(`fetch ticket fail. msg: ${res.data.fetch_apprentice_tickets_of_plan.msg}`)
             }
-        }).catch(e=>{
+        }).catch(e => {
             console.log(e)
             alert('fetch ticket error')
         })
@@ -92,34 +93,50 @@ export default function DetailViewComponent(props) {
     return (
         <div className='col-gravity-center'>
 
-            {loading ? <CircularProgress /> : editMode ? <DetailEdit data={{
-                appInst: appInst,
-                totalCost: totalCost,
-                rounds: rounds,
-                activityType: activityType,
-                groupingType: groupingType
-            }}
+            {loading ? <CircularProgress /> :
 
-                onCancel={() => setEditMode(false)}
-                onSuccess={() => {
-                    setLoading(true)
-                    fetch_data()
-                    setEditMode(false)
-                }}
+                (() => {
+                    if (editMode === 'none') {
+                        return <DetailView
+                            data={{
+                                appInst: appInst,
+                                totalCost: totalCost,
+                                rounds: rounds,
+                                activityType: activityType,
+                                groupingType: groupingType,
+                                tickets: tickets
+                            }}
 
-            /> : <DetailView
-                data={{
-                    appInst: appInst,
-                    totalCost: totalCost,
-                    rounds: rounds,
-                    activityType: activityType,
-                    groupingType: groupingType,
-                    tickets: tickets
-                }}
+                            onCancel={() => props.onCancel?.()}
+                            onEdit={() => setEditMode('basic_edit')}
+                            onTicketEdit={() => setEditMode('ticket_edit')}
+                        />
+                    }
+                    else if (editMode === 'basic_edit') {
+                        return <DetailEdit data={{
+                            appInst: appInst,
+                            totalCost: totalCost,
+                            rounds: rounds,
+                            activityType: activityType,
+                            groupingType: groupingType
+                        }}
 
-                onCancel={() => props.onCancel?.()}
-                onEdit={() => setEditMode(true)}
-            />}
+                            onCancel={() => setEditMode('none')}
+                            onSuccess={() => {
+                                setLoading(true)
+                                fetch_data()
+                                setEditMode('none')
+                            }}
+
+                        />
+                    }
+                    else if (editMode === 'ticket_edit') {
+                        return <TicketEdit tickets={tickets} />
+                    }
+
+                    return null
+                })()
+            }
 
         </div>
     )
