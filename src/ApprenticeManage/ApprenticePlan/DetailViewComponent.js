@@ -91,7 +91,7 @@ export default function DetailViewComponent(props) {
 
 
     return (
-        <div className='col-gravity-center'>
+        <div className='col-gravity-center' style={{width: '100%', height: '100%'}}>
 
             {loading ? <CircularProgress /> :
 
@@ -131,7 +131,7 @@ export default function DetailViewComponent(props) {
                         />
                     }
                     else if (editMode === 'ticket_edit') {
-                        return <TicketEdit tickets={tickets} />
+                        return <TicketEdit tickets={tickets} onCancel={()=>setEditMode('none')}/>
                     }
 
                     return null

@@ -79,7 +79,7 @@ class App extends React.Component {
             mainview = <div>not yet implemented</div>
         }
 
-        return <div>
+        return <div className="root-main-container">
 
             <TopNavBar
                 onClientManageClick={() => this.setState({ viewmode: "client_manage" })}

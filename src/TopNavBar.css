@@ -4,6 +4,9 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    flex: 0 0 min-content;
+    width: 100%;
+    
 }
 
 .bar-item-small-nonselected {
