@@ -824,6 +824,17 @@ const CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS = gql`
     }
 `
 
+
+// transfer_apprentice_tickets_to_apprentice
+const TRANSFER_APPRENTICE_TICKETS_TO_APPRENTICE = gql`
+    mutation($id_arr:[Int!], $apprentice_id:Int!){
+        transfer_apprentice_tickets_to_apprentice(id_arr:$id_arr, apprentice_id:$apprentice_id){
+            success 
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -885,5 +896,6 @@ export {
     FETCH_APPRENTICE_PLAN_BY_ID,
     FETCH_APPRENTICE_TICKETS_OF_PLAN,
     ADD_APPRENTICE_TICKET_TO_PLAN,
-    CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS
+    CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS,
+    TRANSFER_APPRENTICE_TICKETS_TO_APPRENTICE
 }

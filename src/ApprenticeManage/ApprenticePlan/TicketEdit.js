@@ -6,7 +6,7 @@ import { DateTime } from 'luxon'
 import { DatePicker } from "@material-ui/pickers";
 import ApprenticeInstructorSearchComponent from '../../components/ApprenticeInstructorSearchComponent'
 
-import { ADD_APPRENTICE_TICKET_TO_PLAN, CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS } from '../../common/gql_defs'
+import { ADD_APPRENTICE_TICKET_TO_PLAN, CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS, TRANSFER_APPRENTICE_TICKETS_TO_APPRENTICE } from '../../common/gql_defs'
 import client from '../../apolloclient'
 
 
@@ -72,6 +72,47 @@ export default function TicketEdit(props) {
             console.log(JSON.stringify(e))
             console.log(e)
             alert('add ticket error')
+        })
+    }
+
+    const request_ticket_transfer = () => {
+
+        if (transferReceiver === null) {
+            alert('no transfer receiver')
+            return
+        }
+
+        if (selectedArr === null || selectedArr.length === 0) {
+            alert('no selected tickets')
+            return
+        }
+
+        const _var = {
+            id_arr: selectedArr,
+            apprentice_id: transferReceiver.id
+        }
+
+        console.log(_var)
+
+        client.mutate({
+            mutation: TRANSFER_APPRENTICE_TICKETS_TO_APPRENTICE,
+            variables: _var,
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.transfer_apprentice_tickets_to_apprentice.success) {
+                props.refreshTickets?.()
+                setTransferReceiver(null)
+                setShowTransferDialog(false)
+            }
+            else {
+                alert('ticket transfer fail')
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+
+            alert('ticket transfer error')
         })
     }
 
@@ -180,7 +221,7 @@ export default function TicketEdit(props) {
                     <Button color='secondary' onClick={e => {
                         setShowTransferDialog(false)
                     }}>취소</Button>
-                    <Button>완료</Button>
+                    <Button onClick={e => request_ticket_transfer()}>완료</Button>
                 </DialogActions>
             </Dialog>
 
