@@ -41,5 +41,7 @@ type ApprenticePlan {
 type Mutation{
     create_apprentice_plan(apprentice_instructor_id: Int!, totalcost: Int!, rounds: Int!, activity_type: String, grouping_type: String): SuccessResult
     add_apprentice_tickets_to_plan(id:Int!, amount:Int!): SuccessResult
+    change_expire_time_of_apprentice_tickets(id_arr:[Int!], new_expire_time: String!): SuccessResult
+    transfer_apprentice_tickets_to_apprentice(id_arr:[Int!], apprentice_id: Int!): SuccessResult
 }
 `

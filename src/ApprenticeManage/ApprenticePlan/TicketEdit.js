@@ -6,7 +6,7 @@ import { DateTime } from 'luxon'
 import { DatePicker } from "@material-ui/pickers";
 import ApprenticeInstructorSearchComponent from '../../components/ApprenticeInstructorSearchComponent'
 
-import { ADD_APPRENTICE_TICKET_TO_PLAN } from '../../common/gql_defs'
+import { ADD_APPRENTICE_TICKET_TO_PLAN, CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS } from '../../common/gql_defs'
 import client from '../../apolloclient'
 
 
@@ -75,7 +75,46 @@ export default function TicketEdit(props) {
         })
     }
 
-    const request_ticket_transfer = () => {
+    const request_ticket_expire_time_change = () => {
+        // check input
+        if (changeExpireDate === null) {
+            alert('invalid expire date')
+            return
+        }
+
+        if (selectedArr === null || selectedArr.length === 0) {
+            alert('invalid selection')
+            return
+        }
+
+
+        client.mutate({
+            mutation: CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS,
+            variables: {
+                id_arr: selectedArr,
+                new_expire_time: changeExpireDate.toISOString()
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.change_expire_time_of_apprentice_tickets.success) {
+                props.refreshTickets?.()
+                setShowChangeExpireTimeDialog(false)
+            }
+            else {
+                alert('change expire time fail')
+
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+
+            alert('change expire time error')
+
+        })
+
+
+
 
     }
 
@@ -161,10 +200,9 @@ export default function TicketEdit(props) {
                 </DialogContent>
                 <DialogActions>
                     <Button color='secondary' onClick={e => {
-
                         setShowChangeExpireTimeDialog(false)
                     }}>취소</Button>
-                    <Button>완료</Button>
+                    <Button onClick={e => request_ticket_expire_time_change()}>완료</Button>
                 </DialogActions>
             </Dialog>
 

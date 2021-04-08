@@ -193,7 +193,7 @@ module.exports = {
                 console.log(res)
 
                 let expire_time
-                if (res.rows.length ===0) {
+                if (res.rows.length === 0) {
                     return {
                         success: false,
                         msg: 'expire time get fail'
@@ -212,12 +212,54 @@ module.exports = {
                 // update totalcost of plan
                 let newtotalcost = totalcost + args.amount * percost
 
-                res = await pgclient.query(`update apprentice_instructor_plan set totalcost=$1 where id=$2`,[newtotalcost, args.id])
-                
+                res = await pgclient.query(`update apprentice_instructor_plan set totalcost=$1 where id=$2`, [newtotalcost, args.id])
+
                 res = await pgclient.query('COMMIT')
 
                 return {
                     success: true
+                }
+
+            } catch (err) {
+                console.log(err)
+                try {
+                    await pgclient.query('ROLLBACK')
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+                catch (e) {
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+            }
+        },
+        change_expire_time_of_apprentice_tickets: async (parent, args) => {
+
+            console.log(args)
+
+            if (args.id_arr.length === 0) {
+                return {
+                    success: false,
+                    msg: 'no id given'
+                }
+            }
+
+            try {
+                let res = await pgclient.query('BEGIN')
+
+                for (let i = 0; i < args.id_arr.length; i++) {
+                    res = await pgclient.query(`update apprentice_ticket set expire_time=$1 where id=$2`, [args.new_expire_time, args.id_arr[i]])
+                }
+
+                res = await pgclient.query('COMMIT')
+
+                return {
+                    success: true
+
                 }
 
             } catch (err) {
