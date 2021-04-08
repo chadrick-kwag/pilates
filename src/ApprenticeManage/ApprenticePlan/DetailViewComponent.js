@@ -34,6 +34,7 @@ export default function DetailViewComponent(props) {
             console.log(res)
 
             if (res.data.fetch_apprentice_tickets_of_plan.success) {
+                setRounds(res.data.fetch_apprentice_tickets_of_plan.tickets.length)
                 setTickets(res.data.fetch_apprentice_tickets_of_plan.tickets)
             }
             else {
@@ -59,7 +60,7 @@ export default function DetailViewComponent(props) {
             if (res.data.fetch_apprentice_plan_by_id.success) {
                 let d = res.data.fetch_apprentice_plan_by_id.plans[0]
 
-                setRounds(d.rounds)
+                // setRounds(d.rounds)
                 setCreated(d.created)
                 setTotalCost(d.totalcost)
                 setAppInst({
@@ -91,7 +92,7 @@ export default function DetailViewComponent(props) {
 
 
     return (
-        <div className='col-gravity-center' style={{width: '100%', height: '100%'}}>
+        <div className='col-gravity-center' style={{ width: '100%', height: '100%' }}>
 
             {loading ? <CircularProgress /> :
 
@@ -131,7 +132,7 @@ export default function DetailViewComponent(props) {
                         />
                     }
                     else if (editMode === 'ticket_edit') {
-                        return <TicketEdit tickets={tickets} onCancel={()=>setEditMode('none')}/>
+                        return <TicketEdit planid={props.id} refreshTickets={() => fetch_data()} tickets={tickets} onCancel={() => setEditMode('none')} />
                     }
 
                     return null

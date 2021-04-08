@@ -805,6 +805,16 @@ const FETCH_APPRENTICE_TICKETS_OF_PLAN = gql`
     }
 `
 
+
+const ADD_APPRENTICE_TICKET_TO_PLAN = gql`
+    mutation($id:Int!, $amount:Int!){
+        add_apprentice_tickets_to_plan(id:$id, amount:$amount){
+            success 
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -864,5 +874,6 @@ export {
     FETCH_APPRENTICE_INSTRUCTOR_BY_ID,
     UPDATE_APPRENTICE_INSTRUCTOR,
     FETCH_APPRENTICE_PLAN_BY_ID,
-    FETCH_APPRENTICE_TICKETS_OF_PLAN
+    FETCH_APPRENTICE_TICKETS_OF_PLAN,
+    ADD_APPRENTICE_TICKET_TO_PLAN
 }

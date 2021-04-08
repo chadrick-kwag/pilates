@@ -3,6 +3,11 @@ import React, { useState } from 'react'
 import { Table, TableCell, TableRow, TableHead, TableBody, Button, Dialog, DialogContent, TextField, DialogActions } from '@material-ui/core'
 import { DataGrid } from '@material-ui/data-grid';
 import { DateTime } from 'luxon'
+import { DatePicker } from "@material-ui/pickers";
+import ApprenticeInstructorSearchComponent from '../../components/ApprenticeInstructorSearchComponent'
+
+import { ADD_APPRENTICE_TICKET_TO_PLAN } from '../../common/gql_defs'
+import client from '../../apolloclient'
 
 
 const columns = [
@@ -20,14 +25,57 @@ export default function TicketEdit(props) {
     const [selectedArr, setSelectedArr] = useState(null)
     const [showAddTicketDialog, setShowAddTicketDialog] = useState(false)
     const [showChangeExpireTimeDialog, setShowChangeExpireTimeDialog] = useState(false)
+    const [showTransferDialog, setShowTransferDialog] = useState(false)
     const [addTicketCount, setAddTicketCount] = useState(0)
+    const [changeExpireDate, setChangeExpireDate] = useState(new Date())
+    const [transferReceiver, setTransferReceiver] = useState(null)
 
 
     const submit = () => {
 
     }
 
-    const transfer_callback = () => {
+    const request_ticket_add = () => {
+
+        // check input
+        const amount = parseInt(addTicketCount)
+        if (amount <= 0 || amount === null || amount === undefined) {
+            alert('invalid ticket count')
+            return
+        }
+
+        let _var = {
+            id: props.planid,
+            amount: amount
+        }
+
+        console.log(_var)
+
+
+        client.mutate({
+            mutation: ADD_APPRENTICE_TICKET_TO_PLAN,
+            variables: _var,
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+            if (res.data.add_apprentice_tickets_to_plan.success) {
+                props.refreshTickets?.()
+                setAddTicketCount(null)
+                setShowAddTicketDialog(false)
+            }
+            else {
+                alert('add ticket failed')
+                setAddTicketCount(null)
+                setShowAddTicketDialog(false)
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            console.log(e)
+            alert('add ticket error')
+        })
+    }
+
+    const request_ticket_transfer = () => {
 
     }
 
@@ -48,8 +96,8 @@ export default function TicketEdit(props) {
         <div style={{ width: '100%', height: '100%', display: 'flex', flexFlow: 'column' }}>
             <div className='row-gravity-right' style={{ flex: '0 0 min-content' }}>
                 <Button variant='outlined' onClick={() => setShowAddTicketDialog(true)} >추가</Button>
-                <Button variant='outlined' disabled={!at_least_one_selected()} onClick={e => transfer_callback()}>양도</Button>
-                <Button variant='outlined' disabled={!at_least_one_selected()}>만료기한 변경</Button>
+                <Button variant='outlined' disabled={!at_least_one_selected()} onClick={e => setShowTransferDialog(true)}>양도</Button>
+                <Button variant='outlined' disabled={!at_least_one_selected()} onClick={e => setShowChangeExpireTimeDialog(true)}>만료기한 변경</Button>
                 <Button variant='outlined' disabled={!at_least_one_selected()}>삭제</Button>
             </div>
             <div style={{ display: 'flex', flex: '20 20 500px', width: '100%' }}>
@@ -78,17 +126,42 @@ export default function TicketEdit(props) {
                         setAddTicketCount(0)
                         setShowAddTicketDialog(false)
                     }}>취소</Button>
+                    <Button onClick={e => request_ticket_add()}>완료</Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={showTransferDialog} onClose={() => setShowTransferDialog(false)}>
+                <DialogContent>
+                    <div>
+                        <span>양도받을 견습강사</span>
+                        <ApprenticeInstructorSearchComponent onSelect={d => setTransferReceiver(d)} />
+                    </div>
+                </DialogContent>
+                <DialogActions>
+                    <Button color='secondary' onClick={e => {
+                        setShowTransferDialog(false)
+                    }}>취소</Button>
                     <Button>완료</Button>
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={showChangeExpireTimeDialog} onClose={()=>setShowChangeExpireTimeDialog(false)}>
+            <Dialog open={showChangeExpireTimeDialog} onClose={() => setShowChangeExpireTimeDialog(false)}>
                 <DialogContent>
-
+                    <DatePicker
+                        autoOk
+                        orientation="landscape"
+                        variant="static"
+                        openTo="date"
+                        value={changeExpireDate}
+                        onChange={e => {
+                            console.log(e)
+                            setChangeExpireDate(e)
+                        }}
+                    />
                 </DialogContent>
                 <DialogActions>
-                <Button color='secondary' onClick={e => {
-                        
+                    <Button color='secondary' onClick={e => {
+
                         setShowChangeExpireTimeDialog(false)
                     }}>취소</Button>
                     <Button>완료</Button>

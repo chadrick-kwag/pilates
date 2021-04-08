@@ -54,7 +54,7 @@ export default function ApprenticeInstructorSearchComponent(props) {
             <div style={{ position: 'relative' }}>
                 <TextField ref={searchTextField} value={name} onChange={e => setName(e.target.value)}></TextField>
 
-                {showResult ? <div style={{ position: 'absolute', zIndex: '1000', top: searchTextField.current.height, left: '0px', backgroundColor: 'white' }}>
+                {showResult ? <div style={{ position: 'absolute', zIndex: '9000', top: searchTextField.current.height, left: '0px', backgroundColor: 'white' }}>
                     {searchResult?.map(d => <div className='search-result' style={{ width: searchTextField.current.width }} onClick={e => {
                         setShowResult(false)
                         props.onSelect?.(d)

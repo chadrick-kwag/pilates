@@ -149,6 +149,93 @@ module.exports = {
                 }
             }
 
+        },
+        add_apprentice_tickets_to_plan: async (parent, args) => {
+
+            console.log(args)
+            try {
+
+                let res = await pgclient.query('BEGIN')
+
+                // check plan with id exist
+                res = await pgclient.query(`select * from apprentice_instructor_plan where id=$1`, [args.id])
+
+                if (res.rows.length === 0) {
+                    return {
+                        success: false,
+                        msg: 'no plan with id found'
+                    }
+                }
+
+                console.log('plan exist checked')
+                console.log(`id type: ${typeof (args.id)}`)
+                // get per round cost
+                res = await pgclient.query(`select totalcost/A.count as percost, totalcost from apprentice_instructor_plan 
+                left join (select count(1), $1::int as id from apprentice_ticket where creator_plan_id = $2::int ) as A on A.id = apprentice_instructor_plan.id where apprentice_instructor_plan.id = $3::int`, [args.id, args.id, args.id])
+
+                console.log(res)
+
+                if (res.rows.length !== 1) {
+                    return {
+                        success: false,
+                        msg: 'per ticket cost query fail'
+                    }
+                }
+
+                let percost = res.rows[0].percost
+                let totalcost = res.rows[0].totalcost
+
+                console.log(res)
+
+                res = await pgclient.query(`select DISTINCT ON(expire_time) *  from apprentice_ticket where creator_plan_id=$1
+                order by expire_time desc`, [args.id])
+
+                console.log(res)
+
+                let expire_time
+                if (res.rows.length ===0) {
+                    return {
+                        success: false,
+                        msg: 'expire time get fail'
+                    }
+                }
+
+                console.log(res.rows[0].expire_time)
+                expire_time = res.rows[0].expire_time
+
+                console.log('expire_time')
+                console.log(expire_time)
+
+                // insert new tickets
+                res = await pgclient.query(`insert into apprentice_ticket (expire_time, creator_plan_id) (select $1, $2 from generate_series(1,$3))`, [expire_time, args.id, args.amount])
+
+                // update totalcost of plan
+                let newtotalcost = totalcost + args.amount * percost
+
+                res = await pgclient.query(`update apprentice_instructor_plan set totalcost=$1 where id=$2`,[newtotalcost, args.id])
+                
+                res = await pgclient.query('COMMIT')
+
+                return {
+                    success: true
+                }
+
+            } catch (err) {
+                console.log(err)
+                try {
+                    await pgclient.query('ROLLBACK')
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+                catch (e) {
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+            }
         }
     }
 }
