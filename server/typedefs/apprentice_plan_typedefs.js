@@ -4,6 +4,7 @@ type Query {
     fetch_apprentice_instructor_plans: SuccessAndApprenticePlanResult
     fetch_apprentice_plan_by_id(id:Int!): SuccessAndApprenticePlanResult
     fetch_apprentice_tickets_of_plan(id:Int!): SuccessAndApprenticeTicketResult
+    fetch_apprentice_plans_of_apprentice_instructor_and_agtype(apprentice_instructor_id:Int!, activity_type:String!, grouping_type:String!): SuccessAndApprenticePlanWithRemainRoundsResult
 }
 
 type SuccessAndApprenticeTicketResult{
@@ -25,6 +26,12 @@ type SuccessAndApprenticePlanResult{
     plans: [ApprenticePlan]
 }
 
+type SuccessAndApprenticePlanWithRemainRoundsResult{
+    success: Boolean
+    msg: String
+    plans: [ApprenticePlanWithRemainRounds]
+}
+
 type ApprenticePlan {
     id: Int
     apprentice_instructor_name: String
@@ -35,7 +42,19 @@ type ApprenticePlan {
     created: String
     totalcost: Int
     rounds: Int
+}
 
+type ApprenticePlanWithRemainRounds {
+    id: Int
+    apprentice_instructor_name: String
+    apprentice_instructor_id: Int
+    apprentice_instructor_phonenumber: String
+    activity_type: String
+    grouping_type: String
+    created: String
+    totalcost: Int
+    rounds: Int
+    remainrounds: Int
 }
 
 type Mutation{

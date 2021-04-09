@@ -835,6 +835,29 @@ const TRANSFER_APPRENTICE_TICKETS_TO_APPRENTICE = gql`
     }
 `
 
+
+// fetch_apprentice_plans_of_apprentice_instructor_and_agtype
+const FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE = gql`
+    query($apprentice_instructor_id:Int!, $activity_type:String!, $grouping_type: String!){
+        fetch_apprentice_plans_of_apprentice_instructor_and_agtype(apprentice_instructor_id: $apprentice_instructor_id, activity_type:$activity_type, grouping_type:$grouping_type){
+            success 
+            msg 
+            plans {
+                id
+                apprentice_instructor_name
+                apprentice_instructor_id
+                apprentice_instructor_phonenumber
+                activity_type
+                grouping_type
+                created
+                totalcost
+                rounds
+                remainrounds
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -897,5 +920,6 @@ export {
     FETCH_APPRENTICE_TICKETS_OF_PLAN,
     ADD_APPRENTICE_TICKET_TO_PLAN,
     CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS,
-    TRANSFER_APPRENTICE_TICKETS_TO_APPRENTICE
+    TRANSFER_APPRENTICE_TICKETS_TO_APPRENTICE,
+    FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE
 }

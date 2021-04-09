@@ -1,5 +1,6 @@
 import React from 'react'
-import { Button } from 'react-bootstrap'
+// import { Button } from 'react-bootstrap'
+import { Button, Menu, MenuItem } from '@material-ui/core'
 
 import './schedulepage.css'
 
@@ -8,6 +9,7 @@ import ClientScheduleViewer from './ClientScheduleView/ClientScheduleViewer'
 import InstructorScheduleViewer from './InstructorScheduleView/InstructorScheduleViewer'
 
 import ScheduleViewer from './AllScheduleView/ScheduleViewer'
+import CreateApprenticeLesson from './CreateApprenticeLesson'
 
 
 class SchedulePage extends React.Component {
@@ -15,7 +17,9 @@ class SchedulePage extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            viewmode: "all"
+            viewmode: "all",
+            showCreateLessonMenu: false,
+            createLessonMenuAnchor: null
         }
 
         this.createlesson = this.createlesson.bind(this)
@@ -56,6 +60,9 @@ class SchedulePage extends React.Component {
                 }}
             />
         }
+        else if (this.state.viewmode == 'create_apprentice_lesson') {
+            mainview = <CreateApprenticeLesson onCancel={() => this.setState({ viewmode: 'all' })} onSuccess={() => this.setState({ viewmode: 'all' })} />
+        }
 
         return <div>
             <div className="topbar-container">
@@ -70,14 +77,32 @@ class SchedulePage extends React.Component {
                 })}>회원별보기</div>
             </div>
             <div>
-                <Button onClick={e => this.createlesson()}>수업등록</Button>
+                <Button variant='contained' color='primary' onClick={e => this.setState({
+                    showCreateLessonMenu: true,
+                    createLessonMenuAnchor: e.currentTarget
+                })}>수업등록</Button>
+                <Menu open={this.state.showCreateLessonMenu}
+                    anchorEl={this.state.createLessonMenuAnchor}
+                    onClose={e => this.setState({ showCreateLessonMenu: false })}>
+                    <MenuItem onClick={e => {
+                        this.setState({
+                            showCreateLessonMenu: false,
+                            viewmode: "createlesson"
+                        })
+
+                    }}>회원수업</MenuItem>
+                    <MenuItem onClick={e => this.setState({
+                        viewmode: 'create_apprentice_lesson',
+                        showCreateLessonMenu: false
+                    })}>견습강사수업</MenuItem>
+                </Menu>
             </div>
 
             {mainview}
 
 
 
-        </div>
+        </div >
     }
 }
 
