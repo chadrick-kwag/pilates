@@ -13,6 +13,7 @@ const common_typedefs = require('./typedefs/common_typedefs')
 const apprentice_course_typedefs = require('./typedefs/apprentince_course_typedefs')
 const apprentice_instructor_typedefs = require('./typedefs/apprentice_instructor_typedefs')
 const apprentice_plan_typedefs = require('./typedefs/apprentice_plan_typedefs')
+const apprentice_lesson_typedefs = require('./typedefs/apprentice_lesson_typedefs')
 
 const { graphql_server_options, DEV_GRAPHQL_PORT } = require('../config.js')
 
@@ -23,11 +24,12 @@ const instructor_resolver = require('./resolvers/instructor_resolvers')
 const apprentice_course_resolver = require('./resolvers/apprentice_course_resolvers')
 const apprentice_instructor_resolver = require('./resolvers/apprentice_instructor_resolvers')
 const apprentice_plan_resolver = require('./resolvers/apprentice_plan_resolvers')
+const apprentice_lesson_resolver = require('./resolvers/apprentice_lesson_resolvers')
 
 
-const pgclient  = require('./pgclient')
+const pgclient = require('./pgclient')
 
-const typeDefs = mergeTypeDefs([ lesson_typedefs, client_typedefs, subscription_typedefs, instructor_typedefs, common_typedefs, apprentice_course_typedefs, apprentice_instructor_typedefs, apprentice_plan_typedefs])
+const typeDefs = mergeTypeDefs([lesson_typedefs, client_typedefs, subscription_typedefs, instructor_typedefs, common_typedefs, apprentice_course_typedefs, apprentice_instructor_typedefs, apprentice_plan_typedefs, apprentice_lesson_typedefs])
 
 
 
@@ -45,7 +47,7 @@ pgclient.connect(err => {
 
 
 
-let resolvers = mergeResolvers([lesson_resolver, client_resolver, subscription_resolver, instructor_resolver, apprentice_course_resolver, apprentice_instructor_resolver, apprentice_plan_resolver])
+let resolvers = mergeResolvers([lesson_resolver, client_resolver, subscription_resolver, instructor_resolver, apprentice_course_resolver, apprentice_instructor_resolver, apprentice_plan_resolver, apprentice_lesson_resolver])
 
 const server = new ApolloServer({ typeDefs, resolvers });
 

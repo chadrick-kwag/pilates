@@ -858,6 +858,16 @@ const FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE = gql`
     }
 `
 
+// create_apprentice_lesson
+const CREATE_APPRENTICE_LESSON = gql`
+    mutation($plan_id: Int!, $starttime: String, $hours:Int, $apprentice_instructor_id:Int!, $activity_type: String, $grouping_type: String!){
+        create_apprentice_lesson(plan_id: $plan_id, starttime: $starttime, hours: $hours, apprentice_instructor_id: $apprentice_instructor_id , activity_type: $activity_type, grouping_type: $grouping_type){
+            success 
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -921,5 +931,6 @@ export {
     ADD_APPRENTICE_TICKET_TO_PLAN,
     CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS,
     TRANSFER_APPRENTICE_TICKETS_TO_APPRENTICE,
-    FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE
+    FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE,
+    CREATE_APPRENTICE_LESSON
 }

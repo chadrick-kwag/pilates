@@ -31,7 +31,7 @@
     "@toast-ui/react-calendar": "^1.0.5",
     "apollo-server": "^2.19.2",
     "bootstrap": "^4.6.0",
-    "date-fns": "^2.17.0",
+    "date-fns": "^2.20.1",
     "dayjs": "^1.10.4",
     "graphql": "^15.5.0",
     "lodash": "^4.17.20",

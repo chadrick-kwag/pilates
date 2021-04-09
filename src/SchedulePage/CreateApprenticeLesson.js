@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { Table, TableRow, TableHead, TableCell, Select, MenuItem, Button, CircularProgress } from '@material-ui/core'
-import { DateTimePicker } from "@material-ui/pickers";
+import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import ErrorIcon from '@material-ui/icons/Error';
 import ApprenticeInstructorSearchComponent from '../components/ApprenticeInstructorSearchComponent'
 
-import { FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE } from '../common/gql_defs'
+import { FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE, CREATE_APPRENTICE_LESSON } from '../common/gql_defs'
 import client from '../apolloclient'
+import koLocale from "date-fns/locale/ko";
+
+import DateFnsUtils from "@date-io/date-fns";
 
 
 export default function CreateApprenticeLesson(props) {
@@ -23,7 +26,37 @@ export default function CreateApprenticeLesson(props) {
 
 
     const request_create = () => {
+        // check input
+        if (lessonStartTime === null || selectedAppInst === null || lessonDurationHours === null || activityType === null || groupingType === null || lessonDurationHours === null) {
+            alert('invalid input')
+            return;
+        }
 
+        const _var = {
+            apprentice_instructor_id: selectedAppInst.id,
+            starttime: lessonStartTime.toISOString(),
+            hours: lessonDurationHours,
+            activity_type: activityType,
+            grouping_type: groupingType,
+            plan_id: selectedPlan.id
+        }
+
+        client.mutate({
+            mutation: CREATE_APPRENTICE_LESSON,
+            variables: _var,
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+            if (res.data.create_apprentice_lesson.success) {
+                props.onSuccess?.()
+            }
+            else {
+                alert('create lesson failed')
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            alert('create lesson error')
+        })
 
     }
 
@@ -159,15 +192,19 @@ export default function CreateApprenticeLesson(props) {
                             <div className='row-gravity-left children-padding'>
                                 <div className="children-padding row-gravity-center">
                                     <span>시작시간</span>
-                                    <DateTimePicker
-                                        variant="inline"
+                                    <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
 
-                                        value={lessonStartTime}
-                                        onChange={e => {
-                                            setLessonStartTime(e)
-                                        }}
-                                        minutesStep={15}
-                                    />
+                                        <DateTimePicker
+                                            variant="inline"
+
+                                            value={lessonStartTime}
+                                            onChange={e => {
+                                                setLessonStartTime(e)
+                                            }}
+                                            minutesStep={15}
+                                            ampm={false}
+                                        />
+                                    </MuiPickersUtilsProvider>
                                 </div>
                                 <div className="children-padding row-gravity-center">
                                     <span>길이시간</span>
@@ -185,7 +222,7 @@ export default function CreateApprenticeLesson(props) {
                     </TableRow>
                 </Table>
             </div>
-            <div>
+            <div className="row-gravity-center children-padding">
                 <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>이전</Button>
                 <Button variant='outlined' onClick={e => request_create()}>생성</Button>
             </div>
