@@ -880,6 +880,16 @@ export const CHANGE_APPRENTICE_LESSON_STARTTIME = gql`
     }
 `
 
+// cancel_apprentice_lesson
+export const CANCEL_APPRENTICE_LESSON = gql`
+    mutation($lessonid:Int!){
+        cancel_apprentice_lesson(lessonid:$lessonid){
+            success 
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

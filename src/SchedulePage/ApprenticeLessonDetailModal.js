@@ -8,7 +8,7 @@ import koLocale from "date-fns/locale/ko";
 import DateFnsUtils from "@date-io/date-fns";
 
 import client from '../apolloclient'
-import {CHANGE_APPRENTICE_LESSON_STARTTIME} from '../common/gql_defs'
+import { CHANGE_APPRENTICE_LESSON_STARTTIME, CANCEL_APPRENTICE_LESSON } from '../common/gql_defs'
 
 export default function ApprenticeLessonDetailModal(props) {
 
@@ -60,22 +60,44 @@ export default function ApprenticeLessonDetailModal(props) {
             mutation: CHANGE_APPRENTICE_LESSON_STARTTIME,
             variables: _var,
             fetchPolicy: 'no-cache'
-        }).then(res=>{
+        }).then(res => {
             console.log(res)
 
-            if(res.data.change_apprentice_lesson_starttime.success){
+            if (res.data.change_apprentice_lesson_starttime.success) {
                 console.log('editsuccess')
                 props.onEditSuccess?.()
             }
-            else{
+            else {
                 alert('edit lesson fail')
             }
-        }).catch(e=>{
+        }).catch(e => {
             console.log(JSON.stringify(e))
             alert('edit lesson error')
         })
 
 
+    }
+
+    const request_cancel_lesson = () => {
+
+        client.mutate({
+            mutation: CANCEL_APPRENTICE_LESSON,
+            variables: {
+                lessonid: props.lesson.indomain_id
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+            if (res.data.cancel_apprentice_lesson.success) {
+                props.onEditSuccess?.()
+            }
+            else {
+                alert('cancel lesson fail')
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            alert('cancel lesson error')
+        })
     }
 
 
@@ -147,7 +169,7 @@ export default function ApprenticeLessonDetailModal(props) {
                 <DialogActions>
                     <Button onClick={e => props.onCancel?.()}>이전</Button>
                     <Button onClick={e => setEditMode(true)}>변경</Button>
-                    <Button disabled>삭제</Button>
+                    <Button onClick={e => request_cancel_lesson()}>삭제</Button>
                 </DialogActions>
             }
 

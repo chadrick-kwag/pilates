@@ -121,14 +121,8 @@ module.exports = {
 
                 const duration = res.rows[0].duration
 
-
-                console.log('duration')
-                console.log(duration)
                 const starttime = new Date(args.starttime)
                 const new_endtime = new Date(res.rows[0].endtime)
-                // console.log('new endtime before add')
-                // const a = new_endtime.getTime()
-                // console.log(new_endtime.getTime())
                 const b = starttime.getTime() + duration * 1000
 
                 new_endtime.setTime(b)
@@ -139,6 +133,43 @@ module.exports = {
 
                 await pgclient.query('COMMIT')
 
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+            }
+        },
+        cancel_apprentice_lesson: async (parent, args) =>{
+            try{
+
+                let res = await pgclient.query('BEGIN')
+
+                // only need to cancel lesson
+                res = await pgclient.query(`update apprentice_lesson set canceled_time=now() where id=$1 returning id`, [args.lessonid])
+
+                if(res.rows.length!==1){
+                    throw {
+                        detail: 'affected row not 1'
+                    }
+                }
+
+                await pgclient.query('COMMIT')
 
                 return {
                     success: true
