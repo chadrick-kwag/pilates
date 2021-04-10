@@ -192,7 +192,9 @@ export default function CreateApprenticeLesson(props) {
                                             }
                                         }
 
-                                    }}>
+                                    }}
+                                    label={selectedPlan===null? '검색해주세요' : '선택되었습니다'}
+                                    >
                                         {(() => {
 
                                             const filtered_plan_arr = planArr.filter(d => {

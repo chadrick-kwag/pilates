@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react'
 
-import { TextField, Button } from '@material-ui/core'
+import { TextField, Button, FormControl, FormHelperText, MenuItem, Box, InputAdornment } from '@material-ui/core'
 import client from '../apolloclient'
 import { QUERY_APPRENTICE_INSTRUCTOR_BY_NAME } from '../common/gql_defs'
+import CheckIcon from '@material-ui/icons/Check';
 
 
 
@@ -12,6 +13,7 @@ export default function ApprenticeInstructorSearchComponent(props) {
     const [name, setName] = useState(null)
     const [searchResult, setSearchResult] = useState([])
     const [showResult, setShowResult] = useState(false)
+    const [selected, setSelected] = useState(false)
 
 
     const searchTextField = useRef(null)
@@ -49,16 +51,35 @@ export default function ApprenticeInstructorSearchComponent(props) {
     }
 
     return (
-        <div className="row-gravity-left">
+        <div className="row-gravity-left children-padding">
             <span>이름</span>
             <div style={{ position: 'relative' }}>
-                <TextField ref={searchTextField} value={name} onChange={e => setName(e.target.value)}></TextField>
+                <TextField ref={searchTextField} value={name} onChange={e => {
+                    setName(e.target.value)
+                }}
+                    InputProps={selected ?
+                        {
+                            endAdornment: (
+                                <InputAdornment position='end'>
+                                    <CheckIcon />
+                                </InputAdornment>
+                            )
+                        } : null
+                    }
+                    onKeyDown={e => {
+
+                        if (e.key === 'Enter') {
+                            try_search()
+                        }
+                    }}
+                ></TextField>
 
                 {showResult ? <div style={{ position: 'absolute', zIndex: '9000', top: searchTextField.current.height, left: '0px', backgroundColor: 'white' }}>
-                    {searchResult?.map(d => <div className='search-result' style={{ width: searchTextField.current.width }} onClick={e => {
+                    {searchResult?.map(d => <MenuItem style={{ width: searchTextField.current.width }} onClick={e => {
                         setShowResult(false)
+                        setSelected(true)
                         props.onSelect?.(d)
-                    }}>{d.name}({d.phonenumber})</div>)}
+                    }}>{d.name}({d.phonenumber})</MenuItem>)}
                 </div> : null}
             </div>
 
