@@ -159,8 +159,10 @@ module.exports = {
 
                     count(1) as totalrows,
                     sum( CASE
+                        WHEN apprentice_ticket.expire_time < now() THEN 0
                     WHEN A.created is null THEN 1
-                    WHEN A.canceled_time is not null THEN 1
+                    WHEN A.created is not null AND A.canceled_time is not null THEN 1
+                    
                     ELSE 0 END) as is_not_consumed
                     
                     from apprentice_ticket
