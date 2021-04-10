@@ -1,9 +1,10 @@
 
 const { ApolloServer, gql } = require('apollo-server');
-// const { ApolloServer, gql } = require('apollo-server-express');
+
 
 const moment = require('moment-timezone');
 const { mergeTypeDefs, mergeResolvers } = require('@graphql-tools/merge');
+const { graphql_server_options, DEV_GRAPHQL_PORT } = require('../config.js')
 
 const lesson_typedefs = require('./typedefs/lesson_typedefs')
 const client_typedefs = require('./typedefs/client_typedefs')
@@ -15,7 +16,7 @@ const apprentice_instructor_typedefs = require('./typedefs/apprentice_instructor
 const apprentice_plan_typedefs = require('./typedefs/apprentice_plan_typedefs')
 const apprentice_lesson_typedefs = require('./typedefs/apprentice_lesson_typedefs')
 
-const { graphql_server_options, DEV_GRAPHQL_PORT } = require('../config.js')
+
 
 const lesson_resolver = require('./resolvers/lesson_resolvers')
 const client_resolver = require('./resolvers/client_resolvers')
@@ -27,10 +28,14 @@ const apprentice_plan_resolver = require('./resolvers/apprentice_plan_resolvers'
 const apprentice_lesson_resolver = require('./resolvers/apprentice_lesson_resolvers')
 
 
-const pgclient = require('./pgclient')
+
 
 const typeDefs = mergeTypeDefs([lesson_typedefs, client_typedefs, subscription_typedefs, instructor_typedefs, common_typedefs, apprentice_course_typedefs, apprentice_instructor_typedefs, apprentice_plan_typedefs, apprentice_lesson_typedefs])
 
+
+const resolvers = mergeResolvers([lesson_resolver, client_resolver, subscription_resolver, instructor_resolver, apprentice_course_resolver, apprentice_instructor_resolver, apprentice_plan_resolver, apprentice_lesson_resolver])
+
+const pgclient = require('./pgclient')
 
 
 pgclient.connect(err => {
@@ -46,8 +51,6 @@ pgclient.connect(err => {
 
 
 
-
-let resolvers = mergeResolvers([lesson_resolver, client_resolver, subscription_resolver, instructor_resolver, apprentice_course_resolver, apprentice_instructor_resolver, apprentice_plan_resolver, apprentice_lesson_resolver])
 
 const server = new ApolloServer({ typeDefs, resolvers });
 

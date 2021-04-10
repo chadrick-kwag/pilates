@@ -195,7 +195,7 @@ class ScheduleViewer extends React.Component {
                 }
 
                 if (this.state.view_selected_lesson.lesson_domain === 'normal_lesson') {
-                    <LessonDetailModal
+                    return <LessonDetailModal
                         view_selected_lesson={this.state.view_selected_lesson}
                         onCancel={() => this.setState({
                             show_view_modal: false
