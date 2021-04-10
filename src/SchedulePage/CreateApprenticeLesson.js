@@ -9,6 +9,21 @@ import client from '../apolloclient'
 import koLocale from "date-fns/locale/ko";
 
 import DateFnsUtils from "@date-io/date-fns";
+import { DateTime } from 'luxon'
+
+
+const get_init_lesson_start_date = () => {
+    const d = new Date()
+
+    d.setHours(d.getHours() + 1)
+    d.setMinutes(0)
+    d.setSeconds(0)
+    d.setMilliseconds(0)
+
+    return d
+
+
+}
 
 
 export default function CreateApprenticeLesson(props) {
@@ -18,7 +33,7 @@ export default function CreateApprenticeLesson(props) {
     const [selectedAppInst, setSelectedAppInst] = useState(null)
     const [planArr, setPlanArr] = useState(null)
     const [selectedPlan, setSelectedPlan] = useState(null)
-    const [lessonStartTime, setLessonStartTime] = useState(new Date())
+    const [lessonStartTime, setLessonStartTime] = useState(get_init_lesson_start_date())
     const [lessonDurationHours, setLessonDurationHours] = useState(null)
 
 
@@ -155,8 +170,8 @@ export default function CreateApprenticeLesson(props) {
                         <TableCell>
                             {(() => {
                                 // if no appinst selected, disable
-                                if (selectedAppInst === null) {
-                                    return <span>견습강사 선택해주세요</span>
+                                if (selectedAppInst === null || activityType === null || groupingType === null) {
+                                    return <span>강사,수업종류를 먼저 선택해주세요</span>
                                 }
 
                                 if (planArr === null) {
@@ -178,7 +193,7 @@ export default function CreateApprenticeLesson(props) {
                                         }
 
                                     }}>
-                                        {planArr.map((d, i) => <MenuItem value={d.id}>{d.rounds}</MenuItem>)}
+                                        {planArr.map((d, i) => <MenuItem value={d.id}>남은횟수:{d.remainrounds}(플랜생성일:{DateTime.fromMillis(parseInt(d.created)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')})</MenuItem>)}
                                     </Select>
                                 }
                             })()}

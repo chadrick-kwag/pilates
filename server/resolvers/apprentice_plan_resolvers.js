@@ -41,32 +41,44 @@ module.exports = {
             return result
         },
         fetch_apprentice_plan_by_id: async (parent, args) => {
-            let result = await pgclient.query(`select array_agg(json_build_object(
-                'id', apprentice_instructor_plan.id,
-                'apprentice_instructor_name', apprentice_instructor.name,
-                'apprentice_instructor_id', apprentice_instructor.id,
-                'activity_type', activity_type,
-                'grouping_type', grouping_type,
-                'created', apprentice_instructor_plan.created,
-                'totalcost', apprentice_instructor_plan.totalcost,
-                'rounds', apprentice_instructor_plan.rounds,
-                'apprentice_instructor_phonenumber',apprentice_instructor.phonenumber
-                
-            )) as data from apprentice_instructor_plan
-            left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id where apprentice_instructor_plan.id=$1`, [args.id]).then(res => {
+            try {
+                let res = await pgclient.query(`select array_agg(json_build_object(
+                    'id', apprentice_instructor_plan.id,
+                    'apprentice_instructor_name', apprentice_instructor.name,
+                    'apprentice_instructor_id', apprentice_instructor.id,
+                    'activity_type', activity_type,
+                    'grouping_type', grouping_type,
+                    'created', apprentice_instructor_plan.created,
+                    'totalcost', apprentice_instructor_plan.totalcost,
+                    'rounds', apprentice_instructor_plan.rounds,
+                    'apprentice_instructor_phonenumber',apprentice_instructor.phonenumber
+                    
+                )) as data from apprentice_instructor_plan
+                left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id where apprentice_instructor_plan.id=$1`, [args.id])
+
+                await pgclient.query('COMMIT')
+
                 return {
                     success: true,
                     plans: res.rows[0].data
                 }
-            }).catch(e => {
-                console.log(e)
+            } catch (e) {
+                try {
+                    await pgclient.query('ROLLBACK')
+                }
+                catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+
                 return {
                     success: false,
                     msg: e.detail
                 }
-            })
-
-            return result
+            }
+         
         },
         fetch_apprentice_tickets_of_plan: async (parent, args) => {
             try {
@@ -77,7 +89,11 @@ module.exports = {
 
                 res = await pgclient.query(`select apprentice_ticket.id as id, 
                 apprentice_ticket.expire_time,
-                apprentice_lesson.starttime as consumed_time
+                
+                case 
+                when A.canceled_time is null then apprentice_lesson.starttime
+                else null
+                end as consumed_time
                 from apprentice_ticket 
                 left join (select DISTINCT ON (apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc ) as A on apprentice_ticket.id = A.apprentice_ticket_id
                 left join apprentice_lesson on apprentice_lesson.id = A.apprentice_lesson_id
@@ -85,7 +101,7 @@ module.exports = {
 
                 console.log(res.rows)
 
-                await pgclient.query('END')
+                await pgclient.query('COMMIT')
 
                 return {
                     success: true,
@@ -131,12 +147,12 @@ module.exports = {
                 left join apprentice_instructor on apprentice_instructor_plan.apprentice_instructor_id = apprentice_instructor.id
                 where apprentice_instructor_id=$1
                 and activity_type=$2 and grouping_type=$3
-                `,[instid, args.activity_type, args.grouping_type])
+                `, [instid, args.activity_type, args.grouping_type])
 
                 // for each plan, get remain rounds
                 const fetched_plans = res.rows
 
-                for(let i=0;i<fetched_plans.length;i++){
+                for (let i = 0; i < fetched_plans.length; i++) {
                     const p = fetched_plans[i]
 
                     res = await pgclient.query(`select 
@@ -150,7 +166,7 @@ module.exports = {
                     from apprentice_ticket
                     left join (select DISTINCT ON(apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc) as A
                     on A.apprentice_ticket_id = apprentice_ticket.id
-                    where apprentice_ticket.creator_plan_id = $1`,[p.id])
+                    where apprentice_ticket.creator_plan_id = $1`, [p.id])
 
                     const remainrounds = res.rows[0].is_not_consumed
                     const totalrounds = res.rows[0].totalrows
@@ -169,7 +185,7 @@ module.exports = {
                     plans: fetched_plans
                 }
 
-                
+
             } catch (e) {
                 console.log(e)
                 try {

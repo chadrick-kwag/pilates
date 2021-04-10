@@ -10,7 +10,8 @@ module.exports = {
         create_apprentice_lesson: async (parent, args) => {
             try {
 
-
+                console.log('create_apprentice_lesson')
+                console.log(args)
 
                 let res = await pgclient.query('BEGIN')
 
@@ -18,6 +19,8 @@ module.exports = {
                 res = await pgclient.query(`select * from apprentice_instructor_plan where apprentice_instructor_id=$1 and activity_type=$2 and grouping_type=$3 and id=$4`, [
                     args.apprentice_instructor_id, args.activity_type, args.grouping_type, args.plan_id
                 ])
+
+                console.log(res)
 
                 if (res.rows.length !== 1) {
                     throw {
@@ -36,6 +39,8 @@ module.exports = {
                 and (A.created is null OR (A.created is not null AND A.canceled_time is not null))
                 and apprentice_ticket.expire_time > now()
                 `, [args.plan_id])
+
+                console.log(res)
 
 
                 // check amount
@@ -160,7 +165,7 @@ module.exports = {
 
                 let res = await pgclient.query('BEGIN')
 
-                // only need to cancel lesson
+                // cancel lesson
                 res = await pgclient.query(`update apprentice_lesson set canceled_time=now() where id=$1 returning id`, [args.lessonid])
 
                 if(res.rows.length!==1){
@@ -168,6 +173,23 @@ module.exports = {
                         detail: 'affected row not 1'
                     }
                 }
+
+                // cancel assign tickets. meaning, this cancel is no penalty cancel for instructor
+
+                // fetch assignment ids
+                res = await pgclient.query(`select id from assign_apprentice_ticket where apprentice_lesson_id=$1`,[args.lessonid])
+
+                const assign_ids = res.rows.map(d=>d.id)
+
+                console.log('assign_ids')
+                console.log(assign_ids)
+                
+                for(let i=0;i<assign_ids.length;i++){
+                    res = await pgclient.query(`update assign_apprentice_ticket set canceled_time=now() where id=$1 `,[assign_ids[i]])
+                }
+
+
+
 
                 await pgclient.query('COMMIT')
 
