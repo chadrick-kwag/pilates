@@ -501,6 +501,93 @@ module.exports = {
                     }
                 }
             }
+        },
+        delete_apprentice_tickets: async (parent, args) => {
+            console.log(args)
+            try {
+                let res = await pgclient.query('BEGIN')
+
+                // check ticket id_arr are valid and belong to same plan id
+                let planid = null
+                for (let i = 0; i < args.id_arr.length; i++) {
+                    res = await pgclient.query(`select creator_plan_id from apprentice_ticket where id=$1`, [args.id_arr[i]])
+
+                    if (res.rows.length !== 1) {
+                        throw {
+                            detail: 'invalid ticket id'
+                        }
+
+                    }
+
+                    if (planid === null) {
+                        planid = res.rows[0].creator_plan_id
+                    }
+                    else {
+                        if (planid !== res.rows[0].creator_plan_id) {
+                            throw {
+                                detail: 'ticket ids not from same plan'
+                            }
+                        }
+                    }
+                }
+
+                console.log('planid')
+                console.log(planid)
+
+                // get totalcost of plan
+                res = await pgclient.query(`select totalcost from apprentice_instructor_plan where id=$1`, [planid])
+
+                const totalcost = res.rows[0].totalcost
+
+                // get existing ticket size
+                res = await pgclient.query(`select count(1) as count from apprentice_ticket where creator_plan_id=$1`, [planid])
+
+                const ticket_count = res.rows[0].count
+
+                const percost = totalcost / ticket_count
+
+
+
+
+
+                for (let i = 0; i < args.id_arr.length; i++) {
+                    res = await pgclient.query(`delete from apprentice_ticket where id=$1`, [args.id_arr[i]])
+                }
+
+                // calculate new totalcost and update it.
+
+                const new_totalcost = totalcost - (args.id_arr.length * percost)
+
+                if (new_totalcost < 0) {
+                    throw {
+                        detail: 'new totalcost is negative'
+                    }
+                }
+
+                await pgclient.query(`update apprentice_instructor_plan set totalcost=$1 where id=$2`, [new_totalcost, planid])
+
+                await pgclient.query('COMMIT')
+
+                return {
+                    success: true
+                }
+
+            } catch (err) {
+                console.log(err)
+                try {
+                    await pgclient.query('ROLLBACK')
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+                catch (e) {
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+            }
         }
     }
 }

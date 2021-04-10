@@ -28,7 +28,20 @@ export default function DetailView(props) {
                 </TableRow>
                 <TableRow>
                     <TableCell>총비용</TableCell>
-                    <TableCell>{numeral(props.data.totalCost).format('0,0')}회</TableCell>
+                    <TableCell>
+                        <div className='row-gravity-left children-padding'>
+                            <span>{numeral(props.data.totalCost).format('0,0')}원</span>
+                            {(() => {
+                                if (props.data.totalCost !== null && props.data.tickets !== null) {
+                                    const percost = Math.floor(props.data.totalCost / props.data.tickets.length)
+
+                                    return <span>(회당단가 {numeral(percost).format('0,0')}원)</span>
+                                }
+                            })()}
+                        </div>
+
+
+                    </TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell>티켓</TableCell>

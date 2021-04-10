@@ -890,6 +890,16 @@ export const CANCEL_APPRENTICE_LESSON = gql`
     }
 `
 
+
+export const DELETE_APPRENTICE_TICKETS = gql`
+    mutation($id_arr:[Int!]){
+        delete_apprentice_tickets(id_arr:$id_arr){
+            success 
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

@@ -6,7 +6,7 @@ import { DateTime } from 'luxon'
 import { DatePicker } from "@material-ui/pickers";
 import ApprenticeInstructorSearchComponent from '../../components/ApprenticeInstructorSearchComponent'
 
-import { ADD_APPRENTICE_TICKET_TO_PLAN, CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS, TRANSFER_APPRENTICE_TICKETS_TO_APPRENTICE } from '../../common/gql_defs'
+import { ADD_APPRENTICE_TICKET_TO_PLAN, CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS, DELETE_APPRENTICE_TICKETS, TRANSFER_APPRENTICE_TICKETS_TO_APPRENTICE } from '../../common/gql_defs'
 import client from '../../apolloclient'
 
 
@@ -15,6 +15,9 @@ const columns = [
     { field: 'expire_time', headerName: '만료일시', flex: 1 },
     { field: 'consumed_time', headerName: '소모수업 시작일시', flex: 1 }
 ]
+
+
+
 
 
 
@@ -31,7 +34,27 @@ export default function TicketEdit(props) {
     const [transferReceiver, setTransferReceiver] = useState(null)
 
 
-    const submit = () => {
+    const request_delete_tickets = () => {
+
+        client.mutate({
+            mutation: DELETE_APPRENTICE_TICKETS,
+            variables: {
+                id_arr: selectedArr
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.delete_apprentice_tickets.success) {
+                props.refreshTickets?.()
+            }
+            else {
+                alert(`delete tickets fail. ${res.data.delete_apprentice_tickets.msg}`)
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            alert('delete tickets error')
+        })
 
     }
 
@@ -171,6 +194,36 @@ export default function TicketEdit(props) {
         return false;
     }
 
+    const get_modified_tickets = () => {
+
+
+        if(props.tickets===null){
+            return []
+        }
+
+
+        const tickets = props.tickets.map(d=>{
+
+            const out = _.cloneDeep(d)
+            const et = DateTime.fromMillis(parseInt(d.expire_time)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')
+            let ct = null
+            if (d.consumed_time !== null) {
+                ct = DateTime.fromMillis(parseInt(d.consumed_time)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')
+            }
+
+            out.expire_time = et;
+            out.consumed_time = ct;
+
+            return out
+        })
+        
+
+        console.log('modified tickets')
+        console.log(tickets)
+
+        return tickets
+    }
+
     return (
 
         <div style={{ width: '100%', height: '100%', display: 'flex', flexFlow: 'column' }}>
@@ -178,10 +231,10 @@ export default function TicketEdit(props) {
                 <Button variant='outlined' onClick={() => setShowAddTicketDialog(true)} >추가</Button>
                 <Button variant='outlined' disabled={!at_least_one_selected()} onClick={e => setShowTransferDialog(true)}>양도</Button>
                 <Button variant='outlined' disabled={!at_least_one_selected()} onClick={e => setShowChangeExpireTimeDialog(true)}>만료기한 변경</Button>
-                <Button variant='outlined' disabled={!at_least_one_selected()}>삭제</Button>
+                <Button variant='outlined' disabled={!at_least_one_selected()} onClick={e => request_delete_tickets()}>삭제</Button>
             </div>
             <div style={{ display: 'flex', flex: '20 20 500px', width: '100%' }}>
-                <DataGrid rows={props.tickets} columns={columns} checkboxSelection onSelectionModelChange={e => {
+                <DataGrid rows={get_modified_tickets()} columns={columns} checkboxSelection onSelectionModelChange={e => {
                     console.log(e)
                     let new_arr = e.selectionModel.map(d => parseInt(d))
                     console.log(new_arr)
@@ -190,8 +243,8 @@ export default function TicketEdit(props) {
 
             </div>
             <div className='row-gravity-center' style={{ flex: '1 1 min-content', width: '100%' }}>
-                <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>취소</Button>
-                <Button variant='outlined' onClick={e => submit()}>변경</Button>
+                <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>이전</Button>
+
             </div>
             <Dialog open={showAddTicketDialog} onClose={() => setShowAddTicketDialog(false)}>
                 <DialogContent>
