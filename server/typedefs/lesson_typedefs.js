@@ -10,6 +10,27 @@ type Query{
 }
 
 
+
+type LessonWithMoreInfo {
+    id: Int
+    lesson_domain: String
+    indomain_id: Int
+    client_info_arr: [LessonClientInfo]
+    instructorid: Int
+    instructorname: String
+    instructorphonenumber: String
+    starttime: String
+    endtime: String
+    activity_type: String
+    grouping_type: String
+  }
+  
+  type query_lesson_return {
+      success: Boolean
+      msg: String
+      lessons: [LessonWithMoreInfo]
+  }
+
 type stat_lesson_client_info {
     id: Int
     name: String

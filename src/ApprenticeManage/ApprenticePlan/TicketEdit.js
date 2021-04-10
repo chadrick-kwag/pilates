@@ -133,7 +133,7 @@ export default function TicketEdit(props) {
             mutation: CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS,
             variables: {
                 id_arr: selectedArr,
-                new_expire_time: changeExpireDate.toISOString()
+                new_expire_time: changeExpireDate.toUTCString()
             },
             fetchPolicy: 'no-cache'
         }).then(res => {

@@ -29,6 +29,9 @@ import PartialOverlaySpinner from '../PartialOverlaySpinner'
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 
+import ErrorIcon from '@material-ui/icons/Error';
+import ApprenticeLessonDetailModal from '../ApprenticeLessonDetailModal'
+
 
 class ScheduleViewer extends React.Component {
 
@@ -38,7 +41,7 @@ class ScheduleViewer extends React.Component {
         this.state = {
             data: null,
             show_create_modal: false,
-            modal_info: null,
+
             show_view_modal: false,
             view_selected_lesson: null,
             view_date: new Date(),
@@ -114,11 +117,11 @@ class ScheduleViewer extends React.Component {
                     return
                 }
 
-                if(grouping_type === 'SEMI' && !this.state.show_semi_lessons){
+                if (grouping_type === 'SEMI' && !this.state.show_semi_lessons) {
                     return
                 }
 
-                if(grouping_type === 'GROUP' && !this.state.show_group_lessons){
+                if (grouping_type === 'GROUP' && !this.state.show_group_lessons) {
                     return
                 }
 
@@ -129,27 +132,52 @@ class ScheduleViewer extends React.Component {
                 starttime = new Date(parseInt(starttime))
                 endtime = new Date(parseInt(endtime))
 
-                let clients_str = ""
-                d.client_info_arr.forEach(a => clients_str += a.clientname + ' ')
+                if (d.lesson_domain === 'apprentice_lesson') {
+                    let title = d.instructorname + ' 강사님'
+                    let bgcolor = 'black'
+                    let fontcolor = 'white'
+
+                    schedule_formatted_data.push({
+                        id: parseInt(i),
+                        calendarId: '0',
+                        title: title,
+                        category: 'time',
+                        dueDateClass: '',
+                        start: starttime,
+                        end: endtime,
+                        bgColor: bgcolor,
+                        color: fontcolor,
 
 
-                let title = clients_str + "회원님 / " + d.instructorname + " 강사님"
+                    })
 
-                let [bgcolor, fontcolor] = get_bg_fontcolor_for_activity_type(d.activity_type)
+                }
+                else if (d.lesson_domain === 'normal_lesson') {
 
-                schedule_formatted_data.push({
-                    id: parseInt(i),
-                    calendarId: '0',
-                    title: title,
-                    category: 'time',
-                    dueDateClass: '',
-                    start: starttime,
-                    end: endtime,
-                    bgColor: bgcolor,
-                    color: fontcolor,
-                    borderColor: get_border_color_for_grouping_type(d.grouping_type)
-                    
-                })
+                    let clients_str = ""
+                    d.client_info_arr.forEach(a => clients_str += a.clientname + ' ')
+
+
+                    let title = clients_str + "회원님 / " + d.instructorname + " 강사님"
+
+                    let [bgcolor, fontcolor] = get_bg_fontcolor_for_activity_type(d.activity_type)
+
+                    schedule_formatted_data.push({
+                        id: parseInt(i),
+                        calendarId: '0',
+                        title: title,
+                        category: 'time',
+                        dueDateClass: '',
+                        start: starttime,
+                        end: endtime,
+                        bgColor: bgcolor,
+                        color: fontcolor,
+                        borderColor: get_border_color_for_grouping_type(d.grouping_type)
+
+                    })
+                }
+
+
             })
         }
 
@@ -160,30 +188,58 @@ class ScheduleViewer extends React.Component {
 
 
         return <div>
+            {(() => {
 
-            {this.state.show_view_modal === true ? <LessonDetailModal
-                view_selected_lesson={this.state.view_selected_lesson}
-                onCancel={() => this.setState({
-                    show_view_modal: false
-                })}
-                onDeleteSuccess={() => {
-                    this.setState({
-                        show_view_modal: false
-                    }, () => {
-                        this.fetchdata()
-                    })
-                }}
-                onEditSuccess={
-                    () => {
-                        this.setState({
-                            show_view_modal: false
-                        }, () => {
-                            this.fetchdata()
-                        })
-                    }
+                if (!this.state.show_view_modal) {
+                    return null
                 }
 
-            /> : null}
+                if (this.state.view_selected_lesson.lesson_domain === 'normal_lesson') {
+                    <LessonDetailModal
+                        view_selected_lesson={this.state.view_selected_lesson}
+                        onCancel={() => this.setState({
+                            show_view_modal: false
+                        })}
+                        onDeleteSuccess={() => {
+                            this.setState({
+                                show_view_modal: false
+                            }, () => {
+                                this.fetchdata()
+                            })
+                        }}
+                        onEditSuccess={
+                            () => {
+                                this.setState({
+                                    show_view_modal: false
+                                }, () => {
+                                    this.fetchdata()
+                                })
+                            }
+                        }
+
+                    />
+                }
+                else {
+                    
+                    return <ApprenticeLessonDetailModal lesson={this.state.view_selected_lesson}
+                        onCancel={() => this.setState({
+                            show_view_modal: false,
+                            view_selected_lesson: null
+                        })}
+
+                        onEditSuccess={()=>{
+                            this.setState({
+                                show_view_modal: false,
+                                view_selected_lesson: null,
+                                data: null
+                            }, ()=>{
+                                this.fetchdata()
+                            })
+                        }}
+                    />
+                }
+            })()}
+           
 
             <div>
                 <div className="row-gravity-between">
@@ -354,9 +410,7 @@ class ScheduleViewer extends React.Component {
 
                             onClickSchedule={e => {
 
-                                let new_modal_info = {
-                                    schedule: e.schedule
-                                }
+
 
                                 let sel_id = e.schedule.id
 
@@ -367,7 +421,7 @@ class ScheduleViewer extends React.Component {
                                 let sel_lesson = this.state.data[sel_id]
 
                                 this.setState({
-                                    modal_info: new_modal_info,
+
                                     show_view_modal: true,
                                     view_selected_lesson: sel_lesson
                                 })

@@ -63,6 +63,8 @@ const QUERY_LESSON_WITH_DATERANGE_GQL = gql`query($start_time: String!, $end_tim
         msg
         lessons {
             id
+            lesson_domain
+            indomain_id
             client_info_arr {
                 clientid
                 clientname
@@ -862,6 +864,16 @@ const FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE = gql`
 const CREATE_APPRENTICE_LESSON = gql`
     mutation($plan_id: Int!, $starttime: String, $hours:Int, $apprentice_instructor_id:Int!, $activity_type: String, $grouping_type: String!){
         create_apprentice_lesson(plan_id: $plan_id, starttime: $starttime, hours: $hours, apprentice_instructor_id: $apprentice_instructor_id , activity_type: $activity_type, grouping_type: $grouping_type){
+            success 
+            msg
+        }
+    }
+`
+
+// change_apprentice_lesson_starttime
+export const CHANGE_APPRENTICE_LESSON_STARTTIME = gql`
+    mutation($lessonid:Int!, $starttime: String){
+        change_apprentice_lesson_starttime(lessonid:$lessonid, starttime:$starttime){
             success 
             msg
         }

@@ -24,65 +24,183 @@ module.exports = {
 
         query_lessons_with_daterange: async (parent, args) => {
 
-            console.log("inside query_lessons_with_daterange")
+            console.log('query_lessons_with_daterange')
             console.log(args)
 
+            try {
+                let res = await pgclient.query('BEGIN')
 
-            let start_time = new Date(args.start_time)
-            let end_time = new Date(args.end_time)
+                // gather normal lessons
 
+                res = await pgclient.query(`select  lesson.id as indomain_id, instructor.id as instructorid,
+                        instructor.name as instructorname, 
+                        instructor.phonenumber as instructorphonenumber,
+                        lesson.starttime, lesson.endtime,
+                        lesson.activity_type,
+                        lesson.grouping_type,
+                        
+                    
+                        lesson.canceled_time as lesson_canceled_time,
+                        
+                        array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber, 'ticketid', ticket.id )) as client_info_arr
+                        from lesson 
+                        inner join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
+                        left join ticket on A.ticketid = ticket.id
+                        left join plan on ticket.creator_plan_id = plan.id
+                        left join client on plan.clientid = client.id
+                        left join instructor on lesson.instructorid = instructor.id
+                        where lesson.canceled_time is null
+                        and A.canceled_time is null
+                        AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1, $2) )
+                            
+                        GROUP BY lesson.id, instructor.id  `, [args.start_time, args.end_time])
 
-            start_time = start_time.getTime() / 1000
-            end_time = end_time.getTime() / 1000
+                const normal_lessons = res.rows
 
-            console.log(start_time)
-            console.log(end_time)
+                normal_lessons.forEach((d, i) => {
+                    d['lesson_domain'] = 'normal_lesson'
+                })
 
-            let results = await pgclient.query(`select  lesson.id as id, instructor.id as instructorid,
-            instructor.name as instructorname, 
-            instructor.phonenumber as instructorphonenumber,
-            lesson.starttime, lesson.endtime,
-            lesson.activity_type,
-            lesson.grouping_type,
-            
-           
-             lesson.canceled_time as lesson_canceled_time,
-             
-             array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber, 'ticketid', ticket.id )) as client_info_arr
-            from lesson 
-            inner join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
-            left join ticket on A.ticketid = ticket.id
-            left join plan on ticket.creator_plan_id = plan.id
-            left join client on plan.clientid = client.id
-            left join instructor on lesson.instructorid = instructor.id
-            where lesson.canceled_time is null
-			and A.canceled_time is null
-             AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($1), to_timestamp($2)) )
+                console.log(`modified normal lessons: ${normal_lessons}`)
+
+                // gather apprentice lessons
+
+                res = await pgclient.query(`select apprentice_lesson.id as indomain_id,
+                apprentice_lesson.apprentice_instructor_id as instructorid,
+                apprentice_instructor.name as instructorname,
+                apprentice_instructor.phonenumber as instructorphonenumber,
+                apprentice_lesson.starttime,
+                apprentice_lesson.endtime,
+                apprentice_lesson.created,
+                apprentice_lesson.activity_type,
+                apprentice_lesson.grouping_type,
+                count(CASE
+                      WHEN A.id is null THEN null
+                      ELSE true
+                     END)::int as assigned_ticket_count
+                from apprentice_lesson
+                left join (select distinct on(apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc)
+                as A on A.apprentice_lesson_id = apprentice_lesson.id
+                left join apprentice_instructor on apprentice_instructor.id  = apprentice_lesson.apprentice_instructor_id
+                where apprentice_lesson.canceled_time is null
+                AND (tstzrange(apprentice_lesson.starttime, apprentice_lesson.endtime) && tstzrange($1, $2) )
                 
-            GROUP BY lesson.id, instructor.id  `, [start_time, end_time]).then(res => {
+                
+                group by apprentice_lesson.id, apprentice_instructor.id`, [args.start_time, args.end_time])
 
-                console.log(res)
                 console.log(res.rows)
+
+                const apprentice_lessons = res.rows.filter(d => d.assigned_ticket_count > 0)
+
+                console.log(`apprentice_lessons: ${apprentice_lessons}`)
+                console.log(apprentice_lessons)
+
+                // assign domain type 
+
+                apprentice_lessons.forEach((d, i) => {
+                    d['lesson_domain'] = 'apprentice_lesson'
+
+                })
+
+                console.log(`apprentice_lessons after adding domain info: ${apprentice_lessons}`)
+                console.log(apprentice_lessons)
+
+                await pgclient.query('COMMIT')
+
+                const all_lessons = normal_lessons.concat(apprentice_lessons)
+
+                all_lessons.forEach((d, i) => {
+                    d['id'] = i
+                })
+
+                console.log(`all_lessons: ${all_lessons}`)
+                console.log(all_lessons)
 
                 return {
                     success: true,
-                    lessons: res.rows
+                    lessons: all_lessons
+
                 }
-
-
-            }).catch(e => {
+            } catch (e) {
                 console.log(e)
-                return {
-                    success: false,
-                    msg: "query error"
+                try {
+                    await pgclient.query('ROLLBACK')
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
                 }
-            })
-
-
-            return results
-
+                catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+            }
 
         },
+
+        // query_lessons_with_daterange_backup: async (parent, args) => {
+
+        //     console.log("inside query_lessons_with_daterange")
+        //     console.log(args)
+
+
+        //     let start_time = new Date(args.start_time)
+        //     let end_time = new Date(args.end_time)
+
+
+        //     start_time = start_time.getTime() / 1000
+        //     end_time = end_time.getTime() / 1000
+
+        //     console.log(start_time)
+        //     console.log(end_time)
+
+        //     let results = await pgclient.query(`select  lesson.id as id, instructor.id as instructorid,
+        //     instructor.name as instructorname, 
+        //     instructor.phonenumber as instructorphonenumber,
+        //     lesson.starttime, lesson.endtime,
+        //     lesson.activity_type,
+        //     lesson.grouping_type,
+
+
+        //      lesson.canceled_time as lesson_canceled_time,
+
+        //      array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber, 'ticketid', ticket.id )) as client_info_arr
+        //     from lesson 
+        //     inner join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
+        //     left join ticket on A.ticketid = ticket.id
+        //     left join plan on ticket.creator_plan_id = plan.id
+        //     left join client on plan.clientid = client.id
+        //     left join instructor on lesson.instructorid = instructor.id
+        //     where lesson.canceled_time is null
+        // 	and A.canceled_time is null
+        //      AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($1), to_timestamp($2)) )
+
+        //     GROUP BY lesson.id, instructor.id  `, [start_time, end_time]).then(res => {
+
+        //         console.log(res)
+        //         console.log(res.rows)
+
+        //         return {
+        //             success: true,
+        //             lessons: res.rows
+        //         }
+
+
+        //     }).catch(e => {
+        //         console.log(e)
+        //         return {
+        //             success: false,
+        //             msg: "query error"
+        //         }
+        //     })
+
+
+        //     return results
+
+
+        // },
         query_lesson_with_timerange_by_clientid: async (parent, args) => {
             console.log(args)
 
@@ -190,7 +308,7 @@ module.exports = {
 
             return result
         },
-        query_lesson_data_of_instructorid: async (parent, args)=>{
+        query_lesson_data_of_instructorid: async (parent, args) => {
             console.log('query_lesson_data_of_instructorid')
 
             console.log(args)
@@ -213,20 +331,20 @@ module.exports = {
                 GROUP BY lesson.id)
                 
                 
-                select * from C where client_info_arr is not null`, _args).then(res=>{
-                    console.log(res)
+                select * from C where client_info_arr is not null`, _args).then(res => {
+                console.log(res)
 
-                    return {
-                        success: true,
-                        lesson_info_arr: res.rows
-                    }
-                }).catch(e=>{
-                    console.log(e)
-                    return {
-                        success: false,
-                        msg: 'query error'
-                    }
-                })
+                return {
+                    success: true,
+                    lesson_info_arr: res.rows
+                }
+            }).catch(e => {
+                console.log(e)
+                return {
+                    success: false,
+                    msg: 'query error'
+                }
+            })
 
             console.log('result')
             console.log(result)
@@ -471,20 +589,20 @@ module.exports = {
 
             console.log('delete_lesson_with_request_type')
             console.log(args)
-            
-            let result = await pgclient.query(`select * from cancel_lesson_with_reqtype($1, $2) as (success bool, msg text)`, [args.lessonid, args.request_type.toLowerCase()]).then(res=>{
+
+            let result = await pgclient.query(`select * from cancel_lesson_with_reqtype($1, $2) as (success bool, msg text)`, [args.lessonid, args.request_type.toLowerCase()]).then(res => {
                 console.log(res)
 
-                if(res.rowCount!==1){
+                if (res.rowCount !== 1) {
                     return {
                         success: false,
                         msg: 'rowcount not 1'
                     }
                 }
-                else{
+                else {
                     return res.rows[0]
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
@@ -591,7 +709,7 @@ module.exports = {
 
             return result
         },
-        change_clients_of_lesson: async  (parent, args) => {
+        change_clients_of_lesson: async (parent, args) => {
             console.log('change_clients_of_lesson')
             console.log(args)
 
@@ -618,6 +736,6 @@ module.exports = {
 
             return result
         }
-        
+
     }
 }

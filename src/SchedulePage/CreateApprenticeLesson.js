@@ -34,7 +34,7 @@ export default function CreateApprenticeLesson(props) {
 
         const _var = {
             apprentice_instructor_id: selectedAppInst.id,
-            starttime: lessonStartTime.toISOString(),
+            starttime: lessonStartTime.toUTCString(),
             hours: lessonDurationHours,
             activity_type: activityType,
             grouping_type: groupingType,
