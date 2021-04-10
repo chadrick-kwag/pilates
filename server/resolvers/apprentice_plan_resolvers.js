@@ -78,7 +78,7 @@ module.exports = {
                     msg: e.detail
                 }
             }
-         
+
         },
         fetch_apprentice_tickets_of_plan: async (parent, args) => {
             try {
@@ -216,7 +216,7 @@ module.exports = {
 
                 console.log(`returned id: ${id}`)
 
-                res = await pgclient.query(`insert into apprentice_ticket (expire_time, creator_plan_id) (select now(), $1 from generate_series(1,$2))`, [id, args.rounds])
+                res = await pgclient.query(`insert into apprentice_ticket (expire_time, creator_plan_id) (select $3, $1 from generate_series(1,$2))`, [id, args.rounds, args.expiretime])
 
                 await pgclient.query('COMMIT')
                 console.log('commit finished')

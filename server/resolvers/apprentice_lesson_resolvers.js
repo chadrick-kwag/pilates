@@ -13,14 +13,25 @@ module.exports = {
                 console.log('create_apprentice_lesson')
                 console.log(args)
 
+                // construct endtime
+                const endtime = new Date(args.starttime)
+                endtime.setTime(endtime.getTime() + 1000*60*60*args.hours)
+
+                console.log('endtime')
+                console.log(endtime)
+
+
                 let res = await pgclient.query('BEGIN')
+
+                
+
 
 
                 // check no time overlapping lesson exists
 
                 res = await pgclient.query(`select * from apprentice_lesson where apprentice_instructor_id=$1 AND 
                 (tstzrange(starttime, endtime) && tstzrange($2, $3))
-                AND canceled_time is null`,[args.apprentice_instructor_id, args.starttime, args.endtime])
+                AND canceled_time is null`,[args.apprentice_instructor_id, args.starttime, endtime])
 
                 if(res.rows.length>0){
                     throw {
@@ -75,10 +86,10 @@ module.exports = {
                 // create lesson
 
                 const starttime = args.starttime
-                const endtime = new Date(args.starttime)
-                endtime.setHours(endtime.getHours() + args.hours)
+                // const endtime = new Date(args.starttime)
+                // endtime.setHours(endtime.getHours() + args.hours)
 
-                console.log(`endtime: ${endtime}`)
+                // console.log(`endtime: ${endtime}`)
 
                 res = await pgclient.query(`insert into apprentice_lesson (apprentice_instructor_id, starttime, endtime, created, activity_type, grouping_type) values ($1, $2, $3, now(), $4, $5) returning id`, [
                     args.apprentice_instructor_id, args.starttime, endtime, args.activity_type, args.grouping_type

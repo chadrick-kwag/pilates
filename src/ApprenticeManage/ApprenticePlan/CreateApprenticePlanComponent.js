@@ -4,7 +4,11 @@ import { Table, TableRow, TableCell, TableHead, TableBody, TextField, Button, Ra
 import client from '../../apolloclient'
 
 import ApprenticeInstructorSearchComponent from '../../components/ApprenticeInstructorSearchComponent'
-import {CREATE_APPRENTICE_PLAN} from '../../common/gql_defs'
+import { CREATE_APPRENTICE_PLAN } from '../../common/gql_defs'
+
+import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import koLocale from "date-fns/locale/ko";
+import DateFnsUtils from "@date-io/date-fns";
 
 
 const price_guideline = {
@@ -84,6 +88,37 @@ const price_guideline = {
     }
 }
 
+
+const calculate_days_to_expire_time = (et) => {
+    const d = new Date()
+    d.setHours(0)
+    d.setMinutes(0)
+    d.setSeconds(0)
+    d.setMilliseconds(0)
+
+    console.log(d)
+
+    const t = new Date(et)
+
+    t.setHours(0)
+    t.setMinutes(0)
+    t.setSeconds(0)
+    t.setMilliseconds(0)
+
+    console.log(t)
+
+    let diff = t.getTime() - d.getTime()
+
+    console.log(diff)
+
+    diff = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+    console.log(diff)
+
+    return diff
+
+}
+
 const get_guideline_comp = (activity_type, grouping_type, onSelectCallback) => {
 
     let prices = price_guideline[grouping_type][activity_type]
@@ -111,6 +146,7 @@ export default function CreateApprenticePlanComponent(props) {
     const [totalCost, setTotalCost] = useState(null)
     const [activityType, setActivityType] = useState(null)
     const [groupingType, setGroupingType] = useState(null)
+    const [expireTime, setExpireTime] = useState(null)
 
 
     const check_input = () => {
@@ -134,6 +170,10 @@ export default function CreateApprenticePlanComponent(props) {
             return false
         }
 
+        if (expireTime === null) {
+            return false
+        }
+
         return true
     }
 
@@ -150,7 +190,8 @@ export default function CreateApprenticePlanComponent(props) {
             totalcost: parseInt(totalCost),
             rounds: parseInt(rounds),
             activity_type: activityType,
-            grouping_type: groupingType
+            grouping_type: groupingType,
+            expiretime: expireTime.toUTCString()
 
         }
 
@@ -230,11 +271,27 @@ export default function CreateApprenticePlanComponent(props) {
                     <TableRow>
                         <TableCell>견습강사</TableCell>
                         <TableCell>
-                            <ApprenticeInstructorSearchComponent onSelect={a=>setAppInst(a)}/>
+                            <ApprenticeInstructorSearchComponent onSelect={a => setAppInst(a)} />
                         </TableCell>
                     </TableRow>
                     <TableRow>
+                        <TableCell>만료일</TableCell>
+                        <TableCell>
+                            <div className='row-gravity-left children-padding'>
+                                <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
 
+                                    <DatePicker
+                                        autoOk
+                                        value={expireTime}
+                                        onChange={e => setExpireTime(e)}
+
+                                    />
+                                </MuiPickersUtilsProvider>
+                                {expireTime !== null ? <span>(만료일까지 {calculate_days_to_expire_time(expireTime)}일)</span> : null}
+
+                            </div>
+
+                        </TableCell>
                     </TableRow>
                 </TableBody>
 

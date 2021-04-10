@@ -754,8 +754,8 @@ const FETCH_APPRENTICE_INSTRUCTOR_BY_ID = gql`
 `
 
 const CREATE_APPRENTICE_PLAN = gql`
-    mutation($apprentice_instructor_id:Int!, $totalcost:Int!, $rounds:Int!, $activity_type:String!, $grouping_type:String!){
-        create_apprentice_plan(apprentice_instructor_id: $apprentice_instructor_id, totalcost: $totalcost, rounds: $rounds, activity_type: $activity_type, grouping_type: $grouping_type){
+    mutation($apprentice_instructor_id:Int!, $totalcost:Int!, $rounds:Int!, $activity_type:String!, $grouping_type:String!, $expiretime:String!){
+        create_apprentice_plan(apprentice_instructor_id: $apprentice_instructor_id, totalcost: $totalcost, rounds: $rounds, activity_type: $activity_type, grouping_type: $grouping_type, expiretime:$expiretime){
             success
             msg
         }
