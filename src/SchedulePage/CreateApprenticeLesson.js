@@ -66,7 +66,8 @@ export default function CreateApprenticeLesson(props) {
                 props.onSuccess?.()
             }
             else {
-                alert('create lesson failed')
+                const msg = res.data.create_apprentice_lesson.msg
+                alert(`create lesson failed. msg: ${msg}`)
             }
         }).catch(e => {
             console.log(JSON.stringify(e))
@@ -105,7 +106,8 @@ export default function CreateApprenticeLesson(props) {
                 setPlanArr(arr)
             }
             else {
-                alert('fetch plans failed')
+                const msg = res.data.fetch_apprentice_plans_of_apprentice_instructor_and_agtype.msg
+                alert(`fetch plans failed. msg: ${msg}`)
             }
         }).catch(e => {
             console.log(JSON.stringify(e))

@@ -15,6 +15,19 @@ module.exports = {
 
                 let res = await pgclient.query('BEGIN')
 
+
+                // check no time overlapping lesson exists
+
+                res = await pgclient.query(`select * from apprentice_lesson where apprentice_instructor_id=$1 AND 
+                (tstzrange(starttime, endtime) && tstzrange($2, $3))
+                AND canceled_time is null`,[args.apprentice_instructor_id, args.starttime, args.endtime])
+
+                if(res.rows.length>0){
+                    throw {
+                        detail: 'overlapping lesson'
+                    }
+                }
+
                 // check consistency of incoming appinstid, AT, GT
                 res = await pgclient.query(`select * from apprentice_instructor_plan where apprentice_instructor_id=$1 and activity_type=$2 and grouping_type=$3 and id=$4`, [
                     args.apprentice_instructor_id, args.activity_type, args.grouping_type, args.plan_id
@@ -116,7 +129,7 @@ module.exports = {
                 let res = await pgclient.query('BEGIN')
 
                 // get duration of lesson
-                res = await pgclient.query(`select extract(epoch from endtime - starttime) as duration, endtime from apprentice_lesson where id=$1`, [args.lessonid])
+                res = await pgclient.query(`select extract(epoch from endtime - starttime) as duration, endtime, apprentice_instructor_id from apprentice_lesson where id=$1`, [args.lessonid])
 
                 if (res.rows.length !== 1) {
                     throw {
@@ -125,12 +138,28 @@ module.exports = {
                 }
 
                 const duration = res.rows[0].duration
+                const instid = res.rows[0].apprentice_instructor_id
 
                 const starttime = new Date(args.starttime)
                 const new_endtime = new Date(res.rows[0].endtime)
                 const b = starttime.getTime() + duration * 1000
 
                 new_endtime.setTime(b)
+
+                // check if overlapping lessons exist
+                res = await pgclient.query(`select * from apprentice_lesson where apprentice_instructor_id=$1 AND 
+                (tstzrange(starttime, endtime) && tstzrange($2, $3))
+                AND canceled_time is null
+                `, [instid, args.starttime, new_endtime.toUTCString()])
+
+                console.log('overlap check')
+                console.log(res.rows)
+
+                if (res.rows.length > 0) {
+                    throw {
+                        detail: 'overlappping lesson exists'
+                    }
+                }
 
                 res = await pgclient.query(`update apprentice_lesson set starttime=$1, endtime=$2 where id=$3 returning id`, [
                     args.starttime, new_endtime.toUTCString(), args.lessonid
@@ -160,15 +189,15 @@ module.exports = {
                 }
             }
         },
-        cancel_apprentice_lesson: async (parent, args) =>{
-            try{
+        cancel_apprentice_lesson: async (parent, args) => {
+            try {
 
                 let res = await pgclient.query('BEGIN')
 
                 // cancel lesson
                 res = await pgclient.query(`update apprentice_lesson set canceled_time=now() where id=$1 returning id`, [args.lessonid])
 
-                if(res.rows.length!==1){
+                if (res.rows.length !== 1) {
                     throw {
                         detail: 'affected row not 1'
                     }
@@ -177,15 +206,15 @@ module.exports = {
                 // cancel assign tickets. meaning, this cancel is no penalty cancel for instructor
 
                 // fetch assignment ids
-                res = await pgclient.query(`select id from assign_apprentice_ticket where apprentice_lesson_id=$1`,[args.lessonid])
+                res = await pgclient.query(`select id from assign_apprentice_ticket where apprentice_lesson_id=$1`, [args.lessonid])
 
-                const assign_ids = res.rows.map(d=>d.id)
+                const assign_ids = res.rows.map(d => d.id)
 
                 console.log('assign_ids')
                 console.log(assign_ids)
-                
-                for(let i=0;i<assign_ids.length;i++){
-                    res = await pgclient.query(`update assign_apprentice_ticket set canceled_time=now() where id=$1 `,[assign_ids[i]])
+
+                for (let i = 0; i < assign_ids.length; i++) {
+                    res = await pgclient.query(`update assign_apprentice_ticket set canceled_time=now() where id=$1 `, [assign_ids[i]])
                 }
 
 
