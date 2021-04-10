@@ -860,6 +860,28 @@ const FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE = gql`
     }
 `
 
+//fetch_apprentice_plans_of_apprentice_instructor
+export const FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR = gql`
+    query($appinst_id: Int!){
+        fetch_apprentice_plans_of_apprentice_instructor(appinst_id:$appinst_id){
+            success 
+            msg 
+            plans {
+                id
+                apprentice_instructor_name
+                apprentice_instructor_id
+                apprentice_instructor_phonenumber
+                activity_type
+                grouping_type
+                created
+                totalcost
+                rounds
+                remainrounds
+            }
+        }
+    }
+`
+
 // create_apprentice_lesson
 const CREATE_APPRENTICE_LESSON = gql`
     mutation($plan_id: Int!, $starttime: String, $hours:Int, $apprentice_instructor_id:Int!, $activity_type: String, $grouping_type: String!){

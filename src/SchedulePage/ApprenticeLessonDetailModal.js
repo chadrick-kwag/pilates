@@ -10,6 +10,8 @@ import DateFnsUtils from "@date-io/date-fns";
 import client from '../apolloclient'
 import { CHANGE_APPRENTICE_LESSON_STARTTIME, CANCEL_APPRENTICE_LESSON } from '../common/gql_defs'
 
+import { grouping_type_to_kor, activity_type_to_kor } from '../common/consts'
+
 export default function ApprenticeLessonDetailModal(props) {
 
 
@@ -119,7 +121,7 @@ export default function ApprenticeLessonDetailModal(props) {
                     </TableRow>
                     <TableRow>
                         <TableCell>수업종류</TableCell>
-                        <TableCell>{props.lesson.activity_type}/{props.lesson.grouping_type}</TableCell>
+                        <TableCell>{activity_type_to_kor[props.lesson.activity_type]}/{grouping_type_to_kor[props.lesson.grouping_type]}</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell>

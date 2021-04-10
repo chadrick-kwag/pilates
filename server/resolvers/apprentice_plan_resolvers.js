@@ -204,6 +204,85 @@ module.exports = {
                     }
                 }
             }
+        },
+        fetch_apprentice_plans_of_apprentice_instructor: async (parent, args) => {
+
+            try {
+                console.log('fetch_apprentice_plans_of_apprentice_instructor')
+                console.log(args)
+
+                let res = await pgclient.query(`BEGIN`)
+
+
+                // get basic plan info of condition
+                res = await pgclient.query(`select apprentice_instructor_plan.id as id, 
+                apprentice_instructor.name as apprentice_instructor_name,
+                apprentice_instructor.id as apprentice_instructor_id,
+                apprentice_instructor.phonenumber as apprentice_instructor_phonenumber,
+                apprentice_instructor_plan.activity_type as activity_type,
+                apprentice_instructor_plan.grouping_type as grouping_type,
+                apprentice_instructor_plan.created as created,
+                apprentice_instructor_plan.totalcost as totalcost
+                from apprentice_instructor_plan
+                left join apprentice_instructor on apprentice_instructor_plan.apprentice_instructor_id = apprentice_instructor.id
+                where apprentice_instructor_id=$1
+                
+                `, [args.appinst_id])
+
+                // for each plan, get remain rounds
+                const fetched_plans = res.rows
+
+                for (let i = 0; i < fetched_plans.length; i++) {
+                    const p = fetched_plans[i]
+
+                    res = await pgclient.query(`select 
+
+                    count(1) as totalrows,
+                    sum( CASE
+                        WHEN apprentice_ticket.expire_time < now() THEN 0
+                    WHEN A.created is null THEN 1
+                    WHEN A.created is not null AND A.canceled_time is not null THEN 1
+                    
+                    ELSE 0 END) as is_not_consumed
+                    
+                    from apprentice_ticket
+                    left join (select DISTINCT ON(apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc) as A
+                    on A.apprentice_ticket_id = apprentice_ticket.id
+                    where apprentice_ticket.creator_plan_id = $1`, [p.id])
+
+                    const remainrounds = res.rows[0].is_not_consumed
+                    const totalrounds = res.rows[0].totalrows
+                    fetched_plans[i]['remainrounds'] = remainrounds
+                    fetched_plans[i]['rounds'] = totalrounds
+                }
+
+                // check remain rounds populated
+                console.log('fetched plans')
+                console.log(fetched_plans)
+
+                await pgclient.query(`COMMIT`)
+
+                return {
+                    success: true,
+                    plans: fetched_plans
+                }
+
+            } catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+            }
         }
 
     },

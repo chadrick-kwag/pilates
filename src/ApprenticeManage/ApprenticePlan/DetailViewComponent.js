@@ -92,7 +92,7 @@ export default function DetailViewComponent(props) {
 
 
     return (
-        <div className='col-gravity-center' style={{ width: '100%', height: '100%' }}>
+        <div className='col-gravity-top' style={{ width: '100%', height: '100%' }}>
 
             {loading ? <CircularProgress /> :
 

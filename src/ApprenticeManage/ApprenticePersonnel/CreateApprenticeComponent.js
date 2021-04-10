@@ -6,6 +6,7 @@ import TextField from '@material-ui/core/TextField';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
+import { DialogActions } from '@material-ui/core'
 
 import { FETCH_APPRENTICE_COURSES, CREATE_APPRENTICE_INSTRUCTOR } from '../../common/gql_defs'
 
@@ -64,7 +65,7 @@ export default function CreateApprenticeComponent(props) {
             name: name,
             phonenumber: phonenumber,
             gender: gender,
-            course_id: course===null? null : course.id
+            course_id: course === null ? null : course.id
         }
 
         console.log(_var)
@@ -128,7 +129,7 @@ export default function CreateApprenticeComponent(props) {
                         <td>과정</td>
                         <td>
                             <Select value={course?.name} onChange={e => setCourse(courseList[e.target.value])}>
-                                {courseList === null ? <MenuItem><CircularProgress size={20} /></MenuItem> : courseList.map( (d,i) => {
+                                {courseList === null ? <MenuItem><CircularProgress size={20} /></MenuItem> : courseList.map((d, i) => {
                                     console.log(d)
 
                                     return <MenuItem value={i}>{d.name}</MenuItem>
@@ -140,11 +141,13 @@ export default function CreateApprenticeComponent(props) {
                 </tbody>
             </Table>
 
+            <DialogActions>
 
-            <div className='row-gravity-center'>
                 <Button variant='outlined' color='secondary' onClick={_ => props.onCancel?.()}>취소</Button>
                 <Button variant='outlined' onClick={e => submit()}>생성</Button>
-            </div>
+            </DialogActions>
+
+
 
         </div>
     )

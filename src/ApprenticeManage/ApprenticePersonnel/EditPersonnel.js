@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Table, TableRow, TableBody, TableCell, TextField, Select, Radio, Button, MenuItem, CircularProgress } from '@material-ui/core'
+import { Table, TableRow, TableBody, TableCell, TextField, Select, Radio, Button, MenuItem, CircularProgress, DialogActions } from '@material-ui/core'
 
 
 import client from '../../apolloclient'
@@ -154,11 +154,10 @@ export default function EditPersonnel(props) {
                 </TableBody>
             </Table>
 
-
-            <div className='row-gravity-center'>
+            <DialogActions>
                 <Button variant='outlined' color='secondary' onClick={_ => props.onCancel?.()}>취소</Button>
                 <Button variant='outlined' onClick={e => submit()}>변경</Button>
-            </div>
+            </DialogActions>
 
         </div>
     )

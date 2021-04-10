@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Table, TableCell, TableRow, Button, TextField, Select, MenuItem } from '@material-ui/core'
+import { Table, TableCell, TableRow, Button, TextField, Select, MenuItem, DialogActions } from '@material-ui/core'
 import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
 import client from '../../apolloclient'
 import numeral from 'numeral'
@@ -35,11 +35,11 @@ export default function DetailEdit(props) {
         }
 
         if (isNaN(a)) {
-            return <ErrorIcon fontSize='small'/>
+            return <ErrorIcon fontSize='small' />
         }
 
         console.log(a)
-        return <ErrorIcon fontSize='small'/>
+        return <ErrorIcon fontSize='small' />
 
 
     }
@@ -92,10 +92,12 @@ export default function DetailEdit(props) {
                 </TableRow>
             </Table>
 
-            <div className='row-gravity-center'>
+            <DialogActions>
+
                 <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>취소</Button>
                 <Button variant='outlined' onClick={e => submit()}>수정</Button>
-            </div>
+            </DialogActions>
+
         </div>
     )
 }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Table, TableCell, TableRow, Button, CircularProgress } from '@material-ui/core'
+import { Table, TableCell, TableRow, Button, CircularProgress, DialogActions } from '@material-ui/core'
 import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
 import PhoneIcon from '@material-ui/icons/Phone';
 import ViewTicketTable from './ViewTicketTable'
@@ -24,7 +24,9 @@ export default function DetailView(props) {
                 </TableRow>
                 <TableRow>
                     <TableCell>횟수</TableCell>
-                    <TableCell>{props.data.rounds}회</TableCell>
+                    <TableCell>
+                        {props.data.tickets === null ? null : <span>{props.data.rounds}회</span>}
+                    </TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell>총비용</TableCell>
@@ -53,11 +55,13 @@ export default function DetailView(props) {
                 </TableRow>
             </Table>
 
-            <div className='row-gravity-center'>
+            {/* <div className='row-gravity-center'> */}
+            <DialogActions>
                 <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>이전</Button>
                 <Button variant='outlined' onClick={e => props.onEdit?.()}>기본수정</Button>
                 <Button variant='outlined' onClick={e => props.onTicketEdit?.()}>티켓수정</Button>
-            </div>
+            </DialogActions>
+            {/* </div> */}
 
         </div>
     )

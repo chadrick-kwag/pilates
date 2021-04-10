@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { Table, TableRow, TableCell, TableHead, TableBody, TextField, Button, Radio } from '@material-ui/core'
+import { Table, TableRow, TableCell, TableHead, TableBody, TextField, Button, Radio, DialogActions } from '@material-ui/core'
 import client from '../../apolloclient'
 
 import ApprenticeInstructorSearchComponent from '../../components/ApprenticeInstructorSearchComponent'
@@ -296,11 +296,13 @@ export default function CreateApprenticePlanComponent(props) {
                 </TableBody>
 
             </Table>
-            <div className='row-gravity-center'>
+            <DialogActions>
+
                 <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>취소</Button>
                 <Button variant='outlined' onClick={e => submit()}>생성</Button>
+            </DialogActions>
 
-            </div>
+
 
         </div>
     )

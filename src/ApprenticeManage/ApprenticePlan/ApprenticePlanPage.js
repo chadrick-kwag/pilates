@@ -13,15 +13,13 @@ export default function ApprenticePlanPage(props) {
 
         if (viewPlan !== null) {
             console.log(viewPlan)
-            return <DetailViewComponent id={viewPlan.id} onCancel={() => setViewPlan(null)} />
+            return <DetailViewComponent id={viewPlan.id} onCancel={() => {
+                setViewMode('list')
+                setViewPlan(null)
+            }} />
         }
-        if (viewMode === 'list') {
-            return <ListPlanComponent
-                onCreate={() => setViewMode('create')}
-                onSelect={d => setViewPlan(d)}
-            />
-        }
-        else if (viewMode === 'create') {
+
+        if (viewMode === 'create') {
             return <CreateApprenticeComponent
                 onCancel={() => setViewMode('list')}
                 onSuccess={() => setViewMode('list')}
@@ -32,6 +30,19 @@ export default function ApprenticePlanPage(props) {
 
     return (
         <>
+            <div style={viewMode === 'list' ? {
+                display: 'inherit'
+            } : {
+                display: 'none'
+            }}>
+                <ListPlanComponent
+                    onCreate={() => setViewMode('create')}
+                    onSelect={d => {
+                        setViewMode('none')
+                        setViewPlan(d)
+                    }}
+                />
+            </div>
             {getView()}
         </>
     )
