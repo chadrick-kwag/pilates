@@ -40,8 +40,6 @@ export default function ApprenticeLessonDetailModal(props) {
 
         // check input
 
-        console.log(parseInt(props.lesson.starttime))
-        console.log(editLessonStartTime.getTime())
 
         if (parseInt(props.lesson.starttime) === editLessonStartTime.getTime()) {
             alert('no change in start time')
@@ -54,7 +52,6 @@ export default function ApprenticeLessonDetailModal(props) {
             lessonid: props.lesson.indomain_id,
             starttime: editLessonStartTime.toUTCString()
         }
-        console.log(_var)
 
         client.mutate({
             mutation: CHANGE_APPRENTICE_LESSON_STARTTIME,
@@ -64,11 +61,13 @@ export default function ApprenticeLessonDetailModal(props) {
             console.log(res)
 
             if (res.data.change_apprentice_lesson_starttime.success) {
+
                 console.log('editsuccess')
                 props.onEditSuccess?.()
             }
             else {
-                alert('edit lesson fail')
+                const msg = res.data.change_apprentice_lesson_starttime.msg
+                alert(`edit lesson fail. msg: ${msg}`)
             }
         }).catch(e => {
             console.log(JSON.stringify(e))
