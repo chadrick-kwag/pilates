@@ -184,8 +184,6 @@ export default function CreateApprenticeLesson(props) {
                                 }
                                 else {
                                     return <Select value={selectedPlan === null ? null : selectedPlan.id} onChange={e => {
-                                        console.log(e)
-                                        console.log(e.target.value)
                                         // find plan with id
                                         for (let j = 0; j < planArr.length; j++) {
                                             if (planArr[j].id === e.target.value) {
@@ -195,7 +193,27 @@ export default function CreateApprenticeLesson(props) {
                                         }
 
                                     }}>
-                                        {planArr.map((d, i) => <MenuItem value={d.id}>남은횟수:{d.remainrounds}(플랜생성일:{DateTime.fromMillis(parseInt(d.created)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')})</MenuItem>)}
+                                        {(() => {
+
+                                            const filtered_plan_arr = planArr.filter(d => {
+                                                if (d.remainrounds > 0) {
+                                                    return true
+                                                }
+                                                return false
+                                            })
+
+
+
+                                            if (filtered_plan_arr.length === 0) {
+                                                const retarr = new Array()
+                                                retarr.push(<MenuItem>no results</MenuItem>)
+                                                return retarr
+                                            }
+                                            else {
+                                                return filtered_plan_arr.map((d, i) => <MenuItem value={d.id}>남은횟수:{d.remainrounds}(플랜생성일:{DateTime.fromMillis(parseInt(d.created)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')})</MenuItem>)
+                                            }
+
+                                        })().map(d => d)}
                                     </Select>
                                 }
                             })()}
