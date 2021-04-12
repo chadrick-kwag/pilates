@@ -25,13 +25,6 @@ export default function ApprenticePersonnelPage(props) {
         return null
     }
 
-    return (
-        <div>
-            {getMain()}
+    return getMain()
 
-            {/* {viewmode === 'list' ? <ListPersonnelComponent onCreateApprentice={()=>setViewMode('create')}/> : <CreateApprenticeComponent onCancel={()=>setViewMode('list')} 
-            onSuccess={()=>setViewMode('list')}
-            />} */}
-        </div>
-    )
 }

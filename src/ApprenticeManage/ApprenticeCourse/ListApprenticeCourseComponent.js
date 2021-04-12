@@ -38,25 +38,22 @@ export default function ListApprenticeCourseComponent(props) {
     }, [])
 
     return (
-        <div>
-            <Grid container>
-                <Grid item xs>
-                    <Button variant="contained" color='primary' onClick={e => {
-                        props.onCreateCourse?.()
-                        console.log('clicked')
-                    }}>과정생성</Button>
-                </Grid>
-                <Grid item xs>
-                    <div className='row-gravity-center'>
-                        <h2>견습과정</h2>
-                    </div>
 
-                </Grid>
-                <Grid item xs></Grid>
+        <Grid container>
+            <Grid item xs={4}>
+                <Button variant="contained" color='primary' onClick={e => {
+                    props.onCreateCourse?.()
+                    console.log('clicked')
+                }}>과정생성</Button>
             </Grid>
+            <Grid item xs={4}>
+                <div className='row-gravity-center'>
+                    <h2>견습과정</h2>
+                </div>
 
-            <div>
-
+            </Grid>
+            <Grid item xs={4}></Grid>
+            <Grid item xs={12}>
                 {courseData === null ? <CircularProgress /> : <Table>
                     <TableHead>
                         <TableRow>
@@ -69,9 +66,10 @@ export default function ListApprenticeCourseComponent(props) {
                         {courseData?.map(d => <TableRow><TableCell>{d.name}</TableCell></TableRow>)}
                     </TableBody>
                 </Table>}
-            </div>
+            </Grid>
+
+        </Grid>
 
 
-        </div>
     )
 }

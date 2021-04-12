@@ -55,22 +55,21 @@ export default function ListPersonnelComponent(props) {
         }).catch(e => {
             console.log(JSON.stringify(e))
             setApprenticeInstructors('error')
-            // alert(`error fetching apprentice instructors`)
         })
     }, [])
 
     return (
-        <div>
-            <Grid container>
-                <Grid item xs>
-                    <Button variant='contained' color='primary' onClick={e => props.onCreateApprentice?.()}>견습강사생성</Button>
-                </Grid>
-                <Grid item xs className='row-gravity-center'>
-                    <h2>견습강사목록</h2>
-                </Grid>
-                <Grid item xs></Grid>
+
+        <Grid container>
+            <Grid item xs={4}>
+                <Button variant='contained' color='primary' onClick={e => props.onCreateApprentice?.()}>견습강사생성</Button>
             </Grid>
-            <div className='col-gravity-center'>
+            <Grid item xs={4} className='row-gravity-center'>
+                <h2>견습강사목록</h2>
+            </Grid>
+            <Grid item xs={4}></Grid>
+
+            <Grid item xs={12}>
                 {apprenticeInstructors === null ? <CircularProgress /> :
 
                     apprenticeInstructors === 'error' ? <div><ErrorIcon /> error fetching apprentice instructors</div> :
@@ -94,10 +93,8 @@ export default function ListPersonnelComponent(props) {
                             </TableBody>
                         </Table>
                 }
+            </Grid>
+        </Grid>
 
-
-            </div>
-
-        </div>
     )
 }

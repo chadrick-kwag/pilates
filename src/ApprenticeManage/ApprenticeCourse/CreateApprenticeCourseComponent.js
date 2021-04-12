@@ -8,7 +8,7 @@ import TableHead from '@material-ui/core/TableHead';
 
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
-import { DialogActions } from '@material-ui/core'
+import { DialogActions, Grid, GridItem } from '@material-ui/core'
 
 import client from '../../apolloclient'
 import { CREATE_APPRENTICE_COURSE } from '../../common/gql_defs'
@@ -58,9 +58,11 @@ export default function CreateApprenticeComponent(props) {
     }
 
     return (
-        <div className='col-gravity-center'>
-            <h2>과정 생성</h2>
-            <div>
+        <Grid container>
+            <Grid item xs={12}>
+                <h2>과정 생성</h2>
+            </Grid>
+            <Grid item xs={12}>
                 <Table>
                     <TableBody>
                         <TableRow>
@@ -75,13 +77,18 @@ export default function CreateApprenticeComponent(props) {
 
 
                 </Table>
-            </div>
+            </Grid>
+            <Grid item xs={12}>
+                <div className='row-gravity-center'>
 
+                    <DialogActions>
+                        <Button variant='outlined' color='secondary' onClick={_ => props.onCancel?.()}>취소</Button>
+                        <Button variant='outlined' onClick={e => submit()}>생성</Button>
+                    </DialogActions>
+                </div>
+            </Grid>
 
-            <DialogActions>
-                <Button variant='outlined' color='secondary' onClick={_ => props.onCancel?.()}>취소</Button>
-                <Button variant='outlined' onClick={e => submit()}>생성</Button>
-            </DialogActions>
-        </div>
+        </Grid>
+
     )
 }
