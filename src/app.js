@@ -32,6 +32,8 @@ import ApprenticePlanPage from './ApprenticeManage/ApprenticePlan/ApprenticePlan
 import { Grid, Button, Drawer, List, Divider, ListItem, ListItemAvatar } from '@material-ui/core'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen';
 
+import packagejson from '../package.json'
+
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
 };
@@ -102,7 +104,10 @@ class App extends React.Component {
 
                         </Grid>
                         <Grid item xs={4}>
-                            <span>version</span>
+                            <div style={{ height: '100%', display: 'flex', flexDirection: 'row-reverse', alignItems: 'center' }}>
+                                <span style={{ color: 'white', marginRight: '2rem' }}>ver {packagejson.version}</span>
+
+                            </div>
                         </Grid>
                     </Grid>
                 </div>
@@ -160,12 +165,8 @@ class App extends React.Component {
                                 showDrawer: false,
                                 viewmode: 'adminpage'
                             })}>관리자설정</ListItem>
-
-
                         </List>
                     </div>
-
-
 
                 </Drawer>
             </div>
