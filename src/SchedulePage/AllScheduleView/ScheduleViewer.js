@@ -20,6 +20,7 @@ import {
 import { get_week_range_of_date } from '../../common/date_fns'
 
 import LessonDetailModal from '../LessonDetailModal'
+import NormalLessonDetailModal from '../NormalLessonDetailModal'
 
 import client from '../../apolloclient'
 import { get_bg_fontcolor_for_activity_type, get_border_color_for_grouping_type } from '../common'
@@ -195,29 +196,40 @@ class ScheduleViewer extends React.Component {
                 }
 
                 if (this.state.view_selected_lesson.lesson_domain === 'normal_lesson') {
-                    return <LessonDetailModal
-                        view_selected_lesson={this.state.view_selected_lesson}
-                        onCancel={() => this.setState({
-                            show_view_modal: false
-                        })}
-                        onDeleteSuccess={() => {
-                            this.setState({
-                                show_view_modal: false
-                            }, () => {
-                                this.fetchdata()
-                            })
-                        }}
-                        onEditSuccess={
-                            () => {
-                                this.setState({
-                                    show_view_modal: false
-                                }, () => {
-                                    this.fetchdata()
-                                })
-                            }
-                        }
+                    console.log('view_selected_lesson')
+                    console.log(this.state.view_selected_lesson)
 
+                    return <NormalLessonDetailModal 
+                    open={true}
+                    onClose={()=>this.setState({
+                        show_view_modal: false,
+                        view_selected_lesson: null
+                    })}
+                    data={this.state.view_selected_lesson}
                     />
+                    // return <LessonDetailModal
+                    //     view_selected_lesson={this.state.view_selected_lesson}
+                    //     onCancel={() => this.setState({
+                    //         show_view_modal: false
+                    //     })}
+                    //     onDeleteSuccess={() => {
+                    //         this.setState({
+                    //             show_view_modal: false
+                    //         }, () => {
+                    //             this.fetchdata()
+                    //         })
+                    //     }}
+                    //     onEditSuccess={
+                    //         () => {
+                    //             this.setState({
+                    //                 show_view_modal: false
+                    //             }, () => {
+                    //                 this.fetchdata()
+                    //             })
+                    //         }
+                    //     }
+
+                    // />
                 }
                 else {
                     
