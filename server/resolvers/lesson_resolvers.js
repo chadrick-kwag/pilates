@@ -735,6 +735,107 @@ module.exports = {
                 })
 
             return result
+        },
+        change_lesson_overall: async (parent, args) =>{
+
+            try{
+
+                let res = await pgclient.query('BEGIN')
+
+
+                // fetch at, gt of lesson
+                res = await pgclient.query(`select activity_type, grouping_type from lesson where id=$1 `, [args.lessonid])
+
+                if(res.rows.length===0){
+                    throw {
+                        detail: 'no lesson found'
+                    }
+                }
+
+                const activity_type = res.rows[0].activity_type
+                const grouping_type = res.rows[0].grouping_type
+                
+
+                // check schedule overlap exist among instructor and clients
+
+                // check instructor schedule
+                res = await pgclient.query(`select * from lesson where instructorid=$1 and id!=$2 and canceled_time is null and tstzrange($3, $4) && tstzrange(starttime, endtime)`, [args.instructorid, args.lessonid, args.starttime, args.endtime])
+
+                if(res.rows.length>0){
+                    throw {
+                        detail: 'instructor time overlap'
+                    }
+                }
+
+                // check client schedule
+                for(let i=0;i<args.clientid_arr.length;i++){
+                    res = await pgclient.query(`select * from lesson where instructorid=$1 and id!=$2 and canceled_time is null and tstzrange($3, $4) && tstzrange(starttime, endtime)`,[args.clientid_arr[i], args.lessonid, args.starttime, args.endtime])
+
+                    if(res.rows.length===0){
+                        throw {
+                            detail: 'client time overlap'
+                        }
+                    }
+                }
+
+
+
+                // handle ticket changes
+
+                // first get removed clients/existing clients/added clients
+
+                // get existing client list
+                res = await pgclient.query(`select lesson.id as id, client.id as clientid, ticket.id as ticketid from lesson
+                left join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc ) 
+                as A  on A.lessonid = lesson.id 
+                left join ticket on ticket.id = A.ticketid
+                left join plan on plan.id = ticket.creator_plan_id
+                left join client on plan.clientid = client.id
+                
+                where lesson.id = $1`, [args.lessonid])
+
+                const prev_existing_client_id_arr = [...new Set(res.rows.map(d=>d.clientid))]
+
+                console.log('prev_existing_client_id_arr')
+                console.log(prev_existing_client_id_arr)
+
+                
+
+
+                // handle removed clients
+
+
+
+
+
+
+
+
+
+
+                await pgclient.query('COMMIT')
+
+
+                return {
+                    success: true
+                }
+
+            }catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+            }
         }
 
     }
