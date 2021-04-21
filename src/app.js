@@ -45,7 +45,7 @@ class App extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            viewmode: "client_manage",
+            viewmode: "schedule",
             showDrawer: false
         }
 
