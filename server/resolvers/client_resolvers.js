@@ -11,6 +11,25 @@ module.exports = {
 
     Query: {
 
+        fetch_client_stat: async (parent, args) =>{
+            try{
+                let result = await pgclient.query(`select count(1) as totalcount from client`)
+
+                return {
+                    success: true,
+                    stat: {
+                        total_count: result.rows[0].totalcount
+                    }
+                }
+            }
+            catch(err){
+                return {
+                    success: false,
+                    msg: err.detail
+                }
+            }
+        },
+
         fetch_clients: async (parent, args) => {
             let results = await pgclient.query("select id, name, phonenumber, created, job, email, birthdate, address, gender, memo, disabled from client").then(res => {
 

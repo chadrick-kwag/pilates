@@ -28,6 +28,13 @@ import ApprenticePersonnelPage from './ApprenticeManage/ApprenticePersonnel/Appr
 import ApprenticeCoursePage from './ApprenticeManage/ApprenticeCourse/ApprenticeCoursePage'
 import ApprenticePlanPage from './ApprenticeManage/ApprenticePlan/ApprenticePlanPage'
 
+import DashBoardContainer from './dashboard/container'
+
+import { Grid, Button, Drawer, List, Divider, ListItem, ListItemAvatar } from '@material-ui/core'
+import MenuOpenIcon from '@material-ui/icons/MenuOpen';
+
+import packagejson from '../package.json'
+
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
 };
@@ -38,65 +45,138 @@ class App extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            viewmode: "client_manage"
+            viewmode: "client_manage",
+            showDrawer: false
+        }
+
+        this.getMainView = this.getMainView.bind(this)
+    }
+
+
+    getMainView() {
+
+        if (this.state.viewmode === "schedule") {
+            return <SchedulePage apolloclient={client} />
+        }
+        else if (this.state.viewmode === "client_manage") {
+            return <ClientManagePage apolloclient={client} />
+        }
+        else if (this.state.viewmode === 'instructor_manage') {
+            return <InstructorManagePage apolloclient={client} />
+        }
+        else if (this.state.viewmode === "plan_manage") {
+            return <SubscriptionManagePage apolloclient={client} />
+        }
+        else if (this.state.viewmode === 'instructor_stat') {
+            return <InstructorStatManagePage />
+        }
+        else if (this.state.viewmode === 'adminpage') {
+            return <AdminPage />
+        }
+        else if (this.state.viewmode === 'apprentice_personnel') {
+            return <ApprenticePersonnelPage />
+        }
+        else if (this.state.viewmode === 'apprentice_course') {
+            return <ApprenticeCoursePage />
+        }
+        else if (this.state.viewmode === 'apprentice_plan') {
+            return <ApprenticePlanPage />
+        }
+        else if (this.state.viewmode === 'dashboard') {
+            return <DashBoardContainer />
+        }
+        else {
+            return <div>not yet implemented</div>
         }
     }
+
 
     render() {
 
-        let mainview
+
+        return (
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+
+                <div style={{ flex: '0 min-content', backgroundColor: 'black' }}>
+                    <Grid container>
+                        <Grid item xs={4}>
+                            <MenuOpenIcon onClick={e => this.setState({
+                                showDrawer: true
+                            })} fontSize='large' style={{ color: 'white', margin: '5px' }} />
+                        </Grid>
+                        <Grid item xs={4}>
+
+                        </Grid>
+                        <Grid item xs={4}>
+                            <div style={{ height: '100%', display: 'flex', flexDirection: 'row-reverse', alignItems: 'center' }}>
+                                <span style={{ color: 'white', marginRight: '2rem' }}>ver {packagejson.version}</span>
+
+                            </div>
+                        </Grid>
+                    </Grid>
+                </div>
+
+                <div style={{ flex: '1' }}>
+                    {this.getMainView()}
+                </div>
 
 
+                <Drawer anchor='left' open={this.state.showDrawer} onClose={() => this.setState({ showDrawer: false })}>
+                    <div>
+                        <List component="nav">
 
-        if (this.state.viewmode === "schedule") {
-            mainview = <SchedulePage apolloclient={client} />
-        }
-        else if (this.state.viewmode === "client_manage") {
-            mainview = <ClientManagePage apolloclient={client} />
-        }
-        else if (this.state.viewmode === 'instructor_manage') {
-            mainview = <InstructorManagePage apolloclient={client} />
-        }
-        else if (this.state.viewmode === "plan_manage") {
-            mainview = <SubscriptionManagePage apolloclient={client} />
-        }
-        else if (this.state.viewmode === 'instructor_stat') {
-            mainview = <InstructorStatManagePage />
-        }
-        else if (this.state.viewmode === 'adminpage') {
-            mainview = <AdminPage />
-        }
-        else if (this.state.viewmode === 'apprentice_personnel') {
-            mainview = <ApprenticePersonnelPage />
-        }
-        else if (this.state.viewmode === 'apprentice_course') {
-            mainview = <ApprenticeCoursePage />
-        }
-        else if (this.state.viewmode === 'apprentice_plan') {
-            mainview = <ApprenticePlanPage />
-        }
-        else {
-            mainview = <div>not yet implemented</div>
-        }
+                            <ListItem button onClick={e => this.setState({
+                                showDrawer: false,
+                                viewmode: 'dashboard'
+                            })}>홈</ListItem>
+                            <Divider />
+                            <ListItem button onClick={e => this.setState({
+                                showDrawer: false,
+                                viewmode: 'schedule'
+                            })}>스케쥴</ListItem>
+                            <Divider />
+                            <ListItem button onClick={e => this.setState({
+                                showDrawer: false,
+                                viewmode: 'client_manage'
+                            })}>회원관리</ListItem>
+                            <ListItem button onClick={e => this.setState({
+                                showDrawer: false,
+                                viewmode: 'plan_manage'
+                            })}>회원플랜관리</ListItem>
+                            <ListItem button onClick={e => this.setState({
+                                showDrawer: false,
+                                viewmode: 'instructor_manage'
+                            })}>강사관리</ListItem>
+                            <Divider variant='fullWidth' />
+                            <ListItem button onClick={e => this.setState({
+                                showDrawer: false,
+                                viewmode: 'apprentice_course'
+                            })}>견습강사 과정</ListItem>
+                            <ListItem button onClick={e => this.setState({
+                                showDrawer: false,
+                                viewmode: 'apprentice_personnel'
+                            })}>견습강사 관리</ListItem>
+                            <ListItem button onClick={e => this.setState({
+                                showDrawer: false,
+                                viewmode: 'apprentice_plan'
+                            })}>견습강사 플랜</ListItem>
+                            <Divider />
+                            <ListItem button onClick={e => this.setState({
+                                showDrawer: false,
+                                viewmode: 'instructor_stat'
+                            })}>강사통계</ListItem>
+                            <ListItem button onClick={e => this.setState({
+                                showDrawer: false,
+                                viewmode: 'adminpage'
+                            })}>관리자설정</ListItem>
+                        </List>
+                    </div>
 
-        return <div className="root-main-container">
-
-            <TopNavBar
-                onClientManageClick={() => this.setState({ viewmode: "client_manage" })}
-                onInstructorManageClick={() => this.setState({ viewmode: "instructor_manage" })}
-                onPlanManageClick={() => this.setState({ viewmode: "plan_manage" })}
-                onScheduleManageClick={() => this.setState({ viewmode: "schedule" })}
-                onInstructorStatClick={() => this.setState({ viewmode: 'instructor_stat' })}
-                onAdminPageClick={() => this.setState({ viewmode: 'adminpage' })}
-                onApprenticePersonnelManageClick={() => this.setState({ viewmode: 'apprentice_personnel' })}
-                onApprenticeCourseManageClick={() => this.setState({ viewmode: 'apprentice_course' })}
-                onApprenticePlanManageClick={() => this.setState({ viewmode: 'apprentice_plan' })}
-            />
-
-            {mainview}
-
-        </div>
+                </Drawer>
+            </div>
+        )
     }
+
 }
 
 ReactDOM.render(<ApolloProvider client={client}>

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Table, TableCell, TableRow, Button } from '@material-ui/core'
+import { Grid, DialogActions, Table, TableCell, TableRow, Button } from '@material-ui/core'
 
 export default function DetailViewPersonnel(props) {
 
@@ -20,30 +20,36 @@ export default function DetailViewPersonnel(props) {
 
 
     return (
-        <>
-            <Table>
-                <TableRow>
-                    <TableCell>이름</TableCell>
-                    <TableCell><span>{props.name}</span></TableCell>
-                </TableRow>
-                <TableRow>
-                    <TableCell>연락처</TableCell>
-                    <TableCell>{props.phonenumber}</TableCell>
-                </TableRow>
-                <TableRow>
-                    <TableCell>성별</TableCell>
-                    <TableCell>{gender_to_kortext(props.gender)}</TableCell>
-                </TableRow>
-                <TableRow>
-                    <TableCell>과정명</TableCell>
-                    <TableCell>{props.courseName}</TableCell>
-                </TableRow>
-            </Table>
+        <Grid container>
+            <Grid item xs={12}>
+                <Table>
+                    <TableRow>
+                        <TableCell>이름</TableCell>
+                        <TableCell><span>{props.name}</span></TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>연락처</TableCell>
+                        <TableCell>{props.phonenumber}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>성별</TableCell>
+                        <TableCell>{gender_to_kortext(props.gender)}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>과정명</TableCell>
+                        <TableCell>{props.courseName}</TableCell>
+                    </TableRow>
+                </Table>
+            </Grid>
+            <Grid item xs={12}>
+                <DialogActions>
 
-            <div className='row-gravity-center'>
-                <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>이전</Button>
-                <Button variant='outlined' onClick={e => props.onEdit?.()}>수정</Button>
-            </div>
-        </>
+                    <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>이전</Button>
+                    <Button variant='outlined' onClick={e => props.onEdit?.()}>수정</Button>
+                </DialogActions>
+            </Grid>
+
+
+        </Grid>
     )
 }
