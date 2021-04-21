@@ -922,6 +922,33 @@ export const DELETE_APPRENTICE_TICKETS = gql`
     }
 `
 
+
+// fetch_client_stat
+export const FETCH_CLIENT_STAT = gql`
+    query{
+        fetch_client_stat{
+            success 
+            msg
+            stat {
+                total_count
+            }
+        }
+    }
+`
+
+//fetch_instructor_stat
+export const FETCH_INSTRUCTOR_STAT = gql`
+    query{
+        fetch_instructor_stat{
+            success
+            msg
+            stat{
+                total_count
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

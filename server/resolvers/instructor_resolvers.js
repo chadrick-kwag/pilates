@@ -7,6 +7,25 @@ const {
 
 module.exports = {
     Query: {
+
+        fetch_instructor_stat: async (parent, args) =>{
+            try{
+                let result = await pgclient.query(`select count(1) as totalcount from instructor`)
+
+                return {
+                    success: true,
+                    stat: {
+                        total_count: result.rows[0].totalcount
+                    }
+                }
+            }
+            catch(err){
+                return {
+                    success: false,
+                    msg: err.detail
+                }
+            }
+        },
         
         fetch_instructors: async () => {
             let result = await pgclient.query(`select instructor.id as id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, instructor_level.level_string as level_string, disabled from instructor

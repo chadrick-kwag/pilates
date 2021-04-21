@@ -5,8 +5,19 @@ type Query {
     search_client_with_name(name: String!): [Client]
     query_clients_by_name(name: String!): SuccessAndClients
     query_clientinfo_by_clientid(clientid: Int!): SuccessAndClient
+    fetch_client_stat: SuccessAndClientStatResult
 }
 
+type ClientStatResult{
+    total_count: Int
+    
+}
+
+type SuccessAndClientStatResult{
+    success: Boolean
+    msg: String
+    stat: ClientStatResult
+}
 
 type SuccessAndClient{
     success: Boolean

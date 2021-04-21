@@ -6,6 +6,18 @@ type Query{
     search_instructor_with_name(name: String!): [Instructor]
     fetch_instructor_with_id(id: Int!): ResultInstructor
     fetch_instructor_level_info: SuccessAndInstructorLevels
+    fetch_instructor_stat: SuccessAndInstructorStatResult
+}
+
+
+type InstructorStatResult{
+    total_count: Int
+}
+
+type SuccessAndInstructorStatResult{
+    success: Boolean
+    msg: String
+    stat: InstructorStatResult
 }
 
 type InstructorLevel{
