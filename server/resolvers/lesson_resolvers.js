@@ -140,67 +140,6 @@ module.exports = {
 
         },
 
-        // query_lessons_with_daterange_backup: async (parent, args) => {
-
-        //     console.log("inside query_lessons_with_daterange")
-        //     console.log(args)
-
-
-        //     let start_time = new Date(args.start_time)
-        //     let end_time = new Date(args.end_time)
-
-
-        //     start_time = start_time.getTime() / 1000
-        //     end_time = end_time.getTime() / 1000
-
-        //     console.log(start_time)
-        //     console.log(end_time)
-
-        //     let results = await pgclient.query(`select  lesson.id as id, instructor.id as instructorid,
-        //     instructor.name as instructorname, 
-        //     instructor.phonenumber as instructorphonenumber,
-        //     lesson.starttime, lesson.endtime,
-        //     lesson.activity_type,
-        //     lesson.grouping_type,
-
-
-        //      lesson.canceled_time as lesson_canceled_time,
-
-        //      array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber, 'ticketid', ticket.id )) as client_info_arr
-        //     from lesson 
-        //     inner join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
-        //     left join ticket on A.ticketid = ticket.id
-        //     left join plan on ticket.creator_plan_id = plan.id
-        //     left join client on plan.clientid = client.id
-        //     left join instructor on lesson.instructorid = instructor.id
-        //     where lesson.canceled_time is null
-        // 	and A.canceled_time is null
-        //      AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($1), to_timestamp($2)) )
-
-        //     GROUP BY lesson.id, instructor.id  `, [start_time, end_time]).then(res => {
-
-        //         console.log(res)
-        //         console.log(res.rows)
-
-        //         return {
-        //             success: true,
-        //             lessons: res.rows
-        //         }
-
-
-        //     }).catch(e => {
-        //         console.log(e)
-        //         return {
-        //             success: false,
-        //             msg: "query error"
-        //         }
-        //     })
-
-
-        //     return results
-
-
-        // },
         query_lesson_with_timerange_by_clientid: async (parent, args) => {
             console.log(args)
 
@@ -372,15 +311,6 @@ module.exports = {
                 }
             }
 
-            // console.log(`currdate: ${currdate}`)
-            // console.log(`lesson_startdate: ${lesson_startdate}`)
-
-            // if (currdate > lesson_startdate) {
-            //     return {
-            //         success: false,
-            //         msg: 'cannot change time of lesson that is already past'
-            //     }
-            // }
 
             console.log([args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)])
 
@@ -590,6 +520,78 @@ module.exports = {
             console.log('delete_lesson_with_request_type')
             console.log(args)
 
+            try {
+
+                await pgclient.query(`begin`)
+
+                // check lesson id is valid
+                let result = await pgclient.query(`select id from lesson where id=$1`, [args.lessonid])
+
+                if (result.rows.length !== 1) {
+
+                    await pgclient.query('rollback')
+                    return {
+                        success: false,
+                        msg: 'invalid lesson id'
+                    }
+                }
+
+                // check request type
+                // if req type is 'admin', then remove all ticket assignments, like they never existed
+                // remove lesson too
+                if (args.request_type === 'admin_req') {
+                    // remove assign tickets
+                    await pgclient.query(`delete from assign_ticket where lessonid=$1`, [args.lessonid])
+
+                    // remove lesson
+                    await pgclient.query(`delete from lesson where id=$1`, [args.lessonid])
+
+                    await pgclient.query('commit')
+                    return {
+                        success: true
+                    }
+                }
+                else if (args.request_type === 'instructor_req') {
+                    // remove assign tickets which are alive
+
+                    await pgclient.query(`delete from assign_ticket where lessonid=$1 and canceled_time is null`, [args.lessonid])
+
+                    // do not remove lesson but populate cancel time wth cancel type
+                    await pgclient.query(`update lesson set canceled_time=now(), cancel_type='INSTRUCTOR_REQUEST' where id=$1`, [args.lessonid])
+
+                    await pgclient.query('commit')
+                    return {
+                        success: true
+                    }
+                }
+                else {
+                    throw {
+                        detail: "invalid request type"
+                    }
+                }
+
+
+
+
+            } catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                }
+                catch (err) {
+                    console.log(err)
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
             let result = await pgclient.query(`select * from cancel_lesson_with_reqtype($1, $2) as (success bool, msg text)`, [args.lessonid, args.request_type.toLowerCase()]).then(res => {
                 console.log(res)
 
@@ -713,28 +715,93 @@ module.exports = {
             console.log('change_clients_of_lesson')
             console.log(args)
 
-            let result = await pgclient.query(`select * from change_tickets_of_lesson($1,$2) as (success bool, msg text)`, [args.ticketid_arr, args.lessonid])
-                .then(res => {
-                    console.log(res)
+            try{
+                await pgclient.query(`begin`)
 
-                    if (res.rowCount !== 1) {
-                        return {
-                            success: false,
-                            msg: 'rowcount not 1'
+                // divide tickets to assign and tickets to release
+
+                let result = await pgclient.query(`select distinct on(ticketid) *  from assign_ticket
+                where lessonid=$1
+                order by ticketid, created desc`, [args.lessonid])
+
+                let existing_assigned_ticket_id_arr = result.rows.map(d=>d.ticketid)
+
+                const new_tickets_to_assign_arr = []
+                
+
+                let existing_ticket_also_included_in_new_assignment_bool_arr = new Array(existing_assigned_ticket_id_arr.length).fill(false)
+
+                for(let i=0;i<args.ticketid_arr.length;i++){
+                    let exists = false;
+                    for(let j=0;j<existing_assigned_ticket_id_arr.length;j++){
+                        if(existing_assigned_ticket_id_arr[j]===args.ticketid_arr[i]){
+                            exists = true;
+                            existing_ticket_also_included_in_new_assignment_bool_arr[j] = true;
+                            break;
                         }
+                        
                     }
-                    else {
-                        return res.rows[0]
+
+                    if(!exists){
+                        new_tickets_to_assign_arr.push(args.ticketid_arr[i])
                     }
-                }).catch(e => {
-                    console.log(e)
-                    return {
-                        success: false,
-                        msg: 'query error'
+                }
+
+                let tickets_to_remove_arr = existing_ticket_also_included_in_new_assignment_bool_arr.map((d,i)=>{
+                    if(!d){
+                        return existing_assigned_ticket_id_arr[i]
                     }
                 })
 
-            return result
+
+
+                // new tickets to assign, create assignment
+                for(let i=0;i<new_tickets_to_assign_arr.length;i++){
+                    await pgclient.query(`insert into assign_ticket (ticketid, lessonid, created) values ($1, $2, now())`, [new_tickets_to_assign_arr[i], args.lessonid])
+                }
+                
+
+                // process assignment to remove. since we are assuming admin usage, no penalty removal
+                // remove assign ment of ticket for this lesson
+                for(let i=0;i<tickets_to_remove_arr.length;i++){
+                    result = await pgclient.query(`select id from assign_ticket where ticketid=$1 and lessonid=$2`,[tickets_to_remove_arr[i], args.lessonid])
+                    
+
+                    const id_arr = result.rows.map(d=>d.id)
+
+                    // execute remove
+                    for(let i=0;i<id_arr.length;i++){
+                        await pgclient.query(`delete from assign_ticket where id=$1`, [id_arr[i]])
+                    }
+                }
+                
+                
+
+                await pgclient.query(`commit`)
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                }
+                catch (err) {
+                    console.log(err)
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
         },
         change_lesson_overall: async (parent, args) =>{
 
@@ -803,14 +870,6 @@ module.exports = {
 
 
                 // handle removed clients
-
-
-
-
-
-
-
-
 
 
                 await pgclient.query('COMMIT')

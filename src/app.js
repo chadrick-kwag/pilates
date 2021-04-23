@@ -28,6 +28,7 @@ import ApprenticePersonnelPage from './ApprenticeManage/ApprenticePersonnel/Appr
 import ApprenticeCoursePage from './ApprenticeManage/ApprenticeCourse/ApprenticeCoursePage'
 import ApprenticePlanPage from './ApprenticeManage/ApprenticePlan/ApprenticePlanPage'
 
+import DashBoardContainer from './dashboard/container'
 
 import { Grid, Button, Drawer, List, Divider, ListItem, ListItemAvatar } from '@material-ui/core'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen';
@@ -44,7 +45,7 @@ class App extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            viewmode: "client_manage",
+            viewmode: "schedule",
             showDrawer: false
         }
 
@@ -80,6 +81,9 @@ class App extends React.Component {
         }
         else if (this.state.viewmode === 'apprentice_plan') {
             return <ApprenticePlanPage />
+        }
+        else if (this.state.viewmode === 'dashboard') {
+            return <DashBoardContainer />
         }
         else {
             return <div>not yet implemented</div>

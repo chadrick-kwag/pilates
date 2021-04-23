@@ -23,7 +23,7 @@ import LessonDetailModal from '../LessonDetailModal'
 import NormalLessonDetailModal from '../NormalLessonDetailModal'
 
 import client from '../../apolloclient'
-import { get_bg_fontcolor_for_activity_type, get_border_color_for_grouping_type } from '../common'
+import { get_bg_fontcolor_for_activity_type, get_border_color_for_grouping_type, get_bg_fontcolor_for_grouping_type, get_border_color_for_activity_type } from '../common'
 import LessonColorToolTip from '../LessonColorTooltip'
 import PartialOverlaySpinner from '../PartialOverlaySpinner'
 
@@ -161,7 +161,7 @@ class ScheduleViewer extends React.Component {
 
                     let title = clients_str + "회원님 / " + d.instructorname + " 강사님"
 
-                    let [bgcolor, fontcolor] = get_bg_fontcolor_for_activity_type(d.activity_type)
+                    let [bgcolor, fontcolor] = get_bg_fontcolor_for_grouping_type(d.grouping_type)
 
                     schedule_formatted_data.push({
                         id: parseInt(i),
@@ -173,19 +173,13 @@ class ScheduleViewer extends React.Component {
                         end: endtime,
                         bgColor: bgcolor,
                         color: fontcolor,
-                        borderColor: get_border_color_for_grouping_type(d.grouping_type)
-
+                        borderColor: get_border_color_for_activity_type(d.activity_type)
                     })
                 }
 
 
             })
         }
-
-        console.log('schedule_formatted_data')
-        console.log(schedule_formatted_data)
-
-
 
 
         return <div>

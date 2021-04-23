@@ -6,16 +6,12 @@ const MAIN_SERVE_PORT = 8080
 
 const GRAPHQL_SUBPATH = '/graphql'
 
-// const gql_server_addr = `http://${address}:${GRAPHQL_PORT_EXTERNAL}`
-const gql_server_addr = `http://${address}:${MAIN_SERVE_PORT}${GRAPHQL_SUBPATH}`
-
-
 
 const postgres_access_info = {
-    user: 'postgres',
+    user: 'username',
     host: 'localhost',
-    database: 'test4',
-    password: 'rootpw',
+    database: 'dbname',
+    password: 'userpassword',
     port: 5432,
 }
 
@@ -26,7 +22,7 @@ const graphql_server_options = {
 }
 
 module.exports = {
-    gql_server_addr, postgres_access_info, graphql_server_options, MAIN_SERVE_PORT,
+     postgres_access_info, graphql_server_options, MAIN_SERVE_PORT,
     GRAPHQL_PORT_INTERNAL, GRAPHQL_PORT_EXTERNAL,
     address,
     GRAPHQL_SUBPATH

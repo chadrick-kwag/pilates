@@ -1,5 +1,5 @@
 import { ApolloClient, InMemoryCache, createHttpLink, useMutation } from '@apollo/client'
-import {gql_server_addr} from '../config'
+import {gql_server_addr, GRAPHQL_SUBPATH} from '../config'
 
 const cache = new InMemoryCache({
     dataIdFromObject: o=>{
@@ -10,8 +10,13 @@ const cache = new InMemoryCache({
     }
 });
 
+const addr = `http://${location.hostname}:${location.port}${GRAPHQL_SUBPATH}`
+
+console.log("addr")
+console.log(addr)
+
 const link = createHttpLink({
-    uri: gql_server_addr
+    uri: addr
 });
 
 

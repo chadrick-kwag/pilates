@@ -51,7 +51,7 @@ export default function LessonDetailModal(props) {
 
         let _var = {
             ticketid_arr: [],
-            lessonid: editInfo.id
+            lessonid: editInfo.indomain_id
         }
 
 
@@ -82,7 +82,7 @@ export default function LessonDetailModal(props) {
 
         let _var = {
             ticketid_arr: editInfo.client_info_arr.map(d => d.ticketid),
-            lessonid: editInfo.id
+            lessonid: editInfo.indomain_id
         }
 
         console.log('_var')
@@ -146,7 +146,7 @@ export default function LessonDetailModal(props) {
         client.mutate({
             mutation: DELETE_LESSON_WITH_REQUEST_TYPE_GQL,
             variables: {
-                lessonid: props.view_selected_lesson.id,
+                lessonid: props.view_selected_lesson.indomain_id,
                 ignore_warning: ignore_warning,
                 request_type: request_type
             }
@@ -188,7 +188,7 @@ export default function LessonDetailModal(props) {
         console.log(editInfo)
 
         let _var = {
-            lessonid: parseInt(props.view_selected_lesson.id),
+            lessonid: parseInt(props.view_selected_lesson.indomain_id),
             start_time: editInfo.starttime.toUTCString(),
             end_time: editInfo.endtime.toUTCString(),
             instructor_id: editInfo.instructorid

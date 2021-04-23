@@ -34,7 +34,8 @@ module.exports = {
     ],
     devServer: {
         open: "chrome",
-        host: 'localhost',
+        host: '0.0.0.0',
+        port: 8899,
         compress: false,
         proxy: {
             '/graphql': `http://localhost:${DEV_GRAPHQL_PORT}`
