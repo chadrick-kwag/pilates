@@ -193,13 +193,20 @@ class ScheduleViewer extends React.Component {
                     console.log('view_selected_lesson')
                     console.log(this.state.view_selected_lesson)
 
-                    return <NormalLessonDetailModal 
-                    open={true}
-                    onClose={()=>this.setState({
-                        show_view_modal: false,
-                        view_selected_lesson: null
-                    })}
-                    data={this.state.view_selected_lesson}
+                    return <NormalLessonDetailModal
+                        open={true}
+                        onClose={() => this.setState({
+                            show_view_modal: false,
+                            view_selected_lesson: null
+                        })}
+                        onCloseAndRefresh={() => this.setState({
+                            show_view_modal: false,
+                            view_selected_lesson: null,
+                            data: null
+                        }, () => {
+                            this.fetchdata()
+                        })}
+                        data={this.state.view_selected_lesson}
                     />
                     // return <LessonDetailModal
                     //     view_selected_lesson={this.state.view_selected_lesson}
@@ -226,26 +233,26 @@ class ScheduleViewer extends React.Component {
                     // />
                 }
                 else {
-                    
+
                     return <ApprenticeLessonDetailModal lesson={this.state.view_selected_lesson}
                         onCancel={() => this.setState({
                             show_view_modal: false,
                             view_selected_lesson: null
                         })}
 
-                        onEditSuccess={()=>{
+                        onEditSuccess={() => {
                             this.setState({
                                 show_view_modal: false,
                                 view_selected_lesson: null,
                                 data: null
-                            }, ()=>{
+                            }, () => {
                                 this.fetchdata()
                             })
                         }}
                     />
                 }
             })()}
-           
+
 
             <div>
                 <div className="row-gravity-between">
