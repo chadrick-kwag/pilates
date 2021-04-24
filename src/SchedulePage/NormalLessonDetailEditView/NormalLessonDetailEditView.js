@@ -47,14 +47,9 @@ export default function NormalLessonDetailEditView(props) {
 
 
     const request_update = () => {
-        console.log('request_update')
 
         const duration = Duration.fromMillis(0).set({ hours: durationHours })
-        console.log(duration)
-        // duration.set({ hours: durationHours })
         let endtime = startTime.plus(duration)
-        console.log('endtime')
-        console.log(endtime)
 
         const _cts = clientsAndTickets.map(d => {
             return {
@@ -72,23 +67,19 @@ export default function NormalLessonDetailEditView(props) {
         }
 
 
-        console.log(_var)
 
         client.mutate({
             mutation: CHANGE_NORMAL_LESSON_OVERALL,
             variables: _var,
             fetchPolicy: 'no-cache'
         }).then(res => {
-            console.log(res)
             if (res.data.change_lesson_overall.success) {
-                console.log('request update success')
                 props.onEditDone?.()
             }
             else {
                 alert('submit change fail')
             }
         }).catch(e => {
-            console.log(e)
             console.log(JSON.stringify(e))
             alert('submit change error')
         })
@@ -102,7 +93,6 @@ export default function NormalLessonDetailEditView(props) {
             },
             fetchPolicy: 'no-cache'
         }).then(res => {
-            console.log(res)
             if (res.data.query_lesson_detail_with_lessonid.success) {
                 const d = res.data.query_lesson_detail_with_lessonid.detail
 
@@ -135,6 +125,8 @@ export default function NormalLessonDetailEditView(props) {
 
 
     if (viewMode === 'base') {
+        console.log('inside viewmode base')
+        console.log(clientsAndTickets)
         return <BaseView instructor={props.instructor}
             clientsAndTickets={clientsAndTickets}
             activity_type={activityType}
@@ -169,8 +161,6 @@ export default function NormalLessonDetailEditView(props) {
             grouping_type={groupingType}
             onEditDone={ticket_id_arr => {
                 const _clientsAndTickets = [...clientsAndTickets]
-                console.log('_clientsAndTickets')
-                console.log(_clientsAndTickets)
                 _clientsAndTickets[clientTicketsIndexToEdit].tickets = ticket_id_arr
 
                 setClientsAndTickets(_clientsAndTickets)

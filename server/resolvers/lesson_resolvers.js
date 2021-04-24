@@ -58,7 +58,9 @@ module.exports = {
                         }]
                     }
                     else {
-                        arr.push(ticketid)
+                        arr.push({
+                            ticketid: ticketid
+                        })
                     }
 
 
@@ -79,12 +81,15 @@ module.exports = {
 
                 const client_tickets = []
 
-                for (const p in client_to_ticket_id_arr_map) {
+                for (let p in client_to_ticket_id_arr_map) {
                     let out = {}
 
                     out = { ...clientid_to_clientinfo_map[p] }
 
                     out.tickets = client_to_ticket_id_arr_map[p]
+
+                    console.log('single client tickets item')
+                    console.log(out)
 
                     client_tickets.push(out)
                 }
