@@ -1,6 +1,6 @@
 import React, { useState, createRef } from 'react'
 
-import { Button, Menu, MenuItem, Table, TableRow, TableCell, Dialog, DialogActions, DialogContent } from '@material-ui/core'
+import { Button, Menu, MenuItem, Table, TableRow, TableCell, Chip, Dialog, DialogActions, DialogContent } from '@material-ui/core'
 
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 import { DateTime } from 'luxon'
@@ -68,6 +68,33 @@ export default function NormalLessonDetailModalBaseView(props) {
 
     }
 
+    let client_arr = props.data.client_info_arr.map(d => {
+        return {
+            clientid: d.clientid,
+            clientname: d.clientname,
+            clientphonenumber: d.clientphonenumber
+
+        }
+    })
+
+    let unique_client_arr = []
+    client_arr.forEach(d => {
+        let _cid = d.clientid
+        let included = false
+        for (let i = 0; i < unique_client_arr.length; i++) {
+            if (unique_client_arr[i].clientid == _cid) {
+                included = true;
+                break
+            }
+        }
+
+        if (!included) {
+            unique_client_arr.push(d)
+        }
+    })
+
+    console.log('unique_client_arr')
+    console.log(unique_client_arr)
 
     return (
         <>
@@ -75,15 +102,17 @@ export default function NormalLessonDetailModalBaseView(props) {
                 <Table>
                     <TableRow>
                         <TableCell>강사</TableCell>
-                        <TableCell>{props.data.instructorname}({props.data.instructorphonenumber})</TableCell>
+                        <TableCell>
+                            <Chip label={`${props.data.instructorname}(${props.data.instructorphonenumber})`} />
+                        </TableCell>
 
                     </TableRow>
                     <TableRow>
                         <TableCell>회원</TableCell>
                         <TableCell>
-                            <div style={{ display: 'flex', flexDirection: 'row' }} className='children-padding'>
-                                {props.data.client_info_arr?.map(d => <span>{d.clientname}({d.clientphonenumber})</span>)}
-                            </div>
+
+                            {unique_client_arr?.map(d => <Chip label={`${d.clientname}(${d.clientphonenumber})`} />)}
+
 
 
                         </TableCell>
