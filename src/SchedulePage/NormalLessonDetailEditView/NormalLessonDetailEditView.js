@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
-import { DateTime } from 'luxon'
+import { DateTime, Duration } from 'luxon'
 import { Button, Menu, MenuItem, Table, TableRow, TableCell, Dialog, Chip, DialogActions, DialogContent, Select, Box, CircularProgress } from '@material-ui/core'
 import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
 
@@ -14,10 +14,13 @@ import ChangeInstructorView from './ChangeInstructorView'
 
 
 import client from '../../apolloclient'
-import { QUERY_LESSON_DETAIL_WITH_LESSONID } from '../../common/gql_defs'
+import { QUERY_LESSON_DETAIL_WITH_LESSONID, CHANGE_NORMAL_LESSON_OVERALL } from '../../common/gql_defs'
 import ClientTicketMangePage from './ClientTicketManagePage/Container'
 
 export default function NormalLessonDetailEditView(props) {
+
+    console.log('NormalLessonDetailEditView props')
+    console.log(props)
 
 
     const [instructor, setInstructor] = useState({
@@ -39,13 +42,57 @@ export default function NormalLessonDetailEditView(props) {
     const [clientTicketsIndexToEdit, setClientTicketsIndexToEdit] = useState(null)
 
 
-    const request_edit_changes = () => {
-        alert('request')
-
-    }
-
 
     const [data, setData] = useState(null)
+
+
+    const request_update = () => {
+        console.log('request_update')
+
+        const duration = Duration.fromMillis(0).set({ hours: durationHours })
+        console.log(duration)
+        // duration.set({ hours: durationHours })
+        let endtime = startTime.plus(duration)
+        console.log('endtime')
+        console.log(endtime)
+
+        const _cts = clientsAndTickets.map(d => {
+            return {
+                clientid: d.clientid,
+                tickets: d.tickets.map(a => a.ticketid)
+            }
+        })
+
+        const _var = {
+            lessonid: props.data.indomain_id,
+            instructorid: instructor.id,
+            client_tickets: _cts,
+            starttime: startTime.toSQL(),
+            endtime: endtime.toSQL()
+        }
+
+
+        console.log(_var)
+
+        client.mutate({
+            mutation: CHANGE_NORMAL_LESSON_OVERALL,
+            variables: _var,
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+            if (res.data.change_lesson_overall.success) {
+                console.log('request update success')
+                props.onEditDone?.()
+            }
+            else {
+                alert('submit change fail')
+            }
+        }).catch(e => {
+            console.log(e)
+            console.log(JSON.stringify(e))
+            alert('submit change error')
+        })
+    }
 
     useEffect(() => {
         client.query({
@@ -92,7 +139,7 @@ export default function NormalLessonDetailEditView(props) {
             clientsAndTickets={clientsAndTickets}
             activity_type={activityType}
             grouping_type={groupingType}
-            onAddClient={() => setViewMode('add_client')} setClients={setClients} setStartTime={setStartTime} setDurationHours={setDurationHours} clients={clients} durationHours={durationHours} startTime={startTime} onRequestChange={() => request_edit_changes()}
+            onAddClient={() => setViewMode('add_client')} setClients={setClients} setStartTime={setStartTime} setDurationHours={setDurationHours} clients={clients} durationHours={durationHours} startTime={startTime}
             setClientsAndTickets={setClientsAndTickets}
             onChangeInstructor={() => setViewMode('change_instructor')} instructor={instructor}
             onCancel={props.onCancel}
@@ -100,6 +147,7 @@ export default function NormalLessonDetailEditView(props) {
                 setClientTicketsIndexToEdit(index)
                 setViewMode('client_ticket_manage')
             }}
+            onRequestChange={() => request_update()}
         />
     }
 

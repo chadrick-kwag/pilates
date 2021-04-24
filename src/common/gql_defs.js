@@ -991,6 +991,20 @@ export const FETCH_TICKET_AVAILABLE_PLAN_FOR_CLIENTID_AND_LESSONTYPES = gql`
     }
 `
 
+// change_lesson_overall
+export const CHANGE_NORMAL_LESSON_OVERALL = gql`
+
+    
+
+    mutation($client_tickets: [clientTickets!], $lessonid: Int!, $instructorid: Int!, $starttime:String!, $endtime: String!){
+        change_lesson_overall(lessonid:$lessonid, client_tickets: $client_tickets, starttime: $starttime, endtime:$endtime, instructorid: $instructorid){
+            success
+            msg
+
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

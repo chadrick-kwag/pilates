@@ -87,6 +87,8 @@ type LessonDeleteResponse{
     msg: String
 }
 
+
+
 type Mutation{
 
     create_lesson(instructorid: Int!, starttime: String!, endtime: String!, ticketids: [Int!]): SuccessResult
@@ -98,8 +100,13 @@ type Mutation{
     create_individual_lesson(clientid: Int!, instructorid: Int!, ticketid: Int!, starttime: String!, endtime: String!): SuccessResult
     change_clients_of_lesson(ticketid_arr: [Int], lessonid: Int!): SuccessResult
 
-    change_lesson_overall(lessonid: Int!, clientid_arr:[Int!], instructorid: Int!, starttime: String!, endtime: String!): SuccessResult
+    change_lesson_overall(lessonid: Int!, client_tickets: [clientTickets!], instructorid: Int!, starttime: String!, endtime: String!): SuccessResult
     
+}
+
+input clientTickets{
+    clientid: Int!
+    tickets: [Int!]
 }
 `
 

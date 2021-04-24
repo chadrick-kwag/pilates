@@ -925,11 +925,14 @@ module.exports = {
 
             try {
 
+                console.log('change_lesson_overall')
+                console.log(args)
+
                 let res = await pgclient.query('BEGIN')
 
 
                 // fetch at, gt of lesson
-                res = await pgclient.query(`select activity_type, grouping_type from lesson where id=$1 `, [args.lessonid])
+                res = await pgclient.query(`select activity_type, grouping_type, instructorid, starttime, endtime from lesson where id=$1 `, [args.lessonid])
 
                 if (res.rows.length === 0) {
                     throw {
@@ -939,12 +942,20 @@ module.exports = {
 
                 const activity_type = res.rows[0].activity_type
                 const grouping_type = res.rows[0].grouping_type
+                const existing_instructorid = res.rows[0].instructorid
+                const existing_starttime = res.rows[0].starttime
+                const existing_endtime = res.rows[0].endtime
 
 
                 // check schedule overlap exist among instructor and clients
 
                 // check instructor schedule
-                res = await pgclient.query(`select * from lesson where instructorid=$1 and id!=$2 and canceled_time is null and tstzrange($3, $4) && tstzrange(starttime, endtime)`, [args.instructorid, args.lessonid, args.starttime, args.endtime])
+                res = await pgclient.query(`select * from lesson 
+                where instructorid=$1 and id!=$2 and canceled_time is null 
+                and (tstzrange($3, $4) && tstzrange(starttime, endtime) )
+                `, [args.instructorid, args.lessonid, args.starttime, args.endtime])
+
+                console.log(res)
 
                 if (res.rows.length > 0) {
                     throw {
@@ -953,41 +964,119 @@ module.exports = {
                 }
 
                 // check client schedule
-                for (let i = 0; i < args.clientid_arr.length; i++) {
-                    res = await pgclient.query(`select * from lesson where instructorid=$1 and id!=$2 and canceled_time is null and tstzrange($3, $4) && tstzrange(starttime, endtime)`, [args.clientid_arr[i], args.lessonid, args.starttime, args.endtime])
 
-                    if (res.rows.length === 0) {
+                const client_id_arr = args.client_tickets.map(d => d.clientid)
+
+                if (client_id_arr.length === 0) {
+                    throw {
+                        detail: 'no clients'
+                    }
+                }
+
+                for (let i = 0; i < client_id_arr.length; i++) {
+                    console.log(`checking for client id ${client_id_arr[i]}`)
+
+                    res = await pgclient.query(`with A as (select * from lesson where canceled_time is null AND (tstzrange($3, $4) && tstzrange(starttime, endtime) )  AND id!=$2)
+
+                    select B.ticketid from A 
+                    left join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as B on B.lessonid = A.id
+                    left join ticket on B.ticketid = ticket.id
+                    left join plan on plan.id = ticket.creator_plan_id
+                    where plan.clientid = $1`, [client_id_arr[i], args.lessonid, args.starttime, args.endtime])
+
+                    console.log(res)
+
+                    if (res.rows.length > 0) {
                         throw {
                             detail: 'client time overlap'
                         }
                     }
                 }
 
+                // detect if instructor change is required
+
+                if (args.instructorid !== existing_instructorid) {
+                    // assuming admin request update. iow, no penalty by directly updating the lesson row
+                    await pgclient.query(`update lesson set instructorid=$1 where id=$2`, [args.instructorid, args.lessonid])
+
+                }
+
+                // detect if start end time update is required
+                console.log(`existing starttime: ${existing_starttime}`)
+                console.log(`existing endtime: ${existing_endtime}`)
+                console.log(`incoming starttime: ${args.starttime}`)
+                console.log(`incoming endtime: ${args.endtime}`)
+
+                const existing_starttime_ms = (new Date(existing_starttime)).getTime()
+                const incoming_starttime_ms = (new Date(args.starttime)).getTime()
+
+                const existing_endtime_ms = (new Date(existing_endtime)).getTime()
+                const incoming_endtime_ms = (new Date(args.endtime)).getTime()
+
+                console.log(`existing_starttime_ms: ${existing_starttime_ms}`)
+                console.log(`incoming_starttime_ms: ${incoming_starttime_ms}`)
+
+
+                if (existing_endtime_ms !== incoming_starttime_ms || existing_endtime_ms !== incoming_endtime_ms) {
+                    // assuming admin req update. iow, directly update lesson row
+                    await pgclient.query(`update lesson set starttime=$1, endtime=$2 where id=$3`, [args.starttime, args.endtime, args.lessonid])
+                }
 
 
                 // handle ticket changes
 
-                // first get removed clients/existing clients/added clients
+                // gather existing assignments
 
-                // get existing client list
-                res = await pgclient.query(`select lesson.id as id, client.id as clientid, ticket.id as ticketid from lesson
-                left join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc ) 
-                as A  on A.lessonid = lesson.id 
-                left join ticket on ticket.id = A.ticketid
-                left join plan on plan.id = ticket.creator_plan_id
-                left join client on plan.clientid = client.id
-                
-                where lesson.id = $1`, [args.lessonid])
+                result = await pgclient.query(`with A as (select distinct on (ticketid) * from assign_ticket order by ticketid, created desc)
+                select ticketid from A
+                where lessonid=$1
+                and canceled_time is null
+                `, [args.lessonid])
 
-                const prev_existing_client_id_arr = [...new Set(res.rows.map(d => d.clientid))]
+                const existing_ticket_id_arr = result.rows.map(d => d.ticketid)
 
-                console.log('prev_existing_client_id_arr')
-                console.log(prev_existing_client_id_arr)
+                console.log(`existing_ticket_id_arr: ${existing_ticket_id_arr}`)
 
 
 
+                // gather incoming ticket id arr
+                let incoming_ticket_id_arr = []
+                for (let i = 0; i < args.client_tickets.length; i++) {
+                    const tickets = args.client_tickets[i].tickets
+                    console.log(tickets)
+                    incoming_ticket_id_arr = incoming_ticket_id_arr.concat(tickets)
 
-                // handle removed clients
+                }
+
+                console.log(`incoming_ticket_id_arr: ${incoming_ticket_id_arr}`)
+
+                // split to tickets to unassign  and tickets to newly create assignment
+
+                const unassign_ticket_id_arr = existing_ticket_id_arr.filter(x => !incoming_ticket_id_arr.includes(x))
+                const assign_ticket_id_arr = incoming_ticket_id_arr.filter(x => !existing_ticket_id_arr.includes(x))
+
+                console.log(`unassign_ticket_id_arr: ${unassign_ticket_id_arr}`)
+                console.log(`assign_ticket_id_arr: ${assign_ticket_id_arr}`)
+
+
+                // execute unassignments
+                for (let i = 0; i < unassign_ticket_id_arr.length; i++) {
+                    const tid = unassign_ticket_id_arr[i]
+
+                    // get assign id
+                    res = await pgclient.query(`select distinct on(ticketid) id from assign_ticket where lessonid=$1 and ticketid=$2 order by ticketid, created desc`, [args.lessonid, tid])
+
+                    const aid = res.rows[0].id
+
+                    await pgclient.query(`update assign_ticket set canceled_time=now(), cancel_type='ADMIN' where id=$1`, [aid])
+                }
+
+                // execute creating assignments
+                for (let i = 0; i < assign_ticket_id_arr.length; i++) {
+                    const tid = assign_ticket_id_arr[i]
+
+                    res = await pgclient.query(`insert into assign_ticket (ticketid,lessonid, created) values ($1,$2,now())`, [tid, args.lessonid])
+                }
 
 
                 await pgclient.query('COMMIT')
