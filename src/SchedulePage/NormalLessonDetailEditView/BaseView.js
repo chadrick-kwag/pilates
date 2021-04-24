@@ -19,6 +19,34 @@ export default function BaseView(props) {
     console.log('BaseView props')
     console.log(props)
 
+
+    const check_request_possible = () => {
+
+        console.log('check_request_possible')
+        console.log(props.clientsAndTickets)
+
+        if (props.clientsAndTickets === null) {
+            return false
+        }
+
+        // for each client, the assigned ticket count should match durationHours
+        const durationHours = props.durationHours
+        for (let i = 0; i < props.clientsAndTickets.length; i++) {
+            const ct = props.clientsAndTickets[i]
+            console.log('ct')
+            console.log(ct)
+
+            if (ct.tickets.length !== durationHours) {
+                console.log(`duration: ${durationHours}, tickets length: ${ct.tickets.length}`)
+                return false
+            }
+
+        }
+
+        return true
+
+    }
+
     if (props.clientsAndTickets === null) {
         return (
             <>
@@ -127,7 +155,7 @@ export default function BaseView(props) {
 
 
                     <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>이전으로</Button>
-                    <Button variant='outlined' onClick={e => props.onRequestChange?.()}>변경요청</Button>
+                    <Button variant='outlined' disabled={!check_request_possible()} onClick={e => props.onRequestChange?.()}>변경요청</Button>
 
                 </DialogActions>
 
