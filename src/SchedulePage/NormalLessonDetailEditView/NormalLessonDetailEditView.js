@@ -60,7 +60,7 @@ export default function NormalLessonDetailEditView(props) {
 
         const _var = {
             lessonid: props.data.indomain_id,
-            instructorid: instructor.id,
+            instructorid: parseInt(instructor.id),
             client_tickets: _cts,
             starttime: startTime.toSQL(),
             endtime: endtime.toSQL()
