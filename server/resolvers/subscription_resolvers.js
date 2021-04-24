@@ -23,12 +23,12 @@ module.exports = {
 
                 await pgclient.query('BEGIN')
 
-                let result = await pgclient.query(`with A as (
+                const result1 = await pgclient.query(`with A as (
                     select * from plan where clientid=$1 and activity_type = $2
                     AND grouping_type = $3
                     )
                     
-                    select A.id as planid, array_agg(ticket.id) as ticket_id_arr from A 
+                    select A.id as planid,array_agg(json_build_object('ticketid', ticket.id, 'expiretime', ticket.expire_time)) as ticket_id_arr from A 
                     left join ticket on ticket.creator_plan_id = A.id
                     left join (select distinct on (ticketid) * from assign_ticket order by ticketid, created desc) as B on B.ticketid = ticket.id
                     left join lesson on lesson.id = B.lessonid
@@ -39,17 +39,35 @@ module.exports = {
                 let filtered_plans = []
 
                 const excluded_ticket_id_set = new Set(excluded_ticket_id_arr)
-                console.log(result)
-                for (let i = 0; i < result.rows.length; i++) {
-                    const a = result.rows[i]
+                console.log(result1)
+                console.log(result1.rows.length)
+                for (let i = 0; i < result1.rows.length; i++) {
+                    console.log('start of iteration')
+                    console.log(i)
+                    const a = result1.rows[i]
                     console.log(a)
                     const planid = a.planid
-                    let ticket_id_arr_set = new Set(a.ticket_id_arr)
+                    // let ticket_id_arr_set = new Set(a.ticket_id_arr)
+                    let ticket_id_arr_set = a.ticket_id_arr
 
                     console.log('ticket_id_arr_set')
                     console.log(ticket_id_arr_set)
 
-                    let filtered_ticket_id_arr = [...ticket_id_arr_set].filter(x => !excluded_ticket_id_set.has(x))
+                    let filtered_ticket_obj_arr = [...ticket_id_arr_set].filter(x => !excluded_ticket_id_set.has(x.ticketid))
+
+                    filtered_ticket_obj_arr.sort((p, q) => {
+                        const _a = new Date(p.expiretime)
+                        const _b = new Date(q.expiretime)
+
+                        console.log(_a)
+
+                        _a < _b
+                    })
+
+                    console.log('expiretime sorted filtered_ticket_obj_arr')
+                    console.log(filtered_ticket_obj_arr)
+
+                    let filtered_ticket_id_arr = filtered_ticket_obj_arr.map(d => d.ticketid)
 
                     console.log('filtered_ticket_id_arr')
                     console.log(filtered_ticket_id_arr)
@@ -58,10 +76,29 @@ module.exports = {
                         continue;
                     }
 
+                    // fetch plan info
+                    result = await pgclient.query(`select totalcost::int from plan where id=$1`, [planid])
+                    const totalcost = result.rows[0].totalcost
+
+                    console.log('totalcost')
+                    console.log(totalcost)
+
+                    result = await pgclient.query(`select count(1)::int as totalcount from ticket where creator_plan_id = $1`, [planid])
+
+                    const total_rounds = result.rows[0].totalcount
+
+                    console.log('total_rounds')
+                    console.log(total_rounds)
+
                     filtered_plans.push({
                         planid: planid,
+                        plan_total_rounds: total_rounds,
+                        per_ticket_cost: Math.ceil(totalcost / total_rounds),
+                        fastest_expiring_ticket_expire_time: filtered_ticket_obj_arr[0].expiretime,
                         ticket_id_arr: filtered_ticket_id_arr
                     })
+
+                    console.log('pushed to filtered_plans ')
 
 
                 }

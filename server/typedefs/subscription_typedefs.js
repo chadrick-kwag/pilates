@@ -40,6 +40,9 @@ type PlanDetailAndTicketDetailResponse{
 
 type TicketAvailablePlan{
     planid: Int
+    plan_total_rounds: Int
+    per_ticket_cost: Int
+    fastest_expiring_ticket_expire_time: String
     ticket_id_arr: [Int]
 }
 

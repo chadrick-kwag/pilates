@@ -982,6 +982,9 @@ export const FETCH_TICKET_AVAILABLE_PLAN_FOR_CLIENTID_AND_LESSONTYPES = gql`
             msg
             plans{
                 planid
+                plan_total_rounds
+                per_ticket_cost
+                fastest_expiring_ticket_expire_time
                 ticket_id_arr
             }
         }

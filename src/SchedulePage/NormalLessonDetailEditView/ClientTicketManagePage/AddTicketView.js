@@ -4,11 +4,18 @@ import { DialogContent, DialogActions, Button, CircularProgress, List, ListItem 
 import client from '../../../apolloclient'
 import { FETCH_TICKET_AVAILABLE_PLAN_FOR_CLIENTID_AND_LESSONTYPES } from '../../../common/gql_defs'
 
+import { DateTime } from 'luxon'
+
 export default function AddTicketView(props) {
 
     console.log(props)
 
     const [plans, setPlans] = useState(null)
+
+    const format_date = (d) => {
+        console.log(d)
+        return DateTime.fromISO(d).toFormat('y-LL-dd HH:mm')
+    }
 
     useEffect(() => {
 
@@ -53,7 +60,8 @@ export default function AddTicketView(props) {
                 <DialogContent>
                     <List>
                         {plans.map(p => <ListItem button onClick={() => props.onTicketAdd?.(p.ticket_id_arr[0])}>
-                            <span>planid: {p.planid}</span>
+                            
+                            <span>총횟수:{p.plan_total_rounds}, 회당단가:{p.per_ticket_cost}, 가장빠른만료기한:{format_date(p.fastest_expiring_ticket_expire_time)}</span>
                         </ListItem>)}
                     </List>
                 </DialogContent>
