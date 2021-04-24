@@ -7,9 +7,35 @@ type Query{
     query_lesson_with_timerange_by_instructorid(instructorid: Int!, start_time: String!, end_time: String!): query_lesson_return
 
     query_lesson_data_of_instructorid(instructorid: Int!, search_starttime:String!, search_endtime: String!): query_stat_lesson_return
+    query_lesson_detail_with_lessonid(lessonid:Int!): query_lesson_detail_return
 }
 
 
+type TicketInfo {
+    ticketid: Int
+}
+
+type ClientTickets {
+    clientid: Int
+    clientname: String
+    clientphonenumber: String
+    tickets: [TicketInfo]
+}
+
+type LessonDetail {
+    id: Int
+    starttime: String
+    endtime: String
+    activity_type: String
+    grouping_type: String
+    client_tickets: [ClientTickets]
+}
+
+type query_lesson_detail_return{
+    success: Boolean
+    msg: String
+    detail: LessonDetail
+}
 
 type LessonWithMoreInfo {
     id: Int
@@ -25,11 +51,11 @@ type LessonWithMoreInfo {
     grouping_type: String
   }
   
-  type query_lesson_return {
-      success: Boolean
-      msg: String
-      lessons: [LessonWithMoreInfo]
-  }
+type query_lesson_return {
+    success: Boolean
+    msg: String
+    lessons: [LessonWithMoreInfo]
+}
 
 type stat_lesson_client_info {
     id: Int

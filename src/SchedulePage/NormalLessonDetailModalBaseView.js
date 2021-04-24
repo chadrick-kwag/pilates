@@ -66,8 +66,6 @@ export default function NormalLessonDetailModalBaseView(props) {
             alert('failed to delete lesson')
         })
 
-
-
     }
 
 

@@ -1,5 +1,5 @@
 import { ApolloClient, InMemoryCache, createHttpLink, useMutation } from '@apollo/client'
-import {gql_server_addr, GRAPHQL_SUBPATH} from '../config'
+import {GRAPHQL_SUBPATH} from '../config'
 
 const cache = new InMemoryCache({
     dataIdFromObject: o=>{
