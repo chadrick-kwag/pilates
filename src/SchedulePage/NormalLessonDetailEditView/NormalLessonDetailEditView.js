@@ -145,10 +145,20 @@ export default function NormalLessonDetailEditView(props) {
 
     if (viewMode === 'add_client') {
         return <AddClientView onCancel={() => setViewMode('base')} onDone={d => {
-            const newclients = [...clients]
-            newclients.push(d)
+            console.log('selected add client')
+            console.log(d)
+            const _d = d
+            _d.tickets=[]
+            const new_clientsAndTickets = [...clientsAndTickets, _d]
 
-            setClients(newclients)
+            console.log('new_clientsAndTickets')
+            console.log(new_clientsAndTickets)
+            // const newclients = [...clients]
+            // newclients.push(d)
+
+            // setClients(newclients)
+
+            setClientsAndTickets(new_clientsAndTickets)
             setViewMode('base')
         }} />
     }
