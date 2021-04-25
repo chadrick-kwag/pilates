@@ -9,6 +9,129 @@ const {
 module.exports = {
 
     Query: {
+        query_lesson_detail_with_lessonid: async (parent, args) => {
+            try {
+
+                console.log('query_lesson_detail_with_lessonid')
+                console.log(args)
+
+                await pgclient.query('begin')
+
+                const lessonid = args.lessonid
+
+                let result = await pgclient.query(`select lesson.id as id, instructor.name as instructor_name, instructor.phonenumber as instructor_phonenumber, instructor.id as instructor_id, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type from lesson
+                left join instructor on instructor.id = lesson.instructorid where lesson.id= $1 `, [lessonid])
+
+                if (result.rows.length !== 1) {
+                    throw {
+                        detail: 'invalid lesson id'
+                    }
+                }
+
+                const lesson_basic_info = result.rows[0]
+
+                console.log('lesson_basic_info')
+                console.log(lesson_basic_info)
+
+                result = await pgclient.query(`select distinct on(ticketid) ticketid, client.id as clientid, client.name as client_name, client.phonenumber as client_phonenumber, plan.id as planid  from assign_ticket
+                left join ticket on ticket.id = assign_ticket.ticketid
+                left join plan on ticket.creator_plan_id = plan.id
+                left join client on client.id = plan.clientid
+                where canceled_time is null
+                and lessonid = $1
+                order by ticketid, assign_ticket.created desc  `, [lessonid])
+
+                // convert to client-ticketid arr format
+                let client_to_ticket_id_arr_map = {}
+                let clientid_to_clientinfo_map = {}
+
+                for (let i = 0; i < result.rows.length; i++) {
+                    const item = result.rows[i]
+
+                    const ticketid = item.ticketid
+                    const clientid = item.clientid
+
+                    let arr = client_to_ticket_id_arr_map[clientid]
+                    if (arr === undefined || arr === null) {
+                        client_to_ticket_id_arr_map[clientid] = [{
+                            ticketid: ticketid
+                        }]
+                    }
+                    else {
+                        arr.push({
+                            ticketid: ticketid
+                        })
+                    }
+
+
+                    const a = clientid_to_clientinfo_map[clientid]
+                    if (a === undefined) {
+                        clientid_to_clientinfo_map[clientid] = {
+                            clientid: clientid,
+                            clientname: item.client_name,
+                            clientphonenumber: item.client_phonenumber
+                        }
+                    }
+
+
+                }
+
+                console.log('client_to_ticket_id_arr_map')
+                console.log(client_to_ticket_id_arr_map)
+
+                const client_tickets = []
+
+                for (let p in client_to_ticket_id_arr_map) {
+                    let out = {}
+
+                    out = { ...clientid_to_clientinfo_map[p] }
+
+                    out.tickets = client_to_ticket_id_arr_map[p]
+
+                    console.log('single client tickets item')
+                    console.log(out)
+
+                    client_tickets.push(out)
+                }
+
+                console.log('client_tickets')
+                console.log(client_tickets)
+
+                const detail = {
+                    ...lesson_basic_info,
+                    client_tickets: client_tickets
+                }
+
+                console.log('detail')
+                console.log(detail)
+
+
+                await pgclient.query(`commit`)
+
+                return {
+                    success: true,
+                    detail: detail
+                }
+
+
+
+            } catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+            }
+        },
         query_all_lessons: async (parent, args) => {
 
             let results = await pgclient.query("select  lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid").then(res => {
@@ -715,7 +838,7 @@ module.exports = {
             console.log('change_clients_of_lesson')
             console.log(args)
 
-            try{
+            try {
                 await pgclient.query(`begin`)
 
                 // divide tickets to assign and tickets to release
@@ -724,31 +847,31 @@ module.exports = {
                 where lessonid=$1
                 order by ticketid, created desc`, [args.lessonid])
 
-                let existing_assigned_ticket_id_arr = result.rows.map(d=>d.ticketid)
+                let existing_assigned_ticket_id_arr = result.rows.map(d => d.ticketid)
 
                 const new_tickets_to_assign_arr = []
-                
+
 
                 let existing_ticket_also_included_in_new_assignment_bool_arr = new Array(existing_assigned_ticket_id_arr.length).fill(false)
 
-                for(let i=0;i<args.ticketid_arr.length;i++){
+                for (let i = 0; i < args.ticketid_arr.length; i++) {
                     let exists = false;
-                    for(let j=0;j<existing_assigned_ticket_id_arr.length;j++){
-                        if(existing_assigned_ticket_id_arr[j]===args.ticketid_arr[i]){
+                    for (let j = 0; j < existing_assigned_ticket_id_arr.length; j++) {
+                        if (existing_assigned_ticket_id_arr[j] === args.ticketid_arr[i]) {
                             exists = true;
                             existing_ticket_also_included_in_new_assignment_bool_arr[j] = true;
                             break;
                         }
-                        
+
                     }
 
-                    if(!exists){
+                    if (!exists) {
                         new_tickets_to_assign_arr.push(args.ticketid_arr[i])
                     }
                 }
 
-                let tickets_to_remove_arr = existing_ticket_also_included_in_new_assignment_bool_arr.map((d,i)=>{
-                    if(!d){
+                let tickets_to_remove_arr = existing_ticket_also_included_in_new_assignment_bool_arr.map((d, i) => {
+                    if (!d) {
                         return existing_assigned_ticket_id_arr[i]
                     }
                 })
@@ -756,26 +879,26 @@ module.exports = {
 
 
                 // new tickets to assign, create assignment
-                for(let i=0;i<new_tickets_to_assign_arr.length;i++){
+                for (let i = 0; i < new_tickets_to_assign_arr.length; i++) {
                     await pgclient.query(`insert into assign_ticket (ticketid, lessonid, created) values ($1, $2, now())`, [new_tickets_to_assign_arr[i], args.lessonid])
                 }
-                
+
 
                 // process assignment to remove. since we are assuming admin usage, no penalty removal
                 // remove assign ment of ticket for this lesson
-                for(let i=0;i<tickets_to_remove_arr.length;i++){
-                    result = await pgclient.query(`select id from assign_ticket where ticketid=$1 and lessonid=$2`,[tickets_to_remove_arr[i], args.lessonid])
-                    
+                for (let i = 0; i < tickets_to_remove_arr.length; i++) {
+                    result = await pgclient.query(`select id from assign_ticket where ticketid=$1 and lessonid=$2`, [tickets_to_remove_arr[i], args.lessonid])
 
-                    const id_arr = result.rows.map(d=>d.id)
+
+                    const id_arr = result.rows.map(d => d.id)
 
                     // execute remove
-                    for(let i=0;i<id_arr.length;i++){
+                    for (let i = 0; i < id_arr.length; i++) {
                         await pgclient.query(`delete from assign_ticket where id=$1`, [id_arr[i]])
                     }
                 }
-                
-                
+
+
 
                 await pgclient.query(`commit`)
 
@@ -802,6 +925,188 @@ module.exports = {
                 }
             }
 
+        },
+        change_lesson_overall: async (parent, args) => {
+
+            try {
+
+                console.log('change_lesson_overall')
+                console.log(args)
+
+                let res = await pgclient.query('BEGIN')
+
+
+                // fetch at, gt of lesson
+                res = await pgclient.query(`select activity_type, grouping_type, instructorid, starttime, endtime from lesson where id=$1 `, [args.lessonid])
+
+                if (res.rows.length === 0) {
+                    throw {
+                        detail: 'no lesson found'
+                    }
+                }
+
+                const activity_type = res.rows[0].activity_type
+                const grouping_type = res.rows[0].grouping_type
+                const existing_instructorid = res.rows[0].instructorid
+                const existing_starttime = res.rows[0].starttime
+                const existing_endtime = res.rows[0].endtime
+
+
+                // check schedule overlap exist among instructor and clients
+
+                // check instructor schedule
+                res = await pgclient.query(`select * from lesson 
+                where instructorid=$1 and id!=$2 and canceled_time is null 
+                and (tstzrange($3, $4) && tstzrange(starttime, endtime) )
+                `, [args.instructorid, args.lessonid, args.starttime, args.endtime])
+
+                console.log(res)
+
+                if (res.rows.length > 0) {
+                    throw {
+                        detail: 'instructor time overlap'
+                    }
+                }
+
+                // check client schedule
+
+                const client_id_arr = args.client_tickets.map(d => d.clientid)
+
+                if (client_id_arr.length === 0) {
+                    throw {
+                        detail: 'no clients'
+                    }
+                }
+
+                for (let i = 0; i < client_id_arr.length; i++) {
+                    console.log(`checking for client id ${client_id_arr[i]}`)
+
+                    res = await pgclient.query(`with A as (select * from lesson where canceled_time is null AND (tstzrange($3, $4) && tstzrange(starttime, endtime) )  AND id!=$2)
+
+                    select B.ticketid from A 
+                    left join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as B on B.lessonid = A.id
+                    left join ticket on B.ticketid = ticket.id
+                    left join plan on plan.id = ticket.creator_plan_id
+                    where plan.clientid = $1`, [client_id_arr[i], args.lessonid, args.starttime, args.endtime])
+
+                    console.log(res)
+
+                    if (res.rows.length > 0) {
+                        throw {
+                            detail: 'client time overlap'
+                        }
+                    }
+                }
+
+                // detect if instructor change is required
+
+                if (args.instructorid !== existing_instructorid) {
+                    // assuming admin request update. iow, no penalty by directly updating the lesson row
+                    await pgclient.query(`update lesson set instructorid=$1 where id=$2`, [args.instructorid, args.lessonid])
+
+                }
+
+                // detect if start end time update is required
+                console.log(`existing starttime: ${existing_starttime}`)
+                console.log(`existing endtime: ${existing_endtime}`)
+                console.log(`incoming starttime: ${args.starttime}`)
+                console.log(`incoming endtime: ${args.endtime}`)
+
+                const existing_starttime_ms = (new Date(existing_starttime)).getTime()
+                const incoming_starttime_ms = (new Date(args.starttime)).getTime()
+
+                const existing_endtime_ms = (new Date(existing_endtime)).getTime()
+                const incoming_endtime_ms = (new Date(args.endtime)).getTime()
+
+                console.log(`existing_starttime_ms: ${existing_starttime_ms}`)
+                console.log(`incoming_starttime_ms: ${incoming_starttime_ms}`)
+
+
+                if (existing_endtime_ms !== incoming_starttime_ms || existing_endtime_ms !== incoming_endtime_ms) {
+                    // assuming admin req update. iow, directly update lesson row
+                    await pgclient.query(`update lesson set starttime=$1, endtime=$2 where id=$3`, [args.starttime, args.endtime, args.lessonid])
+                }
+
+
+                // handle ticket changes
+
+                // gather existing assignments
+
+                result = await pgclient.query(`with A as (select distinct on (ticketid) * from assign_ticket order by ticketid, created desc)
+                select ticketid from A
+                where lessonid=$1
+                and canceled_time is null
+                `, [args.lessonid])
+
+                const existing_ticket_id_arr = result.rows.map(d => d.ticketid)
+
+                console.log(`existing_ticket_id_arr: ${existing_ticket_id_arr}`)
+
+
+
+                // gather incoming ticket id arr
+                let incoming_ticket_id_arr = []
+                for (let i = 0; i < args.client_tickets.length; i++) {
+                    const tickets = args.client_tickets[i].tickets
+                    console.log(tickets)
+                    incoming_ticket_id_arr = incoming_ticket_id_arr.concat(tickets)
+
+                }
+
+                console.log(`incoming_ticket_id_arr: ${incoming_ticket_id_arr}`)
+
+                // split to tickets to unassign  and tickets to newly create assignment
+
+                const unassign_ticket_id_arr = existing_ticket_id_arr.filter(x => !incoming_ticket_id_arr.includes(x))
+                const assign_ticket_id_arr = incoming_ticket_id_arr.filter(x => !existing_ticket_id_arr.includes(x))
+
+                console.log(`unassign_ticket_id_arr: ${unassign_ticket_id_arr}`)
+                console.log(`assign_ticket_id_arr: ${assign_ticket_id_arr}`)
+
+
+                // execute unassignments
+                for (let i = 0; i < unassign_ticket_id_arr.length; i++) {
+                    const tid = unassign_ticket_id_arr[i]
+
+                    // get assign id
+                    res = await pgclient.query(`select distinct on(ticketid) id from assign_ticket where lessonid=$1 and ticketid=$2 order by ticketid, created desc`, [args.lessonid, tid])
+
+                    const aid = res.rows[0].id
+
+                    await pgclient.query(`update assign_ticket set canceled_time=now(), cancel_type='ADMIN' where id=$1`, [aid])
+                }
+
+                // execute creating assignments
+                for (let i = 0; i < assign_ticket_id_arr.length; i++) {
+                    const tid = assign_ticket_id_arr[i]
+
+                    res = await pgclient.query(`insert into assign_ticket (ticketid,lessonid, created) values ($1,$2,now())`, [tid, args.lessonid])
+                }
+
+
+                await pgclient.query('COMMIT')
+
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+            }
         }
 
     }

@@ -12,7 +12,7 @@ type Subscription {
 }
 
 type Client {
-    id: String!
+    id: Int!
     name: String!
     phonenumber: String!
     created: String
@@ -74,7 +74,7 @@ type SubscriptionWithRemainRounds {
 }
 
 type Instructor {
-    id: String!
+    id: Int!
     name: String!
     phonenumber: String!
     created: String

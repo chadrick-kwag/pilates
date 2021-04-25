@@ -1,4 +1,4 @@
-module.exports=`
+module.exports = `
 
 
 type PlanAndTickets{
@@ -38,6 +38,20 @@ type PlanDetailAndTicketDetailResponse{
     subscription_info: PlanDetail
 }
 
+type TicketAvailablePlan{
+    planid: Int
+    plan_total_rounds: Int
+    per_ticket_cost: Int
+    fastest_expiring_ticket_expire_time: String
+    ticket_id_arr: [Int]
+}
+
+type SuccessAndTicketAvailablePlans{
+    success: Boolean
+    msg: String
+    plans: [TicketAvailablePlan]
+}
+
 type Query{
     query_subscriptions_of_clientname(clientname:String): SuccessAndSubscriptions
     query_subscriptions_by_clientid(clientid:Int!): SuccessAndSubscriptions
@@ -46,6 +60,7 @@ type Query{
     query_all_subscriptions_with_remainrounds_for_clientid(clientid: Int!): ReturnAllSubscriptionsWithRemainRounds
     fetch_tickets_for_subscription_id(subscription_id: Int!): SuccessAndTickets
     query_subscription_info_with_ticket_info(id:Int!): PlanDetailAndTicketDetailResponse
+    fetch_ticket_available_plan_for_clientid_and_lessontypes(clientid:Int!, activity_type:String!, grouping_type:String!, excluded_ticket_id_arr:[Int]): SuccessAndTicketAvailablePlans
 }
 
 type Mutation{
@@ -56,5 +71,6 @@ type Mutation{
     delete_tickets(ticketid_arr: [Int]): SuccessResult
     add_tickets(planid: Int!, addsize: Int!, expire_datetime: String!): SuccessResult
     change_plan_totalcost(planid: Int!, totalcost: Int!): SuccessResult
+    
 }
 `

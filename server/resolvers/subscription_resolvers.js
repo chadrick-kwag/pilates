@@ -9,6 +9,128 @@ const {
 module.exports = {
     Query: {
 
+        fetch_ticket_available_plan_for_clientid_and_lessontypes: async (parent, args) => {
+            try {
+
+                console.log('fetch_ticket_available_plan_for_clientid_and_lessontypes')
+                console.log(args)
+
+                const clientid = args.clientid
+                const activity_type = args.activity_type
+                const grouping_type = args.grouping_type
+                const excluded_ticket_id_arr = args.excluded_ticket_id_arr
+
+
+                await pgclient.query('BEGIN')
+
+                const result1 = await pgclient.query(`with A as (
+                    select * from plan where clientid=$1 and activity_type = $2
+                    AND grouping_type = $3
+                    )
+                    
+                    select A.id as planid,array_agg(json_build_object('ticketid', ticket.id, 'expiretime', ticket.expire_time)) as ticket_id_arr from A 
+                    left join ticket on ticket.creator_plan_id = A.id
+                    left join (select distinct on (ticketid) * from assign_ticket order by ticketid, created desc) as B on B.ticketid = ticket.id
+                    left join lesson on lesson.id = B.lessonid
+                    where B.created is null OR (B.created is not null AND lesson.canceled_time is not null)
+                    group by A.id`, [clientid, activity_type, grouping_type])
+
+                // for each ticket id arr, remove ids included in excluded_ticket_id_arr
+                let filtered_plans = []
+
+                const excluded_ticket_id_set = new Set(excluded_ticket_id_arr)
+                console.log(result1)
+                console.log(result1.rows.length)
+                for (let i = 0; i < result1.rows.length; i++) {
+                    console.log('start of iteration')
+                    console.log(i)
+                    const a = result1.rows[i]
+                    console.log(a)
+                    const planid = a.planid
+                    // let ticket_id_arr_set = new Set(a.ticket_id_arr)
+                    let ticket_id_arr_set = a.ticket_id_arr
+
+                    console.log('ticket_id_arr_set')
+                    console.log(ticket_id_arr_set)
+
+                    let filtered_ticket_obj_arr = [...ticket_id_arr_set].filter(x => !excluded_ticket_id_set.has(x.ticketid))
+
+                    filtered_ticket_obj_arr.sort((p, q) => {
+                        const _a = new Date(p.expiretime)
+                        const _b = new Date(q.expiretime)
+
+                        console.log(_a)
+
+                        _a < _b
+                    })
+
+                    console.log('expiretime sorted filtered_ticket_obj_arr')
+                    console.log(filtered_ticket_obj_arr)
+
+                    let filtered_ticket_id_arr = filtered_ticket_obj_arr.map(d => d.ticketid)
+
+                    console.log('filtered_ticket_id_arr')
+                    console.log(filtered_ticket_id_arr)
+
+                    if (filtered_ticket_id_arr.length === 0) {
+                        continue;
+                    }
+
+                    // fetch plan info
+                    result = await pgclient.query(`select totalcost::int from plan where id=$1`, [planid])
+                    const totalcost = result.rows[0].totalcost
+
+                    console.log('totalcost')
+                    console.log(totalcost)
+
+                    result = await pgclient.query(`select count(1)::int as totalcount from ticket where creator_plan_id = $1`, [planid])
+
+                    const total_rounds = result.rows[0].totalcount
+
+                    console.log('total_rounds')
+                    console.log(total_rounds)
+
+                    filtered_plans.push({
+                        planid: planid,
+                        plan_total_rounds: total_rounds,
+                        per_ticket_cost: Math.ceil(totalcost / total_rounds),
+                        fastest_expiring_ticket_expire_time: filtered_ticket_obj_arr[0].expiretime,
+                        ticket_id_arr: filtered_ticket_id_arr
+                    })
+
+                    console.log('pushed to filtered_plans ')
+
+
+                }
+
+                console.log("filtered_plans")
+                console.log(filtered_plans)
+
+                await pgclient.query(`end`)
+
+                return {
+                    success: true,
+                    plans: filtered_plans
+                }
+
+            } catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+            }
+        },
+
         query_subscription_info_with_ticket_info: async (parent, args) => {
             console.log('query_subscription_info_with_ticket_info')
             console.log(args)
@@ -365,13 +487,13 @@ module.exports = {
 
                 return await pgclient.query('rollback').then(res => {
 
-                    if(e.code==='23503'){
+                    if (e.code === '23503') {
                         return {
                             success: false,
                             msg: 'undeletable connected elements exist'
                         }
                     }
-                    
+
                     return {
                         success: false,
                         msg: e.detail

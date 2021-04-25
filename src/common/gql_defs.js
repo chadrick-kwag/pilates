@@ -949,6 +949,62 @@ export const FETCH_INSTRUCTOR_STAT = gql`
     }
 `
 
+//query_lesson_detail_with_lessonid
+export const QUERY_LESSON_DETAIL_WITH_LESSONID = gql`
+    query($lessonid:Int!){
+        query_lesson_detail_with_lessonid(lessonid:$lessonid){
+            success
+            msg
+            detail {
+                id
+                starttime
+                endtime
+                activity_type
+                grouping_type
+                client_tickets{
+                    clientid
+                    clientname
+                    clientphonenumber
+                    tickets{
+                        ticketid
+                    }
+                }
+            }
+        }
+    }
+`
+
+// fetch_ticket_available_plan_for_clientid_and_lessontypes
+export const FETCH_TICKET_AVAILABLE_PLAN_FOR_CLIENTID_AND_LESSONTYPES = gql`
+    query($clientid: Int!, $activity_type: String!, $grouping_type:String!, $excluded_ticket_id_arr: [Int]){
+        fetch_ticket_available_plan_for_clientid_and_lessontypes(clientid:$clientid, activity_type: $activity_type, grouping_type: $grouping_type, excluded_ticket_id_arr: $excluded_ticket_id_arr ){
+            success
+            msg
+            plans{
+                planid
+                plan_total_rounds
+                per_ticket_cost
+                fastest_expiring_ticket_expire_time
+                ticket_id_arr
+            }
+        }
+    }
+`
+
+// change_lesson_overall
+export const CHANGE_NORMAL_LESSON_OVERALL = gql`
+
+    
+
+    mutation($client_tickets: [clientTickets!], $lessonid: Int!, $instructorid: Int!, $starttime:String!, $endtime: String!){
+        change_lesson_overall(lessonid:$lessonid, client_tickets: $client_tickets, starttime: $starttime, endtime:$endtime, instructorid: $instructorid){
+            success
+            msg
+
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
