@@ -1152,6 +1152,25 @@ module.exports = {
                 const existing_starttime = res.rows[0].starttime
                 const existing_endtime = res.rows[0].endtime
 
+                // check # of clients is acceptable for grouping type
+                if (grouping_type === 'INDIVIDUAL' && args.client_tickets.length !== 1) {
+                    throw {
+                        detail: 'invalid client number for individual'
+                    }
+                }
+
+                if (grouping_type === 'SEMI' && args.client_tickets.length !== 2) {
+                    throw {
+                        detail: 'invalid client number for semi'
+                    }
+                }
+
+                if (grouping_type === 'GROUP' && args.client_tickets.length < 1) {
+                    throw {
+                        detail: 'invalid client number for group'
+                    }
+                }
+
 
                 // check schedule overlap exist among instructor and clients
 
