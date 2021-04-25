@@ -559,11 +559,14 @@ const FETCH_INSTRUCTOR_LEVEL_INFO = gql`
             info_list {
                 id
                 level_string
+                active 
+                non_group_lesson_pay_percentage
+                group_lesson_perhour_payment
+                group_lesson_perhour_penalized_payment
             }
         }
     }
 `
-
 
 const UPDATE_INSTRUCTOR_LEVEL = gql`
     mutation ($id:Int!, $level_string: String!){

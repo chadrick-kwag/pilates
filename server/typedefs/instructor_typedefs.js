@@ -23,6 +23,10 @@ type SuccessAndInstructorStatResult{
 type InstructorLevel{
     level_string: String
     id: Int
+    active: Boolean
+    non_group_lesson_pay_percentage: Float
+    group_lesson_perhour_payment: Int
+    group_lesson_perhour_penalized_payment: Int
 }
 
 type SuccessAndInstructorLevels{
