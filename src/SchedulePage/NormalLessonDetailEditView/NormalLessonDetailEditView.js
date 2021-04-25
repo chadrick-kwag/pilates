@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
 import { DateTime, Duration } from 'luxon'
-import { Button, Menu, MenuItem, Table, TableRow, TableCell, Dialog, Chip, DialogActions, DialogContent, Select, Box, CircularProgress } from '@material-ui/core'
-import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
-
-import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
-import koLocale from "date-fns/locale/ko";
-import DateFnsUtils from "@date-io/date-fns";
 
 import BaseView from './BaseView'
 import AddClientView from './AddClientView'
@@ -18,10 +12,6 @@ import { QUERY_LESSON_DETAIL_WITH_LESSONID, CHANGE_NORMAL_LESSON_OVERALL } from 
 import ClientTicketMangePage from './ClientTicketManagePage/Container'
 
 export default function NormalLessonDetailEditView(props) {
-
-    console.log('NormalLessonDetailEditView props')
-    console.log(props)
-
 
     const [instructor, setInstructor] = useState({
         name: props.data.instructorname,
@@ -125,8 +115,7 @@ export default function NormalLessonDetailEditView(props) {
 
 
     if (viewMode === 'base') {
-        console.log('inside viewmode base')
-        console.log(clientsAndTickets)
+        
         return <BaseView instructor={props.instructor}
             clientsAndTickets={clientsAndTickets}
             activity_type={activityType}
@@ -145,18 +134,9 @@ export default function NormalLessonDetailEditView(props) {
 
     if (viewMode === 'add_client') {
         return <AddClientView onCancel={() => setViewMode('base')} onDone={d => {
-            console.log('selected add client')
-            console.log(d)
             const _d = d
             _d.tickets=[]
             const new_clientsAndTickets = [...clientsAndTickets, _d]
-
-            console.log('new_clientsAndTickets')
-            console.log(new_clientsAndTickets)
-            // const newclients = [...clients]
-            // newclients.push(d)
-
-            // setClients(newclients)
 
             setClientsAndTickets(new_clientsAndTickets)
             setViewMode('base')

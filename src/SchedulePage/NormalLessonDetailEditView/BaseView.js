@@ -16,16 +16,21 @@ import ClientTicketChip from './ClientTicketChip'
 
 export default function BaseView(props) {
 
-    console.log('BaseView props')
-    console.log(props)
-
 
     const check_request_possible = () => {
 
-        console.log('check_request_possible')
-        console.log(props.clientsAndTickets)
-
+    
         if (props.clientsAndTickets === null) {
+            return false
+        }
+
+        // if durationHours is zero, then something is wrong
+        if(props.durationHours<1){
+            return false
+        }
+
+        // add least one client should exist
+        if(props.clientsAndTickets.length<1){
             return false
         }
 
@@ -33,8 +38,6 @@ export default function BaseView(props) {
         const durationHours = props.durationHours
         for (let i = 0; i < props.clientsAndTickets.length; i++) {
             const ct = props.clientsAndTickets[i]
-            console.log('ct')
-            console.log(ct)
 
             if (ct.tickets.length !== durationHours) {
                 console.log(`duration: ${durationHours}, tickets length: ${ct.tickets.length}`)
@@ -88,9 +91,6 @@ export default function BaseView(props) {
                                             // remove client
 
                                             new_client_tickets.splice(i, 1)
-
-                                            console.log('new new_client_tickets')
-                                            console.log(new_client_tickets)
 
                                             props.setClientsAndTickets(new_client_tickets)
 
