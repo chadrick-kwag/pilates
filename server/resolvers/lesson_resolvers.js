@@ -380,9 +380,29 @@ module.exports = {
 
             try {
 
+                // check if insturctor has level
+                let result = await pgclient.query(`select instructor.level, instructor_level.non_group_lesson_pay_percentage, instructor_level.group_lesson_perhour_payment, instructor_level.group_lesson_perhour_penalized_payment 
+                from instructor
+                left join instructor_level on instructor_level.id = instructor.level where instructor.id = $1`, [args.instructorid])
+
+                console.log(result.rows)
+
+                if (result.rows.length !== 1) {
+                    throw {
+                        detail: 'invalid instructor level for this instructor'
+                    }
+                }
+
+                const non_group_lesson_pay_percentage = parseFloat(result.rows[0].non_group_lesson_pay_percentage)
+                const group_lesson_perhour_payment = result.rows[0].group_lesson_perhour_payment
+                const group_lesson_perhour_penalized_payment = result.rows[0].group_lesson_perhour_penalized_payment
+
+
+
+
                 const data = []
 
-                let result = await pgclient.query(`with C as (select lesson.id, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type, extract(hour from lesson.endtime - lesson.starttime)::int as duration, plan.clientid, client.name as clientname, client.phonenumber as clientphonenumber, array_agg(A.ticketid) as ticket_id_arr from lesson 
+                result = await pgclient.query(`with C as (select lesson.id, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type, extract(hour from lesson.endtime - lesson.starttime)::int as duration, plan.clientid, client.name as clientname, client.phonenumber as clientphonenumber, array_agg(A.ticketid) as ticket_id_arr from lesson 
                 left join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on A.lessonid = lesson.id
                 left join ticket on A.ticketid = ticket.id
                 left join plan on ticket.creator_plan_id = plan.id
@@ -443,13 +463,13 @@ module.exports = {
                     if (gt === 'GROUP') {
                         let per_hour_cost = null
                         if (li.client_tickets.length === 1) {
-                            per_hour_cost = 25000
+                            per_hour_cost = group_lesson_perhour_penalized_payment
                         }
                         else if (li.client_tickets.length > 5) {
-                            per_hour_cost = 60000
+                            per_hour_cost = group_lesson_perhour_payment + 10000
                         }
                         else {
-                            per_hour_cost = 40000
+                            per_hour_cost = group_lesson_perhour_payment
                         }
 
                         totalcost = per_hour_cost * li.duration
@@ -483,6 +503,9 @@ module.exports = {
                             totalcost = totalcost + result.rows[0].totalcost
 
                         }
+
+                        totalcost = Math.ceil(totalcost * non_group_lesson_pay_percentage)
+
 
                     }
 
