@@ -156,7 +156,25 @@ class ScheduleViewer extends React.Component {
                 else if (d.lesson_domain === 'normal_lesson') {
 
                     let clients_str = ""
-                    d.client_info_arr.forEach(a => clients_str += a.clientname + ' ')
+                    // get unique client names from client info arr
+                    const unique_client_names = []
+                    const unique_client_ids = []
+
+
+                    for(let i=0;i<d.client_info_arr.length;i++){
+                        const c = d.client_info_arr[i]
+                        if(!unique_client_ids.includes(c.clientid)){
+                            unique_client_names.push(c.clientname)
+                            unique_client_ids.push(c.clientid)
+                        }
+                    }
+
+
+                    // d.client_info_arr.forEach(a => clients_str += a.clientname + ' ')
+
+                    for(let i=0;i<unique_client_names.length;i++){
+                        clients_str += unique_client_names[i] + ' '
+                    }
 
 
                     let title = clients_str + "회원님 / " + d.instructorname + " 강사님"
@@ -208,29 +226,6 @@ class ScheduleViewer extends React.Component {
                         })}
                         data={this.state.view_selected_lesson}
                     />
-                    // return <LessonDetailModal
-                    //     view_selected_lesson={this.state.view_selected_lesson}
-                    //     onCancel={() => this.setState({
-                    //         show_view_modal: false
-                    //     })}
-                    //     onDeleteSuccess={() => {
-                    //         this.setState({
-                    //             show_view_modal: false
-                    //         }, () => {
-                    //             this.fetchdata()
-                    //         })
-                    //     }}
-                    //     onEditSuccess={
-                    //         () => {
-                    //             this.setState({
-                    //                 show_view_modal: false
-                    //             }, () => {
-                    //                 this.fetchdata()
-                    //             })
-                    //         }
-                    //     }
-
-                    // />
                 }
                 else {
 
