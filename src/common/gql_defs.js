@@ -539,8 +539,9 @@ const QUERY_LESSON_DATA_OF_INSTRUCTORID = gql`
                 client_info_arr {
                     id 
                     name
+                    phonenumber
                 }
-                netvalue
+                totalcost
                 canceled_time
                 cancel_type
             }

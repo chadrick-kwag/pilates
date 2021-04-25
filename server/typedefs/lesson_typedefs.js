@@ -60,6 +60,7 @@ type query_lesson_return {
 type stat_lesson_client_info {
     id: Int
     name: String
+    phonenumber: String
 }
 
 type stat_lesson_info {
@@ -69,7 +70,7 @@ type stat_lesson_info {
     activity_type: String
     grouping_type: String
     client_info_arr : [stat_lesson_client_info]
-    netvalue: Int
+    totalcost: Int
     canceled_time: String
     cancel_type: String
 }
