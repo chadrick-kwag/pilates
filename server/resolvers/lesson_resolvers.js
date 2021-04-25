@@ -7,6 +7,8 @@ const {
     incoming_time_string_to_postgres_epoch_time
 } = require('./common')
 
+const ERRCODES = require('../../src/common/errcode')
+
 module.exports = {
 
     Query: {
@@ -389,13 +391,31 @@ module.exports = {
 
                 if (result.rows.length !== 1) {
                     throw {
+
+                        detail: 'no instructor found'
+                    }
+                }
+
+                if (result.rows[0].level === null) {
+                    throw {
+                        errcode: ERRCODES.INSTRUCTOR_HAS_NO_LEVEL.code,
                         detail: 'invalid instructor level for this instructor'
                     }
                 }
 
+
+
+
                 const non_group_lesson_pay_percentage = parseFloat(result.rows[0].non_group_lesson_pay_percentage)
                 const group_lesson_perhour_payment = result.rows[0].group_lesson_perhour_payment
                 const group_lesson_perhour_penalized_payment = result.rows[0].group_lesson_perhour_penalized_payment
+
+
+                if (non_group_lesson_pay_percentage === null || group_lesson_perhour_payment === null || group_lesson_perhour_penalized_payment === null) {
+                    throw {
+                        detail: 'percentage or payment not defined'
+                    }
+                }
 
 
 
@@ -550,7 +570,8 @@ module.exports = {
 
                 return {
                     success: false,
-                    msg: err.detail
+                    msg: e.detail,
+                    errcode: e.errcode
                 }
 
             }

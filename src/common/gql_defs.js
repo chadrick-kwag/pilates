@@ -529,6 +529,7 @@ const QUERY_LESSON_DATA_OF_INSTRUCTORID = gql`
     query ($instructorid: Int!, $search_starttime:String!, $search_endtime: String!){
         query_lesson_data_of_instructorid(instructorid:$instructorid, search_starttime: $search_starttime, search_endtime: $search_endtime){
             success
+            errcode
             msg
             lesson_info_arr{
                 id

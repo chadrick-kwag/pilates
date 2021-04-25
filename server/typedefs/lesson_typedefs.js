@@ -77,6 +77,7 @@ type stat_lesson_info {
 
 type query_stat_lesson_return {
     success: Boolean
+    errcode: Int
     msg: String
     lesson_info_arr: [stat_lesson_info]
 }
