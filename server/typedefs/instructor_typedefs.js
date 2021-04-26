@@ -1,4 +1,4 @@
-module.exports=`
+module.exports = `
 type Query{
     
     fetch_instructors: SuccessAndInstructors
@@ -21,6 +21,7 @@ type SuccessAndInstructorStatResult{
 }
 
 type InstructorLevel{
+    rank: Int
     level_string: String
     id: Int
     active: Boolean
@@ -52,9 +53,9 @@ type Mutation {
     
     update_instructor(id: Int!, name: String!, phonenumber: String!, birthdate: String, validation_date: String, memo: String, address: String, is_apprentice: Boolean, email: String, job: String, level: Int, gender: String): SuccessResult
 
-    update_instructor_level(id:Int!, level_string:String!, active: Boolean!, non_group_lesson_pay_percentage:Float!, group_lesson_perhour_payment: Int!, group_lesson_perhour_penalized_payment: Int!): SuccessResult
+    update_instructor_level(id:Int!, level_string:String!, active: Boolean!, non_group_lesson_pay_percentage:Float!, group_lesson_perhour_payment: Int!, group_lesson_perhour_penalized_payment: Int!, rank:Int!): SuccessResult
     
-    add_instructor_level(level_string:String!, active: Boolean!, non_group_lesson_pay_percentage:Float!, group_lesson_perhour_payment: Int!, group_lesson_perhour_penalized_payment: Int!): SuccessResultWithId
+    add_instructor_level(level_string:String!, active: Boolean!, non_group_lesson_pay_percentage:Float!, group_lesson_perhour_payment: Int!, group_lesson_perhour_penalized_payment: Int!, rank:Int!): SuccessResultWithId
     
     delete_instructor_level(id:Int!): SuccessResult
     

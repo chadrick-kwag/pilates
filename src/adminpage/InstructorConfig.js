@@ -64,6 +64,7 @@ export default function InstructorConfig(props) {
 
             const _var = {
                 id: data.id,
+                rank: parseInt(data.rank),
                 level_string: data.level_string,
                 active: data.active,
                 non_group_lesson_pay_percentage: parseFloat(data.non_group_lesson_pay_percentage),
@@ -123,6 +124,7 @@ export default function InstructorConfig(props) {
 
         const _var = {
             id: data.id,
+            rank: parseInt(data.rank),
             level_string: data.level_string,
             active: data.active,
             non_group_lesson_pay_percentage: parseFloat(data.non_group_lesson_pay_percentage),
@@ -209,6 +211,7 @@ export default function InstructorConfig(props) {
                     }}
 
                     columns={[
+                        { title: '랭크', field: 'rank', type: 'int' },
                         { title: "등급이름", field: "level_string" },
                         {
                             title: "활성", field: 'active', type: 'boolean', initialEditValue: true, editComponent: p => {

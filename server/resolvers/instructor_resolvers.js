@@ -97,7 +97,7 @@ module.exports = {
             console.log('fetch_instructor_level_info')
             console.log(args)
             try {
-                let result = await pgclient.query(`select id, level_string, active, non_group_lesson_pay_percentage::float, group_lesson_perhour_payment, group_lesson_perhour_penalized_payment from instructor_level`)
+                let result = await pgclient.query(`select id, rank, level_string, active, non_group_lesson_pay_percentage::float, group_lesson_perhour_payment, group_lesson_perhour_penalized_payment from instructor_level`)
 
                 return {
                     success: true,
@@ -111,21 +111,6 @@ module.exports = {
                     msg: err.detail
                 }
             }
-
-            // let result = await pgclient.query(`select id, level_string, active, non_group_lesson_pay_percentage::float, group_lesson_perhour_payment, group_lesson_perhour_penalized_payment from instructor_level`).then(res=>{
-            //     return {
-            //         success: true,
-            //         info_list: res.rows
-            //     }
-            // }).catch(e=>{
-            //     console.log(e)
-            //     return {
-            //         success: false,
-            //         msg: 'query error'
-            //     }
-            // })
-
-            // return result
         }
     },
     Mutation: {
@@ -290,8 +275,8 @@ module.exports = {
                 await pgclient.query('begin')
 
                 let result = await pgclient.query(`update instructor_level set level_string=$2, active=$3,
-                non_group_lesson_pay_percentage=$4, group_lesson_perhour_payment=$5, group_lesson_perhour_penalized_payment=$6
-                  where id=$1`, [args.id, args.level_string, args.active, args.non_group_lesson_pay_percentage, args.group_lesson_perhour_payment, args.group_lesson_perhour_penalized_payment])
+                non_group_lesson_pay_percentage=$4, group_lesson_perhour_payment=$5, group_lesson_perhour_penalized_payment=$6, rank=$7
+                  where id=$1`, [args.id, args.level_string, args.active, args.non_group_lesson_pay_percentage, args.group_lesson_perhour_payment, args.group_lesson_perhour_penalized_payment, args.rank])
 
                 await pgclient.query(`commit`)
 
@@ -347,7 +332,7 @@ module.exports = {
 
                 await pgclient.query('begin')
 
-                let result = await pgclient.query(`insert into instructor_level (level_string, active, non_group_lesson_pay_percentage, group_lesson_perhour_payment, group_lesson_perhour_penalized_payment) values ($1, $2, $3, $4, $5) returning id`, [args.level_string, args.active, args.non_group_lesson_pay_percentage, args.group_lesson_perhour_payment, args.group_lesson_perhour_penalized_payment])
+                let result = await pgclient.query(`insert into instructor_level (level_string, active, non_group_lesson_pay_percentage, group_lesson_perhour_payment, group_lesson_perhour_penalized_payment, rank) values ($1, $2, $3, $4, $5, $6) returning id`, [args.level_string, args.active, args.non_group_lesson_pay_percentage, args.group_lesson_perhour_payment, args.group_lesson_perhour_penalized_payment, args.rank])
 
                 if (result.rows.length < 1) {
                     throw {
