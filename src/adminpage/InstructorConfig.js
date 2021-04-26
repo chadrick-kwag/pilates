@@ -277,6 +277,8 @@ export default function InstructorConfig(props) {
                             }
                             else {
                                 alert('delete failed')
+                                fetch_instructor_level()
+                                resolve()
 
                             }
 

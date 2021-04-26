@@ -379,27 +379,43 @@ module.exports = {
             }
         },
         delete_instructor_level: async (parent, args) => {
-            let result = await pgclient.query(`delete from instructor_level where id=$1`, [args.id]).then(res => {
-                if (res.rowCount > 0) {
-                    return {
-                        success: true
+
+            try {
+
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`delete from instructor_level where id=$1 returning id`, [args.id])
+
+                if (result.rows.length !== 1) {
+                    throw {
+                        detail: 'delete affected row not one'
                     }
                 }
-                else {
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                }
+                catch (err) {
                     return {
                         success: false,
-                        msg: "query failed"
+                        msg: err.detail
                     }
                 }
-            }).catch(e => {
-                console.log(e)
+
                 return {
                     success: false,
-                    msg: "query error"
+                    msg: e.detail
                 }
-            })
+            }
 
-            return result
         }
 
     }
