@@ -1,6 +1,7 @@
 import React from 'react'
 import { Form, Button, Table, DropdownButton, Dropdown, ButtonGroup, ToggleButton, Alert } from 'react-bootstrap'
-import { CREATE_INSTRUCTOR_GQL } from '../common/gql_defs'
+import { CircularProgress } from '@material-ui/core'
+import { CREATE_INSTRUCTOR_GQL, FETCH_INSTRUCTOR_LEVEL_INFO } from '../common/gql_defs'
 import { INSTRUCTOR_LEVEL_LIST } from '../common/consts'
 import client from '../apolloclient'
 import { KeyboardDatePicker } from "@material-ui/pickers";
@@ -23,13 +24,39 @@ class CreateInstructorPage extends React.Component {
             level: null,
             validation_date: null,
             is_apprentice: null,
-
+            instructor_level_info_arr: null
         }
 
         this.submitcallback = this.submitcallback.bind(this)
+        this.fetch_instructor_level_info = this.fetch_instructor_level_info.bind(this)
     }
 
+    componentDidMount() {
+        this.fetch_instructor_level_info()
+    }
 
+    fetch_instructor_level_info() {
+
+        client.query({
+            query: FETCH_INSTRUCTOR_LEVEL_INFO,
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.fetch_instructor_level_info.success) {
+                this.setState({
+                    instructor_level_info_arr: res.data.fetch_instructor_level_info.info_list
+                })
+            }
+            else {
+                alert('fetch instructor level fail')
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            alert('fetch instructor level error')
+        })
+
+    }
 
     check_input() {
 
@@ -43,15 +70,15 @@ class CreateInstructorPage extends React.Component {
             return 'invalid phone number'
         }
 
-        if(this.state.birthdate !== null && this.state.birthdate instanceof Date && isNaN(this.state.birthdate)){
+        if (this.state.birthdate !== null && this.state.birthdate instanceof Date && isNaN(this.state.birthdate)) {
             return 'invalid birthdate'
         }
 
-        if(this.state.validation_date !== null && this.state.validation_date instanceof Date && isNaN(this.state.validation_date)){
+        if (this.state.validation_date !== null && this.state.validation_date instanceof Date && isNaN(this.state.validation_date)) {
             return 'invalid validation date'
         }
 
-        
+
 
         return null
     }
@@ -73,9 +100,9 @@ class CreateInstructorPage extends React.Component {
             address: this.state.address,
             gender: this.state.gender,
             memo: this.state.memo,
-            birthdate: this.state.birthdate===null? null : this.state.birthdate.toUTCString(),
+            birthdate: this.state.birthdate === null ? null : this.state.birthdate.toUTCString(),
             email: this.state.email,
-            validation_date: this.state.validation_date===null? null : this.state.validation_date.toUTCString(),
+            validation_date: this.state.validation_date === null ? null : this.state.validation_date.toUTCString(),
             level: this.state.level,
             is_apprentice: this.state.is_apprentice
 
@@ -146,22 +173,26 @@ class CreateInstructorPage extends React.Component {
                     </tr>
                     <tr>
                         <td>레벨</td>
-                        <td><DropdownButton title={this.state.level == null ? 'select' : this.state.level}>
-                            {INSTRUCTOR_LEVEL_LIST.map(d => <Dropdown.Item onClick={e => this.setState({
-                                level: d
+                        <td><DropdownButton title={this.state.level == null ? 'select' : (() => {
+                            // find level string of instructor level info which has id of this.state.level
+                            for (let i = 0; i < this.state.instructor_level_info_arr.length; i++) {
+                                if (this.state.instructor_level_info_arr[i].id === this.state.level) {
+                                    return this.state.instructor_level_info_arr[i].level_string
+                                }
+                            }
+                        })()}>
+                            {this.state.instructor_level_info_arr === null ? <Dropdown.Item><CircularProgress /></Dropdown.Item> : this.state.instructor_level_info_arr.filter(x => x.active).map(d => <Dropdown.Item onClick={e => this.setState({
+                                level: d.id
                             })}>
-                                {d}
+                                {d.level_string}
                             </Dropdown.Item>)}
+
                         </DropdownButton></td>
                     </tr>
                     <tr>
                         <td>생년월일</td>
                         <td>
-                            {/* <Form.Control value={this.state.birthdate} onChange={e => {
-                            this.setState({
-                                birthdate: e.target.value
-                            })
-                        }} /> */}
+
                             <KeyboardDatePicker
                                 placeholder="19901127"
                                 value={this.state.birthdate}
@@ -275,8 +306,8 @@ class CreateInstructorPage extends React.Component {
                 <Button onClick={e => this.props.onCancelClick?.()}>취소</Button>
                 <Button onClick={e => this.submitcallback?.()}>생성</Button>
             </div>
-            
-            
+
+
         </div>
     }
 }
