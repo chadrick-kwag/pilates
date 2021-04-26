@@ -7,7 +7,7 @@ import MaterialTable from "material-table";
 
 import { FETCH_INSTRUCTOR_LEVEL_INFO, ADD_INSTRUCTOR_LEVEL, UPDATE_INSTRUCTOR_LEVEL, DELETE_INSTRUCTOR_LEVEL } from '../common/gql_defs'
 
-
+import { CircularProgress, Switch } from '@material-ui/core'
 import { forwardRef } from 'react';
 
 import AddBox from '@material-ui/icons/AddBox';
@@ -56,25 +56,48 @@ export default function InstructorConfig(props) {
         level_info_arr: []
     })
 
-    const add_instructor_level = async (level_string) => {
-        let res = await client.query({
-            query: ADD_INSTRUCTOR_LEVEL,
-            variables: {
-                level_string: level_string
-            },
-            fetchPolicy: 'no-cache'
-        })
+    const [levelInfoArr, setLevelInfoArr] = useState(null)
 
+    const add_instructor_level = async (data) => {
 
+        try {
 
-        console.log(res)
+            const _var = {
+                id: data.id,
+                level_string: data.level_string,
+                active: data.active,
+                non_group_lesson_pay_percentage: parseFloat(data.non_group_lesson_pay_percentage),
+                group_lesson_perhour_payment: parseInt(data.group_lesson_perhour_payment),
+                group_lesson_perhour_penalized_payment: parseInt(data.group_lesson_perhour_penalized_payment)
 
-        if (res.data.add_instructor_level.success) {
-            return res.data.add_instructor_level.id
+            }
+
+            console.log('var')
+            console.log(_var)
+
+            let res = await client.query({
+                query: ADD_INSTRUCTOR_LEVEL,
+                variables: _var,
+                fetchPolicy: 'no-cache'
+            })
+
+            console.log(res)
+
+            if (res.data.add_instructor_level.success) {
+                // return res.data.add_instructor_level.id
+                return true
+            }
+            else {
+                return false
+            }
         }
-        else {
-            return null
+        catch (e) {
+            console.log(e)
+            console.log(JSON.stringify(e))
+
+            return false
         }
+
 
     }
 
@@ -94,22 +117,41 @@ export default function InstructorConfig(props) {
         return false
     }
 
-    const update_instructor_level = async (id, level_string) => {
+    const update_instructor_level = async (data) => {
 
-        let res = await client.query({
-            query: UPDATE_INSTRUCTOR_LEVEL,
-            variables: {
-                id: id,
-                level_string: level_string
-            },
-            fetchPolicy: 'no-cache'
-        })
+        console.log('inside update_instructor_level')
 
-        if (res.data.update_instructor_level.success) {
-            return true
+        const _var = {
+            id: data.id,
+            level_string: data.level_string,
+            active: data.active,
+            non_group_lesson_pay_percentage: parseFloat(data.non_group_lesson_pay_percentage),
+            group_lesson_perhour_payment: parseInt(data.group_lesson_perhour_payment),
+            group_lesson_perhour_penalized_payment: parseInt(data.group_lesson_perhour_penalized_payment)
+
         }
 
-        return false
+        console.log('_var')
+        console.log(_var)
+        try {
+            let res = await client.query({
+                query: UPDATE_INSTRUCTOR_LEVEL,
+                variables: _var,
+                fetchPolicy: 'no-cache'
+            })
+
+            if (res.data.update_instructor_level.success) {
+                return true
+            }
+
+            return false
+        }
+        catch (e) {
+            console.log(e)
+            console.log(JSON.stringify(e))
+            return false
+        }
+
     }
 
     const fetch_instructor_level = () => {
@@ -120,9 +162,9 @@ export default function InstructorConfig(props) {
         }).then(res => {
             console.log(res)
             if (res.data.fetch_instructor_level_info.success) {
-                let new_state = _.cloneDeep(state)
-                new_state.level_info_arr = res.data.fetch_instructor_level_info.info_list
-                setState(new_state)
+
+
+                setLevelInfoArr(res.data.fetch_instructor_level_info.info_list)
             }
             else {
                 alert('instructor lefvel info fetch failed')
@@ -157,7 +199,7 @@ export default function InstructorConfig(props) {
             <div>
                 <h2>강사 레벨 설정</h2>
 
-                <MaterialTable
+                {levelInfoArr === null ? <CircularProgress /> : <MaterialTable
                     icons={tableIcons}
                     options={{
                         showTitle: false,
@@ -167,49 +209,57 @@ export default function InstructorConfig(props) {
                     }}
 
                     columns={[
-                        { title: "level string", field: "level_string" },
-
+                        { title: "등급이름", field: "level_string" },
+                        {
+                            title: "활성", field: 'active', type: 'boolean', editComponent: p => {
+                                console.log(p)
+                                return <Switch checked={p.value} onChange={e => {
+                                    console.log(e)
+                                    p.onChange(e.target.checked)
+                                }} />
+                            }
+                        },
+                        { title: '개별/세미 수업 강사료 지급%', field: 'non_group_lesson_pay_percentage', type: 'float' },
+                        { title: '그룹수업 회당 강사료', field: 'group_lesson_perhour_payment', type: 'int' },
+                        { title: '그룹수업 1인수업시 회당 강사료', field: 'group_lesson_perhour_penalized_payment', type: 'int' },
                     ]}
-                    data={state.level_info_arr}
+                    data={levelInfoArr}
                     editable={{
                         onRowAdd: newdata => new Promise(async (resolve, reject) => {
                             console.log(newdata)
 
-                            let returnid = await add_instructor_level(newdata.level_string)
+                            let ret = await add_instructor_level(newdata)
 
-                            if (returnid !== null) {
-
-                                newdata.id = returnid
-
-                                let new_level_info_arr = state.level_info_arr.concat(newdata)
-                                let new_state = _.cloneDeep(state)
-                                new_state.level_info_arr = new_level_info_arr
-                                setState(new_state)
+                            if (ret) {
+                                setLevelInfoArr(null)
+                                fetch_instructor_level()
                                 resolve()
+
                             }
                             else {
                                 alert('add failed')
+                                fetch_instructor_level()
+                                resolve()
                             }
-
 
                         }),
                         onRowUpdate: (newdata, olddata) => new Promise(async (resolve, reject) => {
 
-                            let res = await update_instructor_level(newdata.id, newdata.level_string)
+                            console.log('onRowUpdate')
+                            console.log(newdata)
+
+                            let res = await update_instructor_level(newdata)
                             console.log(res)
                             if (res) {
-                                let new_level_info_arr = [...state.level_info_arr]
-                                let index = olddata.tableData.id
-                                new_level_info_arr[index] = newdata
-                                let new_state = _.cloneDeep(state)
-                                new_state.level_info_arr = new_level_info_arr
-                                setState(new_state)
 
-                                console.log(new_state)
+                                setLevelInfoArr(null)
+                                fetch_instructor_level()
                                 resolve()
                             }
                             else {
                                 alert('update failed')
+                                fetch_instructor_level()
+                                resolve()
                             }
 
 
@@ -221,24 +271,20 @@ export default function InstructorConfig(props) {
                             let res = delete_instructor_level(olddata.id)
 
                             if (res) {
-
-                                let index = olddata.tableData.id
-
-                                let new_level_info_arr = [...state.level_info_arr]
-                                new_level_info_arr.splice(index, 1)
-                                let new_state = _.cloneDeep(state)
-                                new_state.level_info_arr = new_level_info_arr
-                                setState(new_state)
+                                setLevelInfoArr(null)
+                                fetch_instructor_level()
                                 resolve()
                             }
-                            else{
+                            else {
                                 alert('delete failed')
-                                
+
                             }
 
                         })
                     }}
-                />
+                />}
+
+
 
             </div>
         </div>
