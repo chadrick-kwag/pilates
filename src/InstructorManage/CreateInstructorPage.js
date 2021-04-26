@@ -181,7 +181,9 @@ class CreateInstructorPage extends React.Component {
                                 }
                             }
                         })()}>
-                            {this.state.instructor_level_info_arr === null ? <Dropdown.Item><CircularProgress /></Dropdown.Item> : this.state.instructor_level_info_arr.filter(x => x.active).map(d => <Dropdown.Item onClick={e => this.setState({
+                            {this.state.instructor_level_info_arr === null ? <Dropdown.Item><CircularProgress /></Dropdown.Item> : this.state.instructor_level_info_arr.filter(x => x.active).sort((a, b) => {
+                                return a.rank - b.rank
+                            }).map(d => <Dropdown.Item onClick={e => this.setState({
                                 level: d.id
                             })}>
                                 {d.level_string}
