@@ -211,7 +211,7 @@ export default function InstructorConfig(props) {
                     columns={[
                         { title: "등급이름", field: "level_string" },
                         {
-                            title: "활성", field: 'active', type: 'boolean', editComponent: p => {
+                            title: "활성", field: 'active', type: 'boolean', initialEditValue: true, editComponent: p => {
                                 console.log(p)
                                 return <Switch checked={p.value} onChange={e => {
                                     console.log(e)
