@@ -74,7 +74,7 @@ const PREDEFINED_PLANS = {
             },
             {
                 rounds: 12,
-                cost: 324000,
+                cost: 320000,
                 expire_countdown: '3개월',
                 expire_days: 90
             },
