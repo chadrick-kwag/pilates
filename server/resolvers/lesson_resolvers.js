@@ -1,3 +1,4 @@
+const { duration } = require('@material-ui/core');
 const moment = require('moment-timezone');
 const pgclient = require('../pgclient')
 const {
@@ -5,6 +6,8 @@ const {
     parse_incoming_gender_str,
     incoming_time_string_to_postgres_epoch_time
 } = require('./common')
+
+const ERRCODES = require('../../src/common/errcode')
 
 module.exports = {
 
@@ -371,47 +374,245 @@ module.exports = {
             return result
         },
         query_lesson_data_of_instructorid: async (parent, args) => {
-            console.log('query_lesson_data_of_instructorid')
 
+
+
+            console.log('query_lesson_data_of_instructorid')
             console.log(args)
 
-            let _args = [args.instructorid, new Date(args.search_starttime), new Date(args.search_endtime)]
+            try {
 
-            console.log(_args)
+                // check if insturctor has level
+                let result = await pgclient.query(`select instructor.level, instructor_level.non_group_lesson_pay_percentage, instructor_level.group_lesson_perhour_payment, instructor_level.group_lesson_perhour_penalized_payment 
+                from instructor
+                left join instructor_level on instructor_level.id = instructor.level where instructor.id = $1`, [args.instructorid])
 
-            let result = await pgclient.query(`WITH C AS (select lesson.id as id, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type,
-                lesson.canceled_time, lesson.cancel_type,
-                array_agg(json_build_object('id', B.clientid, 'name', client.name )) filter(where B.clientid is not null) as client_info_arr, sum(case when B.percost is null then 0 else B.percost end) as netvalue
-                from lesson 
-                left join (select DISTINCT ON (ticketid) * from assign_ticket  order by ticketid, created desc) as A on A.lessonid = lesson.id
-                left join (select ticket.id, plan.clientid as clientid, plan.totalcost / plan.rounds as percost from ticket left join plan on ticket.creator_plan_id = plan.id) as B on B.id = A.ticketid
-                left join client on B.clientid = client.id
-                where lesson.instructorid = $1
-				and A.canceled_time is null
-                and (lesson.cancel_type is null or lesson.cancel_type!='INSTRUCTOR_REQUEST') 
-                and tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3)
-                GROUP BY lesson.id)
+                console.log(result.rows)
+
+                if (result.rows.length !== 1) {
+                    throw {
+
+                        detail: 'no instructor found'
+                    }
+                }
+
+                if (result.rows[0].level === null) {
+                    throw {
+                        errcode: ERRCODES.INSTRUCTOR_HAS_NO_LEVEL.code,
+                        detail: 'invalid instructor level for this instructor'
+                    }
+                }
+
+
+
+
+                const non_group_lesson_pay_percentage = parseFloat(result.rows[0].non_group_lesson_pay_percentage)
+                const group_lesson_perhour_payment = result.rows[0].group_lesson_perhour_payment
+                const group_lesson_perhour_penalized_payment = result.rows[0].group_lesson_perhour_penalized_payment
+
+
+                if (non_group_lesson_pay_percentage === null || group_lesson_perhour_payment === null || group_lesson_perhour_penalized_payment === null) {
+                    throw {
+                        detail: 'percentage or payment not defined'
+                    }
+                }
+
+
+
+
+                const data = []
+
+                result = await pgclient.query(`with C as (select lesson.id, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type, extract(hour from lesson.endtime - lesson.starttime)::int as duration, plan.clientid, client.name as clientname, client.phonenumber as clientphonenumber, array_agg(A.ticketid) as ticket_id_arr from lesson 
+                left join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on A.lessonid = lesson.id
+                left join ticket on A.ticketid = ticket.id
+                left join plan on ticket.creator_plan_id = plan.id
+                left join client on plan.clientid = client.id
+                where instructorid=$1 and lesson.canceled_time is null AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3))
+                group by lesson.id, plan.clientid, client.name, client.phonenumber)
                 
-                
-                select * from C where client_info_arr is not null`, _args).then(res => {
-                console.log(res)
+                select id, activity_type, grouping_type, duration, starttime, endtime,
+                array_agg(json_build_object('clientid', clientid, 'clientname', clientname, 'clientphonenumber', clientphonenumber, 'ticket_id_arr', ticket_id_arr)) as client_tickets
+                from C
+                group by id, starttime, endtime, activity_type, grouping_type, duration`, [args.instructorid, args.search_starttime, args.search_endtime])
+
+                const lesson_info_arr = result.rows
+
+                console.log('lesson_info_arr')
+                console.log(lesson_info_arr)
+
+
+                // for each lesson's tickets, gather it per client and check if it matches durationhours
+                for (let i = 0; i < lesson_info_arr.length; i++) {
+                    const li = lesson_info_arr[i]
+
+                    console.log(li)
+
+                    // gather client info arr
+                    const client_info_arr = []
+
+
+
+                    // check ticket count matches duration
+                    for (let j = 0; j < li.client_tickets.length; j++) {
+                        const tia = li.client_tickets[j]
+                        console.log('tia')
+                        console.log(tia)
+                        if (tia.ticket_id_arr.length !== li.duration) {
+                            throw {
+                                detail: `client ticket count and duration dont match. duration=${li.duration}, client_tickets length=${tia.length}`
+                            }
+                        }
+
+                        // gather client info
+                        client_info_arr.push({
+                            id: tia.clientid,
+                            name: tia.clientname,
+                            phonenumber: tia.clientphonenumber
+                        })
+                    }
+
+                    console.log('client_info_arr')
+                    console.log(client_info_arr)
+
+
+                    const gt = li.grouping_type
+                    const at = li.activity_type
+                    let totalcost = 0
+
+                    // based on grouping type, get total cost
+                    if (gt === 'GROUP') {
+                        let per_hour_cost = null
+                        if (li.client_tickets.length === 1) {
+                            per_hour_cost = group_lesson_perhour_penalized_payment
+                        }
+                        else if (li.client_tickets.length > 5) {
+                            per_hour_cost = group_lesson_perhour_payment + 10000
+                        }
+                        else {
+                            per_hour_cost = group_lesson_perhour_payment
+                        }
+
+                        totalcost = per_hour_cost * li.duration
+                    }
+                    else {
+                        // sum up all ticket costs
+                        totalcost = 0
+
+                        // go through each client and calculate client's cost sum adn
+                        // add that to totalcost
+                        for (let j = 0; j < li.client_tickets.length; j++) {
+
+                            const ct = li.client_tickets[j]
+
+                            const ticket_id_arr = ct.ticket_id_arr
+
+                            console.log('ticket_id_arr')
+                            console.log(ticket_id_arr)
+
+                            result = await pgclient.query(`with A as (select plan.id as id, totalcost, count(ticket.id), totalcost / count(ticket.id) as percost from plan
+                            left join ticket on ticket.creator_plan_id = plan.id
+                            group by plan.id, plan.totalcost),
+                            B as (select unnest($1::int[]) as given_id)
+                            
+                            select sum(percost)::int as totalcost from B
+                            left join ticket on ticket.id = B.given_id
+                            left join A on A.id = ticket.creator_plan_id
+                            `, [ticket_id_arr])
+
+                            console.log(result)
+                            totalcost = totalcost + result.rows[0].totalcost
+
+                        }
+
+                        totalcost = Math.ceil(totalcost * non_group_lesson_pay_percentage)
+
+
+                    }
+
+
+                    console.log('totalcost')
+                    console.log(totalcost)
+
+
+                    // add row to data
+                    let out = {
+                        id: li.id,
+                        starttime: li.starttime,
+                        endtime: li.endtime,
+                        activity_type: at,
+                        grouping_type: gt,
+                        totalcost: totalcost,
+                        client_info_arr: client_info_arr
+
+                    }
+
+                    console.log('out')
+                    console.log(out)
+
+                    data.push(out)
+
+                }
+
+                console.log('data')
+                console.log(data)
+
 
                 return {
                     success: true,
-                    lesson_info_arr: res.rows
+                    lesson_info_arr: data
                 }
-            }).catch(e => {
+
+
+
+            } catch (e) {
+
                 console.log(e)
+
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: e.detail,
+                    errcode: e.errcode
                 }
-            })
 
-            console.log('result')
-            console.log(result)
+            }
 
-            return result
+            // let _args = [args.instructorid, new Date(args.search_starttime), new Date(args.search_endtime)]
+
+            // console.log(_args)
+
+            // let result = await pgclient.query(`WITH C AS (select lesson.id as id, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type,
+            //     lesson.canceled_time, lesson.cancel_type,
+            //     array_agg(json_build_object('id', B.clientid, 'name', client.name )) filter(where B.clientid is not null) as client_info_arr, sum(case when B.percost is null then 0 else B.percost end) as netvalue
+            //     from lesson 
+            //     left join (select DISTINCT ON (ticketid) * from assign_ticket  order by ticketid, created desc) as A on A.lessonid = lesson.id
+            //     left join (select ticket.id, plan.clientid as clientid, plan.totalcost / plan.rounds as percost from ticket left join plan on ticket.creator_plan_id = plan.id) as B on B.id = A.ticketid
+            //     left join client on B.clientid = client.id
+            //     where lesson.instructorid = $1
+            // 	and A.canceled_time is null
+            //     and (lesson.cancel_type is null or lesson.cancel_type!='INSTRUCTOR_REQUEST') 
+            //     and tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3)
+            //     GROUP BY lesson.id)
+
+
+            //     select * from C where client_info_arr is not null`, _args).then(res => {
+            //     console.log(res)
+
+            //     return {
+            //         success: true,
+            //         lesson_info_arr: res.rows
+            //     }
+            // }).catch(e => {
+            //     console.log(e)
+            //     return {
+            //         success: false,
+            //         msg: 'query error'
+            //     }
+            // })
+
+            // console.log('result')
+            // console.log(result)
+
+            // return result
         }
     },
     Mutation: {
@@ -950,6 +1151,25 @@ module.exports = {
                 const existing_instructorid = res.rows[0].instructorid
                 const existing_starttime = res.rows[0].starttime
                 const existing_endtime = res.rows[0].endtime
+
+                // check # of clients is acceptable for grouping type
+                if (grouping_type === 'INDIVIDUAL' && args.client_tickets.length !== 1) {
+                    throw {
+                        detail: 'invalid client number for individual'
+                    }
+                }
+
+                if (grouping_type === 'SEMI' && args.client_tickets.length !== 2) {
+                    throw {
+                        detail: 'invalid client number for semi'
+                    }
+                }
+
+                if (grouping_type === 'GROUP' && args.client_tickets.length < 1) {
+                    throw {
+                        detail: 'invalid client number for group'
+                    }
+                }
 
 
                 // check schedule overlap exist among instructor and clients

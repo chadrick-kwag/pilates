@@ -529,6 +529,7 @@ const QUERY_LESSON_DATA_OF_INSTRUCTORID = gql`
     query ($instructorid: Int!, $search_starttime:String!, $search_endtime: String!){
         query_lesson_data_of_instructorid(instructorid:$instructorid, search_starttime: $search_starttime, search_endtime: $search_endtime){
             success
+            errcode
             msg
             lesson_info_arr{
                 id
@@ -539,8 +540,9 @@ const QUERY_LESSON_DATA_OF_INSTRUCTORID = gql`
                 client_info_arr {
                     id 
                     name
+                    phonenumber
                 }
-                netvalue
+                totalcost
                 canceled_time
                 cancel_type
             }
@@ -556,16 +558,22 @@ const FETCH_INSTRUCTOR_LEVEL_INFO = gql`
             msg
             info_list {
                 id
+                rank
                 level_string
+                active 
+                non_group_lesson_pay_percentage
+                group_lesson_perhour_payment
+                group_lesson_perhour_penalized_payment
             }
         }
     }
 `
 
-
 const UPDATE_INSTRUCTOR_LEVEL = gql`
-    mutation ($id:Int!, $level_string: String!){
-        update_instructor_level(id:$id, level_string:$level_string){
+    mutation ($id:Int!, $rank:Int!,$level_string: String!, $active: Boolean!, $non_group_lesson_pay_percentage: Float!, $group_lesson_perhour_payment: Int!, $group_lesson_perhour_penalized_payment: Int!){
+        update_instructor_level(id:$id, level_string:$level_string, active: $active, non_group_lesson_pay_percentage:$non_group_lesson_pay_percentage, 
+            group_lesson_perhour_payment: $group_lesson_perhour_payment,
+        group_lesson_perhour_penalized_payment: $group_lesson_perhour_penalized_payment , rank:$rank ){
             success
             msg
         }
@@ -573,8 +581,10 @@ const UPDATE_INSTRUCTOR_LEVEL = gql`
 `
 
 const ADD_INSTRUCTOR_LEVEL = gql`
-    mutation ($level_string:String!){
-        add_instructor_level(level_string: $level_string){
+    mutation ($level_string:String!, $active: Boolean!, $non_group_lesson_pay_percentage: Float!, $group_lesson_perhour_payment: Int!, $group_lesson_perhour_penalized_payment: Int!, $rank: Int!){
+        add_instructor_level(level_string: $level_string, active: $active, non_group_lesson_pay_percentage:$non_group_lesson_pay_percentage, 
+            group_lesson_perhour_payment: $group_lesson_perhour_payment,
+        group_lesson_perhour_penalized_payment: $group_lesson_perhour_penalized_payment, rank:$rank){
             success
             msg
             id

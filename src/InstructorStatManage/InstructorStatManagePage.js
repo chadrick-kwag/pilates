@@ -123,7 +123,8 @@ export default function InstructorStatManagePage(props) {
                 <Button disabled={check_view_request_button_disabled()} onClick={_ => {
                     setViewedInstructor(state.selected_instructor)
                     setViewedMonth(state.selected_month)
-                    fetch_month_lesson_data()}}>조회</Button>
+                    fetch_month_lesson_data()
+                }}>조회</Button>
 
             </div>
             <div>
@@ -150,16 +151,16 @@ export default function InstructorStatManagePage(props) {
                                     <tbody>
                                         {state.lesson_data.sort((a, b) => parseInt(a.starttime) - parseInt(b.starttime)).map((d, i) => {
                                             return <tr>
-                                                <td>{i+1}</td>
-                                                <td>{DateTime.fromMillis(parseInt(d.starttime)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')}</td>
+                                                <td>{i + 1}</td>
+                                                <td>{DateTime.fromMillis(parseInt(d.starttime)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')}~{DateTime.fromMillis(parseInt(d.endtime)).setZone('UTC+9').toFormat('HH:mm')}</td>
                                                 <td>{d.client_info_arr.map(a => a.name).join(',')}</td>
                                                 <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
-                                                <td>{numeral(d.netvalue).format('0,0')}</td>
+                                                <td>{numeral(d.totalcost).format('0,0')}</td>
                                             </tr>
                                         })}
                                         <tr>
                                             <td colSpan='4'><div className='row-gravity-right'><span>total</span></div></td>
-                                            <td>{numeral(state.lesson_data.reduce((total, a) => total + parseInt(a.netvalue), 0)).format('0,0')}</td>
+                                            <td>{numeral(state.lesson_data.reduce((total, a) => total + parseInt(a.totalcost), 0)).format('0,0')}</td>
                                         </tr>
                                     </tbody>
                                 </Table>

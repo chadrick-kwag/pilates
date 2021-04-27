@@ -1,15 +1,15 @@
-const pgclient  = require('../pgclient')
+const pgclient = require('../pgclient')
 const {
     parse_incoming_date_utc_string,
     parse_incoming_gender_str,
     incoming_time_string_to_postgres_epoch_time
-}  = require('./common')
+} = require('./common')
 
 module.exports = {
     Query: {
 
-        fetch_instructor_stat: async (parent, args) =>{
-            try{
+        fetch_instructor_stat: async (parent, args) => {
+            try {
                 let result = await pgclient.query(`select count(1) as totalcount from instructor`)
 
                 return {
@@ -19,14 +19,14 @@ module.exports = {
                     }
                 }
             }
-            catch(err){
+            catch (err) {
                 return {
                     success: false,
                     msg: err.detail
                 }
             }
         },
-        
+
         fetch_instructors: async () => {
             let result = await pgclient.query(`select instructor.id as id,name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, instructor_level.level_string as level_string, disabled from instructor
             left join instructor_level on level=instructor_level.id
@@ -51,7 +51,7 @@ module.exports = {
 
             return result
         },
-        
+
         search_instructor_with_name: async (parent, args, context, info) => {
             let results = await pgclient.query("select * from instructor where name=$1", [args.name]).then(res => {
                 return res.rows
@@ -60,30 +60,30 @@ module.exports = {
 
             return results
         },
-        
-        fetch_instructor_with_id: async (parent, args)=>{
+
+        fetch_instructor_with_id: async (parent, args) => {
 
             console.log("inside fetch instructor with id")
 
             console.log(args)
 
-            let result = await pgclient.query('select instructor.id as id, name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, instructor_level.level_string as level_string, disabled from instructor left join instructor_level on level = instructor_level.id where instructor.id=$1', [args.id]).then(res=>{
+            let result = await pgclient.query('select instructor.id as id, name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, instructor_level.level_string as level_string, disabled from instructor left join instructor_level on level = instructor_level.id where instructor.id=$1', [args.id]).then(res => {
 
-                if(res.rowCount==1){
+                if (res.rowCount == 1) {
                     return {
                         success: true,
                         instructor: res.rows[0]
                     }
                 }
-                else{
+                else {
                     return {
                         success: false,
                         msg: "rowcount not 1"
                     }
                 }
 
-                
-            }).catch(e=>{
+
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
@@ -93,28 +93,28 @@ module.exports = {
 
             return result
         },
-        fetch_instructor_level_info: async (parent, args)=>{
+        fetch_instructor_level_info: async (parent, args) => {
             console.log('fetch_instructor_level_info')
             console.log(args)
+            try {
+                let result = await pgclient.query(`select id, rank, level_string, active, non_group_lesson_pay_percentage::float, group_lesson_perhour_payment, group_lesson_perhour_penalized_payment from instructor_level`)
 
-            let result = await pgclient.query(`select id, level_string from instructor_level where active=true`).then(res=>{
                 return {
                     success: true,
-                    info_list: res.rows
+                    info_list: result.rows
                 }
-            }).catch(e=>{
-                console.log(e)
+
+            }
+            catch (err) {
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: err.detail
                 }
-            })
-
-            return result
+            }
         }
     },
     Mutation: {
-        
+
         create_instructor: async (parent, args) => {
 
             console.log(args)
@@ -164,12 +164,12 @@ module.exports = {
             console.log(args)
 
             let validation_date = args.validation_date
-            if(validation_date!==null){
+            if (validation_date !== null) {
                 validation_date = incoming_time_string_to_postgres_epoch_time(validation_date)
             }
 
             let birthdate = args.birthdate
-            if(birthdate !== null){
+            if (birthdate !== null) {
                 birthdate = incoming_time_string_to_postgres_epoch_time(birthdate)
             }
 
@@ -198,20 +198,20 @@ module.exports = {
 
             return ret
         },
-        disable_instructor_by_id: async (parent, args)=>{
-            let result = await pgclient.query('update instructor set disabled=true where id=$1',[args.id]).then(res=>{
-                if(res.rowCount==1){
+        disable_instructor_by_id: async (parent, args) => {
+            let result = await pgclient.query('update instructor set disabled=true where id=$1', [args.id]).then(res => {
+                if (res.rowCount == 1) {
                     return {
                         success: true
                     }
                 }
-                else{
+                else {
                     return {
                         success: false,
                         msg: "row count not 1"
                     }
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
@@ -221,20 +221,20 @@ module.exports = {
 
             return result
         },
-        able_instructor_by_id: async (parent, args)=>{
-            let result = await pgclient.query('update instructor set disabled=false where id=$1',[args.id]).then(res=>{
-                if(res.rowCount==1){
+        able_instructor_by_id: async (parent, args) => {
+            let result = await pgclient.query('update instructor set disabled=false where id=$1', [args.id]).then(res => {
+                if (res.rowCount == 1) {
                     return {
                         success: true
                     }
                 }
-                else{
+                else {
                     return {
                         success: false,
                         msg: "row count not 1"
                     }
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
@@ -244,79 +244,163 @@ module.exports = {
 
             return result
         },
-        update_instructor_level: async (parent, args)=>{
-            let result = await pgclient.query(`update instructor_level set level_string=$2 where id=$1`,[args.id, args.level_string]).then(res=>{
-                if(res.rowCount>0){
-                    return {
-                        success: true
-                    }
-                }
-                else{
+        update_instructor_level: async (parent, args) => {
+            try {
+                console.log('update_instructor_level')
+                console.log(args)
+
+                // check arg values
+                if (args.non_group_lesson_pay_percentage < 0 || args.non_group_lesson_pay_percentage > 1) {
                     return {
                         success: false,
-                        msg: 'row count zero'
+                        msg: 'invalid non_group_lesson_pay_percentage value'
                     }
                 }
-            }).catch(e=>{
+
+                if (args.group_lesson_perhour_payment < 0) {
+                    return {
+                        success: false,
+                        msg: 'invalid group_lesson_perhour_payment value'
+                    }
+                }
+
+                if (args.group_lesson_perhour_penalized_payment < 0) {
+                    return {
+                        success: false,
+                        msg: 'invalid group_lesson_perhour_penalized_payment value'
+                    }
+                }
+
+
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`update instructor_level set level_string=$2, active=$3,
+                non_group_lesson_pay_percentage=$4, group_lesson_perhour_payment=$5, group_lesson_perhour_penalized_payment=$6, rank=$7
+                  where id=$1`, [args.id, args.level_string, args.active, args.non_group_lesson_pay_percentage, args.group_lesson_perhour_payment, args.group_lesson_perhour_penalized_payment, args.rank])
+
+                await pgclient.query(`commit`)
+
+                return {
+                    success: true
+                }
+            } catch (e) {
                 console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                }
+                catch (err) {
+                    console.log(err)
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: e.detail
                 }
-            })
+            }
 
-            return result
         },
         add_instructor_level: async (parent, args) => {
-            let result = await pgclient.query(`insert into instructor_level (level_string, active) values ($1, $2) returning id`, [args.level_string, true]).then(res=>{
-                if(res.rowCount>0){
 
-                    console.log(res.rows)
-                    let returnid = res.rows[0]['id']
+            // check args
 
-                    return {
-                        success: true,
-                        id: returnid
-                    }
-                }
-                else{
-                    return {
-                        success: false,
-                        msg: "insert failed"
-                    }
-                }
-            }).catch(e=>{
-                console.log(e)
+            if (args.non_group_lesson_pay_percentage < 0 || args.non_group_lesson_pay_percentage > 1) {
                 return {
                     success: false,
-                    msg: "query error"
+                    msg: 'invalid value for non_group_lesson_pay_percentage'
                 }
-            })
+            }
 
-            return result
+            if (args.group_lesson_perhour_payment < 0) {
+                return {
+                    success: false,
+                    msg: 'invalid value for group_lesson_perhour_payment'
+                }
+            }
+
+            if (args.group_lesson_perhour_penalized_payment < 0) {
+                return {
+                    success: false,
+                    msg: 'invalid value for group_lesson_perhour_penalized_payment'
+                }
+            }
+
+            try {
+
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`insert into instructor_level (level_string, active, non_group_lesson_pay_percentage, group_lesson_perhour_payment, group_lesson_perhour_penalized_payment, rank) values ($1, $2, $3, $4, $5, $6) returning id`, [args.level_string, args.active, args.non_group_lesson_pay_percentage, args.group_lesson_perhour_payment, args.group_lesson_perhour_penalized_payment, args.rank])
+
+                if (result.rows.length < 1) {
+                    throw {
+                        detail: 'insert done row is none'
+                    }
+                }
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+                try {
+                    await pgclient.query('ROLLBACK')
+                }
+                catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
         },
-        delete_instructor_level: async (parent, args) =>{
-            let result = await pgclient.query(`delete from instructor_level where id=$1`, [args.id]).then(res=>{
-                if(res.rowCount>0){
-                    return {
-                        success: true
+        delete_instructor_level: async (parent, args) => {
+
+            try {
+
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`delete from instructor_level where id=$1 returning id`, [args.id])
+
+                if (result.rows.length !== 1) {
+                    throw {
+                        detail: 'delete affected row not one'
                     }
                 }
-                else{
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                }
+                catch (err) {
                     return {
                         success: false,
-                        msg: "query failed"
+                        msg: err.detail
                     }
                 }
-            }).catch(e=>{
-                console.log(e)
+
                 return {
                     success: false,
-                    msg: "query error"
+                    msg: e.detail
                 }
-            })
+            }
 
-            return result
         }
 
     }
