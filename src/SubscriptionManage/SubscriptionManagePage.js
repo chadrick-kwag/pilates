@@ -32,7 +32,7 @@ class SubscriptionManagePage extends React.Component {
             // apolloclient={this.props.apolloclient}
             // />
 
-            mainview = <CreatePlanView onCancel={() => this.setState({ viewmode: 'list' })} />
+            mainview = <CreatePlanView onCancel={() => this.setState({ viewmode: 'list' })} onSuccess={() => this.setState({ viewmode: 'list' })} />
         }
 
 

@@ -12,6 +12,9 @@ import { calculate_days_to_expire_time } from '../../common/date_fns'
 import GuideLineTable from './GuideLineTable'
 import numeral from 'numeral'
 
+import { CREATE_SUBSCRIPTION_GQL } from '../../common/gql_defs'
+import apooloclient from '../../apolloclient'
+
 
 export default function Base(props) {
 
@@ -21,6 +24,50 @@ export default function Base(props) {
     const [totalCost, setTotalCost] = useState(null)
     const [expireDate, setExpireDate] = useState(null)
     const [client, setClient] = useState(null)
+
+
+    const request_create_plan = () => {
+
+
+
+        const selected_at_arr = []
+        for (let a in selectedActivityTypes) {
+            if (selectedActivityTypes[a]) {
+                selected_at_arr.push(a)
+            }
+        }
+
+        const _var = {
+            clientid: client.id,
+            activity_type_arr: selected_at_arr,
+            grouping_type: selectedGroupingType,
+            rounds: ticketCount,
+            totalcost: totalCost,
+            expiredate: expireDate.toUTCString()
+        }
+
+        console.log('_var')
+        console.log(_var)
+
+        apooloclient.mutate({
+            mutation: CREATE_SUBSCRIPTION_GQL,
+            variables: _var,
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.create_subscription.success) {
+                props.onSuccess?.()
+            }
+            else {
+                alert(`create plan failed. msg: ${res.data.create_subscription.msg}`)
+            }
+        }).catch(e => {
+            console.log(e)
+            console.log(JSON.stringify(e))
+            alert(`create plan error`)
+        })
+    }
 
 
     const check_show_guideline_possible = () => {
@@ -220,7 +267,7 @@ export default function Base(props) {
                 <Grid item xs={12}>
                     <DialogActions>
                         <Button onClick={() => props.onCancel?.()}>취소</Button>
-                        <Button disabled={!check_submit_possible()}>생성</Button>
+                        <Button disabled={!check_submit_possible()} onClick={() => request_create_plan()}>생성</Button>
                     </DialogActions>
                 </Grid>
             </Grid>

@@ -409,42 +409,132 @@ module.exports = {
     },
     Mutation: {
         create_subscription: async (parent, args) => {
+            console.log('create_subscrition')
             console.log(args)
 
-            if (args.rounds <= 0) {
+
+            // check args
+            if (args.activity_type_arr.length === 0) {
                 return {
-                    success: false
+                    success: false,
+                    msg: 'no activity type'
                 }
             }
 
-            let expire_date = new Date(args.expiredate)
-
-            let _args = [args.clientid, args.rounds, args.totalcost, args.activity_type, args.grouping_type, args.coupon_backed == "" ? null : args.coupon_backed, expire_date]
-
-            console.log(_args)
-
-            let result = await pgclient.query('select * from create_plan_and_tickets($1, $2 , $3, $4, $5, $6, $7) as (success bool, msg text)', _args).then(res => {
-
-                console.log(res)
-                if (res.rowCount !== 1) {
-                    return {
-                        success: false,
-                        msg: 'row count not 1'
-                    }
-                }
-                else {
-                    return res.rows[0]
-                }
-
-            }).catch(e => {
-                console.log(e)
+            if (args.grouping_type === null || args.grouping_type === '') {
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: 'no grouping type'
                 }
-            })
+            }
 
-            return result
+
+            if (args.rounds <= 0) {
+                return {
+                    success: false,
+                    msg: 'rounds must be > 0'
+                }
+            }
+
+            // calculate percost first.
+            const percost = Math.ceil(args.totalcost / args.rounds)
+
+            if (percost <= 0) {
+                return {
+                    success: false,
+                    msg: 'percost is <=0'
+                }
+            }
+
+            try {
+
+                await pgclient.query(`begin`)
+
+                // first create plan
+
+                let result = await pgclient.query(`insert into plan (clientid, created, coupon_backed) values ($1, now(), $2) returning id`, [args.clientid, args.coupon_backed])
+
+                const created_plan_id = result.rows[0].id
+
+
+
+                // create plan type
+
+                for (let i = 0; i < args.activity_type_arr.length; i++) {
+                    const at = args.activity_type_arr[i]
+                    const gt = args.grouping_type
+
+                    await pgclient.query(`insert into plan_type (planid, activity_type, grouping_type) values ($1, $2, $3)`, [created_plan_id, at, gt])
+                }
+
+
+
+                // create tickets
+                for (let i = 0; i < args.rounds; i++) {
+                    await pgclient.query(`insert into ticket (expire_time, creator_plan_id, cost) values ($1, $2, $3)`, [args.expiredate, created_plan_id, percost])
+                }
+
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+            }
+
+
+            // console.log(args)
+
+            // if (args.rounds <= 0) {
+            //     return {
+            //         success: false
+            //     }
+            // }
+
+            // let expire_date = new Date(args.expiredate)
+
+            // let _args = [args.clientid, args.rounds, args.totalcost, args.activity_type, args.grouping_type, args.coupon_backed == "" ? null : args.coupon_backed, expire_date]
+
+            // console.log(_args)
+
+            // let result = await pgclient.query('select * from create_plan_and_tickets($1, $2 , $3, $4, $5, $6, $7) as (success bool, msg text)', _args).then(res => {
+
+            //     console.log(res)
+            //     if (res.rowCount !== 1) {
+            //         return {
+            //             success: false,
+            //             msg: 'row count not 1'
+            //         }
+            //     }
+            //     else {
+            //         return res.rows[0]
+            //     }
+
+            // }).catch(e => {
+            //     console.log(e)
+            //     return {
+            //         success: false,
+            //         msg: 'query error'
+            //     }
+            // })
+
+            // return result
 
         },
         delete_subscription: async (parent, args) => {
