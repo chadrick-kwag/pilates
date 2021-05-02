@@ -19,18 +19,18 @@ export default function BaseView(props) {
 
     const check_request_possible = () => {
 
-    
+
         if (props.clientsAndTickets === null) {
             return false
         }
 
         // if durationHours is zero, then something is wrong
-        if(props.durationHours<1){
+        if (props.durationHours < 1) {
             return false
         }
 
         // add least one client should exist
-        if(props.clientsAndTickets.length<1){
+        if (props.clientsAndTickets.length < 1) {
             return false
         }
 
@@ -96,7 +96,21 @@ export default function BaseView(props) {
 
                                         }}
                                     />)}
-                                    <Chip label='add' onClick={e => props.onAddClient?.()} />
+
+                                    {(() => {
+                                        if (props.grouping_type === 'INDIVIDUAL' && props.clientsAndTickets.length < 1) {
+                                            return <Chip label='add' onClick={e => props.onAddClient?.()} />
+                                        }
+
+                                        if (props.grouping_type === 'SEMI' && props.clientsAndTickets.length < 2) {
+                                            return <Chip label='add' onClick={e => props.onAddClient?.()} />
+                                        }
+
+                                        if (props.grouping_type === 'GROUP') {
+                                            return <Chip label='add' onClick={e => props.onAddClient?.()} />
+                                        }
+                                    })()}
+
                                 </Box>
                             </TableCell>
                         </TableRow>
