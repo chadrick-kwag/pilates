@@ -218,8 +218,16 @@ class SubscriptionListView extends React.Component {
                                     <td>{d.id}</td>
                                     <td>{d.clientid}</td>
                                     <td>{d.clientname}</td>
-                                    <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
+                                    <td>{(() => {
+                                        let out = ""
 
+                                        d.types.forEach(a => {
+                                            out = out + activity_type_to_kor[a.activity_type] + '/' + grouping_type_to_kor[a.grouping_type] + ','
+                                        })
+
+                                        out = out.slice(0, -1)
+                                        return out
+                                    })()}</td>
                                     <td>{d.rounds}</td>
                                     <td>{numeral(d.totalcost).format('0,0')}원</td>
                                     <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>

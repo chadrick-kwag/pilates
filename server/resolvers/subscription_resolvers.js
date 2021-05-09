@@ -272,33 +272,36 @@ module.exports = {
         },
         query_subscriptions_by_clientid: async (parent, args) => {
             console.log('inside query_subscriptions_by_clientid')
+            console.log(args)
+
+            try{
+
+                let result = await pgclient.query(`select plan.id, plan.created, client.id as clientid, client.name as clientname, client.phonenumber as clientphonenumber, A.types, B.rounds, B.totalcost, plan.coupon_backed from plan
+                left join client on client.id = plan.clientid
+                left join (select array_agg(json_build_object('activity_type',activity_type, 'grouping_type',grouping_type)) as types , planid from plan_type group by planid) as A on A.planid = plan.id
+                left join (select count(1) as rounds, sum(cost) as totalcost, creator_plan_id from ticket group by creator_plan_id) as B on B.creator_plan_id = plan.id
+                where client.id = $1
+                `,[args.clientid])
+
+                console.log(result)
 
 
-            let subscriptions = await pgclient.query('select plan.id, plan.clientid, client.name as clientname, rounds, totalcost, plan.created, plan.activity_type, plan.grouping_type, plan.coupon_backed from plan left join client on plan.clientid=client.id where client.id=$1', [args.clientid])
-                .then(res => {
-                    console.log(res.rows)
-                    return res.rows
-                }).catch(e => {
-                    console.log(e)
-                    return null
-                })
+                return {
+                    success: true,
+                    subscriptions: result.rows
+                }
 
 
-            if (subscriptions == null) {
+
+            }catch(e){
+                console.log(e)
                 return {
                     success: false,
-                    subscriptions: []
+                    msg: e.detail
                 }
             }
-            else {
 
-                let retobj = {
-                    success: true,
-                    subscriptions: subscriptions
-                }
-                console.log(retobj)
-                return retobj
-            }
+
 
         },
 

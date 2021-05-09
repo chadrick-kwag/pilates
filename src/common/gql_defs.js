@@ -266,8 +266,10 @@ const QUERY_SUBSCRIPTIONS_BY_CLIENTID = gql`
                 rounds
                 totalcost
                 created
-                activity_type
-                grouping_type
+                types {
+                    activity_type
+                    grouping_type
+                }
                 coupon_backed
             }
         }

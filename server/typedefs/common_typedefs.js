@@ -1,4 +1,10 @@
 module.exports=`
+type PlanType {
+	activity_type: String
+	grouping_type: String
+	
+}
+
 type Subscription {
     id: Int
     clientid: Int
@@ -6,8 +12,7 @@ type Subscription {
     rounds: Int
     totalcost: Int
     created: String
-    activity_type: String
-    grouping_type: String
+    types: [PlanType]
     coupon_backed: String
 }
 
