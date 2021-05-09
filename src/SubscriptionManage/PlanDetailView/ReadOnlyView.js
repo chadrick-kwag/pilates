@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
-import { Dialog, DialogContent, DialogActions, Table, TableRow, TableCell, CircularProgress, Chip } from '@material-ui/core'
+import { Dialog, DialogContent, DialogActions, Table, TableRow, TableCell, CircularProgress, Chip, Button } from '@material-ui/core'
 
 import client from '../../apolloclient'
 import ErrorIcon from '@material-ui/icons/Error';
@@ -28,6 +28,7 @@ export default function ReadOnlyView(props) {
 
             if (res.data.fetch_normal_plan_detail_info.success) {
                 setDate(res.data.fetch_normal_plan_detail_info.planinfo)
+                props.setEditData?.(res.data.fetch_normal_plan_detail_info.planinfo)
             }
             else {
                 setLoading(false)
@@ -159,6 +160,9 @@ export default function ReadOnlyView(props) {
 
                 </DialogContent>
                 <DialogActions>
+                    <Button onClick={() => props.onCancel?.()}>이전</Button>
+                    <Button onClick={() => props.onBasicEdit?.()}>기본정보수정</Button>
+                    <Button onClick={() => props.onTicketEdit?.()}>티켓수정</Button>
 
                 </DialogActions>
             </>
