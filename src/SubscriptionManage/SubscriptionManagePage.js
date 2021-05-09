@@ -4,7 +4,6 @@ import React from 'react'
 import { Button } from 'react-bootstrap'
 
 import SubscriptionListView from './SubscriptionListView'
-import CreateSubscriptionView from './CreateSubscriptionView'
 
 import CreatePlanView from './CreatePlanView/Base'
 

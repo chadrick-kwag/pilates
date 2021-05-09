@@ -69,6 +69,11 @@ type SuccessAndPlanDetailInfo{
     planinfo: PlanDetailInfo
 }
 
+input IncomingPlanType{
+    activity_type: String
+    grouping_type: String
+}
+
 type Query{
     query_subscriptions_of_clientname(clientname:String): SuccessAndSubscriptions
     query_subscriptions_by_clientid(clientid:Int!): SuccessAndSubscriptions
@@ -89,6 +94,7 @@ type Mutation{
     delete_tickets(ticketid_arr: [Int]): SuccessResult
     add_tickets(planid: Int!, addsize: Int!, expire_datetime: String!): SuccessResult
     change_plan_totalcost(planid: Int!, totalcost: Int!): SuccessResult
+    update_normal_plan_basicinfo(planid:Int!, totalcost: Int!, clientid: Int!, types:[IncomingPlanType]): SuccessResult
     
 }
 `

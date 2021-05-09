@@ -1,8 +1,9 @@
-import { DialogContent, DialogActions, Button, Table, TableRow, TableCell, TextField, FormControl, FormLabel, Checkbox, FormControlLabel, Radio } from '@material-ui/core'
+import { DialogContent, DialogActions, Button, Table, TableRow, TableCell, TextField, Chip, FormControl, FormLabel, Checkbox, FormControlLabel, Radio } from '@material-ui/core'
 import React, { useState } from 'react'
 import ClientSearchComponent from '../../../components/ClientSearchComponent4'
 
 import client from '../../../apolloclient'
+import { UPDATE_NORMAL_PLAN_BASICINFO } from '../../../common/gql_defs'
 
 // 회원 변경, 총가격변경, 타입변경
 
@@ -26,6 +27,85 @@ export default function Container(props) {
     const [selectedGroupingType, setSelectedGroupingType] = useState(props.editData.types[0].grouping_type)
 
 
+    const submit_pass_check = () => {
+        if (selectedGroupingType === null || selectedGroupingType === undefined) {
+            return false
+        }
+
+        let check = false
+        for (const a in selectedActivityTypes) {
+            if (selectedActivityTypes[a]) {
+                check = true
+                break
+            }
+        }
+
+        if (!check) {
+            return false
+        }
+
+        if (totalcost === null) {
+            return false
+        }
+
+        const _t = parseInt(totalcost)
+
+        if (_t < 0 || _t === null) {
+            return false
+        }
+
+        return true
+    }
+
+    const request_update = () => {
+
+
+
+        // build types
+        const type_arr = []
+
+        for (const a in selectedActivityTypes) {
+            if (selectedActivityTypes[a] === true) {
+                type_arr.push({
+                    activity_type: a,
+                    grouping_type: selectedGroupingType
+                })
+            }
+        }
+
+        const _var = {
+            planid: props.planid,
+            totalcost: parseInt(totalcost),
+            types: type_arr,
+            clientid: clientInfo.id
+
+        }
+
+        console.log('_var')
+        console.log(_var)
+
+        client.mutate({
+            mutation: UPDATE_NORMAL_PLAN_BASICINFO,
+            variables: _var,
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.update_normal_plan_basicinfo.success) {
+                props.onEditSuccess?.()
+            }
+            else {
+                alert(`update failed. msg: ${res.data.update_normal_plan_basicinfo.msg}`)
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+
+            alert(`update error`)
+
+        })
+    }
+
+
     return (
         <>
             <DialogContent>
@@ -35,7 +115,7 @@ export default function Container(props) {
                             회원
                         </TableCell>
                         <TableCell>
-                            <ClientSearchComponent client={clientInfo} onClientSelected={d => setClientInfo(d)} />
+                            <Chip label={`${clientInfo.clientname}(${clientInfo.clientphonenumber})`} />
                         </TableCell>
                     </TableRow>
                     <TableRow>
@@ -112,7 +192,7 @@ export default function Container(props) {
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => props.onCancel?.()}>취소</Button>
-                <Button>수정</Button>
+                <Button disabled={!submit_pass_check()} onClick={() => request_update()}>수정</Button>
             </DialogActions>
         </>
     )

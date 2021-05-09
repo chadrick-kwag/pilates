@@ -1045,6 +1045,17 @@ export const FETCH_NORMAL_PLAN_DETAIL_INFO = gql`
     }
 `
 
+
+// update_normal_plan_basicinfo
+export const UPDATE_NORMAL_PLAN_BASICINFO = gql`
+    mutation($planid: Int!, $types: [IncomingPlanType], $totalcost: Int!, $clientid: Int!){
+        update_normal_plan_basicinfo(planid:$planid, types:$types, totalcost: $totalcost, clientid: $clientid){
+            success
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

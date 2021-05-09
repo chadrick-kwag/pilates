@@ -2,7 +2,7 @@
 // supports selected start mode
 
 import React, { useState, useRef } from 'react'
-import { TextField, Button, Chip, Menu, MenuItem, Popover, CircularProgress } from '@material-ui/core'
+import { TextField, Button, Chip, MenuItem, Popover, CircularProgress } from '@material-ui/core'
 import client from '../apolloclient'
 import { SEARCH_CLIENT_WITH_NAME } from '../common/gql_defs'
 
@@ -41,13 +41,10 @@ export default function ClientSearchComponent(props) {
                 }
             })
 
-            console.log('data:')
-            console.log(data)
-
-
             setSearchIsLoading(false)
             if (data.length === 1) {
                 setSelectedClient(data[0])
+                props.onClientSelected?.(a)
                 setViewMode('selected')
             }
             else {
@@ -81,14 +78,13 @@ export default function ClientSearchComponent(props) {
                     {searchIsLoading ? <CircularProgress /> : searchResult?.map(a => <MenuItem onClick={() => {
                         setSelectedClient(a)
                         setViewMode('selected')
+                        props.onClientSelected?.(a)
                     }}>{a.clientname}({a.clientphonenumber})</MenuItem>)}
 
                 </Popover>
 
                 <Button disabled={searchName === null || searchName === "" ? true : false} onClick={e => {
                     request_search()
-                    // setAnchorEl(e.currentTarget)
-                    console.log(textinput)
                     setAnchorEl(textinput.current)
                 }}>검색</Button>
                 {selectedClient !== null ? <Button onClick={() => {

@@ -15,10 +15,13 @@ export default function Container(props) {
         <Dialog onClose={() => props.onCancel?.()} open={true}>
             {(() => {
                 if (mode === 'readonlyview') {
-                    return <ReadOnlyView planid={props.planid} onCancel={props.onCancel} onBasicEdit={() => setMode('basic_edit')} onTicketEdit={() => setMode('ticket_edit')} setEditData={setEditData}/>
+                    return <ReadOnlyView planid={props.planid} onCancel={props.onCancel} onBasicEdit={() => setMode('basic_edit')} onTicketEdit={() => setMode('ticket_edit')} setEditData={setEditData} />
                 }
                 else if (mode === 'basic_edit') {
-                    return <BasicEditView onCancel={() => setMode('readonlyview')} planid={props.planid} editData={editData}/>
+                    return <BasicEditView onCancel={() => setMode('readonlyview')} planid={props.planid} editData={editData} onEditSuccess={() => {
+                        setMode('readonlyview')
+                        setEditData(null)
+                    }} />
                 }
                 else if (mode === 'ticket_edit') {
                     return <div>hello</div>

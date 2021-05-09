@@ -1,5 +1,6 @@
 
 const pgclient = require('../pgclient')
+const { match } = require('../typedefs/subscription_typedefs')
 const {
     parse_incoming_date_utc_string,
     parse_incoming_gender_str,
@@ -476,6 +477,145 @@ module.exports = {
         },
     },
     Mutation: {
+        update_normal_plan_basicinfo: async (parent, args) => {
+            try {
+
+
+                await pgclient.query('commit')
+
+                // update totalcost
+                // check current totalcost
+                let result = await pgclient.query(`select sum(cost) as totalcost, count(1) as count from ticket where creator_plan_id=$1`, [args.planid])
+
+                if (result.rows[0].totalcost !== args.totalcost) {
+                    // update cost of each tickets
+                    const new_perticket_cost = Math.ceil(args.totalcost / result.rows[0].count)
+
+                    result = await pgclient.query(`select id from ticket where creator_plan_id = $1`, [args.planid])
+
+                    for (let i = 0; i < result.rows.length; i++) {
+                        const a = result.rows[i].id
+
+                        await pgclient.query(`update ticket set cost=$1 where id=$2`, [new_perticket_cost, a])
+                    }
+
+
+                }
+
+                // update client
+
+                result = await pgclient.query(`select clientid from plan where id=$1`, [args.planid])
+
+                if (result.rows[0].clientid !== args.clientid) {
+                    await pgclient.query(`update plan set clientid=$1 where id=$2`, [args.clientid, args.planid])
+                }
+
+
+
+                // update types
+
+                // first fetch existing types
+                result = await pgclient.query(`select id, activity_type, grouping_type from plan_type where planid=$1`, [args.planid])
+
+                // split to exiting id that needs to be removed
+                // and new types to be added
+
+
+                const existing_types = result.rows
+
+                const to_remove_id_arr = []
+                const to_add_types = []
+
+                // gather types to add
+                for (let i = 0; i < args.types.length; i++) {
+                    const p = args.types[i]
+
+                    let match_with_exist = false
+
+                    for (let j = 0; j < existing_types.length; j++) {
+                        const a = existing_types[j]
+
+                        if (p.activity_type === a.activity_type && p.grouping_type === a.grouping_type) {
+                            match_with_exist = true
+                            break
+
+                        }
+                    }
+
+                    if (!match_with_exist) {
+                        to_add_types.push(p)
+                    }
+
+
+                }
+
+                // gather from existing to remove
+                for (let i = 0; i < existing_types.length; i++) {
+                    const p = existing_types[i]
+
+                    let match_found = false
+
+                    for (let j = 0; j < args.types.length; j++) {
+                        const a = args.types[j]
+
+                        if (p.activity_type === a.activity_type && p.grouping_type === a.grouping_type) {
+                            match_found = true
+                            break
+                        }
+
+                    }
+
+                    if (!match_found) {
+                        to_remove_id_arr.push(p.id)
+                    }
+                }
+
+                console.log(`to_remove_id_arr: ${to_remove_id_arr}`)
+                console.log('to_add_types')
+                console.log(to_add_types)
+
+                // execute removal
+                for (let i = 0; i < to_remove_id_arr.length; i++) {
+                    await pgclient.query(`delete from plan_type where id=$1`, [to_remove_id_arr[i]])
+                }
+
+                // execute adding
+                for (let i = 0; i < to_add_types.length; i++) {
+                    const a = to_add_types[i]
+
+                    await pgclient.query(`insert into plan_type (planid, activity_type, grouping_type) values ($1,$2,$3)`, [args.planid, a.activity_type, a.grouping_type])
+                }
+
+
+                await pgclient.query(`commit`)
+
+                return {
+                    success: true
+                }
+
+
+
+
+            } catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+
+
+                } catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
         create_subscription: async (parent, args) => {
             console.log('create_subscrition')
             console.log(args)
