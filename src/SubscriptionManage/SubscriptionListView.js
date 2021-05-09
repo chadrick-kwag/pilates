@@ -17,6 +17,7 @@ class SubscriptionListView extends React.Component {
         super(props)
 
         this.state = {
+
             data: null,
             delete_target_subscription: null,
             view_selected_subscription: null,
@@ -146,7 +147,14 @@ class SubscriptionListView extends React.Component {
         return <div>
             {this.state.view_selected_subscription !== null ? <DetailModal onCancel={() => this.setState({
                 view_selected_subscription: null
-            })} planid={this.state.view_selected_subscription.id} /> : null}
+            })} planid={this.state.view_selected_subscription.id}
+                onRefreshClose={() => {
+                    this.fetchdata(this.state.search_client_id)
+                    this.setState({
+                        view_selected_subscription: null
+                    })
+                }}
+            /> : null}
 
             <div className='row-gravity-center'>
                 <span>회원이름</span>

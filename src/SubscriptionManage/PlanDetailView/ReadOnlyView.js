@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogActions, Table, TableRow, TableCell, Circu
 
 import client from '../../apolloclient'
 import ErrorIcon from '@material-ui/icons/Error';
-import { FETCH_NORMAL_PLAN_DETAIL_INFO } from '../../common/gql_defs'
+import { FETCH_NORMAL_PLAN_DETAIL_INFO, DELETE_SUBSCRITION_GQL } from '../../common/gql_defs'
 import { DateTime } from 'luxon'
 import { grouping_type_to_kor, activity_type_to_kor } from '../../common/consts'
 import numeral from 'numeral'
@@ -38,6 +38,32 @@ export default function ReadOnlyView(props) {
             setLoading(false)
         })
     }, [])
+
+
+    const request_plan_delete = () => {
+        console.log('debug')
+
+        client.mutate({
+            mutation: DELETE_SUBSCRITION_GQL,
+            variables: {
+                id: props.planid
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.delete_subscription.success) {
+                props.onDeleteSuccess?.()
+            }
+            else {
+                alert(`delete failed. msg:${res.data.delete_subscription.msg}`)
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            alert(`delete error`)
+        })
+    }
+
 
     if (data === null) {
         if (loading === true) {
@@ -163,6 +189,7 @@ export default function ReadOnlyView(props) {
                     <Button onClick={() => props.onCancel?.()}>이전</Button>
                     <Button onClick={() => props.onBasicEdit?.()}>기본정보수정</Button>
                     <Button onClick={() => props.onTicketEdit?.()}>티켓수정</Button>
+                    <Button onClick={() => request_plan_delete()}>플랜삭제</Button>
 
                 </DialogActions>
             </>

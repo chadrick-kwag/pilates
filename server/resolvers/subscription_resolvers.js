@@ -707,47 +707,85 @@ module.exports = {
             }
 
 
-            // console.log(args)
-
-            // if (args.rounds <= 0) {
-            //     return {
-            //         success: false
-            //     }
-            // }
-
-            // let expire_date = new Date(args.expiredate)
-
-            // let _args = [args.clientid, args.rounds, args.totalcost, args.activity_type, args.grouping_type, args.coupon_backed == "" ? null : args.coupon_backed, expire_date]
-
-            // console.log(_args)
-
-            // let result = await pgclient.query('select * from create_plan_and_tickets($1, $2 , $3, $4, $5, $6, $7) as (success bool, msg text)', _args).then(res => {
-
-            //     console.log(res)
-            //     if (res.rowCount !== 1) {
-            //         return {
-            //             success: false,
-            //             msg: 'row count not 1'
-            //         }
-            //     }
-            //     else {
-            //         return res.rows[0]
-            //     }
-
-            // }).catch(e => {
-            //     console.log(e)
-            //     return {
-            //         success: false,
-            //         msg: 'query error'
-            //     }
-            // })
-
-            // return result
-
         },
         delete_subscription: async (parent, args) => {
             console.log('delete subscription')
             console.log(args)
+
+            try {
+
+                await pgclient.query('begin')
+
+                // check plan id exists
+                let result = await pgclient.query(`select id from plan where id=$1`, [args.id])
+
+                if (result.rows.length !== 1) {
+                    throw {
+                        detail: 'no plan with id exists'
+                    }
+                }
+
+                // gather tickets and check they are not consumed
+                result = await pgclient.query(`select ticket.id, case when A.id is null then false
+                when A.id is not null AND A.canceled_time is not null then false
+                else true end
+                as consumed
+                from ticket
+                left join (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc) as A on A.ticketid = ticket.id
+                where creator_plan_id=$1`, [args.id])
+
+                // if all tickets are not consumed, then allow delete
+
+                let check = true
+                const ticket_id_arr = []
+
+                for (let i = 0; i < result.rows.length; i++) {
+                    ticket_id_arr.push(result.rows[i].id)
+                    if (result.rows[i].consumed === true) {
+                        check = false
+                        break
+                    }
+                }
+
+                if (!check) {
+                    throw {
+                        detail: 'at least one ticket is consumed'
+                    }
+                }
+
+                // delete tickets
+
+                for (let i = 0; i < ticket_id_arr.length; i++) {
+                    const a = ticket_id_arr[i]
+                    await pgclient.query(`delete from ticket where id=$1`, [a])
+
+                }
+
+                // delete plan
+                await pgclient.query(`delete from plan where id=$1`, [args.id])
+
+
+                await pgclient.query('commit')
+
+            }
+            catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e2.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
 
             let result = await pgclient.query('BEGIN').then(async res => {
 
