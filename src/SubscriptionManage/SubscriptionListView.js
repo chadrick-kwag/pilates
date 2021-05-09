@@ -8,6 +8,7 @@ import ViewSubscriptionDetailModal from './ViewSubscriptionDetailModal'
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 import numeral from 'numeral'
 
+import DetailModal from './PlanDetailView/container'
 
 
 class SubscriptionListView extends React.Component {
@@ -142,23 +143,10 @@ class SubscriptionListView extends React.Component {
 
     render() {
 
-        let detail_view_modal = null
-        if (this.state.view_selected_subscription != null) {
-            detail_view_modal = <ViewSubscriptionDetailModal
-                apolloclient={this.props.apolloclient}
-                data={this.state.view_selected_subscription}
-                onCancel={() => {
-                    this.setState({
-                        data: null,
-                        view_selected_subscription: null
-                    }, this.fetchdata(parseInt(this.state.search_client_id)))
-                }} />
-        }
-
-
-
         return <div>
-            {detail_view_modal}
+            {this.state.view_selected_subscription !== null ? <DetailModal onCancel={() => this.setState({
+                view_selected_subscription: null
+            })} planid={this.state.view_selected_subscription.id} /> : null}
 
             <div className='row-gravity-center'>
                 <span>회원이름</span>
@@ -296,9 +284,6 @@ class SubscriptionListView extends React.Component {
                         </tbody>
                     </Table>
                 </div>}
-
-
-
         </div>
     }
 }

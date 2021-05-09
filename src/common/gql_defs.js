@@ -1017,6 +1017,34 @@ export const CHANGE_NORMAL_LESSON_OVERALL = gql`
     }
 `
 
+
+export const FETCH_NORMAL_PLAN_DETAIL_INFO = gql`
+    query($planid:Int!){
+        fetch_normal_plan_detail_info(planid:$planid){
+            success
+            msg
+            planinfo {
+                id 
+                clientid
+                clientname
+                clientphonenumber
+                created
+                totalcost
+                types{
+                    activity_type
+                    grouping_type
+                }
+                tickets{
+                    id
+                    expire_time
+                    consumed_time
+                }
+            }
+           
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

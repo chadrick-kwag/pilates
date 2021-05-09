@@ -9,6 +9,71 @@ const {
 module.exports = {
     Query: {
 
+        fetch_normal_plan_detail_info: async (parent, args) => {
+            try {
+                console.log('inside fetch_normal_plan_detail_info')
+
+                const planid = args.planid
+
+                // first get tickets 
+                let result = await pgclient.query(`select case when A.id is null then null
+                when A.canceled_time is not null then null
+                else lesson.starttime end
+                as consumed_time,
+                ticket.id,
+                ticket.expire_time,
+                ticket.cost
+                from ticket
+                left join (select distinct on(ticketid) id, ticketid, lessonid, canceled_time  from assign_ticket order by ticketid, created desc) as A on A.ticketid = ticket.id
+                left join lesson on lesson.id = A.lessonid
+                where ticket.creator_plan_id = $1`, [planid])
+
+
+                // calculate total cost
+                let totalcost = 0
+
+                for (let i = 0; i < result.rows.length; i++) {
+                    totalcost += result.rows[i].cost
+                }
+
+                const tickets = result.rows
+
+                // gather plan info
+
+                result = await pgclient.query(`select plan.id, client.id as clientid, client.name as clientname, client.phonenumber as clientphonenumber,
+                A.types, plan.created
+                from plan
+                left join (select planid, array_agg(json_build_object('activity_type', activity_type, 'grouping_type', grouping_type)) as types from plan_type group by planid)
+                as A on A.planid = plan.id
+                left join client on plan.clientid = client.id
+                where plan.id = $1`, [planid])
+
+                const plan_info = result.rows[0]
+
+                const _result = plan_info
+                _result.totalcost = totalcost
+                _result.tickets = tickets
+
+                console.log(_result)
+
+                return {
+                    success: true,
+                    planinfo: _result
+                }
+
+
+
+
+            } catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
+
         fetch_ticket_available_plan_for_clientid_and_lessontypes: async (parent, args) => {
             try {
 
@@ -274,14 +339,14 @@ module.exports = {
             console.log('inside query_subscriptions_by_clientid')
             console.log(args)
 
-            try{
+            try {
 
                 let result = await pgclient.query(`select plan.id, plan.created, client.id as clientid, client.name as clientname, client.phonenumber as clientphonenumber, A.types, B.rounds, B.totalcost, plan.coupon_backed from plan
                 left join client on client.id = plan.clientid
                 left join (select array_agg(json_build_object('activity_type',activity_type, 'grouping_type',grouping_type)) as types , planid from plan_type group by planid) as A on A.planid = plan.id
                 left join (select count(1) as rounds, sum(cost) as totalcost, creator_plan_id from ticket group by creator_plan_id) as B on B.creator_plan_id = plan.id
                 where client.id = $1
-                `,[args.clientid])
+                `, [args.clientid])
 
                 console.log(result)
 
@@ -293,7 +358,7 @@ module.exports = {
 
 
 
-            }catch(e){
+            } catch (e) {
                 console.log(e)
                 return {
                     success: false,

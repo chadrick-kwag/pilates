@@ -52,6 +52,23 @@ type SuccessAndTicketAvailablePlans{
     plans: [TicketAvailablePlan]
 }
 
+type PlanDetailInfo{
+    id: Int
+    clientid: Int
+    clientname: String
+    clientphonenumber: String
+    created: String
+    totalcost: Int
+    types: [PlanType]
+    tickets: [TicketWithConsumedInfo]
+}
+
+type SuccessAndPlanDetailInfo{
+    success: Boolean
+    msg: String
+    planinfo: PlanDetailInfo
+}
+
 type Query{
     query_subscriptions_of_clientname(clientname:String): SuccessAndSubscriptions
     query_subscriptions_by_clientid(clientid:Int!): SuccessAndSubscriptions
@@ -61,6 +78,7 @@ type Query{
     fetch_tickets_for_subscription_id(subscription_id: Int!): SuccessAndTickets
     query_subscription_info_with_ticket_info(id:Int!): PlanDetailAndTicketDetailResponse
     fetch_ticket_available_plan_for_clientid_and_lessontypes(clientid:Int!, activity_type:String!, grouping_type:String!, excluded_ticket_id_arr:[Int]): SuccessAndTicketAvailablePlans
+    fetch_normal_plan_detail_info(planid:Int!): SuccessAndPlanDetailInfo
 }
 
 type Mutation{

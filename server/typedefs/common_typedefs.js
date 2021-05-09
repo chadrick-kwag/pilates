@@ -47,6 +47,12 @@ type Ticket2 {
     destroyed_date: String
 }
 
+type TicketWithConsumedInfo{
+    id: Int
+    expire_time: String
+    consumed_time: String
+}
+
 type SubscriptionInfo {
     id: Int
     created: String
