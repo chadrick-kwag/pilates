@@ -1,23 +1,29 @@
 import React, { useState, useEffect } from 'react'
 
-import { DialogActions, DialogContent, Table, TableRow, TableCell, CircularProgress, Button } from '@material-ui/core'
+import { DialogActions, DialogContent, Table, TableRow, TableCell, CircularProgress, Button, Dialog } from '@material-ui/core'
 import { DataGrid } from '@material-ui/data-grid';
 
 import client from '../../../apolloclient'
-import { FETCH_TICKETS_FOR_SUBSCRIPTION_ID } from '../../../common/gql_defs'
+import { FETCH_TICKETS_FOR_SUBSCRIPTION_ID, UPDATE_EXPDATE_OF_TICKETS } from '../../../common/gql_defs'
 import { DateTime } from 'luxon'
 
 import EditTicketList from '../../EditTicketList'
 import EditTicketTable from './EditTicketTable'
 
 
+import ExpireTimeChangeDialog from './ExpireTimeChangeDialog'
+
 
 export default function Container(props) {
 
     const [tickets, setTickets] = useState(null)
+    const [selectedTicketIdArr, setSelectedTicketIdArr] = useState(null)
+    const [showExpireTimeModal, setShowExpireTimeModal] = useState(false)
+
 
 
     const fetch_tickets = () => {
+
         client.query({
             query: FETCH_TICKETS_FOR_SUBSCRIPTION_ID,
             variables: {
@@ -36,6 +42,41 @@ export default function Container(props) {
         }).catch(e => {
             console.log(JSON.stringify(e))
             alert('fetch tickets error')
+        })
+    }
+
+
+    const request_expdate_update = (new_date, success_callback, fail_callback) => {
+
+        if (selectedTicketIdArr.length < 1) {
+            alert('선택된 티켓이 없음')
+            fail_callback()
+            return
+        }
+
+        const _var = {
+            ticket_id_list: selectedTicketIdArr,
+            new_expdate: new_date.toUTCString()
+        }
+
+        console.log('_var')
+        console.log(_var)
+
+        client.mutate({
+            mutation: UPDATE_EXPDATE_OF_TICKETS,
+            variables: _var,
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+            if (res.data.update_expdate_of_tickets.success) {
+                success_callback?.()
+            }
+            else {
+                fail_callback?.()
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            fail_callback?.()
         })
     }
 
@@ -85,12 +126,12 @@ export default function Container(props) {
         }
     ]
 
-    console.log(tickets)
+
 
     return (
         <>
             <DialogContent>
-                {tickets === null ? <CircularProgress /> : <EditTicketTable  tickets={tickets}/>
+                {tickets === null ? <CircularProgress /> : <EditTicketTable tickets={tickets} onSelectChanged={d => setSelectedTicketIdArr(d)} />
                 }
 
             </DialogContent>
@@ -99,8 +140,19 @@ export default function Container(props) {
                 <Button>티켓삭제</Button>
                 <Button>티켓양도</Button>
                 <Button>티켓추가</Button>
-                <Button>만료일시변경</Button>
+                <Button onClick={() => setShowExpireTimeModal(true)}>만료일시변경</Button>
             </DialogActions>
+
+            { showExpireTimeModal ? <ExpireTimeChangeDialog onClose={() => setShowExpireTimeModal(false)} onDone={d => {
+                console.log(d)
+                request_expdate_update(d, () => {
+                    setShowExpireTimeModal(false)
+                    setTickets(null)
+                    fetch_tickets()
+                }, () => {
+                    alert('update expire time fail')
+                })
+            }} /> : null}
         </>
     )
 }

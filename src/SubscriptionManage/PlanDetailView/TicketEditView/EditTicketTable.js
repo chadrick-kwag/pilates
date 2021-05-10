@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { Table, TableRow, TableCell, Checkbox } from '@material-ui/core'
 import { DateTime } from 'luxon'
+
+
 
 
 export default function EditTicketTable(props) {
@@ -12,6 +14,17 @@ export default function EditTicketTable(props) {
         let out = new Array(props.tickets.length).fill(true)
         return out
     })())
+
+    useEffect(() => {
+
+        let selected_ticket_id_arr = []
+        for (let i = 0; i < selectlist.length; i++) {
+            if (selectlist[i]) {
+                selected_ticket_id_arr.push(tickets[i].id)
+            }
+        }
+        props.onSelectChanged?.(selected_ticket_id_arr)
+    }, [selectlist])
 
 
     const get_root_checkbox_checked = () => {
