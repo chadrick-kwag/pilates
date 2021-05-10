@@ -17,9 +17,8 @@ import ExpireTimeChangeDialog from './ExpireTimeChangeDialog'
 export default function Container(props) {
 
     const [tickets, setTickets] = useState(null)
-    const [selectedTicketIdArr, setSelectedTicketIdArr] = useState(null)
+    const [selectedTicketIdArr, setSelectedTicketIdArr] = useState([])
     const [showExpireTimeModal, setShowExpireTimeModal] = useState(false)
-
 
 
     const fetch_tickets = () => {
@@ -137,10 +136,10 @@ export default function Container(props) {
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => props.onCancel?.()}>취소</Button>
-                <Button>티켓삭제</Button>
-                <Button>티켓양도</Button>
+                <Button disabled={selectedTicketIdArr.length < 1}>티켓삭제</Button>
+                <Button disabled={selectedTicketIdArr.length < 1}>티켓양도</Button>
                 <Button>티켓추가</Button>
-                <Button onClick={() => setShowExpireTimeModal(true)}>만료일시변경</Button>
+                <Button disabled={selectedTicketIdArr.length < 1} onClick={() => setShowExpireTimeModal(true)}>만료일시변경</Button>
             </DialogActions>
 
             { showExpireTimeModal ? <ExpireTimeChangeDialog onClose={() => setShowExpireTimeModal(false)} onDone={d => {
