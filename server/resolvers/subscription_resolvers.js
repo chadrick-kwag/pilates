@@ -261,41 +261,78 @@ module.exports = {
 
         fetch_tickets_for_subscription_id: async (parent, args) => {
 
-            console.log(args)
+            console.log('fetch_tickets_for_subscription_id')
 
-            let result = await pgclient.query(`select ticket.id as id, plan.created as created_date, ticket.expire_time 
-            ,
-            CASE
-            WHEN A.id is null THEN null
-            WHEN A.id is not null AND A.canceled_time is not null THEN null
-            WHEN lesson.canceled_time is not null THEN null
-            ELSE lesson.starttime
-            END as consumed_date,
-            C.created as destroyed_date
-            from plan
-            left join ticket on ticket.creator_plan_id = plan.id
-            left join (select id, created from plan) as C on C.id = ticket.destroyer_plan_id
-            left join (select DISTINCT ON(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) as A on A.ticketid = ticket.id
-            left join lesson on lesson.id = A.lessonid
-            where plan.id = $1 AND ticket.id is not null`, [args.subscription_id]).then(res => {
-                console.log(res.rows)
+            try{
+
+                const planid = args.subscription_id
+
+                let result = await pgclient.query(`select ticket.id as id, ticket.expire_time as expire_time,
+                case when A.id is null then null
+                when (A.canceled_time is not null) then null
+                when (A.canceled_time is null) and (A.id is not null) and (lesson.canceled_time is null) then lesson.starttime
+                else null end
+                as consumed_date,
+                ticket.cost as cost,
+                B.created as destroyed_date,
+                C.created as created_date
+                from ticket
+                left join (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc) as A on A.ticketid = ticket.id
+                left join lesson on A.lessonid = lesson.id
+                left join plan as B on ticket.destroyer_plan_id = B.id
+                left join plan as C on ticket.creator_plan_id = C.id
+                where ticket.creator_plan_id=$1`, [planid])
 
                 return {
                     success: true,
-                    tickets: res.rows
+                    tickets: result.rows
                 }
-            }).catch(e => {
-                console.log(e)
 
+
+
+            }
+            catch(e){
                 return {
                     success: false,
-                    msg: "query error"
+                    msg: e.detail
                 }
-            })
+            }
 
-            console.log(result)
+            // console.log(args)
 
-            return result
+            // let result = await pgclient.query(`select ticket.id as id, plan.created as created_date, ticket.expire_time 
+            // ,
+            // CASE
+            // WHEN A.id is null THEN null
+            // WHEN A.id is not null AND A.canceled_time is not null THEN null
+            // WHEN lesson.canceled_time is not null THEN null
+            // ELSE lesson.starttime
+            // END as consumed_date,
+            // C.created as destroyed_date
+            // from plan
+            // left join ticket on ticket.creator_plan_id = plan.id
+            // left join (select id, created from plan) as C on C.id = ticket.destroyer_plan_id
+            // left join (select DISTINCT ON(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) as A on A.ticketid = ticket.id
+            // left join lesson on lesson.id = A.lessonid
+            // where plan.id = $1 AND ticket.id is not null`, [args.subscription_id]).then(res => {
+            //     console.log(res.rows)
+
+            //     return {
+            //         success: true,
+            //         tickets: res.rows
+            //     }
+            // }).catch(e => {
+            //     console.log(e)
+
+            //     return {
+            //         success: false,
+            //         msg: "query error"
+            //     }
+            // })
+
+            // console.log(result)
+
+            // return result
 
         },
 

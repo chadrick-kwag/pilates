@@ -5,6 +5,7 @@ import { Dialog } from '@material-ui/core'
 
 import ReadOnlyView from './ReadOnlyView'
 import BasicEditView from './BasicInfoEditView/container'
+import TicketEditView from './TicketEditView/container'
 
 export default function Container(props) {
 
@@ -35,7 +36,7 @@ export default function Container(props) {
                     }} />
                 }
                 else if (mode === 'ticket_edit') {
-                    return <div>hello</div>
+                    return <TicketEditView planid={props.planid} onCancel={() => setMode('readonlyview')} onEditSuccess={() => setEditOccured(true)} />
                 }
                 else {
                     return <div>unimplemented</div>
