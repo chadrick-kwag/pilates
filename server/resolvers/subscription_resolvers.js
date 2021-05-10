@@ -888,6 +888,79 @@ module.exports = {
 
             console.log(args)
 
+            try{
+                await pgclient.query('begin')
+
+                // create new plan with new client
+                const ticket_id_arr = args.ticket_id_list
+                const recv_clientid = args.clientid
+
+                if(ticket_id_arr.length <1){
+                    throw {
+                        detail: 'no ticket id list given'
+                    }
+                }
+
+                // fetch plan info of existing tickets
+                // simply select the plan types of the first ticket id
+
+                let result = await pgclient.query(`select creator_plan_id as id from ticket where id=$1`, [ticket_id_arr[0]])
+
+                const existing_plan_id = result.rows[0].id
+
+                result = await pgclient.query(`select activity_type, grouping_type from plan_type where planid=$1`, [existing_plan_id])
+
+                const existing_plantypes = result.rows
+
+                if(existing_plantypes.length<1){
+                    throw {
+                        detail: 'existing plan has no types'
+                    }
+                }
+
+                // creat new plan
+
+                result = await pgclient.query(`insert into plan (clientid, created, transferred_from_subscription_id) values ($1, now(), $2) returning id`,[recv_clientid, existing_plan_id])
+
+                const created_plan_id = result.rows[0].id
+
+                // create new plan's types
+                for(let i=0;i<existing_plantypes.length;i++){
+                    const at = existing_plantypes[i].activity_type
+                    const gt = existing_plantypes[i].grouping_type
+                    await pgclient.query(`insert into plan_type (planid, activity_type, grouping_type) values ($1, $2, $3)`, [created_plan_id, at, gt])
+                }
+
+                // transfer tickets
+                for(let i=0;i<ticket_id_arr.length;i++){
+                    await pgclient.query(`update ticket set creator_plan_id=$1 where id = $2`, [created_plan_id, ticket_id_arr[i]])
+                }
+
+    
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+            }
+            catch(e){
+                try{
+                    await pgclient.query('rollback')
+                }
+                catch(e2){
+                    return {
+                        success: false,
+                        msg: e2.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
             let ret = await pgclient.query('select * from transfer_tickets($1, $2) as (success bool, msg text)', [args.ticket_id_list, args.clientid]).then(res => {
                 console.log(res)
 

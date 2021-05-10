@@ -12,6 +12,7 @@ import EditTicketTable from './EditTicketTable'
 
 
 import ExpireTimeChangeDialog from './ExpireTimeChangeDialog'
+import TicketTransferDialog from './TicketTransferDialog'
 
 
 export default function Container(props) {
@@ -19,6 +20,7 @@ export default function Container(props) {
     const [tickets, setTickets] = useState(null)
     const [selectedTicketIdArr, setSelectedTicketIdArr] = useState([])
     const [showExpireTimeModal, setShowExpireTimeModal] = useState(false)
+    const [showTransferModal, setShowTransferModal] = useState(false)
 
 
     const fetch_tickets = () => {
@@ -137,7 +139,7 @@ export default function Container(props) {
             <DialogActions>
                 <Button onClick={() => props.onCancel?.()}>취소</Button>
                 <Button disabled={selectedTicketIdArr.length < 1}>티켓삭제</Button>
-                <Button disabled={selectedTicketIdArr.length < 1}>티켓양도</Button>
+                <Button disabled={selectedTicketIdArr.length < 1} onClick={() => setShowTransferModal(true)}>티켓양도</Button>
                 <Button>티켓추가</Button>
                 <Button disabled={selectedTicketIdArr.length < 1} onClick={() => setShowExpireTimeModal(true)}>만료일시변경</Button>
             </DialogActions>
@@ -148,9 +150,18 @@ export default function Container(props) {
                     setShowExpireTimeModal(false)
                     setTickets(null)
                     fetch_tickets()
+                    props.onEditSuccess?.()
                 }, () => {
                     alert('update expire time fail')
                 })
+            }} /> : null}
+
+
+            {showTransferModal ? <TicketTransferDialog ticketIdArr={selectedTicketIdArr} onClose={() => setShowTransferModal(false)} onSuccess={() => {
+                setTickets(null)
+                fetch_tickets()
+                setShowTransferModal(false)
+                props.onEditSuccess?.()
             }} /> : null}
         </>
     )

@@ -8,7 +8,7 @@ import { SEARCH_CLIENT_WITH_NAME } from '../common/gql_defs'
 
 export default function ClientSearchComponent(props) {
 
-    const [viewMode, setViewMode] = useState(props.client !== null ? 'selected' : 'search')
+    const [viewMode, setViewMode] = useState((props.client !== null && props.client !== undefined) ? 'selected' : 'search')
 
     const [selectedClient, setSelectedClient] = useState(props.client)
     const [searchName, setSearchName] = useState(null)
