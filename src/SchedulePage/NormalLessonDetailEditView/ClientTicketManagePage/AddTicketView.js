@@ -60,7 +60,6 @@ export default function AddTicketView(props) {
                 <DialogContent>
                     <List>
                         {plans.map(p => <ListItem button onClick={() => props.onTicketAdd?.(p.ticket_id_arr[0])}>
-                            
                             <span>총횟수:{p.plan_total_rounds}, 회당단가:{p.per_ticket_cost}, 가장빠른만료기한:{format_date(p.fastest_expiring_ticket_expire_time)}</span>
                         </ListItem>)}
                     </List>

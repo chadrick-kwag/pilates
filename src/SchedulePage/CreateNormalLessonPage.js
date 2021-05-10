@@ -12,6 +12,8 @@ import koLocale from "date-fns/locale/ko";
 import DateFnsUtils from "@date-io/date-fns";
 import { DateTime } from 'luxon'
 
+import InstructorSearchComponent from '../components/InstructorSearchComponent4'
+
 
 
 const get_init_lesson_start_date = () => {
@@ -85,7 +87,7 @@ export default function CreateNormalLessonPage(props) {
                             강사 선택
                         </TableCell>
                         <TableCell>
-                            <ApprenticeInstructorSearchComponent onSelect={d => setSelectedAppInst(d)} />
+                            <InstructorSearchComponent onInstructorSelected={p => setSelectedInst(p)} />
                         </TableCell>
                     </TableRow>
                     <TableRow>
@@ -97,10 +99,8 @@ export default function CreateNormalLessonPage(props) {
                                 <div className="children-padding row-gravity-center">
                                     <span>시작시간</span>
                                     <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
-
                                         <DateTimePicker
                                             variant="inline"
-
                                             value={lessonStartTime}
                                             onChange={e => {
                                                 setLessonStartTime(e)
@@ -118,8 +118,6 @@ export default function CreateNormalLessonPage(props) {
 
                                     </Select>
                                 </div>
-
-
                             </div>
 
                         </TableCell>
