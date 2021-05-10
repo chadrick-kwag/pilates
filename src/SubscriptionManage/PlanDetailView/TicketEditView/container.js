@@ -4,7 +4,7 @@ import { DialogActions, DialogContent, Table, TableRow, TableCell, CircularProgr
 import { DataGrid } from '@material-ui/data-grid';
 
 import client from '../../../apolloclient'
-import { FETCH_TICKETS_FOR_SUBSCRIPTION_ID, UPDATE_EXPDATE_OF_TICKETS } from '../../../common/gql_defs'
+import { FETCH_TICKETS_FOR_SUBSCRIPTION_ID, UPDATE_EXPDATE_OF_TICKETS, DELETE_TICKETS } from '../../../common/gql_defs'
 import { DateTime } from 'luxon'
 
 import EditTicketTable from './EditTicketTable'
@@ -81,6 +81,43 @@ export default function Container(props) {
         })
     }
 
+
+    const request_delete_tickets = () => {
+
+
+        if (selectedTicketIdArr.length < 1) {
+            alert('선택된 티켓이 없음')
+            fail_callback()
+            return
+        }
+
+        const _var = {
+            ticketid_arr: selectedTicketIdArr
+        }
+
+        client.mutate({
+            mutation: DELETE_TICKETS,
+            variables: _var,
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.delete_tickets.success) {
+                props.onEditSuccess?.()
+                setTickets(null)
+                fetch_tickets()
+
+            }
+            else {
+                alert(`delete ticket failed. msg: ${res.data.delete_tickets.msg}`)
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            alert('delete ticket error')
+        })
+
+    }
+
     useEffect(() => {
         fetch_tickets()
     }, [])
@@ -138,7 +175,7 @@ export default function Container(props) {
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => props.onCancel?.()}>취소</Button>
-                <Button disabled={selectedTicketIdArr.length < 1}>티켓삭제</Button>
+                <Button disabled={selectedTicketIdArr.length < 1} onClick={() => request_delete_tickets()}>티켓삭제</Button>
                 <Button disabled={selectedTicketIdArr.length < 1} onClick={() => setShowTransferModal(true)}>티켓양도</Button>
                 <Button onClick={() => setShowAddTicketModal(true)}>티켓추가</Button>
                 <Button disabled={selectedTicketIdArr.length < 1} onClick={() => setShowExpireTimeModal(true)}>만료일시변경</Button>

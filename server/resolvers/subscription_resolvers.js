@@ -964,27 +964,38 @@ module.exports = {
         },
         delete_tickets: async (parent, args) => {
             console.log('delete_tickets')
-
             console.log(args)
 
-            let result = await pgclient.query(`select * from delete_tickets($1) as (success bool, msg text)`, [args.ticketid_arr]).then(res => {
-                if (res.rowCount !== 1) {
+            try {
+                await pgclient.query('begin')
+
+                for (let i = 0; i < args.ticketid_arr.length; i++) {
+                    await pgclient.query('delete from ticket where id=$1', [args.ticketid_arr[i]])
+                }
+
+                await pgclient.query(`commit`)
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
                     return {
                         success: false,
-                        msg: 'rowcount not 1'
+                        msg: e2.detail
                     }
                 }
 
-                return res.rows[0]
-            }).catch(e => {
-                console.log(e)
                 return {
                     success: false,
-                    msg: "query error"
+                    msg: e.detail
                 }
-            })
+            }
 
-            return result
 
         },
         add_tickets: async (parent, args) => {
