@@ -263,7 +263,7 @@ module.exports = {
 
             console.log('fetch_tickets_for_subscription_id')
 
-            try{
+            try {
 
                 const planid = args.subscription_id
 
@@ -291,7 +291,7 @@ module.exports = {
 
 
             }
-            catch(e){
+            catch (e) {
                 return {
                     success: false,
                     msg: e.detail
@@ -888,14 +888,14 @@ module.exports = {
 
             console.log(args)
 
-            try{
+            try {
                 await pgclient.query('begin')
 
                 // create new plan with new client
                 const ticket_id_arr = args.ticket_id_list
                 const recv_clientid = args.clientid
 
-                if(ticket_id_arr.length <1){
+                if (ticket_id_arr.length < 1) {
                     throw {
                         detail: 'no ticket id list given'
                     }
@@ -912,7 +912,7 @@ module.exports = {
 
                 const existing_plantypes = result.rows
 
-                if(existing_plantypes.length<1){
+                if (existing_plantypes.length < 1) {
                     throw {
                         detail: 'existing plan has no types'
                     }
@@ -920,23 +920,23 @@ module.exports = {
 
                 // creat new plan
 
-                result = await pgclient.query(`insert into plan (clientid, created, transferred_from_subscription_id) values ($1, now(), $2) returning id`,[recv_clientid, existing_plan_id])
+                result = await pgclient.query(`insert into plan (clientid, created, transferred_from_subscription_id) values ($1, now(), $2) returning id`, [recv_clientid, existing_plan_id])
 
                 const created_plan_id = result.rows[0].id
 
                 // create new plan's types
-                for(let i=0;i<existing_plantypes.length;i++){
+                for (let i = 0; i < existing_plantypes.length; i++) {
                     const at = existing_plantypes[i].activity_type
                     const gt = existing_plantypes[i].grouping_type
                     await pgclient.query(`insert into plan_type (planid, activity_type, grouping_type) values ($1, $2, $3)`, [created_plan_id, at, gt])
                 }
 
                 // transfer tickets
-                for(let i=0;i<ticket_id_arr.length;i++){
+                for (let i = 0; i < ticket_id_arr.length; i++) {
                     await pgclient.query(`update ticket set creator_plan_id=$1 where id = $2`, [created_plan_id, ticket_id_arr[i]])
                 }
 
-    
+
 
                 await pgclient.query('commit')
 
@@ -944,11 +944,11 @@ module.exports = {
                     success: true
                 }
             }
-            catch(e){
-                try{
+            catch (e) {
+                try {
                     await pgclient.query('rollback')
                 }
-                catch(e2){
+                catch (e2) {
                     return {
                         success: false,
                         msg: e2.detail
@@ -1048,6 +1048,46 @@ module.exports = {
         add_tickets: async (parent, args) => {
             console.log('add tickets')
             console.log(args)
+
+            try {
+
+                await pgclient.query('begin')
+
+                const per_ticket_cost = args.per_ticket_cost
+                const planid = args.planid
+                const expdate = args.expire_datetime
+
+                for (let i = 0; i < args.addsize; i++) {
+
+                    await pgclient.query(`insert into ticket (expire_time, creator_plan_id, cost) values ($1, $2, $3)`, [expdate, planid, per_ticket_cost])
+                }
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            }
+            catch (e) {
+                try {
+
+                    await pgclient.query(`rollback`)
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e2.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+
+
+            }
 
             let result = await pgclient.query(`select * from add_tickets($1, $2,$3) as (success bool, msg text)`, [args.planid, args.addsize, args.expire_datetime]).then(res => {
                 if (res.rowCount !== 1) {

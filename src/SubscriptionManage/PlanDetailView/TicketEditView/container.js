@@ -7,12 +7,12 @@ import client from '../../../apolloclient'
 import { FETCH_TICKETS_FOR_SUBSCRIPTION_ID, UPDATE_EXPDATE_OF_TICKETS } from '../../../common/gql_defs'
 import { DateTime } from 'luxon'
 
-import EditTicketList from '../../EditTicketList'
 import EditTicketTable from './EditTicketTable'
 
 
 import ExpireTimeChangeDialog from './ExpireTimeChangeDialog'
 import TicketTransferDialog from './TicketTransferDialog'
+import AddTicketDialog from './AddTicketDialog'
 
 
 export default function Container(props) {
@@ -21,7 +21,7 @@ export default function Container(props) {
     const [selectedTicketIdArr, setSelectedTicketIdArr] = useState([])
     const [showExpireTimeModal, setShowExpireTimeModal] = useState(false)
     const [showTransferModal, setShowTransferModal] = useState(false)
-
+    const [showAddTicketModal, setShowAddTicketModal] = useState(false)
 
     const fetch_tickets = () => {
 
@@ -140,7 +140,7 @@ export default function Container(props) {
                 <Button onClick={() => props.onCancel?.()}>취소</Button>
                 <Button disabled={selectedTicketIdArr.length < 1}>티켓삭제</Button>
                 <Button disabled={selectedTicketIdArr.length < 1} onClick={() => setShowTransferModal(true)}>티켓양도</Button>
-                <Button>티켓추가</Button>
+                <Button onClick={() => setShowAddTicketModal(true)}>티켓추가</Button>
                 <Button disabled={selectedTicketIdArr.length < 1} onClick={() => setShowExpireTimeModal(true)}>만료일시변경</Button>
             </DialogActions>
 
@@ -163,6 +163,15 @@ export default function Container(props) {
                 setShowTransferModal(false)
                 props.onEditSuccess?.()
             }} /> : null}
+
+            {showAddTicketModal ? <AddTicketDialog planid={props.planid} onClose={() => setShowAddTicketModal(false)}
+                onSuccess={() => {
+                    setTickets(null)
+                    fetch_tickets()
+                    setShowAddTicketModal(false)
+                    props.onEditSuccess?.()
+                }}
+            /> : null}
         </>
     )
 }

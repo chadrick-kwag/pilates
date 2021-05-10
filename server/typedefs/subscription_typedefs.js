@@ -92,7 +92,7 @@ type Mutation{
     transfer_tickets_to_clientid(ticket_id_list: [Int], clientid: Int!): SuccessResult
     update_expdate_of_tickets(ticket_id_list: [Int], new_expdate: String!): SuccessResult
     delete_tickets(ticketid_arr: [Int]): SuccessResult
-    add_tickets(planid: Int!, addsize: Int!, expire_datetime: String!): SuccessResult
+    add_tickets(planid: Int!, addsize: Int!, expire_datetime: String!, per_ticket_cost: Int!): SuccessResult
     change_plan_totalcost(planid: Int!, totalcost: Int!): SuccessResult
     update_normal_plan_basicinfo(planid:Int!, totalcost: Int!, clientid: Int!, types:[IncomingPlanType]): SuccessResult
     

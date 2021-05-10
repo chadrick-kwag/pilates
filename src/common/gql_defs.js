@@ -642,8 +642,8 @@ const QUERY_SUBSCRIPTION_INFO_WITH_TICKET_INFO = gql`
 
 
 const ADD_TICKETS = gql`
-    mutation($planid:Int!, $addsize: Int!, $expire_datetime: String!){
-        add_tickets(planid:$planid, addsize:$addsize, expire_datetime: $expire_datetime){
+    mutation($planid:Int!, $addsize: Int!, $expire_datetime: String!, $per_ticket_cost: Int!){
+        add_tickets(planid:$planid, addsize:$addsize, expire_datetime: $expire_datetime, per_ticket_cost: $per_ticket_cost){
             success 
             msg
         }
