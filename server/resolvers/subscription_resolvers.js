@@ -1,6 +1,5 @@
 
 const pgclient = require('../pgclient')
-const { match } = require('../typedefs/subscription_typedefs')
 const {
     parse_incoming_date_utc_string,
     parse_incoming_gender_str,
@@ -298,41 +297,6 @@ module.exports = {
                 }
             }
 
-            // console.log(args)
-
-            // let result = await pgclient.query(`select ticket.id as id, plan.created as created_date, ticket.expire_time 
-            // ,
-            // CASE
-            // WHEN A.id is null THEN null
-            // WHEN A.id is not null AND A.canceled_time is not null THEN null
-            // WHEN lesson.canceled_time is not null THEN null
-            // ELSE lesson.starttime
-            // END as consumed_date,
-            // C.created as destroyed_date
-            // from plan
-            // left join ticket on ticket.creator_plan_id = plan.id
-            // left join (select id, created from plan) as C on C.id = ticket.destroyer_plan_id
-            // left join (select DISTINCT ON(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) as A on A.ticketid = ticket.id
-            // left join lesson on lesson.id = A.lessonid
-            // where plan.id = $1 AND ticket.id is not null`, [args.subscription_id]).then(res => {
-            //     console.log(res.rows)
-
-            //     return {
-            //         success: true,
-            //         tickets: res.rows
-            //     }
-            // }).catch(e => {
-            //     console.log(e)
-
-            //     return {
-            //         success: false,
-            //         msg: "query error"
-            //     }
-            // })
-
-            // console.log(result)
-
-            // return result
 
         },
 
@@ -961,28 +925,6 @@ module.exports = {
                 }
             }
 
-            let ret = await pgclient.query('select * from transfer_tickets($1, $2) as (success bool, msg text)', [args.ticket_id_list, args.clientid]).then(res => {
-                console.log(res)
-
-                if (res.rowCount !== 1) {
-                    return {
-                        success: false,
-                        msg: 'row count not 1'
-                    }
-                }
-                else {
-                    return res.rows[0]
-                }
-            }).catch(e => {
-                // console.log(e)
-                console.log(e.error)
-                return {
-                    success: false,
-                    msg: 'query error'
-                }
-            })
-
-            return ret
         },
         update_expdate_of_tickets: async (parent, args) => {
 
@@ -1089,25 +1031,6 @@ module.exports = {
 
             }
 
-            let result = await pgclient.query(`select * from add_tickets($1, $2,$3) as (success bool, msg text)`, [args.planid, args.addsize, args.expire_datetime]).then(res => {
-                if (res.rowCount !== 1) {
-                    return {
-                        success: false,
-                        msg: 'rowcount not one'
-                    }
-                }
-                else {
-                    return res.rows[0]
-                }
-            }).catch(e => {
-                console.log(e)
-                return {
-                    success: false,
-                    msg: 'query error'
-                }
-            })
-
-            return result
         },
         change_plan_totalcost: async (parent, args) => {
             let result = await pgclient.query(`update plan set totalcost=$1 where id = $2`, [args.totalcost, args.planid]).then(res => {
