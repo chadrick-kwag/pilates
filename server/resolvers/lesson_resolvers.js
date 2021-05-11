@@ -668,6 +668,68 @@ module.exports = {
             console.log('inside create_lesson')
             console.log(args)
 
+            
+
+            try{
+
+                await pgclient.query('begin')
+
+                if(args.ticketids.length<1){
+                    throw {
+                        detail: 'no tickets given'
+                    }
+                }
+
+                // check tickets exist
+                for(let i=0;i<args.ticketids.length;i++){
+                    const r = await pgclient.query(`select id from ticket where id=$1`, [args.ticketids[i]])
+
+                    if(r.rowCount===0){
+                        throw {
+                            detail: `no ticket with id=${args.ticketids[i]} found`
+                        }
+                    }
+                }
+
+                // first create lesson
+                let result = await pgclient.query(`insert into lesson (instructorid, starttime, endtime, created, activity_type, grouping_type) values ($1,$2,$3, now(), $4, $5) returning id`,[args.instructorid, args.starttime, args.endtime, args.activity_type, args.grouping_type])
+
+                const created_lesson_id = result.rows[0].id
+
+
+                // update assign tickets
+                for(let i=0;i<args.ticketids.length;i++){
+
+                    result = await pgclient.query(`insert into assign_ticket (ticketid, lessonid, created) values ($1, $2, now())`,[args.ticketids[i], created_lesson_id])
+                }
+
+                
+
+                
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            }catch(e){
+                try{
+
+                    await pgclient.query('rollback')
+                }
+                catch(e2){
+                    return {
+                        success: false,
+                        msg: e2.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
             if (args.ticketids.length === 0) {
                 return {
                     success: false,

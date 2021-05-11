@@ -19,7 +19,7 @@ import ClientTicketChip from '../NormalLessonDetailEditView/ClientTicketChip'
 import AddClientDialog from './AddClientDialog'
 import SelectPlanAndTicketDialog from './SelectPlanAndTicketsDialog'
 
-
+import { CREATE_LESSON_GQL } from '../../common/gql_defs'
 
 
 const get_init_lesson_start_date = () => {
@@ -60,6 +60,48 @@ export default function CreateNormalLessonPage(props) {
     const request_create = () => {
 
         console.log('request_create')
+
+
+        let endtime_ms = lessonStartTime.getTime() + lessonDurationHours * 3600 * 1000
+        let endtime = new Date()
+        endtime.setTime(endtime_ms)
+
+        // gather ticket ids
+        let ticketid_arr = []
+        for (let i = 0; i < clientTickets.length; i++) {
+            ticketid_arr = ticketid_arr.concat(clientTickets[i].tickets)
+        }
+
+        const _var = {
+            ticketids: ticketid_arr,
+            instructorid: selectedInst.id,
+            starttime: lessonStartTime.toUTCString(),
+            endtime: endtime.toUTCString(),
+            activity_type: activityType,
+            grouping_type: groupingType
+
+        }
+
+        console.log(_var)
+
+        client.mutate({
+            mutation: CREATE_LESSON_GQL,
+            variables: _var,
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.create_lesson.success) {
+                props.onSuccess?.()
+            }
+            else {
+                alert(`create lesson failed. msg: ${res.data.create_lesson.msg}`)
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            console.log(e)
+            alert('create lesson error')
+        })
     }
 
     return (
