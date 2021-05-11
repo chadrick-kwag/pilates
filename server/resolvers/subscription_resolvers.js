@@ -101,6 +101,8 @@ module.exports = {
 
                 const avail_plan_and_tickets = result.rows
 
+                
+
                 // gather plan's info
                 for(let i=0;i<avail_plan_and_tickets.length;i++){
                     const planid = avail_plan_and_tickets[i].planid
