@@ -7,7 +7,7 @@ import './schedulepage.css'
 
 import ClientScheduleViewer from './ClientScheduleView/ClientScheduleViewer'
 import InstructorScheduleViewer from './InstructorScheduleView/InstructorScheduleViewer'
-import CreateNormalLessonPage from './CreateNormalLessonPage'
+import CreateNormalLessonPage from './CreateNormalLessonView/CreateNormalLessonPage'
 
 import ScheduleViewer from './AllScheduleView/ScheduleViewer'
 import CreateApprenticeLesson from './CreateApprenticeLesson'

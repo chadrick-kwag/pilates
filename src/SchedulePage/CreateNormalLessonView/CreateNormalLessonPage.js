@@ -1,18 +1,24 @@
 
 import React, { useState, useEffect } from 'react'
-import { Table, TableRow, TableHead, TableCell, Select, MenuItem, Button, CircularProgress } from '@material-ui/core'
+import { Table, TableRow, TableHead, TableCell, Select, MenuItem, Button, CircularProgress, Chip } from '@material-ui/core'
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import ErrorIcon from '@material-ui/icons/Error';
-import ApprenticeInstructorSearchComponent from '../components/ApprenticeInstructorSearchComponent'
 
-import { FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE, CREATE_APPRENTICE_LESSON } from '../common/gql_defs'
-import client from '../apolloclient'
+
+
+import client from '../../apolloclient'
 import koLocale from "date-fns/locale/ko";
 
 import DateFnsUtils from "@date-io/date-fns";
 import { DateTime } from 'luxon'
 
-import InstructorSearchComponent from '../components/InstructorSearchComponent4'
+import InstructorSearchComponent from '../../components/InstructorSearchComponent4'
+
+import ClientTicketChip from '../NormalLessonDetailEditView/ClientTicketChip'
+
+import AddClientDialog from './AddClientDialog'
+import SelectPlanAndTicketDialog from './SelectPlanAndTicketsDialog'
+
 
 
 
@@ -25,8 +31,6 @@ const get_init_lesson_start_date = () => {
     d.setMilliseconds(0)
 
     return d
-
-
 }
 
 
@@ -40,10 +44,17 @@ export default function CreateNormalLessonPage(props) {
     const [planArr, setPlanArr] = useState(null)
     const [selectedPlan, setSelectedPlan] = useState(null)
     const [lessonStartTime, setLessonStartTime] = useState(get_init_lesson_start_date())
-    const [lessonDurationHours, setLessonDurationHours] = useState(null)
-    const [clientTickets, setClientTickets] = useState({})
+    const [lessonDurationHours, setLessonDurationHours] = useState(1)
+    const [clientTickets, setClientTickets] = useState([])
+
+    const [showAddClientDialog, setShowAddClientDialog] = useState(false)
 
     const availLessonDurationHours = [1, 2, 3, 4, 5, 6, 7]
+
+    const [showSelectPlanAndTicketDialog, setShowSelectPlanAndTicketDialog] = useState(false)
+    const [selectPlanAndTicketDialogClientIndex, setSelectPlanAndTicketDialogClientIndex] = useState(null)
+
+
 
 
     const request_create = () => {
@@ -92,6 +103,43 @@ export default function CreateNormalLessonPage(props) {
                     </TableRow>
                     <TableRow>
                         <TableCell>
+                            회원선택
+                        </TableCell>
+                        <TableCell>
+                            <div>
+                                {clientTickets.map((d, i) => <ClientTicketChip name={d.name} phonenumber={d.phonenumber} tickets={d.tickets} slotTotal={lessonDurationHours}
+                                    onDeleteClientTickets={() => {
+                                        let newarr = [clientTickets]
+                                        newarr = newarr.splice(i, 1)
+                                        setClientTickets(newarr)
+                                    }}
+
+                                    onEditClientTickets={() => {
+
+                                        if (activityType === null || groupingType === null) {
+                                            alert('액티비티/그룹 종류를 먼저 선택해주세요')
+                                            return
+                                        }
+                                        setSelectPlanAndTicketDialogClientIndex(i)
+                                        setShowSelectPlanAndTicketDialog(true)
+                                    }}
+                                />)}
+
+                                {(() => {
+                                    if (groupingType === 'INDIVIDUAL' && clientTickets.length > 0) {
+                                        return null
+                                    }
+                                    if (groupingType === 'SEMI' && clientTickets.length > 1) {
+                                        return null
+                                    }
+                                    return <Chip label='add' onClick={() => setShowAddClientDialog(true)} />
+                                })()}
+                            </div>
+
+                        </TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>
                             수업시간선택
                         </TableCell>
                         <TableCell>
@@ -131,6 +179,33 @@ export default function CreateNormalLessonPage(props) {
                 <Button variant='outlined' onClick={e => request_create()}>생성</Button>
             </div>
 
+
+            {showAddClientDialog ? <AddClientDialog onClose={() => setShowAddClientDialog(false)} onAddClient={a => {
+                console.log(a)
+                let new_ct = {
+                    id: a.id,
+                    name: a.clientname,
+                    phonenumber: a.clientphonenumber,
+                    tickets: []
+                }
+
+                const n = [...clientTickets]
+                n.push(new_ct)
+
+                setClientTickets(n)
+                setShowAddClientDialog(false)
+            }} /> : null}
+
+            {showSelectPlanAndTicketDialog ? <SelectPlanAndTicketDialog tickets={clientTickets[selectPlanAndTicketDialogClientIndex].tickets} totalSlotSize={lessonDurationHours}
+                activityType={activityType}
+                groupingType={groupingType}
+                clientid={clientTickets[selectPlanAndTicketDialogClientIndex].id}
+                onDone={tia => {
+                    let newarr = [...clientTickets]
+                    newarr[selectPlanAndTicketDialogClientIndex].tickets = tia
+                    setClientTickets(newarr)
+                    setShowSelectPlanAndTicketDialog(false)
+                }} onClose={() => setShowSelectPlanAndTicketDialog(false)} /> : null}
         </>
     )
 }

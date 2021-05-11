@@ -44,7 +44,7 @@ export default function ClientSearchComponent(props) {
             setSearchIsLoading(false)
             if (data.length === 1) {
                 setSelectedClient(data[0])
-                props.onClientSelected?.(a)
+                props.onClientSelected?.(data[0])
                 setViewMode('selected')
             }
             else {
