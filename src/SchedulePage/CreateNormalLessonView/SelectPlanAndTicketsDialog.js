@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { Dialog, DialogActions, DialogContent, Button, List, ListItem, ListItemText, Select, MenuItem } from '@material-ui/core'
+import { Dialog, DialogActions, DialogContent, Button, List, ListItem, ListItemText, Select, MenuItem, CircularProgress } from '@material-ui/core'
 
 import client from '../../apolloclient'
 import { FETCH_TICKET_AVAILABLE_PLAN_FOR_CLIENTID_AND_LESSONTYPES } from '../../common/gql_defs'
 import DeleteIcon from '@material-ui/icons/Delete';
-import {DateTime} from 'luxon'
+import { DateTime } from 'luxon'
 
-
+import ErrorIcon from '@material-ui/icons/Error';
 
 
 function AddSlot(props) {
@@ -43,7 +43,10 @@ function AddSlot(props) {
             {props.options?.map((d, i) => <MenuItem value={i}>{get_format_of_option(d)}</MenuItem>)}
         </Select>
 
-        <Button disabled={selection === null} onClick={() => props.onDone?.(props.options[selection].tickets[0].id)}>선택</Button>
+        <Button disabled={selection === null} onClick={() => {
+            setSelection(null)
+            props.onDone?.(props.options[selection].tickets[0].id)
+        }}>선택</Button>
 
     </div>
 }
@@ -55,6 +58,10 @@ export default function SelectPlanAndTicketDialog(props) {
 
     const [tickets, setTickets] = useState(props.tickets) // array of ticket ids
     const [availableTicketInfo, setAvailableTicketInfo] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
+
+
+    const [existingTicketsRemovedAvailableTicketInfo, setExistingTicketsRemovedAvailableTicketInfo] = useState(null)
 
     const generate_empty_slots = () => {
 
@@ -64,11 +71,10 @@ export default function SelectPlanAndTicketDialog(props) {
             for (let i = 0; i < remain_size; i++) {
                 out.push(<ListItem>
                     <ListItemText>
-                        <AddSlot options={availableTicketInfo} onDone={tid => {
+                        <AddSlot options={existingTicketsRemovedAvailableTicketInfo} onDone={tid => {
                             const newarr = [...tickets]
                             newarr.push(tid)
                             setTickets(newarr)
-                            console.log(newarr)
                         }} />
                     </ListItemText>
                 </ListItem>)
@@ -80,6 +86,64 @@ export default function SelectPlanAndTicketDialog(props) {
     }
 
     useEffect(() => {
+        if (availableTicketInfo === null) {
+            setExistingTicketsRemovedAvailableTicketInfo(availableTicketInfo)
+            return
+        }
+
+        if (tickets.length === 0) {
+            setExistingTicketsRemovedAvailableTicketInfo(availableTicketInfo)
+            return
+        }
+        else {
+            const plan_ticket_info = []
+
+            for (let i = 0; i < availableTicketInfo.length; i++) {
+                const p = availableTicketInfo[i]
+                const filtered_tickets = []
+                for (let j = 0; j < p.tickets.length; j++) {
+                    let match_exist = false
+                    for (let k = 0; k < tickets.length; k++) {
+                        if (tickets[k] === p.tickets[j].id) {
+                            match_exist = true
+                            break
+                        }
+
+                    }
+
+                    if (!match_exist) {
+                        filtered_tickets.push(p.tickets[j])
+                    }
+                }
+
+                console.log('filtered tickets')
+                console.log(filtered_tickets)
+
+
+
+                if (filtered_tickets.length > 0) {
+                    const new_plan = _.cloneDeep(p)
+                    new_plan.tickets = filtered_tickets
+                    plan_ticket_info.push(new_plan)
+                }
+
+            }
+
+            console.log('new plan_ticket_info')
+            console.log(plan_ticket_info)
+
+            setExistingTicketsRemovedAvailableTicketInfo(plan_ticket_info)
+            return
+
+        }
+
+
+
+    }, [availableTicketInfo, tickets])
+
+    useEffect(() => {
+
+        setIsLoading(true)
 
         const _var = {
             clientid: props.clientid,
@@ -140,10 +204,13 @@ export default function SelectPlanAndTicketDialog(props) {
 
                 if (newdata.length == 0) {
                     alert('사용가능한 플랜이 없거나 모두 소진되었습니다.')
+                    setAvailableTicketInfo(null)
+                    setIsLoading(false)
                     return
                 }
 
                 setAvailableTicketInfo(newdata)
+                setIsLoading(false)
             }
             else {
                 alert(`fetch plan and tickets failed. msg:${res.data.fetch_ticket_available_plan_for_clientid_and_lessontypes.msg}`)
@@ -158,17 +225,20 @@ export default function SelectPlanAndTicketDialog(props) {
     return (
         <Dialog open={true} onClose={() => props.onClose()}>
             <DialogContent>
-                <List>
-                    {tickets.map((d, i) => <ListItem>
-                        <ListItemText>티켓ID: {d}</ListItemText>
-                        <DeleteIcon onClick={() => {
-                            const newarr = [...tickets]
-                            newarr.splice(i, 1)
-                            setTickets(newarr)
-                        }} />
-                    </ListItem>)}
-                    {generate_empty_slots()}
-                </List>
+                {isLoading ? <CircularProgress /> :
+                    availableTicketInfo === null ? <ErrorIcon /> : <List>
+                        {tickets.map((d, i) => <ListItem>
+                            <ListItemText>티켓ID: {d}</ListItemText>
+                            <DeleteIcon onClick={() => {
+                                const newarr = [...tickets]
+                                newarr.splice(i, 1)
+                                setTickets(newarr)
+                            }} />
+                        </ListItem>)}
+                        {generate_empty_slots()}
+                    </List>
+                }
+
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => props.onClose?.()}>취소</Button>
