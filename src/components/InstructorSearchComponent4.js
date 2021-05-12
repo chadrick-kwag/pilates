@@ -60,11 +60,20 @@ export default function InstructorSearchComponent(props) {
         })
     }
 
+    const button_click_handler = () => {
+        request_search()
+        setAnchorEl(textinput.current)
+    }
+
     if (viewMode === 'search') {
         return (
             <div>
                 <span>이름:</span>
-                <TextField ref={textinput} value={searchName} onChange={e => setSearchName(e.target.value)} />
+                <TextField ref={textinput} value={searchName} onChange={e => setSearchName(e.target.value)} onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                        button_click_handler()
+                    }
+                }} />
                 <Popover
                     anchorEl={anchorEl}
                     anchorOrigin={{
@@ -86,10 +95,7 @@ export default function InstructorSearchComponent(props) {
 
                 </Popover>
 
-                <Button disabled={searchName === null || searchName === "" ? true : false} onClick={e => {
-                    request_search()
-                    setAnchorEl(textinput.current)
-                }}>검색</Button>
+                <Button disabled={searchName === null || searchName === "" ? true : false} onClick={e => button_click_handler()}>검색</Button>
                 {selectedInstructor !== null ? <Button onClick={() => {
                     setSearchName(null)
                     setViewMode('selected')
