@@ -151,8 +151,8 @@ export default function CreateNormalLessonPage(props) {
                             <div>
                                 {clientTickets.map((d, i) => <ClientTicketChip name={d.name} phonenumber={d.phonenumber} tickets={d.tickets} slotTotal={lessonDurationHours}
                                     onDeleteClientTickets={() => {
-                                        let newarr = [clientTickets]
-                                        newarr = newarr.splice(i, 1)
+                                        let newarr = [...clientTickets]
+                                        newarr.splice(i, 1)
                                         setClientTickets(newarr)
                                     }}
 

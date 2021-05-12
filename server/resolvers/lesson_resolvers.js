@@ -781,42 +781,6 @@ module.exports = {
                 }
             }
 
-            if (args.ticketids.length === 0) {
-                return {
-                    success: false,
-                    msg: "no clients given"
-                }
-            }
-
-
-            let starttime = new Date(args.starttime).getTime() / 1000
-            let endtime = new Date(args.endtime).getTime() / 1000
-
-            let _args = [args.ticketids, args.instructorid, starttime, endtime]
-            console.log(_args)
-
-            let result = await pgclient.query('select success, msg from create_lesson($1,$2,$3,$4) as (success bool, msg text)', [args.ticketids, args.instructorid, starttime, endtime]).then(res => {
-                console.log(res)
-
-                if (res.rowCount !== 1) {
-                    return {
-                        success: false,
-                        msg: 'rowcount not 1'
-                    }
-                }
-                else {
-                    return res.rows[0]
-                }
-            }).catch(e => {
-                console.log(e)
-                return {
-                    success: false,
-                    msg: "query error"
-                }
-            })
-
-            return result
-
         },
 
         delete_lesson: async (parent, args) => {

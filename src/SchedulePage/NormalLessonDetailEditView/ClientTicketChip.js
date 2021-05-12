@@ -43,7 +43,6 @@ export default function ClientTicketChip(props) {
 
             <div onClick={() => {
                 props.onDeleteClientTickets?.()
-                console.log('clicked')
             }} >
                 <CloseIcon fontsize={'22px'} className='action-button' />
             </div>
