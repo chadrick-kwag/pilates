@@ -31,7 +31,9 @@ function AddSlot(props) {
             }
 
         })[0].expire_time
-        return `플랜id:${o.planid}(${remain_rounds}/${totalrounds}) ${fastest_exptime}`
+
+        let exptime_str = DateTime.fromISO(fastest_exptime).setZone('utc+9').toFormat('y-LL-dd HH:mm')
+        return `플랜id:${o.planid}(${remain_rounds}/${totalrounds}) , 가장빠른만료일:${exptime_str}`
     }
 
 

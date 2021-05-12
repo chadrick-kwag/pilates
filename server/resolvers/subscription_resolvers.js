@@ -95,6 +95,7 @@ module.exports = {
                 left join lesson on A.lessonid = lesson.id
                 where plan_type.activity_type = $1 and plan_type.grouping_type = $2
                 and plan.clientid =$3
+                and A.id is null
                 and A.canceled_time is null
                 group by plan.id
                 `,[activity_type, grouping_type, clientid])
