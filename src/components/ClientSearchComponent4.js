@@ -40,7 +40,7 @@ export default function ClientSearchComponent(props) {
                     clientphonenumber: a.phonenumber
                 }
             })
-
+            console.log(data)
             setSearchIsLoading(false)
             if (data.length === 1) {
                 setSelectedClient(data[0])
@@ -74,12 +74,13 @@ export default function ClientSearchComponent(props) {
                         horizontal: 'left',
                     }}
                     open={anchorEl !== null}
+                    onClose={() => setAnchorEl(null)}
                 >
-                    {searchIsLoading ? <CircularProgress /> : searchResult?.map(a => <MenuItem onClick={() => {
+                    {searchIsLoading ? <CircularProgress /> : searchResult?.length > 0 ? searchResult?.map(a => <MenuItem onClick={() => {
                         setSelectedClient(a)
                         setViewMode('selected')
                         props.onClientSelected?.(a)
-                    }}>{a.clientname}({a.clientphonenumber})</MenuItem>)}
+                    }}>{a.clientname}({a.clientphonenumber})</MenuItem>) : <MenuItem>검색결과 없음</MenuItem>}
 
                 </Popover>
 

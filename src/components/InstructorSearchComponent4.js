@@ -76,12 +76,13 @@ export default function InstructorSearchComponent(props) {
                         horizontal: 'left',
                     }}
                     open={anchorEl !== null}
+                    onClose={() => setAnchorEl(null)}
                 >
-                    {searchIsLoading ? <CircularProgress /> : searchResult?.map(a => <MenuItem onClick={() => {
+                    {searchIsLoading ? <CircularProgress /> : searchResult?.length > 0 ? searchResult?.map(a => <MenuItem onClick={() => {
                         setSelectedInstructor(a)
                         setViewMode('selected')
                         props.onInstructorSelected?.(a)
-                    }}>{a.name}({a.phonenumber})</MenuItem>)}
+                    }}>{a.name}({a.phonenumber})</MenuItem>) : <MenuItem>검색결과 없음</MenuItem>}
 
                 </Popover>
 
