@@ -210,23 +210,38 @@ export default function CreateNormalLessonPage(props) {
                         </TableCell>
                         <TableCell>
                             <div>
-                                {clientTickets.map((d, i) => <ClientTicketChip name={d.name} phonenumber={d.phonenumber} tickets={d.tickets} slotTotal={lessonDurationHours}
-                                    onDeleteClientTickets={() => {
-                                        let newarr = [...clientTickets]
-                                        newarr.splice(i, 1)
-                                        setClientTickets(newarr)
-                                    }}
+                                {clientTickets.map((d, i) => {
+                                    let is_error = false
 
-                                    onEditClientTickets={() => {
-
-                                        if (activityType === null || groupingType === null) {
-                                            alert('액티비티/그룹 종류를 먼저 선택해주세요')
-                                            return
+                                    if (groupingType === 'INDIVIDUAL') {
+                                        if (i > 0) {
+                                            is_error = true
                                         }
-                                        setSelectPlanAndTicketDialogClientIndex(i)
-                                        setShowSelectPlanAndTicketDialog(true)
-                                    }}
-                                />)}
+                                    }
+                                    else if (groupingType === 'SEMI') {
+                                        if (i > 1) {
+                                            is_error = true
+                                        }
+                                    }
+
+                                    return <ClientTicketChip isError={is_error} name={d.name} phonenumber={d.phonenumber} tickets={d.tickets} slotTotal={lessonDurationHours}
+                                        onDeleteClientTickets={() => {
+                                            let newarr = [...clientTickets]
+                                            newarr.splice(i, 1)
+                                            setClientTickets(newarr)
+                                        }}
+
+                                        onEditClientTickets={() => {
+
+                                            if (activityType === null || groupingType === null) {
+                                                alert('액티비티/그룹 종류를 먼저 선택해주세요')
+                                                return
+                                            }
+                                            setSelectPlanAndTicketDialogClientIndex(i)
+                                            setShowSelectPlanAndTicketDialog(true)
+                                        }}
+                                    />
+                                })}
 
                                 {(() => {
                                     if (groupingType === 'INDIVIDUAL' && clientTickets.length > 0) {
