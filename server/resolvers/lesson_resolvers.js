@@ -691,8 +691,57 @@ module.exports = {
                     }
                 }
 
+
+                // check instructor exist
+                let result = await pgclient.query(`select id from instructor where id=$1`,[args.instructorid])
+
+                if(result.rowCount<1){
+                    throw {
+                        detail: 'instructor not found'
+                    }
+                }
+
+                // get clientid of tickets
+                const clientid_set=new Set()
+
+                for(let i=0;i<args.ticketids.length;i++){
+                    result = await pgclient.query(`select plan.clientid from ticket left join plan on ticket.creator_plan_id = plan.id where ticket.id=$1`,[args.ticketids[i]])
+
+                    clientid_set.add(result.rows[0].clientid)
+                }
+
+                // check if overlapping lesson exist for instructor
+
+                result = await pgclient.query(`select lesson.id from lesson where ( tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1,$2) ) and instructorid=$3`,[args.starttime, args.endtime, args.instructorid])
+
+                if(result.rowCount>0){
+                    throw {
+                        detail: 'instructor has overlapping schedule'
+                    }
+                }
+
+                // check if overlapping lesson exist for client
+                for(let cid of clientid_set){
+                    result = await pgclient.query(`with A as (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc)
+
+                    select lesson.id from A
+                    left join ticket on ticket.id = A.ticketid
+                    left join plan on ticket.creator_plan_id = plan.id
+                    left join lesson on A.lessonid = lesson.id
+                    where lesson.canceled_time is null
+                    AND A.canceled_time is null
+                    AND ( tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1, $2) )
+                    AND plan.clientid=$3`,[args.starttime, args.endtime, cid])
+
+                    if(result.rowCount>0){
+                        throw {
+                            detail: `client id=${cid} has overlapping lesson` 
+                        }
+                    }
+                }
+
                 // first create lesson
-                let result = await pgclient.query(`insert into lesson (instructorid, starttime, endtime, created, activity_type, grouping_type) values ($1,$2,$3, now(), $4, $5) returning id`,[args.instructorid, args.starttime, args.endtime, args.activity_type, args.grouping_type])
+                result = await pgclient.query(`insert into lesson (instructorid, starttime, endtime, created, activity_type, grouping_type) values ($1,$2,$3, now(), $4, $5) returning id`,[args.instructorid, args.starttime, args.endtime, args.activity_type, args.grouping_type])
 
                 const created_lesson_id = result.rows[0].id
 
@@ -713,11 +762,13 @@ module.exports = {
                 }
 
             }catch(e){
+                console.log(e)
                 try{
 
                     await pgclient.query('rollback')
                 }
                 catch(e2){
+                    console.log(e2)
                     return {
                         success: false,
                         msg: e2.detail
