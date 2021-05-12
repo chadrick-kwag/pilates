@@ -59,7 +59,68 @@ export default function CreateNormalLessonPage(props) {
 
     const request_create = () => {
 
-        console.log('request_create')
+        // check inputs
+
+        if (selectedInst === null) {
+            alert('강사를 선택해주세요')
+            return
+        }
+
+        if (lessonDurationHours === null) {
+            alert('수업 길이를 선택해주세요')
+            return
+        }
+
+        if (activityType === null) {
+            alert('액티비티 종류를 선택해주세요')
+            return
+        }
+
+        if (groupingType === null) {
+            alert('수업 인원종류를 선택해주세요')
+            return
+        }
+
+        if (clientTickets.length === 0) {
+            alert('수강할 회원들을 선택해주세요')
+            return
+        }
+
+        // check for each clients, # of tickets match duration, and ticket ids are all unique, and all clients are unique
+        const ticket_id_set = new Set()
+        const client_id_set = new Set()
+
+        for (let i = 0; i < clientTickets.length; i++) {
+            const cid = clientTickets[i].id
+            // check cid is unique
+            if (client_id_set.has(cid)) {
+                alert('회원을 중복해서 선택할 수 없습니다.')
+                return
+            }
+
+            client_id_set.add(cid)
+
+            // check ticket length
+            const ticket_arr = clientTickets[i].tickets
+
+            if (ticket_arr.length !== lessonDurationHours) {
+                alert('일부 회원의 티켓 수가 수업 길이와 맞지 않습니다.')
+                return
+            }
+
+            for (let j = 0; j < ticket_arr.length; j++) {
+                const tid = ticket_arr[j]
+
+                if (ticket_id_set.has(tid)) {
+                    alert('중복되서 사용되는 티켓이 있습니다.')
+                    return
+                }
+
+                ticket_id_set.add(tid)
+            }
+
+        }
+
 
 
         let endtime_ms = lessonStartTime.getTime() + lessonDurationHours * 3600 * 1000
