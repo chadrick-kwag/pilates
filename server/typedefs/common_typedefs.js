@@ -145,8 +145,7 @@ type AllSubscriptionsWithRemainRounds{
   total_rounds: Int
   remain_rounds: Int
   created: String
-  activity_type: String
-  grouping_type: String
+  plan_types: [PlanType]
 }
 
 type ReturnAllSubscriptionsWithRemainRounds{

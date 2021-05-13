@@ -250,18 +250,10 @@ export default function ListClientPageV2(props) {
                                     </TableRow>
                                 })}
                             </TableBody>
-
-
                         </Table>}
 
                     </Grid>
-
-
                 </>
-
-
-
-
 
             </Grid>
             {showDetailClientId !== null ? <ClientDetailModal

@@ -10,6 +10,21 @@ import { KeyboardDatePicker } from "@material-ui/pickers";
 import client from '../apolloclient'
 
 
+const get_plan_type_arr_string = (pt_arr)=>{
+    let out = ""
+
+    for(let i=0;i<pt_arr.length;i++){
+        const at = pt_arr[i].activity_type
+        const gt = pt_arr[i].grouping_type
+
+
+        let b = `${activity_type_to_kor[at]}/${grouping_type_to_kor[gt]}`
+        out = out + b + ','
+    }
+
+    return out.slice(0,-1)
+}
+
 
 function convert_gender_type_to_kor_str(gender_type_str) {
     if (gender_type_str == null) {
@@ -356,7 +371,7 @@ class ClientDetailModal extends React.Component {
                             <tbody>
                                 {this.state.subscription_info_arr.map(d => <tr>
                                     <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
-                                    <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
+                                    <td>{get_plan_type_arr_string(d.plan_types)}</td>
                                     <td>{d.remain_rounds}/{d.total_rounds}</td>
                                 </tr>)}
                             </tbody>

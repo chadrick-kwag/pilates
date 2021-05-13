@@ -246,7 +246,69 @@ module.exports = {
 
         query_all_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
 
+            try{
 
+                let result = await pgclient.query(`select array_agg(json_build_object('id',ticket.id, 'expire_time',ticket.expire_time, 'consumed', case when A.id is null then false
+                when A.canceled_time is not null then false
+                else true end )) as tickets,
+                plan.id as planid,
+                plan.created as created
+                from ticket
+                left join plan on ticket.creator_plan_id = plan.id
+                left join (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc) as A on A.ticketid = ticket.id
+                where plan.clientid=$1
+                group by plan.id`, [args.clientid])
+                
+                const plan_arr = []
+
+                for(let i=0;i<result.rows.length;i++){
+                    const a = result.rows[i]
+
+                    const planid = a.planid
+                    const tickets = a.tickets
+
+                    const totalcount = tickets.length
+                    let consumed_count = 0
+
+                    for(let j=0;j<tickets.length;j++){
+                        if(tickets[j].consumed){
+                            consumed_count+=1
+                        }
+                    }
+
+                    const remaincount = totalcount - consumed_count
+
+
+                    let result2 = await pgclient.query(`select activity_type, grouping_type from plan_type
+                    where planid=$1`, [planid])
+
+                    
+                    plan_arr.push({
+                        planid: planid,
+                        total_rounds: totalcount,
+                        remain_rounds: remaincount,
+                        created: a.created,
+                        plan_types: result2.rows  
+                    })
+
+
+                }
+
+                console.log('plan_arr')
+                console.log(plan_arr)
+
+                return {
+                    success: true,
+                    allSubscriptionsWithRemainRounds: plan_arr
+                }
+
+            }catch(e){
+                console.log(e)
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
 
             let result = await pgclient.query(`select  plan.id as planid,
             count(1) filter (where ticket.id is not null) as total_rounds,
