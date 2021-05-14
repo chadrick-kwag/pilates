@@ -98,17 +98,17 @@ module.exports = {
                 and A.id is null
                 and A.canceled_time is null
                 group by plan.id
-                `,[activity_type, grouping_type, clientid])
+                `, [activity_type, grouping_type, clientid])
 
                 const avail_plan_and_tickets = result.rows
 
-                
+
 
                 // gather plan's info
-                for(let i=0;i<avail_plan_and_tickets.length;i++){
+                for (let i = 0; i < avail_plan_and_tickets.length; i++) {
                     const planid = avail_plan_and_tickets[i].planid
-                    
-                    result = await pgclient.query(`select count(1) as totalcount from ticket where creator_plan_id=$1`,[planid])
+
+                    result = await pgclient.query(`select count(1) as totalcount from ticket where creator_plan_id=$1`, [planid])
 
                     avail_plan_and_tickets[i].plan_total_rounds = result.rows[0].totalcount
                 }
@@ -246,7 +246,7 @@ module.exports = {
 
         query_all_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
 
-            try{
+            try {
 
                 let result = await pgclient.query(`select array_agg(json_build_object('id',ticket.id, 'expire_time',ticket.expire_time, 'consumed', case when A.id is null then false
                 when A.canceled_time is not null then false
@@ -258,10 +258,10 @@ module.exports = {
                 left join (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc) as A on A.ticketid = ticket.id
                 where plan.clientid=$1
                 group by plan.id`, [args.clientid])
-                
+
                 const plan_arr = []
 
-                for(let i=0;i<result.rows.length;i++){
+                for (let i = 0; i < result.rows.length; i++) {
                     const a = result.rows[i]
 
                     const planid = a.planid
@@ -270,9 +270,9 @@ module.exports = {
                     const totalcount = tickets.length
                     let consumed_count = 0
 
-                    for(let j=0;j<tickets.length;j++){
-                        if(tickets[j].consumed){
-                            consumed_count+=1
+                    for (let j = 0; j < tickets.length; j++) {
+                        if (tickets[j].consumed) {
+                            consumed_count += 1
                         }
                     }
 
@@ -282,13 +282,13 @@ module.exports = {
                     let result2 = await pgclient.query(`select activity_type, grouping_type from plan_type
                     where planid=$1`, [planid])
 
-                    
+
                     plan_arr.push({
                         planid: planid,
                         total_rounds: totalcount,
                         remain_rounds: remaincount,
                         created: a.created,
-                        plan_types: result2.rows  
+                        plan_types: result2.rows
                     })
 
 
@@ -302,7 +302,7 @@ module.exports = {
                     allSubscriptionsWithRemainRounds: plan_arr
                 }
 
-            }catch(e){
+            } catch (e) {
                 console.log(e)
                 return {
                     success: false,
@@ -310,38 +310,6 @@ module.exports = {
                 }
             }
 
-            let result = await pgclient.query(`select  plan.id as planid,
-            count(1) filter (where ticket.id is not null) as total_rounds,
-            count( 1 ) filter (where (A.id is null OR (A.id is not null AND A.canceled_time is not null)) AND ticket.expire_time > now() AND ticket.destroyer_plan_id is null)  as remain_rounds , 
-            plan.created,
-            plan.activity_type,
-            plan.grouping_type
-            from plan
-            left join ticket on plan.id = ticket.creator_plan_id
-            left join (select DISTINCT ON (ticketid) * from assign_ticket order by ticketid, created desc) AS A on A.ticketid = ticket.id
-            where plan.clientid = $1
-            
-            group by plan.id
-            `, [args.clientid]).then(res => {
-
-                console.log(res)
-
-                return {
-                    success: true,
-                    allSubscriptionsWithRemainRounds: res.rows
-                }
-            }).catch(e => {
-                console.log(e)
-
-                return {
-                    success: false,
-                    msg: 'query error'
-                }
-            })
-
-            console.log(result)
-
-            return result
         },
         query_subscriptions_by_clientid: async (parent, args) => {
             console.log('inside query_subscriptions_by_clientid')

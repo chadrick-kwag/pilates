@@ -421,19 +421,27 @@ module.exports = {
 
 
                 const data = []
-
-                result = await pgclient.query(`with C as (select lesson.id, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type, extract(hour from lesson.endtime - lesson.starttime)::int as duration, plan.clientid, client.name as clientname, client.phonenumber as clientphonenumber, array_agg(A.ticketid) as ticket_id_arr from lesson 
-                left join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on A.lessonid = lesson.id
-                left join ticket on A.ticketid = ticket.id
-                left join plan on ticket.creator_plan_id = plan.id
-                left join client on plan.clientid = client.id
-                where instructorid=$1 and lesson.canceled_time is null AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3))
-                group by lesson.id, plan.clientid, client.name, client.phonenumber)
-                
-                select id, activity_type, grouping_type, duration, starttime, endtime,
-                array_agg(json_build_object('clientid', clientid, 'clientname', clientname, 'clientphonenumber', clientphonenumber, 'ticket_id_arr', ticket_id_arr)) as client_tickets
-                from C
-                group by id, starttime, endtime, activity_type, grouping_type, duration`, [args.instructorid, args.search_starttime, args.search_endtime])
+                // gather lesosn and assigned tickets, grouped by clent
+                result = await pgclient.query(`with C as (select lesson.id, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type, 
+                    extract(hour from lesson.endtime - lesson.starttime)::int as duration, plan.clientid, 
+                    client.name as clientname, client.phonenumber as clientphonenumber,
+                    array_agg(A.ticketid) filter (where A.canceled_time is null) as ticket_id_arr ,
+                    sum(ticket.cost) filter (where A.canceled_time is null) as ticket_cost_sum
+                    
+                    from lesson 
+         left join (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc) as A on A.lessonid = lesson.id
+         left join ticket on A.ticketid = ticket.id
+         left join plan on ticket.creator_plan_id = plan.id
+         left join client on plan.clientid = client.id
+         where instructorid=$1 and lesson.canceled_time is null AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3))
+         group by lesson.id, plan.clientid, client.name, client.phonenumber)
+         
+         select id, activity_type, grouping_type, duration, starttime, endtime,
+         array_agg(json_build_object('clientid', clientid, 'clientname', clientname, 'clientphonenumber', 
+                                     clientphonenumber, 'ticket_id_arr', ticket_id_arr)) as client_tickets,
+                   C.ticket_cost_sum 
+         from C
+         group by id, starttime, endtime, activity_type, grouping_type, duration, ticket_cost_sum`, [args.instructorid, args.search_starttime, args.search_endtime])
 
                 const lesson_info_arr = result.rows
 
@@ -496,36 +504,9 @@ module.exports = {
                     }
                     else {
                         // sum up all ticket costs
-                        totalcost = 0
-
-                        // go through each client and calculate client's cost sum adn
-                        // add that to totalcost
-                        for (let j = 0; j < li.client_tickets.length; j++) {
-
-                            const ct = li.client_tickets[j]
-
-                            const ticket_id_arr = ct.ticket_id_arr
-
-                            console.log('ticket_id_arr')
-                            console.log(ticket_id_arr)
-
-                            result = await pgclient.query(`with A as (select plan.id as id, totalcost, count(ticket.id), totalcost / count(ticket.id) as percost from plan
-                            left join ticket on ticket.creator_plan_id = plan.id
-                            group by plan.id, plan.totalcost),
-                            B as (select unnest($1::int[]) as given_id)
-                            
-                            select sum(percost)::int as totalcost from B
-                            left join ticket on ticket.id = B.given_id
-                            left join A on A.id = ticket.creator_plan_id
-                            `, [ticket_id_arr])
-
-                            console.log(result)
-                            totalcost = totalcost + result.rows[0].totalcost
-
-                        }
+                        totalcost = li.ticket_cost_sum
 
                         totalcost = Math.ceil(totalcost * non_group_lesson_pay_percentage)
-
 
                     }
 
@@ -576,43 +557,6 @@ module.exports = {
 
             }
 
-            // let _args = [args.instructorid, new Date(args.search_starttime), new Date(args.search_endtime)]
-
-            // console.log(_args)
-
-            // let result = await pgclient.query(`WITH C AS (select lesson.id as id, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type,
-            //     lesson.canceled_time, lesson.cancel_type,
-            //     array_agg(json_build_object('id', B.clientid, 'name', client.name )) filter(where B.clientid is not null) as client_info_arr, sum(case when B.percost is null then 0 else B.percost end) as netvalue
-            //     from lesson 
-            //     left join (select DISTINCT ON (ticketid) * from assign_ticket  order by ticketid, created desc) as A on A.lessonid = lesson.id
-            //     left join (select ticket.id, plan.clientid as clientid, plan.totalcost / plan.rounds as percost from ticket left join plan on ticket.creator_plan_id = plan.id) as B on B.id = A.ticketid
-            //     left join client on B.clientid = client.id
-            //     where lesson.instructorid = $1
-            // 	and A.canceled_time is null
-            //     and (lesson.cancel_type is null or lesson.cancel_type!='INSTRUCTOR_REQUEST') 
-            //     and tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3)
-            //     GROUP BY lesson.id)
-
-
-            //     select * from C where client_info_arr is not null`, _args).then(res => {
-            //     console.log(res)
-
-            //     return {
-            //         success: true,
-            //         lesson_info_arr: res.rows
-            //     }
-            // }).catch(e => {
-            //     console.log(e)
-            //     return {
-            //         success: false,
-            //         msg: 'query error'
-            //     }
-            // })
-
-            // console.log('result')
-            // console.log(result)
-
-            // return result
         }
     },
     Mutation: {
@@ -668,23 +612,23 @@ module.exports = {
             console.log('inside create_lesson')
             console.log(args)
 
-            
 
-            try{
+
+            try {
 
                 await pgclient.query('begin')
 
-                if(args.ticketids.length<1){
+                if (args.ticketids.length < 1) {
                     throw {
                         detail: 'no tickets given'
                     }
                 }
 
                 // check tickets exist
-                for(let i=0;i<args.ticketids.length;i++){
+                for (let i = 0; i < args.ticketids.length; i++) {
                     const r = await pgclient.query(`select id from ticket where id=$1`, [args.ticketids[i]])
 
-                    if(r.rowCount===0){
+                    if (r.rowCount === 0) {
                         throw {
                             detail: `no ticket with id=${args.ticketids[i]} found`
                         }
@@ -693,35 +637,35 @@ module.exports = {
 
 
                 // check instructor exist
-                let result = await pgclient.query(`select id from instructor where id=$1`,[args.instructorid])
+                let result = await pgclient.query(`select id from instructor where id=$1`, [args.instructorid])
 
-                if(result.rowCount<1){
+                if (result.rowCount < 1) {
                     throw {
                         detail: 'instructor not found'
                     }
                 }
 
                 // get clientid of tickets
-                const clientid_set=new Set()
+                const clientid_set = new Set()
 
-                for(let i=0;i<args.ticketids.length;i++){
-                    result = await pgclient.query(`select plan.clientid from ticket left join plan on ticket.creator_plan_id = plan.id where ticket.id=$1`,[args.ticketids[i]])
+                for (let i = 0; i < args.ticketids.length; i++) {
+                    result = await pgclient.query(`select plan.clientid from ticket left join plan on ticket.creator_plan_id = plan.id where ticket.id=$1`, [args.ticketids[i]])
 
                     clientid_set.add(result.rows[0].clientid)
                 }
 
                 // check if overlapping lesson exist for instructor
 
-                result = await pgclient.query(`select lesson.id from lesson where ( tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1,$2) ) and instructorid=$3`,[args.starttime, args.endtime, args.instructorid])
+                result = await pgclient.query(`select lesson.id from lesson where ( tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1,$2) ) and instructorid=$3`, [args.starttime, args.endtime, args.instructorid])
 
-                if(result.rowCount>0){
+                if (result.rowCount > 0) {
                     throw {
                         detail: 'instructor has overlapping schedule'
                     }
                 }
 
                 // check if overlapping lesson exist for client
-                for(let cid of clientid_set){
+                for (let cid of clientid_set) {
                     result = await pgclient.query(`with A as (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc)
 
                     select lesson.id from A
@@ -731,43 +675,43 @@ module.exports = {
                     where lesson.canceled_time is null
                     AND A.canceled_time is null
                     AND ( tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1, $2) )
-                    AND plan.clientid=$3`,[args.starttime, args.endtime, cid])
+                    AND plan.clientid=$3`, [args.starttime, args.endtime, cid])
 
-                    if(result.rowCount>0){
+                    if (result.rowCount > 0) {
                         throw {
-                            detail: `client id=${cid} has overlapping lesson` 
+                            detail: `client id=${cid} has overlapping lesson`
                         }
                     }
                 }
 
                 // first create lesson
-                result = await pgclient.query(`insert into lesson (instructorid, starttime, endtime, created, activity_type, grouping_type) values ($1,$2,$3, now(), $4, $5) returning id`,[args.instructorid, args.starttime, args.endtime, args.activity_type, args.grouping_type])
+                result = await pgclient.query(`insert into lesson (instructorid, starttime, endtime, created, activity_type, grouping_type) values ($1,$2,$3, now(), $4, $5) returning id`, [args.instructorid, args.starttime, args.endtime, args.activity_type, args.grouping_type])
 
                 const created_lesson_id = result.rows[0].id
 
 
                 // update assign tickets
-                for(let i=0;i<args.ticketids.length;i++){
+                for (let i = 0; i < args.ticketids.length; i++) {
 
-                    result = await pgclient.query(`insert into assign_ticket (ticketid, lessonid, created) values ($1, $2, now())`,[args.ticketids[i], created_lesson_id])
+                    result = await pgclient.query(`insert into assign_ticket (ticketid, lessonid, created) values ($1, $2, now())`, [args.ticketids[i], created_lesson_id])
                 }
 
-                
 
-                
+
+
                 await pgclient.query('commit')
 
                 return {
                     success: true
                 }
 
-            }catch(e){
+            } catch (e) {
                 console.log(e)
-                try{
+                try {
 
                     await pgclient.query('rollback')
                 }
-                catch(e2){
+                catch (e2) {
                     console.log(e2)
                     return {
                         success: false,
