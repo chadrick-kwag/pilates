@@ -36,6 +36,7 @@ export default function Container(props) {
             clientid={props.clientTickets.clientid}
             activity_type={props.activity_type}
             grouping_type={props.grouping_type}
+            existingTicketIdArr={tickets.map(d=>d.ticketid)}
             onTicketAdd={t => {
                 console.log('ticket selected. ticket id:')
                 console.log(t)
