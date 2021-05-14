@@ -1215,6 +1215,232 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: apprentice_course; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.apprentice_course (
+    id integer NOT NULL,
+    name text NOT NULL
+);
+
+
+ALTER TABLE public.apprentice_course OWNER TO postgres;
+
+--
+-- Name: apprentice_course_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.apprentice_course_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.apprentice_course_id_seq OWNER TO postgres;
+
+--
+-- Name: apprentice_course_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.apprentice_course_id_seq OWNED BY public.apprentice_course.id;
+
+
+--
+-- Name: apprentice_instructor; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.apprentice_instructor (
+    id integer NOT NULL,
+    name text NOT NULL,
+    phonenumber text NOT NULL,
+    course integer,
+    gender public.gender
+);
+
+
+ALTER TABLE public.apprentice_instructor OWNER TO postgres;
+
+--
+-- Name: apprentice_instructor_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.apprentice_instructor_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.apprentice_instructor_id_seq OWNER TO postgres;
+
+--
+-- Name: apprentice_instructor_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.apprentice_instructor_id_seq OWNED BY public.apprentice_instructor.id;
+
+
+--
+-- Name: apprentice_instructor_plan; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.apprentice_instructor_plan (
+    id integer NOT NULL,
+    apprentice_instructor_id integer NOT NULL,
+    rounds integer NOT NULL,
+    totalcost integer NOT NULL,
+    created timestamp with time zone NOT NULL,
+    activity_type public.activity_type NOT NULL,
+    grouping_type public.grouping_type NOT NULL,
+    transferred_from_plan_id integer
+);
+
+
+ALTER TABLE public.apprentice_instructor_plan OWNER TO postgres;
+
+--
+-- Name: apprentice_instructor_plan_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.apprentice_instructor_plan_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.apprentice_instructor_plan_id_seq OWNER TO postgres;
+
+--
+-- Name: apprentice_instructor_plan_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.apprentice_instructor_plan_id_seq OWNED BY public.apprentice_instructor_plan.id;
+
+
+--
+-- Name: apprentice_lesson; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.apprentice_lesson (
+    id integer NOT NULL,
+    apprentice_instructor_id integer NOT NULL,
+    starttime timestamp with time zone NOT NULL,
+    endtime timestamp with time zone NOT NULL,
+    created timestamp with time zone NOT NULL,
+    cancel_type text,
+    canceled_time timestamp with time zone,
+    activity_type public.activity_type NOT NULL,
+    grouping_type public.grouping_type NOT NULL
+);
+
+
+ALTER TABLE public.apprentice_lesson OWNER TO postgres;
+
+--
+-- Name: apprentice_lesson_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.apprentice_lesson_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.apprentice_lesson_id_seq OWNER TO postgres;
+
+--
+-- Name: apprentice_lesson_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.apprentice_lesson_id_seq OWNED BY public.apprentice_lesson.id;
+
+
+--
+-- Name: apprentice_ticket; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.apprentice_ticket (
+    id integer NOT NULL,
+    expire_time timestamp with time zone NOT NULL,
+    creator_plan_id integer NOT NULL,
+    destroyer_plan_id integer
+);
+
+
+ALTER TABLE public.apprentice_ticket OWNER TO postgres;
+
+--
+-- Name: apprentice_ticket_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.apprentice_ticket_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.apprentice_ticket_id_seq OWNER TO postgres;
+
+--
+-- Name: apprentice_ticket_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.apprentice_ticket_id_seq OWNED BY public.apprentice_ticket.id;
+
+
+--
+-- Name: assign_apprentice_ticket; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.assign_apprentice_ticket (
+    id integer NOT NULL,
+    apprentice_ticket_id integer NOT NULL,
+    apprentice_lesson_id integer NOT NULL,
+    created timestamp with time zone NOT NULL,
+    canceled_time timestamp with time zone,
+    cancel_type text
+);
+
+
+ALTER TABLE public.assign_apprentice_ticket OWNER TO postgres;
+
+--
+-- Name: assign_apprentice_ticket_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.assign_apprentice_ticket_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.assign_apprentice_ticket_id_seq OWNER TO postgres;
+
+--
+-- Name: assign_apprentice_ticket_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.assign_apprentice_ticket_id_seq OWNED BY public.assign_apprentice_ticket.id;
+
+
+--
 -- Name: assign_ticket; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1348,7 +1574,11 @@ ALTER SEQUENCE public.instructor_id_seq OWNED BY public.instructor.id;
 CREATE TABLE public.instructor_level (
     id integer NOT NULL,
     level_string text NOT NULL,
-    active boolean NOT NULL
+    active boolean NOT NULL,
+    non_group_lesson_pay_percentage numeric(5,4),
+    group_lesson_perhour_payment integer,
+    group_lesson_perhour_penalized_payment integer,
+    rank integer NOT NULL
 );
 
 
@@ -1425,11 +1655,7 @@ ALTER SEQUENCE public.lesson_id_seq OWNED BY public.lesson.id;
 CREATE TABLE public.plan (
     id integer NOT NULL,
     clientid integer NOT NULL,
-    rounds integer NOT NULL,
-    totalcost integer NOT NULL,
     created timestamp with time zone DEFAULT now() NOT NULL,
-    activity_type public.activity_type NOT NULL,
-    grouping_type public.grouping_type NOT NULL,
     coupon_backed character varying(50) DEFAULT NULL::character varying,
     transferred_from_subscription_id integer
 );
@@ -1460,6 +1686,42 @@ ALTER SEQUENCE public.plan_id_seq OWNED BY public.plan.id;
 
 
 --
+-- Name: plan_type; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.plan_type (
+    id integer NOT NULL,
+    planid integer NOT NULL,
+    activity_type public.activity_type NOT NULL,
+    grouping_type public.grouping_type NOT NULL
+);
+
+
+ALTER TABLE public.plan_type OWNER TO postgres;
+
+--
+-- Name: plan_type_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.plan_type_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.plan_type_id_seq OWNER TO postgres;
+
+--
+-- Name: plan_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.plan_type_id_seq OWNED BY public.plan_type.id;
+
+
+--
 -- Name: ticket; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1467,7 +1729,8 @@ CREATE TABLE public.ticket (
     id integer NOT NULL,
     expire_time timestamp with time zone NOT NULL,
     creator_plan_id integer NOT NULL,
-    destroyer_plan_id integer
+    destroyer_plan_id integer,
+    cost integer NOT NULL
 );
 
 
@@ -1493,6 +1756,48 @@ ALTER TABLE public.ticket_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.ticket_id_seq OWNED BY public.ticket.id;
+
+
+--
+-- Name: apprentice_course id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_course ALTER COLUMN id SET DEFAULT nextval('public.apprentice_course_id_seq'::regclass);
+
+
+--
+-- Name: apprentice_instructor id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_instructor ALTER COLUMN id SET DEFAULT nextval('public.apprentice_instructor_id_seq'::regclass);
+
+
+--
+-- Name: apprentice_instructor_plan id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_instructor_plan ALTER COLUMN id SET DEFAULT nextval('public.apprentice_instructor_plan_id_seq'::regclass);
+
+
+--
+-- Name: apprentice_lesson id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_lesson ALTER COLUMN id SET DEFAULT nextval('public.apprentice_lesson_id_seq'::regclass);
+
+
+--
+-- Name: apprentice_ticket id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_ticket ALTER COLUMN id SET DEFAULT nextval('public.apprentice_ticket_id_seq'::regclass);
+
+
+--
+-- Name: assign_apprentice_ticket id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.assign_apprentice_ticket ALTER COLUMN id SET DEFAULT nextval('public.assign_apprentice_ticket_id_seq'::regclass);
 
 
 --
@@ -1538,10 +1843,73 @@ ALTER TABLE ONLY public.plan ALTER COLUMN id SET DEFAULT nextval('public.plan_id
 
 
 --
+-- Name: plan_type id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.plan_type ALTER COLUMN id SET DEFAULT nextval('public.plan_type_id_seq'::regclass);
+
+
+--
 -- Name: ticket id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.ticket ALTER COLUMN id SET DEFAULT nextval('public.ticket_id_seq'::regclass);
+
+
+--
+-- Name: apprentice_course apprentice_course_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_course
+    ADD CONSTRAINT apprentice_course_name_key UNIQUE (name);
+
+
+--
+-- Name: apprentice_course apprentice_course_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_course
+    ADD CONSTRAINT apprentice_course_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: apprentice_instructor apprentice_instructor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_instructor
+    ADD CONSTRAINT apprentice_instructor_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: apprentice_instructor_plan apprentice_instructor_plan_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_instructor_plan
+    ADD CONSTRAINT apprentice_instructor_plan_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: apprentice_lesson apprentice_lesson_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_lesson
+    ADD CONSTRAINT apprentice_lesson_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: apprentice_ticket apprentice_ticket_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_ticket
+    ADD CONSTRAINT apprentice_ticket_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: assign_apprentice_ticket assign_apprentice_ticket_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.assign_apprentice_ticket
+    ADD CONSTRAINT assign_apprentice_ticket_pkey PRIMARY KEY (id);
 
 
 --
@@ -1609,11 +1977,27 @@ ALTER TABLE ONLY public.plan
 
 
 --
+-- Name: plan_type plan_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.plan_type
+    ADD CONSTRAINT plan_type_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: ticket ticket_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.ticket
     ADD CONSTRAINT ticket_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: apprentice_instructor apprentice_instructor_course_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_instructor
+    ADD CONSTRAINT apprentice_instructor_course_fkey FOREIGN KEY (course) REFERENCES public.apprentice_course(id);
 
 
 --
@@ -1633,6 +2017,30 @@ ALTER TABLE ONLY public.assign_ticket
 
 
 --
+-- Name: apprentice_instructor_plan fk_appinst_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_instructor_plan
+    ADD CONSTRAINT fk_appinst_id FOREIGN KEY (apprentice_instructor_id) REFERENCES public.apprentice_instructor(id);
+
+
+--
+-- Name: assign_apprentice_ticket fk_apprentice_lesson_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.assign_apprentice_ticket
+    ADD CONSTRAINT fk_apprentice_lesson_id FOREIGN KEY (apprentice_lesson_id) REFERENCES public.apprentice_lesson(id);
+
+
+--
+-- Name: assign_apprentice_ticket fk_apprentice_ticket_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.assign_apprentice_ticket
+    ADD CONSTRAINT fk_apprentice_ticket_id FOREIGN KEY (apprentice_ticket_id) REFERENCES public.apprentice_ticket(id);
+
+
+--
 -- Name: plan fk_client; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1645,7 +2053,15 @@ ALTER TABLE ONLY public.plan
 --
 
 ALTER TABLE ONLY public.ticket
-    ADD CONSTRAINT fk_creator FOREIGN KEY (creator_plan_id) REFERENCES public.plan(id);
+    ADD CONSTRAINT fk_creator FOREIGN KEY (creator_plan_id) REFERENCES public.plan(id) ON DELETE CASCADE;
+
+
+--
+-- Name: apprentice_ticket fk_creator_plan_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_ticket
+    ADD CONSTRAINT fk_creator_plan_id FOREIGN KEY (creator_plan_id) REFERENCES public.apprentice_instructor_plan(id);
 
 
 --
@@ -1654,6 +2070,14 @@ ALTER TABLE ONLY public.ticket
 
 ALTER TABLE ONLY public.ticket
     ADD CONSTRAINT fk_destroyer FOREIGN KEY (destroyer_plan_id) REFERENCES public.plan(id);
+
+
+--
+-- Name: apprentice_ticket fk_destroyer_plan_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.apprentice_ticket
+    ADD CONSTRAINT fk_destroyer_plan_id FOREIGN KEY (destroyer_plan_id) REFERENCES public.apprentice_instructor_plan(id);
 
 
 --
@@ -1670,6 +2094,14 @@ ALTER TABLE ONLY public.instructor
 
 ALTER TABLE ONLY public.lesson
     ADD CONSTRAINT lesson_instructorid_fkey FOREIGN KEY (instructorid) REFERENCES public.instructor(id);
+
+
+--
+-- Name: plan_type plan_type_planid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.plan_type
+    ADD CONSTRAINT plan_type_planid_fkey FOREIGN KEY (planid) REFERENCES public.plan(id);
 
 
 --
