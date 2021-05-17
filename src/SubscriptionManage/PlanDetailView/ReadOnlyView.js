@@ -78,6 +78,10 @@ export default function ReadOnlyView(props) {
         })
     }
 
+    const calculate_free_tickets = ()=>{
+        
+    }
+
 
     if (data === null) {
         if (loading === true) {
