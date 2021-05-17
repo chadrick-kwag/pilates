@@ -164,6 +164,7 @@ const FETCH_CLIENTS_GQL = gql`{
 const DELETE_CLIENT_GQL = gql`mutation DeleteClient($id:Int!){
     deleteclient(id: $id){
         success
+        msg
     }
 }`
 

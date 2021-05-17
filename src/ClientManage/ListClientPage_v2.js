@@ -263,6 +263,10 @@ export default function ListClientPageV2(props) {
 
                 }}
                 onRefreshData={() => fetch_all_clients()}
+                onDelete={()=>{
+                    setShowDetailClientId(null)
+                    fetch_all_clients()
+                }}
             /> : null}
         </>
     )
