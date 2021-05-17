@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
-import InstructorSearchComponent3 from '../components/InstructorSearchComponent3'
+
+import InstructorSearchComponent4 from '../components/InstructorSearchComponent4'
 import { DatePicker } from "@material-ui/pickers";
 
 import client from '../apolloclient'
@@ -102,11 +103,13 @@ export default function InstructorStatManagePage(props) {
             <Grid item xs={12}>
                 <div className='row-gravity-center children-padding'>
 
-                    <InstructorSearchComponent3
+                    {/* <InstructorSearchComponent3
                         instructorSelectedCallback={d => {
                             setViewedInstructor(d)
                         }}
-                    />
+                    /> */}
+
+                    <InstructorSearchComponent4 onInstructorSelected={d=>setViewedInstructor(d)}/>
 
                     <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
                         <DatePicker

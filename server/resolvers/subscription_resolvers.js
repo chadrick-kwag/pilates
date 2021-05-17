@@ -9,6 +9,71 @@ const {
 module.exports = {
     Query: {
 
+        fetch_normal_plan_detail_info: async (parent, args) => {
+            try {
+                console.log('inside fetch_normal_plan_detail_info')
+
+                const planid = args.planid
+
+                // first get tickets 
+                let result = await pgclient.query(`select case when A.id is null then null
+                when A.canceled_time is not null then null
+                else lesson.starttime end
+                as consumed_time,
+                ticket.id,
+                ticket.expire_time,
+                ticket.cost
+                from ticket
+                left join (select distinct on(ticketid) id, ticketid, lessonid, canceled_time  from assign_ticket order by ticketid, created desc) as A on A.ticketid = ticket.id
+                left join lesson on lesson.id = A.lessonid
+                where ticket.creator_plan_id = $1`, [planid])
+
+
+                // calculate total cost
+                let totalcost = 0
+
+                for (let i = 0; i < result.rows.length; i++) {
+                    totalcost += result.rows[i].cost
+                }
+
+                const tickets = result.rows
+
+                // gather plan info
+
+                result = await pgclient.query(`select plan.id, client.id as clientid, client.name as clientname, client.phonenumber as clientphonenumber,
+                A.types, plan.created
+                from plan
+                left join (select planid, array_agg(json_build_object('activity_type', activity_type, 'grouping_type', grouping_type)) as types from plan_type group by planid)
+                as A on A.planid = plan.id
+                left join client on plan.clientid = client.id
+                where plan.id = $1`, [planid])
+
+                const plan_info = result.rows[0]
+
+                const _result = plan_info
+                _result.totalcost = totalcost
+                _result.tickets = tickets
+
+                console.log(_result)
+
+                return {
+                    success: true,
+                    planinfo: _result
+                }
+
+
+
+
+            } catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
+
         fetch_ticket_available_plan_for_clientid_and_lessontypes: async (parent, args) => {
             try {
 
@@ -23,94 +88,38 @@ module.exports = {
 
                 await pgclient.query('BEGIN')
 
-                const result1 = await pgclient.query(`with A as (
-                    select * from plan where clientid=$1 and activity_type = $2
-                    AND grouping_type = $3
-                    )
-                    
-                    select A.id as planid,array_agg(json_build_object('ticketid', ticket.id, 'expiretime', ticket.expire_time)) as ticket_id_arr from A 
-                    left join ticket on ticket.creator_plan_id = A.id
-                    left join (select distinct on (ticketid) * from assign_ticket order by ticketid, created desc) as B on B.ticketid = ticket.id
-                    left join lesson on lesson.id = B.lessonid
-                    where B.created is null OR (B.created is not null AND lesson.canceled_time is not null)
-                    group by A.id`, [clientid, activity_type, grouping_type])
+                let result = await pgclient.query(`select plan.id as planid, array_agg(json_build_object('id', ticket.id, 'expire_time', ticket.expire_time)) as tickets from ticket
+                left join plan on ticket.creator_plan_id = plan.id
+                left join plan_type on plan.id = plan_type.planid
+                left join (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc) as A on A.ticketid = ticket.id
+                left join lesson on A.lessonid = lesson.id
+                where plan_type.activity_type = $1 and plan_type.grouping_type = $2
+                and plan.clientid =$3
+                and ( (A.id is null) or ((A.id is not null) and (A.canceled_time is not null)) )
+                
+                group by plan.id
+                `, [activity_type, grouping_type, clientid])
 
-                // for each ticket id arr, remove ids included in excluded_ticket_id_arr
-                let filtered_plans = []
-
-                const excluded_ticket_id_set = new Set(excluded_ticket_id_arr)
-                console.log(result1)
-                console.log(result1.rows.length)
-                for (let i = 0; i < result1.rows.length; i++) {
-                    console.log('start of iteration')
-                    console.log(i)
-                    const a = result1.rows[i]
-                    console.log(a)
-                    const planid = a.planid
-                    // let ticket_id_arr_set = new Set(a.ticket_id_arr)
-                    let ticket_id_arr_set = a.ticket_id_arr
-
-                    console.log('ticket_id_arr_set')
-                    console.log(ticket_id_arr_set)
-
-                    let filtered_ticket_obj_arr = [...ticket_id_arr_set].filter(x => !excluded_ticket_id_set.has(x.ticketid))
-
-                    filtered_ticket_obj_arr.sort((p, q) => {
-                        const _a = new Date(p.expiretime)
-                        const _b = new Date(q.expiretime)
-
-                        console.log(_a)
-
-                        _a < _b
-                    })
-
-                    console.log('expiretime sorted filtered_ticket_obj_arr')
-                    console.log(filtered_ticket_obj_arr)
-
-                    let filtered_ticket_id_arr = filtered_ticket_obj_arr.map(d => d.ticketid)
-
-                    console.log('filtered_ticket_id_arr')
-                    console.log(filtered_ticket_id_arr)
-
-                    if (filtered_ticket_id_arr.length === 0) {
-                        continue;
-                    }
-
-                    // fetch plan info
-                    result = await pgclient.query(`select totalcost::int from plan where id=$1`, [planid])
-                    const totalcost = result.rows[0].totalcost
-
-                    console.log('totalcost')
-                    console.log(totalcost)
-
-                    result = await pgclient.query(`select count(1)::int as totalcount from ticket where creator_plan_id = $1`, [planid])
-
-                    const total_rounds = result.rows[0].totalcount
-
-                    console.log('total_rounds')
-                    console.log(total_rounds)
-
-                    filtered_plans.push({
-                        planid: planid,
-                        plan_total_rounds: total_rounds,
-                        per_ticket_cost: Math.ceil(totalcost / total_rounds),
-                        fastest_expiring_ticket_expire_time: filtered_ticket_obj_arr[0].expiretime,
-                        ticket_id_arr: filtered_ticket_id_arr
-                    })
-
-                    console.log('pushed to filtered_plans ')
+                const avail_plan_and_tickets = result.rows
 
 
+
+                // gather plan's info
+                for (let i = 0; i < avail_plan_and_tickets.length; i++) {
+                    const planid = avail_plan_and_tickets[i].planid
+
+                    result = await pgclient.query(`select count(1) as totalcount from ticket where creator_plan_id=$1`, [planid])
+
+                    avail_plan_and_tickets[i].plan_total_rounds = result.rows[0].totalcount
                 }
 
-                console.log("filtered_plans")
-                console.log(filtered_plans)
+                console.log(avail_plan_and_tickets)
 
                 await pgclient.query(`end`)
 
                 return {
                     success: true,
-                    plans: filtered_plans
+                    plans: avail_plan_and_tickets
                 }
 
             } catch (e) {
@@ -195,110 +204,145 @@ module.exports = {
 
         fetch_tickets_for_subscription_id: async (parent, args) => {
 
-            console.log(args)
+            console.log('fetch_tickets_for_subscription_id')
 
-            let result = await pgclient.query(`select ticket.id as id, plan.created as created_date, ticket.expire_time 
-            ,
-            CASE
-            WHEN A.id is null THEN null
-            WHEN A.id is not null AND A.canceled_time is not null THEN null
-            WHEN lesson.canceled_time is not null THEN null
-            ELSE lesson.starttime
-            END as consumed_date,
-            C.created as destroyed_date
-            from plan
-            left join ticket on ticket.creator_plan_id = plan.id
-            left join (select id, created from plan) as C on C.id = ticket.destroyer_plan_id
-            left join (select DISTINCT ON(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) as A on A.ticketid = ticket.id
-            left join lesson on lesson.id = A.lessonid
-            where plan.id = $1 AND ticket.id is not null`, [args.subscription_id]).then(res => {
-                console.log(res.rows)
+            try {
+
+                const planid = args.subscription_id
+
+                let result = await pgclient.query(`select ticket.id as id, ticket.expire_time as expire_time,
+                case when A.id is null then null
+                when (A.canceled_time is not null) then null
+                when (A.canceled_time is null) and (A.id is not null) and (lesson.canceled_time is null) then lesson.starttime
+                else null end
+                as consumed_date,
+                ticket.cost as cost,
+                B.created as destroyed_date,
+                C.created as created_date
+                from ticket
+                left join (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc) as A on A.ticketid = ticket.id
+                left join lesson on A.lessonid = lesson.id
+                left join plan as B on ticket.destroyer_plan_id = B.id
+                left join plan as C on ticket.creator_plan_id = C.id
+                where ticket.creator_plan_id=$1`, [planid])
 
                 return {
                     success: true,
-                    tickets: res.rows
+                    tickets: result.rows
                 }
-            }).catch(e => {
-                console.log(e)
 
+
+
+            }
+            catch (e) {
                 return {
                     success: false,
-                    msg: "query error"
+                    msg: e.detail
                 }
-            })
+            }
 
-            console.log(result)
-
-            return result
 
         },
 
         query_all_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
 
+            try {
+
+                let result = await pgclient.query(`select array_agg(json_build_object('id',ticket.id, 'expire_time',ticket.expire_time, 'consumed', case when A.id is null then false
+                when A.canceled_time is not null then false
+                else true end )) as tickets,
+                plan.id as planid,
+                plan.created as created
+                from ticket
+                left join plan on ticket.creator_plan_id = plan.id
+                left join (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc) as A on A.ticketid = ticket.id
+                where plan.clientid=$1
+                group by plan.id`, [args.clientid])
+
+                const plan_arr = []
+
+                for (let i = 0; i < result.rows.length; i++) {
+                    const a = result.rows[i]
+
+                    const planid = a.planid
+                    const tickets = a.tickets
+
+                    const totalcount = tickets.length
+                    let consumed_count = 0
+
+                    for (let j = 0; j < tickets.length; j++) {
+                        if (tickets[j].consumed) {
+                            consumed_count += 1
+                        }
+                    }
+
+                    const remaincount = totalcount - consumed_count
 
 
-            let result = await pgclient.query(`select  plan.id as planid,
-            count(1) filter (where ticket.id is not null) as total_rounds,
-            count( 1 ) filter (where (A.id is null OR (A.id is not null AND A.canceled_time is not null)) AND ticket.expire_time > now() AND ticket.destroyer_plan_id is null)  as remain_rounds , 
-            plan.created,
-            plan.activity_type,
-            plan.grouping_type
-            from plan
-            left join ticket on plan.id = ticket.creator_plan_id
-            left join (select DISTINCT ON (ticketid) * from assign_ticket order by ticketid, created desc) AS A on A.ticketid = ticket.id
-            where plan.clientid = $1
-            
-            group by plan.id
-            `, [args.clientid]).then(res => {
+                    let result2 = await pgclient.query(`select activity_type, grouping_type from plan_type
+                    where planid=$1`, [planid])
 
-                console.log(res)
+
+                    plan_arr.push({
+                        planid: planid,
+                        total_rounds: totalcount,
+                        remain_rounds: remaincount,
+                        created: a.created,
+                        plan_types: result2.rows
+                    })
+
+
+                }
+
+                console.log('plan_arr')
+                console.log(plan_arr)
 
                 return {
                     success: true,
-                    allSubscriptionsWithRemainRounds: res.rows
+                    allSubscriptionsWithRemainRounds: plan_arr
                 }
-            }).catch(e => {
-                console.log(e)
 
+            } catch (e) {
+                console.log(e)
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: e.detail
                 }
-            })
+            }
 
-            console.log(result)
-
-            return result
         },
         query_subscriptions_by_clientid: async (parent, args) => {
             console.log('inside query_subscriptions_by_clientid')
+            console.log(args)
+
+            try {
+
+                let result = await pgclient.query(`select plan.id, plan.created, client.id as clientid, client.name as clientname, client.phonenumber as clientphonenumber, A.types, B.rounds, B.totalcost, plan.coupon_backed from plan
+                left join client on client.id = plan.clientid
+                left join (select array_agg(json_build_object('activity_type',activity_type, 'grouping_type',grouping_type)) as types , planid from plan_type group by planid) as A on A.planid = plan.id
+                left join (select count(1) as rounds, sum(cost) as totalcost, creator_plan_id from ticket group by creator_plan_id) as B on B.creator_plan_id = plan.id
+                where client.id = $1
+                `, [args.clientid])
+
+                console.log(result)
 
 
-            let subscriptions = await pgclient.query('select plan.id, plan.clientid, client.name as clientname, rounds, totalcost, plan.created, plan.activity_type, plan.grouping_type, plan.coupon_backed from plan left join client on plan.clientid=client.id where client.id=$1', [args.clientid])
-                .then(res => {
-                    console.log(res.rows)
-                    return res.rows
-                }).catch(e => {
-                    console.log(e)
-                    return null
-                })
+                return {
+                    success: true,
+                    subscriptions: result.rows
+                }
 
 
-            if (subscriptions == null) {
+
+            } catch (e) {
+                console.log(e)
                 return {
                     success: false,
-                    subscriptions: []
+                    msg: e.detail
                 }
             }
-            else {
 
-                let retobj = {
-                    success: true,
-                    subscriptions: subscriptions
-                }
-                console.log(retobj)
-                return retobj
-            }
+
 
         },
 
@@ -408,48 +452,315 @@ module.exports = {
         },
     },
     Mutation: {
+        update_normal_plan_basicinfo: async (parent, args) => {
+            try {
+
+
+                await pgclient.query('commit')
+
+                // update totalcost
+                // check current totalcost
+                let result = await pgclient.query(`select sum(cost) as totalcost, count(1) as count from ticket where creator_plan_id=$1`, [args.planid])
+
+                if (result.rows[0].totalcost !== args.totalcost) {
+                    // update cost of each tickets
+                    const new_perticket_cost = Math.ceil(args.totalcost / result.rows[0].count)
+
+                    result = await pgclient.query(`select id from ticket where creator_plan_id = $1`, [args.planid])
+
+                    for (let i = 0; i < result.rows.length; i++) {
+                        const a = result.rows[i].id
+
+                        await pgclient.query(`update ticket set cost=$1 where id=$2`, [new_perticket_cost, a])
+                    }
+
+
+                }
+
+                // update client
+
+                result = await pgclient.query(`select clientid from plan where id=$1`, [args.planid])
+
+                if (result.rows[0].clientid !== args.clientid) {
+                    await pgclient.query(`update plan set clientid=$1 where id=$2`, [args.clientid, args.planid])
+                }
+
+
+
+                // update types
+
+                // first fetch existing types
+                result = await pgclient.query(`select id, activity_type, grouping_type from plan_type where planid=$1`, [args.planid])
+
+                // split to exiting id that needs to be removed
+                // and new types to be added
+
+
+                const existing_types = result.rows
+
+                const to_remove_id_arr = []
+                const to_add_types = []
+
+                // gather types to add
+                for (let i = 0; i < args.types.length; i++) {
+                    const p = args.types[i]
+
+                    let match_with_exist = false
+
+                    for (let j = 0; j < existing_types.length; j++) {
+                        const a = existing_types[j]
+
+                        if (p.activity_type === a.activity_type && p.grouping_type === a.grouping_type) {
+                            match_with_exist = true
+                            break
+
+                        }
+                    }
+
+                    if (!match_with_exist) {
+                        to_add_types.push(p)
+                    }
+
+
+                }
+
+                // gather from existing to remove
+                for (let i = 0; i < existing_types.length; i++) {
+                    const p = existing_types[i]
+
+                    let match_found = false
+
+                    for (let j = 0; j < args.types.length; j++) {
+                        const a = args.types[j]
+
+                        if (p.activity_type === a.activity_type && p.grouping_type === a.grouping_type) {
+                            match_found = true
+                            break
+                        }
+
+                    }
+
+                    if (!match_found) {
+                        to_remove_id_arr.push(p.id)
+                    }
+                }
+
+                console.log(`to_remove_id_arr: ${to_remove_id_arr}`)
+                console.log('to_add_types')
+                console.log(to_add_types)
+
+                // execute removal
+                for (let i = 0; i < to_remove_id_arr.length; i++) {
+                    await pgclient.query(`delete from plan_type where id=$1`, [to_remove_id_arr[i]])
+                }
+
+                // execute adding
+                for (let i = 0; i < to_add_types.length; i++) {
+                    const a = to_add_types[i]
+
+                    await pgclient.query(`insert into plan_type (planid, activity_type, grouping_type) values ($1,$2,$3)`, [args.planid, a.activity_type, a.grouping_type])
+                }
+
+
+                await pgclient.query(`commit`)
+
+                return {
+                    success: true
+                }
+
+
+
+
+            } catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+
+
+                } catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
         create_subscription: async (parent, args) => {
+            console.log('create_subscrition')
             console.log(args)
 
-            if (args.rounds <= 0) {
+
+            // check args
+            if (args.activity_type_arr.length === 0) {
                 return {
-                    success: false
+                    success: false,
+                    msg: 'no activity type'
                 }
             }
 
-            let expire_date = new Date(args.expiredate)
-
-            let _args = [args.clientid, args.rounds, args.totalcost, args.activity_type, args.grouping_type, args.coupon_backed == "" ? null : args.coupon_backed, expire_date]
-
-            console.log(_args)
-
-            let result = await pgclient.query('select * from create_plan_and_tickets($1, $2 , $3, $4, $5, $6, $7) as (success bool, msg text)', _args).then(res => {
-
-                console.log(res)
-                if (res.rowCount !== 1) {
-                    return {
-                        success: false,
-                        msg: 'row count not 1'
-                    }
-                }
-                else {
-                    return res.rows[0]
-                }
-
-            }).catch(e => {
-                console.log(e)
+            if (args.grouping_type === null || args.grouping_type === '') {
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: 'no grouping type'
                 }
-            })
+            }
 
-            return result
+
+            if (args.rounds <= 0) {
+                return {
+                    success: false,
+                    msg: 'rounds must be > 0'
+                }
+            }
+
+            // calculate percost first.
+            const percost = Math.ceil(args.totalcost / args.rounds)
+
+            if (percost <= 0) {
+                return {
+                    success: false,
+                    msg: 'percost is <=0'
+                }
+            }
+
+            try {
+
+                await pgclient.query(`begin`)
+
+                // first create plan
+
+                let result = await pgclient.query(`insert into plan (clientid, created, coupon_backed) values ($1, now(), $2) returning id`, [args.clientid, args.coupon_backed])
+
+                const created_plan_id = result.rows[0].id
+
+
+
+                // create plan type
+
+                for (let i = 0; i < args.activity_type_arr.length; i++) {
+                    const at = args.activity_type_arr[i]
+                    const gt = args.grouping_type
+
+                    await pgclient.query(`insert into plan_type (planid, activity_type, grouping_type) values ($1, $2, $3)`, [created_plan_id, at, gt])
+                }
+
+
+
+                // create tickets
+                for (let i = 0; i < args.rounds; i++) {
+                    await pgclient.query(`insert into ticket (expire_time, creator_plan_id, cost) values ($1, $2, $3)`, [args.expiredate, created_plan_id, percost])
+                }
+
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('ROLLBACK')
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (err) {
+                    return {
+                        success: false,
+                        msg: err.detail
+                    }
+                }
+            }
+
 
         },
         delete_subscription: async (parent, args) => {
             console.log('delete subscription')
             console.log(args)
+
+            try {
+
+                await pgclient.query('begin')
+
+                // check plan id exists
+                let result = await pgclient.query(`select id from plan where id=$1`, [args.id])
+
+                if (result.rows.length !== 1) {
+                    throw {
+                        detail: 'no plan with id exists'
+                    }
+                }
+
+                // gather tickets and check they are not consumed
+                result = await pgclient.query(`select ticket.id, case when A.id is null then false
+                when A.id is not null AND A.canceled_time is not null then false
+                else true end
+                as consumed
+                from ticket
+                left join (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc) as A on A.ticketid = ticket.id
+                where creator_plan_id=$1`, [args.id])
+
+                // if all tickets are not consumed, then allow delete
+
+                let check = true
+                const ticket_id_arr = []
+
+                for (let i = 0; i < result.rows.length; i++) {
+                    ticket_id_arr.push(result.rows[i].id)
+                    if (result.rows[i].consumed === true) {
+                        check = false
+                        break
+                    }
+                }
+
+                if (!check) {
+                    throw {
+                        detail: 'at least one ticket is consumed'
+                    }
+                }
+
+                // delete tickets
+
+                for (let i = 0; i < ticket_id_arr.length; i++) {
+                    const a = ticket_id_arr[i]
+                    await pgclient.query(`delete from ticket where id=$1`, [a])
+
+                }
+
+                // delete plan
+                await pgclient.query(`delete from plan where id=$1`, [args.id])
+
+
+                await pgclient.query('commit')
+
+            }
+            catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e2.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
 
             let result = await pgclient.query('BEGIN').then(async res => {
 
@@ -515,28 +826,79 @@ module.exports = {
 
             console.log(args)
 
-            let ret = await pgclient.query('select * from transfer_tickets($1, $2) as (success bool, msg text)', [args.ticket_id_list, args.clientid]).then(res => {
-                console.log(res)
+            try {
+                await pgclient.query('begin')
 
-                if (res.rowCount !== 1) {
-                    return {
-                        success: false,
-                        msg: 'row count not 1'
+                // create new plan with new client
+                const ticket_id_arr = args.ticket_id_list
+                const recv_clientid = args.clientid
+
+                if (ticket_id_arr.length < 1) {
+                    throw {
+                        detail: 'no ticket id list given'
                     }
                 }
-                else {
-                    return res.rows[0]
+
+                // fetch plan info of existing tickets
+                // simply select the plan types of the first ticket id
+
+                let result = await pgclient.query(`select creator_plan_id as id from ticket where id=$1`, [ticket_id_arr[0]])
+
+                const existing_plan_id = result.rows[0].id
+
+                result = await pgclient.query(`select activity_type, grouping_type from plan_type where planid=$1`, [existing_plan_id])
+
+                const existing_plantypes = result.rows
+
+                if (existing_plantypes.length < 1) {
+                    throw {
+                        detail: 'existing plan has no types'
+                    }
                 }
-            }).catch(e => {
-                // console.log(e)
-                console.log(e.error)
+
+                // creat new plan
+
+                result = await pgclient.query(`insert into plan (clientid, created, transferred_from_subscription_id) values ($1, now(), $2) returning id`, [recv_clientid, existing_plan_id])
+
+                const created_plan_id = result.rows[0].id
+
+                // create new plan's types
+                for (let i = 0; i < existing_plantypes.length; i++) {
+                    const at = existing_plantypes[i].activity_type
+                    const gt = existing_plantypes[i].grouping_type
+                    await pgclient.query(`insert into plan_type (planid, activity_type, grouping_type) values ($1, $2, $3)`, [created_plan_id, at, gt])
+                }
+
+                // transfer tickets
+                for (let i = 0; i < ticket_id_arr.length; i++) {
+                    await pgclient.query(`update ticket set creator_plan_id=$1 where id = $2`, [created_plan_id, ticket_id_arr[i]])
+                }
+
+
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e2.detail
+                    }
+                }
+
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: e.detail
                 }
-            })
+            }
 
-            return ret
         },
         update_expdate_of_tickets: async (parent, args) => {
 
@@ -576,52 +938,84 @@ module.exports = {
         },
         delete_tickets: async (parent, args) => {
             console.log('delete_tickets')
-
             console.log(args)
 
-            let result = await pgclient.query(`select * from delete_tickets($1) as (success bool, msg text)`, [args.ticketid_arr]).then(res => {
-                if (res.rowCount !== 1) {
+            try {
+                await pgclient.query('begin')
+
+                for (let i = 0; i < args.ticketid_arr.length; i++) {
+                    await pgclient.query('delete from ticket where id=$1', [args.ticketid_arr[i]])
+                }
+
+                await pgclient.query(`commit`)
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
                     return {
                         success: false,
-                        msg: 'rowcount not 1'
+                        msg: e2.detail
                     }
                 }
 
-                return res.rows[0]
-            }).catch(e => {
-                console.log(e)
                 return {
                     success: false,
-                    msg: "query error"
+                    msg: e.detail
                 }
-            })
+            }
 
-            return result
 
         },
         add_tickets: async (parent, args) => {
             console.log('add tickets')
             console.log(args)
 
-            let result = await pgclient.query(`select * from add_tickets($1, $2,$3) as (success bool, msg text)`, [args.planid, args.addsize, args.expire_datetime]).then(res => {
-                if (res.rowCount !== 1) {
+            try {
+
+                await pgclient.query('begin')
+
+                const per_ticket_cost = args.per_ticket_cost
+                const planid = args.planid
+                const expdate = args.expire_datetime
+
+                for (let i = 0; i < args.addsize; i++) {
+
+                    await pgclient.query(`insert into ticket (expire_time, creator_plan_id, cost) values ($1, $2, $3)`, [expdate, planid, per_ticket_cost])
+                }
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            }
+            catch (e) {
+                try {
+
+                    await pgclient.query(`rollback`)
+                }
+                catch (e2) {
                     return {
                         success: false,
-                        msg: 'rowcount not one'
+                        msg: e2.detail
                     }
                 }
-                else {
-                    return res.rows[0]
-                }
-            }).catch(e => {
-                console.log(e)
+
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: e.detail
                 }
-            })
 
-            return result
+
+            }
+
         },
         change_plan_totalcost: async (parent, args) => {
             let result = await pgclient.query(`update plan set totalcost=$1 where id = $2`, [args.totalcost, args.planid]).then(res => {

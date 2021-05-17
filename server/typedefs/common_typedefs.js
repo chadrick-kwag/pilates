@@ -1,4 +1,10 @@
 module.exports=`
+type PlanType {
+	activity_type: String
+	grouping_type: String
+	
+}
+
 type Subscription {
     id: Int
     clientid: Int
@@ -6,8 +12,7 @@ type Subscription {
     rounds: Int
     totalcost: Int
     created: String
-    activity_type: String
-    grouping_type: String
+    types: [PlanType]
     coupon_backed: String
 }
 
@@ -40,6 +45,12 @@ type Ticket2 {
     created_date: String
     consumed_date: String
     destroyed_date: String
+}
+
+type TicketWithConsumedInfo{
+    id: Int
+    expire_time: String
+    consumed_time: String
 }
 
 type SubscriptionInfo {
@@ -134,8 +145,7 @@ type AllSubscriptionsWithRemainRounds{
   total_rounds: Int
   remain_rounds: Int
   created: String
-  activity_type: String
-  grouping_type: String
+  plan_types: [PlanType]
 }
 
 type ReturnAllSubscriptionsWithRemainRounds{

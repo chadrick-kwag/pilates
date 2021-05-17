@@ -41,15 +41,35 @@ type PlanDetailAndTicketDetailResponse{
 type TicketAvailablePlan{
     planid: Int
     plan_total_rounds: Int
-    per_ticket_cost: Int
-    fastest_expiring_ticket_expire_time: String
-    ticket_id_arr: [Int]
+    tickets:[Ticket2]
 }
 
 type SuccessAndTicketAvailablePlans{
     success: Boolean
     msg: String
     plans: [TicketAvailablePlan]
+}
+
+type PlanDetailInfo{
+    id: Int
+    clientid: Int
+    clientname: String
+    clientphonenumber: String
+    created: String
+    totalcost: Int
+    types: [PlanType]
+    tickets: [TicketWithConsumedInfo]
+}
+
+type SuccessAndPlanDetailInfo{
+    success: Boolean
+    msg: String
+    planinfo: PlanDetailInfo
+}
+
+input IncomingPlanType{
+    activity_type: String
+    grouping_type: String
 }
 
 type Query{
@@ -61,16 +81,18 @@ type Query{
     fetch_tickets_for_subscription_id(subscription_id: Int!): SuccessAndTickets
     query_subscription_info_with_ticket_info(id:Int!): PlanDetailAndTicketDetailResponse
     fetch_ticket_available_plan_for_clientid_and_lessontypes(clientid:Int!, activity_type:String!, grouping_type:String!, excluded_ticket_id_arr:[Int]): SuccessAndTicketAvailablePlans
+    fetch_normal_plan_detail_info(planid:Int!): SuccessAndPlanDetailInfo
 }
 
 type Mutation{
-    create_subscription(clientid: Int!, rounds: Int!, totalcost: Int!,  activity_type: String!, grouping_type: String!, coupon_backed: String, expiredate: String!): SuccessResult
+    create_subscription(clientid: Int!, rounds: Int!, totalcost: Int!,  activity_type_arr: [String!], grouping_type: String!, coupon_backed: String, expiredate: String!): SuccessResult
     delete_subscription(id:Int!): SuccessResult
     transfer_tickets_to_clientid(ticket_id_list: [Int], clientid: Int!): SuccessResult
     update_expdate_of_tickets(ticket_id_list: [Int], new_expdate: String!): SuccessResult
     delete_tickets(ticketid_arr: [Int]): SuccessResult
-    add_tickets(planid: Int!, addsize: Int!, expire_datetime: String!): SuccessResult
+    add_tickets(planid: Int!, addsize: Int!, expire_datetime: String!, per_ticket_cost: Int!): SuccessResult
     change_plan_totalcost(planid: Int!, totalcost: Int!): SuccessResult
+    update_normal_plan_basicinfo(planid:Int!, totalcost: Int!, clientid: Int!, types:[IncomingPlanType]): SuccessResult
     
 }
 `

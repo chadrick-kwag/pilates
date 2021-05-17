@@ -6,15 +6,37 @@ import { FETCH_TICKET_AVAILABLE_PLAN_FOR_CLIENTID_AND_LESSONTYPES } from '../../
 
 import { DateTime } from 'luxon'
 
+
+
+
 export default function AddTicketView(props) {
 
     console.log(props)
+    console.log(props.existingTicketIdArr)
 
     const [plans, setPlans] = useState(null)
 
     const format_date = (d) => {
         console.log(d)
         return DateTime.fromISO(d).toFormat('y-LL-dd HH:mm')
+    }
+
+    const get_fastest_expiretime_ticket = (tickets) => {
+        const _tickets = [...tickets]
+
+        _tickets.sort((a, b) => {
+            if (a.expire_time > b.expire_time) {
+                return -1
+            }
+            else if (a.expire_time === b.expire_time) {
+                return 0
+            }
+            else {
+                return 1
+            }
+        })
+
+        return _tickets[0].expire_time
     }
 
     useEffect(() => {
@@ -33,7 +55,40 @@ export default function AddTicketView(props) {
             console.log(res)
 
             if (res.data.fetch_ticket_available_plan_for_clientid_and_lessontypes.success) {
-                setPlans(res.data.fetch_ticket_available_plan_for_clientid_and_lessontypes.plans)
+
+                const data = res.data.fetch_ticket_available_plan_for_clientid_and_lessontypes.plans
+
+                // remove existing ticket
+                const new_data = []
+
+                for(let i=0;i<data.length;i++){
+                    const a = data[i]
+
+                    const new_tickets = []
+
+                    // redo tickets, remove if ticket has same id as existing ticket id arr
+                    for(let j=0;j<a.tickets.length;j++){
+                        let match_exist = false
+                        for(let k=0;k<props.existingTicketIdArr.length;k++){
+                            if(a.tickets[j].id === props.existingTicketIdArr[k]){
+                                match_exist = true
+                                break
+                            }
+                        }
+
+                        if(!match_exist){
+                            new_tickets.push(a.tickets[j])
+                        }
+                    }
+
+                    if(new_tickets.length>0){
+                        a.tickets = new_tickets
+                        new_data.push(a)
+                    }
+
+                }
+
+                setPlans(new_data)
             }
             else {
                 alert('fetch plans fail')
@@ -59,9 +114,8 @@ export default function AddTicketView(props) {
             <>
                 <DialogContent>
                     <List>
-                        {plans.map(p => <ListItem button onClick={() => props.onTicketAdd?.(p.ticket_id_arr[0])}>
-                            
-                            <span>총횟수:{p.plan_total_rounds}, 회당단가:{p.per_ticket_cost}, 가장빠른만료기한:{format_date(p.fastest_expiring_ticket_expire_time)}</span>
+                        {plans.map(p => <ListItem button onClick={() => props.onTicketAdd?.(p.tickets[0].id)}>
+                            <span>잔여횟수: {p.tickets.length}/{p.plan_total_rounds}, 가장빠른만료기한:{format_date(get_fastest_expiretime_ticket(p.tickets))}</span>
                         </ListItem>)}
                     </List>
                 </DialogContent>

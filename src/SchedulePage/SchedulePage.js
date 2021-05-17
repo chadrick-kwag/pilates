@@ -1,12 +1,13 @@
 import React from 'react'
-// import { Button } from 'react-bootstrap'
+
 import { Button, Menu, MenuItem } from '@material-ui/core'
 
 import './schedulepage.css'
 
-import CreateLessonPage from './CreateLessonPage'
+
 import ClientScheduleViewer from './ClientScheduleView/ClientScheduleViewer'
 import InstructorScheduleViewer from './InstructorScheduleView/InstructorScheduleViewer'
+import CreateNormalLessonPage from './CreateNormalLessonView/CreateNormalLessonPage'
 
 import ScheduleViewer from './AllScheduleView/ScheduleViewer'
 import CreateApprenticeLesson from './CreateApprenticeLesson'
@@ -22,13 +23,6 @@ class SchedulePage extends React.Component {
             createLessonMenuAnchor: null
         }
 
-        this.createlesson = this.createlesson.bind(this)
-    }
-
-    createlesson() {
-        this.setState({
-            viewmode: "createlesson"
-        })
     }
 
     render() {
@@ -47,15 +41,14 @@ class SchedulePage extends React.Component {
         }
 
         else if (this.state.viewmode == "createlesson") {
-            mainview = <CreateLessonPage apolloclient={this.props.apolloclient} cancel_callback={() => {
-                this.setState({
-                    viewmode: "all"
-                })
+            
 
-            }}
-                onCreateSuccess={() => {
+            mainview = <CreateNormalLessonPage onCancel={() => this.setState({
+                viewmode: 'all'
+            })}
+                onSuccess={() => {
                     this.setState({
-                        viewmode: "all"
+                        viewmode: 'all'
                     })
                 }}
             />

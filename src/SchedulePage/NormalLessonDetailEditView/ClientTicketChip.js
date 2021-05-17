@@ -33,7 +33,13 @@ export default function ClientTicketChip(props) {
     }
 
     return (
-        <div className='chip-container'>
+        <div className='chip-container' style={(() => {
+            if (props.isError) {
+                return {
+                    backgroundColor: 'red'
+                }
+            }
+        })()}>
             <span className='chip-text'>{props.name}({props.phonenumber})</span>
             {get_circles()}
 
@@ -43,7 +49,6 @@ export default function ClientTicketChip(props) {
 
             <div onClick={() => {
                 props.onDeleteClientTickets?.()
-                console.log('clicked')
             }} >
                 <CloseIcon fontsize={'22px'} className='action-button' />
             </div>

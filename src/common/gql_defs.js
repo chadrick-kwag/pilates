@@ -14,9 +14,9 @@ const FETCH_LESSON_GQL = gql`query {
 }`
 
 // instructorid: Int!, starttime: String!, endtime: String!, ticketids: [Int!]
-const CREATE_LESSON_GQL = gql`mutation createlesson($instructorid:Int!, $starttime: String!, $endtime:String!, $ticketids:[Int!]){
+const CREATE_LESSON_GQL = gql`mutation createlesson($instructorid:Int!, $starttime: String!, $endtime:String!, $ticketids:[Int!], $activity_type:String!, $grouping_type: String!){
     
-    create_lesson(ticketids: $ticketids, instructorid: $instructorid, starttime: $starttime, endtime: $endtime){
+    create_lesson(ticketids: $ticketids, instructorid: $instructorid, starttime: $starttime, endtime: $endtime, activity_type: $activity_type, grouping_type: $grouping_type){
         success
         msg
     }
@@ -266,8 +266,10 @@ const QUERY_SUBSCRIPTIONS_BY_CLIENTID = gql`
                 rounds
                 totalcost
                 created
-                activity_type
-                grouping_type
+                types {
+                    activity_type
+                    grouping_type
+                }
                 coupon_backed
             }
         }
@@ -294,9 +296,9 @@ const QUERY_SUBSCRIPTION_OF_CLIENTNAME = gql`
 `
 
 
-const CREATE_SUBSCRIPTION_GQL = gql`mutation create_subscription($clientid: Int!, $rounds: Int!, $totalcost: Int!, $activity_type: String!, $grouping_type: String!, $coupon_backed: String, $expiredate: String!){
+const CREATE_SUBSCRIPTION_GQL = gql`mutation create_subscription($clientid: Int!, $rounds: Int!, $totalcost: Int!, $activity_type_arr: [String!], $grouping_type: String!, $coupon_backed: String, $expiredate: String!){
 
-    create_subscription(clientid: $clientid, rounds: $rounds, totalcost: $totalcost, activity_type: $activity_type, grouping_type: $grouping_type, coupon_backed: $coupon_backed, expiredate: $expiredate){
+    create_subscription(clientid: $clientid, rounds: $rounds, totalcost: $totalcost, activity_type_arr: $activity_type_arr, grouping_type: $grouping_type, coupon_backed: $coupon_backed, expiredate: $expiredate){
         success
         msg
     }
@@ -430,8 +432,10 @@ const FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query a($clie
             total_rounds
             remain_rounds
             created
-            activity_type
-            grouping_type
+            plan_types{
+                activity_type
+                grouping_type
+            }
         }
     }
 }`
@@ -640,8 +644,8 @@ const QUERY_SUBSCRIPTION_INFO_WITH_TICKET_INFO = gql`
 
 
 const ADD_TICKETS = gql`
-    mutation($planid:Int!, $addsize: Int!, $expire_datetime: String!){
-        add_tickets(planid:$planid, addsize:$addsize, expire_datetime: $expire_datetime){
+    mutation($planid:Int!, $addsize: Int!, $expire_datetime: String!, $per_ticket_cost: Int!){
+        add_tickets(planid:$planid, addsize:$addsize, expire_datetime: $expire_datetime, per_ticket_cost: $per_ticket_cost){
             success 
             msg
         }
@@ -993,9 +997,10 @@ export const FETCH_TICKET_AVAILABLE_PLAN_FOR_CLIENTID_AND_LESSONTYPES = gql`
             plans{
                 planid
                 plan_total_rounds
-                per_ticket_cost
-                fastest_expiring_ticket_expire_time
-                ticket_id_arr
+                tickets {
+                    id
+                    expire_time
+                }
             }
         }
     }
@@ -1011,6 +1016,45 @@ export const CHANGE_NORMAL_LESSON_OVERALL = gql`
             success
             msg
 
+        }
+    }
+`
+
+
+export const FETCH_NORMAL_PLAN_DETAIL_INFO = gql`
+    query($planid:Int!){
+        fetch_normal_plan_detail_info(planid:$planid){
+            success
+            msg
+            planinfo {
+                id 
+                clientid
+                clientname
+                clientphonenumber
+                created
+                totalcost
+                types{
+                    activity_type
+                    grouping_type
+                }
+                tickets{
+                    id
+                    expire_time
+                    consumed_time
+                }
+            }
+           
+        }
+    }
+`
+
+
+// update_normal_plan_basicinfo
+export const UPDATE_NORMAL_PLAN_BASICINFO = gql`
+    mutation($planid: Int!, $types: [IncomingPlanType], $totalcost: Int!, $clientid: Int!){
+        update_normal_plan_basicinfo(planid:$planid, types:$types, totalcost: $totalcost, clientid: $clientid){
+            success
+            msg
         }
     }
 `

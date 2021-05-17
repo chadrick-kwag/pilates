@@ -47,3 +47,35 @@ export function get_week_range_of_date(date) {
 }
 
 
+
+
+
+export function calculate_days_to_expire_time(et) {
+    const d = new Date()
+    d.setHours(0)
+    d.setMinutes(0)
+    d.setSeconds(0)
+    d.setMilliseconds(0)
+
+    console.log(d)
+
+    const t = new Date(et)
+
+    t.setHours(0)
+    t.setMinutes(0)
+    t.setSeconds(0)
+    t.setMilliseconds(0)
+
+    console.log(t)
+
+    let diff = t.getTime() - d.getTime()
+
+    console.log(diff)
+
+    diff = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+    console.log(diff)
+
+    return diff
+
+}

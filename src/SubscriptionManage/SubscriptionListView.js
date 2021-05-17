@@ -8,6 +8,7 @@ import ViewSubscriptionDetailModal from './ViewSubscriptionDetailModal'
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 import numeral from 'numeral'
 
+import DetailModal from './PlanDetailView/container'
 
 
 class SubscriptionListView extends React.Component {
@@ -16,6 +17,7 @@ class SubscriptionListView extends React.Component {
         super(props)
 
         this.state = {
+
             data: null,
             delete_target_subscription: null,
             view_selected_subscription: null,
@@ -142,23 +144,17 @@ class SubscriptionListView extends React.Component {
 
     render() {
 
-        let detail_view_modal = null
-        if (this.state.view_selected_subscription != null) {
-            detail_view_modal = <ViewSubscriptionDetailModal
-                apolloclient={this.props.apolloclient}
-                data={this.state.view_selected_subscription}
-                onCancel={() => {
-                    this.setState({
-                        data: null,
-                        view_selected_subscription: null
-                    }, this.fetchdata(parseInt(this.state.search_client_id)))
-                }} />
-        }
-
-
-
         return <div>
-            {detail_view_modal}
+            {this.state.view_selected_subscription !== null ? <DetailModal onCancel={() => this.setState({
+                view_selected_subscription: null
+            })} planid={this.state.view_selected_subscription.id}
+                onRefreshClose={() => {
+                    this.fetchdata(this.state.search_client_id)
+                    this.setState({
+                        view_selected_subscription: null
+                    })
+                }}
+            /> : null}
 
             <div className='row-gravity-center'>
                 <span>회원이름</span>
@@ -218,8 +214,16 @@ class SubscriptionListView extends React.Component {
                                     <td>{d.id}</td>
                                     <td>{d.clientid}</td>
                                     <td>{d.clientname}</td>
-                                    <td>{activity_type_to_kor[d.activity_type]}/{grouping_type_to_kor[d.grouping_type]}</td>
+                                    <td>{(() => {
+                                        let out = ""
 
+                                        d.types.forEach(a => {
+                                            out = out + activity_type_to_kor[a.activity_type] + '/' + grouping_type_to_kor[a.grouping_type] + ','
+                                        })
+
+                                        out = out.slice(0, -1)
+                                        return out
+                                    })()}</td>
                                     <td>{d.rounds}</td>
                                     <td>{numeral(d.totalcost).format('0,0')}원</td>
                                     <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
@@ -288,9 +292,6 @@ class SubscriptionListView extends React.Component {
                         </tbody>
                     </Table>
                 </div>}
-
-
-
         </div>
     }
 }
