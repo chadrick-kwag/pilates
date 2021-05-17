@@ -9,11 +9,25 @@ import { DateTime } from 'luxon'
 import { grouping_type_to_kor, activity_type_to_kor } from '../../common/consts'
 import numeral from 'numeral'
 
+import { makeStyles } from '@material-ui/core/styles';
+
+
+
+const useStyles = makeStyles({
+    
+    expired: {
+        backgroundColor: '#f44336'
+    }
+    
+})
+
 
 export default function ReadOnlyView(props) {
 
     const [data, setDate] = useState(null)
     const [loading, setLoading] = useState(true)
+
+    const classes = useStyles()
 
 
     useEffect(() => {
@@ -166,7 +180,7 @@ export default function ReadOnlyView(props) {
                                             소모된 수업시작일시
                                         </TableCell>
                                     </TableRow>
-                                    {data.tickets.map(d => <TableRow>
+                                    {data.tickets.map(d => <TableRow className={DateTime.fromMillis(parseInt(d.expire_time)) < (new Date()) ? classes.expired : null}>
                                         <TableCell>
                                             {d.id}
                                         </TableCell>
