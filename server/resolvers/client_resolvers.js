@@ -4,15 +4,15 @@ const {
     parse_incoming_date_utc_string,
     parse_incoming_gender_str,
     incoming_time_string_to_postgres_epoch_time
-}  = require('./common')
+} = require('./common')
 
 
 module.exports = {
 
     Query: {
 
-        fetch_client_stat: async (parent, args) =>{
-            try{
+        fetch_client_stat: async (parent, args) => {
+            try {
                 let result = await pgclient.query(`select count(1) as totalcount from client`)
 
                 return {
@@ -22,7 +22,7 @@ module.exports = {
                     }
                 }
             }
-            catch(err){
+            catch (err) {
                 return {
                     success: false,
                     msg: err.detail
@@ -49,14 +49,14 @@ module.exports = {
         search_client_with_name: async (parent, args, context, info) => {
             console.log(args)
 
-            let pattern = '%'+args.name + '%'
+            let pattern = '%' + args.name + '%'
             console.log(pattern)
             let results = await pgclient.query("select * from client where name like $1", [pattern]).then(res => {
-                
+
                 return res.rows
-                
-                
-            }).catch(e =>{
+
+
+            }).catch(e => {
                 console.log(e)
                 return []
             })
@@ -64,16 +64,16 @@ module.exports = {
 
             return results
         },
-        query_clients_by_name: async (parent, args)=>{
+        query_clients_by_name: async (parent, args) => {
             let results = await pgclient.query("select * from client where name=$1", [args.name]).then(res => {
-                
+
                 return {
                     success: true,
                     clients: res.rows
                 }
-                
-                
-            }).catch(e =>{
+
+
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false
@@ -83,25 +83,25 @@ module.exports = {
 
             return results
         },
-        query_clientinfo_by_clientid: async (parent, args)=>{
+        query_clientinfo_by_clientid: async (parent, args) => {
             let result = await pgclient.query("select * from client where id=$1", [args.clientid]).then(res => {
-                
-                if(res.rowCount==1){
+
+                if (res.rowCount == 1) {
                     return {
                         success: true,
                         client: res.rows[0]
                     }
                 }
-                else{
+                else {
                     return {
                         success: false,
                         msg: "row count not 1"
                     }
                 }
-                
-                
-                
-            }).catch(e =>{
+
+
+
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
@@ -119,7 +119,7 @@ module.exports = {
             console.log(args)
 
             let gender = null
-            if(args.gender!==null){
+            if (args.gender !== null) {
                 if (args.gender.toLowerCase() === "male") {
                     gender = 'MALE'
                 }
@@ -127,7 +127,7 @@ module.exports = {
                     gender = 'FEMALE'
                 }
             }
-            
+
             let birthdate = -1
             if (args.birthdate) {
                 birthdate = incoming_time_string_to_postgres_epoch_time(args.birthdate)
@@ -160,21 +160,21 @@ module.exports = {
 
         },
 
-        disable_client_by_clientid: async (parent, args)=>{
-            let ret = await pgclient.query('update client set disabled=true where id=$1',[args.clientid]).then(res=>{
+        disable_client_by_clientid: async (parent, args) => {
+            let ret = await pgclient.query('update client set disabled=true where id=$1', [args.clientid]).then(res => {
                 console.log(res)
-                if(res.rowCount==1){
+                if (res.rowCount == 1) {
                     return {
                         success: true
                     }
                 }
-                else{
+                else {
                     return {
                         success: false,
                         msg: 'rowcount not 1'
                     }
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
@@ -185,21 +185,21 @@ module.exports = {
             return ret
         },
 
-        able_client_by_clientid: async (parent, args)=>{
-            let ret = await pgclient.query('update client set disabled=false where id=$1',[args.clientid]).then(res=>{
+        able_client_by_clientid: async (parent, args) => {
+            let ret = await pgclient.query('update client set disabled=false where id=$1', [args.clientid]).then(res => {
                 console.log(res)
-                if(res.rowCount==1){
+                if (res.rowCount == 1) {
                     return {
                         success: true
                     }
                 }
-                else{
+                else {
                     return {
                         success: false,
                         msg: 'rowcount not 1'
                     }
                 }
-            }).catch(e=>{
+            }).catch(e => {
                 console.log(e)
                 return {
                     success: false,
@@ -212,15 +212,44 @@ module.exports = {
 
         deleteclient: async (parent, args) => {
             console.log('delete client inside')
-            let ret = await pgclient.query('delete from client where id=$1', [args.id]).then(res => {
-                // console.log(res)
-                if (res.rowCount > 0) return true
 
-                return false
-            })
-                .catch(e => false)
+            try {
+                await pgclient.query('begin')
 
-            return { success: ret }
+                let result = await pgclient.query('delete from client where id=$1 returning id', [args.id])
+
+                if (result.rowCount !== 1) {
+                    throw {
+                        detail: 'no client with that id exist'
+                    }
+                }
+
+
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                try {
+                    await pgclient.query('rollback')
+
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e2.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
         },
 
         update_client: async (parent, args) => {

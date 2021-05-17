@@ -2,7 +2,7 @@ import React from 'react'
 import { Form, Modal, Button, Table, Spinner } from 'react-bootstrap'
 
 import moment from 'moment'
-import { UPDATE_CLIENT_INFO_GQL, FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID, QUERY_CLIENTINFO_BY_CLIENTID } from '../common/gql_defs'
+import { UPDATE_CLIENT_INFO_GQL, DELETE_CLIENT_GQL, FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID, QUERY_CLIENTINFO_BY_CLIENTID } from '../common/gql_defs'
 
 
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
@@ -10,10 +10,10 @@ import { KeyboardDatePicker } from "@material-ui/pickers";
 import client from '../apolloclient'
 
 
-const get_plan_type_arr_string = (pt_arr)=>{
+const get_plan_type_arr_string = (pt_arr) => {
     let out = ""
 
-    for(let i=0;i<pt_arr.length;i++){
+    for (let i = 0; i < pt_arr.length; i++) {
         const at = pt_arr[i].activity_type
         const gt = pt_arr[i].grouping_type
 
@@ -22,7 +22,7 @@ const get_plan_type_arr_string = (pt_arr)=>{
         out = out + b + ','
     }
 
-    return out.slice(0,-1)
+    return out.slice(0, -1)
 }
 
 
@@ -56,10 +56,34 @@ class ClientDetailModal extends React.Component {
         this.check_edit_inputs = this.check_edit_inputs.bind(this)
         this.fetch_subscription_info = this.fetch_subscription_info.bind(this)
         this.fetch_clientinfo = this.fetch_clientinfo.bind(this)
+        this.request_delete_client = this.request_delete_client.bind(this)
     }
 
     componentDidMount() {
         this.fetch_clientinfo()
+    }
+
+    request_delete_client() {
+        client.query({
+            query: DELETE_CLIENT_GQL,
+            variables: {
+                id: this.props.clientid
+            },
+            fetchPolicy: 'no-cache'
+        }).then(res => {
+            console.log(res)
+
+            if (res.data.deleteclient.success) {
+                this.props.onDelete?.()
+            }
+            else {
+                alert(`회원 삭제 불가: ${res.data.deleteclient.msg}`)
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e))
+            console.log(e)
+            alert('회원 삭제 에러')
+        })
     }
 
     fetch_clientinfo() {
@@ -346,7 +370,7 @@ class ClientDetailModal extends React.Component {
 
             if (this.state.base_client === null) {
                 body = <div>
-                    <Spinner animation='border'/>
+                    <Spinner animation='border' />
                 </div>
             }
             else {
@@ -457,6 +481,7 @@ class ClientDetailModal extends React.Component {
             // not edit mode
             footer = <div className='footer'>
                 <Button onClick={e => this.props.onCancel()}>Back</Button>
+                <Button onClick={() => this.request_delete_client()}>삭제</Button>
                 <Button variant='warning' onClick={e => this.setState({
                     edit_mode: true,
                     edit_client: _.cloneDeep(this.state.base_client)

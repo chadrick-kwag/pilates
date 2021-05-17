@@ -216,7 +216,7 @@ export default function Base(props) {
                                 총가격
                     </TableCell>
                             <TableCell>
-                                <Input value={totalCost} onChange={e => setTotalCost(e.target.value)} endAdornment={<InputAdornment position="end">원</InputAdornment>} />
+                                <Input value={totalCost} onChange={e => setTotalCost(parseInt(e.target.value))} endAdornment={<InputAdornment position="end">원</InputAdornment>} />
                             </TableCell>
 
                         </TableRow>
@@ -227,7 +227,7 @@ export default function Base(props) {
                             </TableCell>
                             <TableCell>
                                 <div className='children-padding row-gravity-left'>
-                                    <Input value={ticketCount} onChange={e => setTicketCount(e.target.value)} endAdornment={<InputAdornment position="end">회</InputAdornment>} />
+                                    <Input value={ticketCount} onChange={e => setTicketCount(parseInt(e.target.value))} endAdornment={<InputAdornment position="end">회</InputAdornment>} />
 
                                     {totalCost !== null && (ticketCount !== null && ticketCount > 0) ? <span>회당단가: {numeral(Math.ceil(totalCost / ticketCount)).format('0,0')}원</span> : null}
                                 </div>
