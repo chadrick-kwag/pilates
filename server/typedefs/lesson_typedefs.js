@@ -49,6 +49,8 @@ type LessonWithMoreInfo {
     endtime: String
     activity_type: String
     grouping_type: String
+    memo: String
+    title: String
   }
   
 type query_lesson_return {

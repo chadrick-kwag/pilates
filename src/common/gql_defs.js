@@ -78,6 +78,8 @@ const QUERY_LESSON_WITH_DATERANGE_GQL = gql`query($start_time: String!, $end_tim
             endtime
             activity_type
             grouping_type
+            title
+            memo
 
         }
         
@@ -1071,6 +1073,23 @@ export const CREATE_SPECIAL_SCHEDULE  = gql`
         }
     }
 `
+
+// fetch_special_schedule_by_id
+export const FETCH_SPECIAL_SCHEDULE_BY_ID = gql`
+    query($id:Int!){
+        fetch_special_schedule_by_id(id:$id){
+            success
+            schedule {
+                id
+                starttime
+                endtime
+                title 
+                memo
+            }
+        }
+    }
+`
+
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,

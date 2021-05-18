@@ -33,6 +33,57 @@ import ErrorIcon from '@material-ui/icons/Error';
 import ApprenticeLessonDetailModal from '../ApprenticeLessonDetailModal'
 
 
+import SpecialSchedulDetailModal from '../SpecialScheduleDetailModal/container'
+
+
+
+const split_time_range_by_day = (s, e) => {
+    let split_day_arr = []
+
+    let split_start = new Date(s)
+    split_start.setHours(24)
+    split_start.setMinutes(0)
+    split_start.setSeconds(0)
+    split_start.setMilliseconds(0)
+
+
+
+    while (true) {
+
+        if (split_start >= e) {
+            break;
+        }
+
+        if (split_start < e) {
+            const a = new Date(split_start)
+            split_day_arr.push(a)
+
+            const newd = new Date()
+            newd.setTime(split_start.getTime() + 24 * 60 * 60 * 1000)
+            split_start = newd
+
+        }
+    }
+
+    let arr = [s]
+    arr = arr.concat(split_day_arr)
+    arr = arr.concat([e])
+
+    console.log('arr')
+    console.log(arr)
+
+    let split_range_arr = []
+    for (let i = 0; i < arr.length - 1; i++) {
+
+        split_range_arr.push([arr[i], arr[i + 1]])
+
+    }
+
+
+
+    return split_range_arr
+}
+
 class ScheduleViewer extends React.Component {
 
     constructor(props) {
@@ -104,6 +155,7 @@ class ScheduleViewer extends React.Component {
     render() {
 
         let schedule_formatted_data = []
+
         if (this.state.data !== null) {
             this.state.data.forEach((d, i) => {
 
@@ -131,6 +183,9 @@ class ScheduleViewer extends React.Component {
 
                 starttime = new Date(parseInt(starttime))
                 endtime = new Date(parseInt(endtime))
+
+                console.log(starttime)
+                console.log(endtime)
 
                 if (d.lesson_domain === 'apprentice_lesson') {
                     let title = d.instructorname + ' 강사님'
@@ -160,9 +215,9 @@ class ScheduleViewer extends React.Component {
                     const unique_client_ids = []
 
 
-                    for(let i=0;i<d.client_info_arr.length;i++){
+                    for (let i = 0; i < d.client_info_arr.length; i++) {
                         const c = d.client_info_arr[i]
-                        if(!unique_client_ids.includes(c.clientid)){
+                        if (!unique_client_ids.includes(c.clientid)) {
                             unique_client_names.push(c.clientname)
                             unique_client_ids.push(c.clientid)
                         }
@@ -171,7 +226,7 @@ class ScheduleViewer extends React.Component {
 
                     // d.client_info_arr.forEach(a => clients_str += a.clientname + ' ')
 
-                    for(let i=0;i<unique_client_names.length;i++){
+                    for (let i = 0; i < unique_client_names.length; i++) {
                         clients_str += unique_client_names[i] + ' '
                     }
 
@@ -193,10 +248,46 @@ class ScheduleViewer extends React.Component {
                         borderColor: get_border_color_for_activity_type(d.activity_type)
                     })
                 }
+                else if (d.lesson_domain === 'special_schedule') {
+
+                    console.log(d)
+
+                    // const bgcolor = 'yellow'
+                    // const fontcolor = 'black'
+
+                    let split_range_arr = split_time_range_by_day(starttime, endtime)
+
+                    console.log('split_range_arr')
+                    console.log(split_range_arr)
+
+                    for (let j = 0; j < split_range_arr.length; j++) {
+
+                        const st = split_range_arr[j][0]
+                        const et = split_range_arr[j][1]
+
+                        schedule_formatted_data.push({
+                            id: parseInt(i),
+                            calendarId: '0',
+                            title: "hello",
+                            category: 'time',
+                            dueDateClass: '',
+                            start: st,
+                            end: et,
+                            bgColor: 'red',
+                            color: 'black',
+                            borderColor: 'red'
+                        })
+                    }
+
+
+                }
 
 
             })
         }
+
+        console.log('schedule_formatted_data')
+        console.log(schedule_formatted_data)
 
 
         return <div>
@@ -226,7 +317,7 @@ class ScheduleViewer extends React.Component {
                         data={this.state.view_selected_lesson}
                     />
                 }
-                else {
+                else if (this.state.view_selected_lesson.lesson_domain === 'apprentice_lesson') {
 
                     return <ApprenticeLessonDetailModal lesson={this.state.view_selected_lesson}
                         onCancel={() => this.setState({
@@ -243,6 +334,15 @@ class ScheduleViewer extends React.Component {
                                 this.fetchdata()
                             })
                         }}
+                    />
+                }
+                else if (this.state.view_selected_lesson.lesson_domain === 'special_schedule') {
+                    return <SpecialSchedulDetailModal
+                        id={this.state.view_selected_lesson.indomain_id}
+                        onClose={() => this.setState({
+                            show_view_modal: false,
+                            view_selected_lesson: null
+                        })}
                     />
                 }
             })()}

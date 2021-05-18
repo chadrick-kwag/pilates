@@ -1,6 +1,24 @@
 module.exports = `
 
 
+type SpecialSchedule{
+    id: Int!
+    starttime: String!
+    endtime: String!
+    title: String!
+    memo: String
+    
+}
+
+type SuccessAndSpecialSchedule{
+    success: Boolean
+    schedule: SpecialSchedule
+}
+
+type Query{
+    fetch_special_schedule_by_id(id: Int!): SuccessAndSpecialSchedule
+}
+
 type Mutation{
     create_special_schedule(starttime: String!, endtime: String!, title: String!, memo: String): SuccessResult
     change_special_schedule(id: Int!): SuccessResult

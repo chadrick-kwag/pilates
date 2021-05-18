@@ -2,7 +2,33 @@
 const pgclient = require('../pgclient')
 
 module.exports = {
-    
+
+    Query: {
+        fetch_special_schedule_by_id: async (parent, args) => {
+            try {
+                let result = await pgclient.query(`select id, starttime, endtime, title, memo from special_schedule where id=$1`, [args.id])
+
+                if (result.rowCount !== 1) {
+                    throw {
+                        detail: 'no schedule found'
+                    }
+                }
+
+                return {
+                    success: true,
+                    schedule: result.rows[0]
+                }
+            }
+            catch (e) {
+                console.log(e)
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        }
+    },
+
     Mutation: {
         create_special_schedule: async (parent, args) => {
             try {
