@@ -1062,6 +1062,16 @@ export const UPDATE_NORMAL_PLAN_BASICINFO = gql`
     }
 `
 
+//create_special_schedule 
+export const CREATE_SPECIAL_SCHEDULE  = gql`
+    mutation($starttime: String!, $endtime: String!, $title: String!, $memo: String){
+        create_special_schedule(starttime: $starttime, endtime: $endtime, title: $title, memo: $memo){
+            success
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

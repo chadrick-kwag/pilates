@@ -11,6 +11,7 @@ import CreateNormalLessonPage from './CreateNormalLessonView/CreateNormalLessonP
 
 import ScheduleViewer from './AllScheduleView/ScheduleViewer'
 import CreateApprenticeLesson from './CreateApprenticeLesson'
+import CreateSpecialSchedule from './CreateSpecialScheduleView/container'
 
 
 class SchedulePage extends React.Component {
@@ -30,18 +31,18 @@ class SchedulePage extends React.Component {
 
         let mainview = null
 
-        if (this.state.viewmode == "all") {
+        if (this.state.viewmode === "all") {
             mainview = <ScheduleViewer apolloclient={this.props.apolloclient} />
         }
-        else if (this.state.viewmode == "client") {
+        else if (this.state.viewmode === "client") {
             mainview = <ClientScheduleViewer apolloclient={this.props.apolloclient} />
         }
-        else if (this.state.viewmode == "instructor") {
+        else if (this.state.viewmode === "instructor") {
             mainview = <InstructorScheduleViewer apolloclient={this.props.apolloclient} />
         }
 
-        else if (this.state.viewmode == "createlesson") {
-            
+        else if (this.state.viewmode === "createlesson") {
+
 
             mainview = <CreateNormalLessonPage onCancel={() => this.setState({
                 viewmode: 'all'
@@ -53,8 +54,13 @@ class SchedulePage extends React.Component {
                 }}
             />
         }
-        else if (this.state.viewmode == 'create_apprentice_lesson') {
+        else if (this.state.viewmode === 'create_apprentice_lesson') {
             mainview = <CreateApprenticeLesson onCancel={() => this.setState({ viewmode: 'all' })} onSuccess={() => this.setState({ viewmode: 'all' })} />
+        }
+        else if (this.state.viewmode === 'create_special_schedule') {
+            mainview = <CreateSpecialSchedule onCancel={() => this.setState({ viewmode: 'all' })} onSuccess={() => this.setState({
+                viewmode: 'all'
+            })} />
         }
 
         return <div>
@@ -88,6 +94,10 @@ class SchedulePage extends React.Component {
                         viewmode: 'create_apprentice_lesson',
                         showCreateLessonMenu: false
                     })}>견습강사수업</MenuItem>
+                    <MenuItem onClick={e => this.setState({
+                        viewmode: 'create_special_schedule',
+                        showCreateLessonMenu: false
+                    })}>기타 스케쥴</MenuItem>
                 </Menu>
             </div>
 
