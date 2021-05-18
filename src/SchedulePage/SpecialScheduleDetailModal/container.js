@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogActions, CircularProgress } from '@materia
 import ReadOnlyView from './ReadOnlyView'
 import EditView from './EditView'
 import client from '../../apolloclient'
-import { FETCH_SPECIAL_SCHEDULE_BY_ID } from '../../common/gql_defs'
+import { FETCH_SPECIAL_SCHEDULE_BY_ID, DELETE_SPECIAL_SCHEDULE_BY_ID } from '../../common/gql_defs'
 
 export default function Container(props) {
 
@@ -45,6 +45,32 @@ export default function Container(props) {
         })
     }
 
+    const request_delete = () => {
+        let resp = confirm('삭제하시겠습니까?')
+
+        if (resp) {
+            client.mutate({
+                mutation: DELETE_SPECIAL_SCHEDULE_BY_ID,
+                variables: {
+                    id: props.id
+                },
+                fetchPolicy: 'no-cache'
+            }).then(res => {
+                console.log(res)
+
+                if (res.data.delete_special_schedule.success) {
+                    props.onDelete?.()
+                }
+                else {
+                    alert(`스케쥴 삭제 실패(${res.data.delete_special_schedule.msg})`)
+                }
+            }).catch(e => {
+                console.log(JSON.stringify(e))
+                alert('스케쥴 삭제 에러')
+            })
+        }
+    }
+
 
     useEffect(() => {
         fetch_data()
@@ -69,7 +95,9 @@ export default function Container(props) {
                     else {
                         if (mode === 'readonly') {
 
-                            return <ReadOnlyView data={data} onCancel={() => props.onClose?.()} onEdit={() => setMode('edit')} />
+                            return <ReadOnlyView data={data} onCancel={() => props.onClose?.()} onEdit={() => setMode('edit')} onDelete={() => {
+                                request_delete()
+                            }} />
                         }
                         else if (mode === 'edit') {
                             return <EditView initData={(() => {
@@ -78,12 +106,15 @@ export default function Container(props) {
                                 _d.endtime = new Date(parseInt(_d.endtime))
 
                                 return _d
-                            })()} onCancel={() => props.onClose?.()} onSuccess={() => {
-                                fetch_data()
-                                setMode('readonly')
+                            })()} onCancel={() => props.onClose?.()}
+                                onSuccess={() => {
+                                    fetch_data()
+                                    setMode('readonly')
+                                    props.onEditOccured?.()
 
-                            }}
+                                }}
                                 id={props.id}
+
 
                             />
                         }

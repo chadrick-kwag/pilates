@@ -343,6 +343,24 @@ class ScheduleViewer extends React.Component {
                             show_view_modal: false,
                             view_selected_lesson: null
                         })}
+
+                        onEditOccured={() => {
+                            this.setState({
+                                data: null
+                            }, () => {
+                                this.fetchdata()
+                            })
+                        }}
+
+                        onDelete={() => {
+                            this.setState({
+                                show_view_modal: false,
+                                view_selected_lesson: null,
+                                data: null
+                            }, () => {
+                                this.fetchdata()
+                            })
+                        }}
                     />
                 }
             })()}

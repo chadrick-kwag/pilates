@@ -14,7 +14,7 @@ const format_dt = (string_time_number) => {
 }
 
 
-function ReadOnlyView({ data, onCancel, onEdit }) {
+function ReadOnlyView({ data, onCancel, onEdit, onDelete }) {
 
 
     return (
@@ -55,6 +55,7 @@ function ReadOnlyView({ data, onCancel, onEdit }) {
             <DialogActions>
                 <Button onClick={() => onCancel?.()}>닫기</Button>
                 <Button onClick={() => onEdit?.()}>수정</Button>
+                <Button onClick={() => onDelete?.()}>삭제</Button>
             </DialogActions>
         </>
     )
@@ -62,10 +63,11 @@ function ReadOnlyView({ data, onCancel, onEdit }) {
 
 }
 
-ReadOnlyView.propTypes={
+ReadOnlyView.propTypes = {
     data: PropTypes.object,
     onCancel: PropTypes.func,
-    onEdit: PropTypes.func
+    onEdit: PropTypes.func,
+    onDelete: PropTypes.func
 }
 
 export default ReadOnlyView;

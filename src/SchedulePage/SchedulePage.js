@@ -60,7 +60,9 @@ class SchedulePage extends React.Component {
         else if (this.state.viewmode === 'create_special_schedule') {
             mainview = <CreateSpecialSchedule onCancel={() => this.setState({ viewmode: 'all' })} onSuccess={() => this.setState({
                 viewmode: 'all'
-            })} />
+            })} 
+            
+            />
         }
 
         return <div>

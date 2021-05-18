@@ -1100,6 +1100,16 @@ export const CHANGE_SPECIAL_SCHEDULE_BY_ID = gql`
     }
 `
 
+//delete_special_schedule 
+export const DELETE_SPECIAL_SCHEDULE_BY_ID = gql`
+    mutation($id: Int!){
+        delete_special_schedule(id:$id){
+            success 
+            msg
+        }
+    }
+`
+
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,

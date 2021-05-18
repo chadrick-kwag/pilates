@@ -15,7 +15,7 @@ import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import client from '../../apolloclient'
 import { CHANGE_SPECIAL_SCHEDULE_BY_ID } from '../../common/gql_defs'
 
-function EditView({ onCancel, initData, id, onSuccess }) {
+function EditView({ onCancel, initData, id, onSuccess}) {
 
     const [title, setTitle] = useState(initData.title)
     const [memo, setMemo] = useState(initData.memo)
@@ -149,6 +149,7 @@ EditView.propTypes = {
     initData: PropTypes.object,
     id: PropTypes.number,
     onSuccess: PropTypes.func
+    
 }
 
 export default EditView
