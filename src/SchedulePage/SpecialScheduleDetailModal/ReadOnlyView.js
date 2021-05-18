@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Button, Table, TableRow, TableCell, DialogContent, DialogActions, CircularProgress } from '@material-ui/core'
-
+import {Form} from 'react-bootstrap'
 import { DateTime } from 'luxon'
 import PropTypes from 'prop-types';
 
@@ -44,7 +44,7 @@ function ReadOnlyView({ data, onCancel, onEdit, onDelete }) {
                             메모
                                 </TableCell>
                         <TableCell>
-                            <span>{data.memo}</span>
+                            <Form.Control as='textarea' value={data.memo} rows={5} readOnly/>
                         </TableCell>
 
                     </TableRow>

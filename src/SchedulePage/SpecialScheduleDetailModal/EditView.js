@@ -3,7 +3,7 @@ import { TextareaAutosize, TextField, Button, Table, TableRow, TableCell, Dialog
 
 
 import PropTypes from 'prop-types';
-
+import {Form} from 'react-bootstrap'
 
 
 import koLocale from "date-fns/locale/ko";
@@ -131,7 +131,8 @@ function EditView({ onCancel, initData, id, onSuccess}) {
                             메모
                         </TableCell>
                         <TableCell>
-                            <TextareaAutosize value={memo} onChange={e => setMemo(e.target.value)} />
+                            
+                            <Form.Control as='textarea' value={memo} onChange={e=>setMemo(e.target.value)} rows={5}/>
                         </TableCell>
                     </TableRow>
                 </Table>
