@@ -268,7 +268,7 @@ class ScheduleViewer extends React.Component {
                         schedule_formatted_data.push({
                             id: parseInt(i),
                             calendarId: '0',
-                            title: "hello",
+                            title: d.title,
                             category: 'time',
                             dueDateClass: '',
                             start: st,

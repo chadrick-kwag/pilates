@@ -71,7 +71,7 @@ module.exports = {
             try {
 
                 await pgclient.query('begin')
-                let result = await pgclient.query('delete from special_schedule where id=$1 returning id', [args.id])
+                let result = await pgclient.query('update special_schedule set starttime=$1, endtime=$2, title=$3, memo=$4 where id=$5 returning id', [args.starttime, args.endtime, args.title, args.memo, args.id])
 
                 if (result.rowCount !== 1) {
                     throw {

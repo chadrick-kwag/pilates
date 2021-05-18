@@ -233,7 +233,7 @@ module.exports = {
 
 
                 // fetch special schedules
-                res = await pgclient.query(`select id as indomain_id, starttime, endtime from special_schedule where  (tstzrange(starttime, endtime) && tstzrange($1, $2) )`, [args.start_time, args.end_time])
+                res = await pgclient.query(`select id as indomain_id, starttime, endtime, title, memo from special_schedule where  (tstzrange(starttime, endtime) && tstzrange($1, $2) )`, [args.start_time, args.end_time])
 
                 console.log(res.rows)
                 const special_schedules = res.rows

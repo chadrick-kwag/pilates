@@ -43,6 +43,7 @@
     "number-to-korean": "^1.0.0",
     "numeral": "^2.0.6",
     "pg": "^8.5.1",
+    "prop-types": "^15.7.2",
     "react-bootstrap": "^1.4.3",
     "react-datepicker": "^3.4.1",
     "react-day-picker": "^7.4.8",

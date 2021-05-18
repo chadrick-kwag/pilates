@@ -1090,6 +1090,16 @@ export const FETCH_SPECIAL_SCHEDULE_BY_ID = gql`
     }
 `
 
+// change_special_schedule
+export const CHANGE_SPECIAL_SCHEDULE_BY_ID = gql`
+    mutation($id: Int!, $starttime: String!, $endtime: String!, $title: String!, $memo: String){
+        change_special_schedule(id:$id, starttime: $starttime, endtime: $endtime, title: $title, memo: $memo){
+            success 
+            msg
+        }
+    }
+`
+
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
