@@ -100,6 +100,7 @@ type Instructor {
     address: String
     gender: String
     disabled: Boolean
+    allow_teach_apprentice: Boolean
 }
 
 type SuccessAndInstructors{

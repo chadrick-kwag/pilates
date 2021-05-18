@@ -197,6 +197,7 @@ const LIST_INSTRUCTOR_GQL = gql`query instructors{
             birthdate
             is_apprentice
             disabled
+            allow_teach_apprentice
         }
         
 
@@ -228,8 +229,8 @@ const DELETE_INSTRUCTOR_GQL = gql`mutation di($id: Int!){
     }
 }`
 
-const UPDATE_INSTRUCTOR_INFO_GQL = gql`mutation updateinstructor($id: Int!, $name: String!, $phonenumber: String!, $memo: String, $address: String, $is_apprentice: Boolean, $level: Int, $birthdate: String, $validation_date: String, $email: String, $job: String, $gender: String){
-    update_instructor(id: $id, name: $name, phonenumber: $phonenumber, memo: $memo, address: $address, is_apprentice: $is_apprentice, level: $level, birthdate: $birthdate, validation_date: $validation_date, email: $email, job: $job, gender: $gender){
+const UPDATE_INSTRUCTOR_INFO_GQL = gql`mutation updateinstructor($id: Int!, $name: String!, $phonenumber: String!, $memo: String, $address: String, $is_apprentice: Boolean, $level: Int, $birthdate: String, $validation_date: String, $email: String, $job: String, $gender: String, $allow_teach_apprentice: Boolean!){
+    update_instructor(id: $id, name: $name, phonenumber: $phonenumber, memo: $memo, address: $address, is_apprentice: $is_apprentice, level: $level, birthdate: $birthdate, validation_date: $validation_date, email: $email, job: $job, gender: $gender, allow_teach_apprentice: $allow_teach_apprentice){
         success
         msg
     }
@@ -408,6 +409,7 @@ const FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID = gql`query fetch_instructor_with_i
             address
             memo
             disabled
+            allow_teach_apprentice
         }
 
     }
