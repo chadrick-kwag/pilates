@@ -78,6 +78,8 @@ const QUERY_LESSON_WITH_DATERANGE_GQL = gql`query($start_time: String!, $end_tim
             endtime
             activity_type
             grouping_type
+            title
+            memo
 
         }
         
@@ -197,6 +199,7 @@ const LIST_INSTRUCTOR_GQL = gql`query instructors{
             birthdate
             is_apprentice
             disabled
+            allow_teach_apprentice
         }
         
 
@@ -228,8 +231,8 @@ const DELETE_INSTRUCTOR_GQL = gql`mutation di($id: Int!){
     }
 }`
 
-const UPDATE_INSTRUCTOR_INFO_GQL = gql`mutation updateinstructor($id: Int!, $name: String!, $phonenumber: String!, $memo: String, $address: String, $is_apprentice: Boolean, $level: Int, $birthdate: String, $validation_date: String, $email: String, $job: String, $gender: String){
-    update_instructor(id: $id, name: $name, phonenumber: $phonenumber, memo: $memo, address: $address, is_apprentice: $is_apprentice, level: $level, birthdate: $birthdate, validation_date: $validation_date, email: $email, job: $job, gender: $gender){
+const UPDATE_INSTRUCTOR_INFO_GQL = gql`mutation updateinstructor($id: Int!, $name: String!, $phonenumber: String!, $memo: String, $address: String, $is_apprentice: Boolean, $level: Int, $birthdate: String, $validation_date: String, $email: String, $job: String, $gender: String, $allow_teach_apprentice: Boolean!){
+    update_instructor(id: $id, name: $name, phonenumber: $phonenumber, memo: $memo, address: $address, is_apprentice: $is_apprentice, level: $level, birthdate: $birthdate, validation_date: $validation_date, email: $email, job: $job, gender: $gender, allow_teach_apprentice: $allow_teach_apprentice){
         success
         msg
     }
@@ -408,6 +411,7 @@ const FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID = gql`query fetch_instructor_with_i
             address
             memo
             disabled
+            allow_teach_apprentice
         }
 
     }
@@ -1059,6 +1063,53 @@ export const UPDATE_NORMAL_PLAN_BASICINFO = gql`
         }
     }
 `
+
+//create_special_schedule 
+export const CREATE_SPECIAL_SCHEDULE  = gql`
+    mutation($starttime: String!, $endtime: String!, $title: String!, $memo: String){
+        create_special_schedule(starttime: $starttime, endtime: $endtime, title: $title, memo: $memo){
+            success
+            msg
+        }
+    }
+`
+
+// fetch_special_schedule_by_id
+export const FETCH_SPECIAL_SCHEDULE_BY_ID = gql`
+    query($id:Int!){
+        fetch_special_schedule_by_id(id:$id){
+            success
+            schedule {
+                id
+                starttime
+                endtime
+                title 
+                memo
+            }
+        }
+    }
+`
+
+// change_special_schedule
+export const CHANGE_SPECIAL_SCHEDULE_BY_ID = gql`
+    mutation($id: Int!, $starttime: String!, $endtime: String!, $title: String!, $memo: String){
+        change_special_schedule(id:$id, starttime: $starttime, endtime: $endtime, title: $title, memo: $memo){
+            success 
+            msg
+        }
+    }
+`
+
+//delete_special_schedule 
+export const DELETE_SPECIAL_SCHEDULE_BY_ID = gql`
+    mutation($id: Int!){
+        delete_special_schedule(id:$id){
+            success 
+            msg
+        }
+    }
+`
+
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,

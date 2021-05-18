@@ -8,6 +8,8 @@ import { INSTRUCTOR_LEVEL_LIST } from '../common/consts'
 import client from '../apolloclient'
 import { KeyboardDatePicker } from "@material-ui/pickers";
 
+import { Switch } from '@material-ui/core'
+
 
 
 
@@ -44,27 +46,27 @@ class InstructorDetailModal extends React.Component {
 
     }
 
-    fetch_instructor_level_info(){
+    fetch_instructor_level_info() {
 
         client.query({
             query: FETCH_INSTRUCTOR_LEVEL_INFO,
             fetchPolicy: 'no-cache'
-        }).then(res=>{
+        }).then(res => {
             console.log(res)
 
-            if(res.data.fetch_instructor_level_info.success){
+            if (res.data.fetch_instructor_level_info.success) {
                 this.setState({
                     level_info_list: res.data.fetch_instructor_level_info.info_list
                 })
             }
-            else{
+            else {
                 alert('instructor level info fetch failed')
             }
         })
-        .catch(e=>{
-            console.log(JSON.stringify(e))
-            alert('instructor level info fetch error')
-        })
+            .catch(e => {
+                console.log(JSON.stringify(e))
+                alert('instructor level info fetch error')
+            })
     }
 
 
@@ -125,10 +127,10 @@ class InstructorDetailModal extends React.Component {
 
         if (this.state.edit_instructor.birthdate !== null) {
 
-            if( (this.state.edit_instructor.birthdate instanceof Date) && (isNaN(this.state.edit_instructor.birthdate)) ){
+            if ((this.state.edit_instructor.birthdate instanceof Date) && (isNaN(this.state.edit_instructor.birthdate))) {
                 return 'invalid birthdate'
             }
-            
+
         }
 
         if (this.state.edit_instructor.validation_date !== null) {
@@ -136,10 +138,10 @@ class InstructorDetailModal extends React.Component {
             console.log('validation date check')
             console.log(this.state.edit_instructor.validation_date)
 
-            if( (this.state.edit_instructor.validation_date instanceof Date) && (isNaN(this.state.edit_instructor.validation_date))  ){
+            if ((this.state.edit_instructor.validation_date instanceof Date) && (isNaN(this.state.edit_instructor.validation_date))) {
                 return 'invalid validation date'
             }
-            
+
         }
 
         return null
@@ -158,37 +160,42 @@ class InstructorDetailModal extends React.Component {
         // submit to server
 
         let prep_birthdate = null
-        if (this.state.edit_instructor.birthdate!==null) {
+        if (this.state.edit_instructor.birthdate !== null) {
             // prep_birthdate = extract_date_from_birthdate_str(this.state.edit_instructor.birthdate)
             prep_birthdate = this.state.edit_instructor.birthdate.toUTCString()
         }
 
         let prep_validation_date = null
-        if (this.state.edit_instructor.validation_date!==null) {
+        if (this.state.edit_instructor.validation_date !== null) {
             // prep_validation_date = extract_date_from_birthdate_str(this.state.edit_instructor.validation_date)
             prep_validation_date = this.state.edit_instructor.validation_date.toUTCString()
         }
 
-        console.log("prep_validation_date")
-        console.log(prep_validation_date)
+        // console.log("prep_validation_date")
+        // console.log(prep_validation_date)
+
+        const _var= {
+            id: parseInt(this.state.edit_instructor.id),
+            name: this.state.edit_instructor.name,
+            phonenumber: this.state.edit_instructor.phonenumber,
+            address: this.state.edit_instructor.address,
+            email: this.state.edit_instructor.email,
+            gender: this.state.edit_instructor.gender,
+            memo: this.state.edit_instructor.memo,
+            job: this.state.edit_instructor.job,
+            birthdate: prep_birthdate,
+            is_apprentice: this.state.edit_instructor.is_apprentice,
+            validation_date: prep_validation_date,
+            level: this.state.edit_instructor.level,
+            allow_teach_apprentice: this.state.edit_instructor.allow_teach_apprentice
+        }
+
+        console.log(_var)
 
 
         client.mutate({
             mutation: UPDATE_INSTRUCTOR_INFO_GQL,
-            variables: {
-                id: parseInt(this.state.edit_instructor.id),
-                name: this.state.edit_instructor.name,
-                phonenumber: this.state.edit_instructor.phonenumber,
-                address: this.state.edit_instructor.address,
-                email: this.state.edit_instructor.email,
-                gender: this.state.edit_instructor.gender,
-                memo: this.state.edit_instructor.memo,
-                job: this.state.edit_instructor.job,
-                birthdate: prep_birthdate,
-                is_apprentice: this.state.edit_instructor.is_apprentice,
-                validation_date: prep_validation_date,
-                level: this.state.edit_instructor.level
-            }
+            variables: _var
         }).then(d => {
             console.log(d)
 
@@ -292,12 +299,12 @@ class InstructorDetailModal extends React.Component {
                 <tr>
                     <td>레벨</td>
                     <td>
-                        <DropdownButton title={this.state.edit_instructor.level == null ? 'select' : this.state.edit_instructor.level_string} onClick={e=>{
-                            if(this.state.level_info_list===null){
+                        <DropdownButton title={this.state.edit_instructor.level == null ? 'select' : this.state.edit_instructor.level_string} onClick={e => {
+                            if (this.state.level_info_list === null) {
                                 this.fetch_instructor_level_info()
                             }
                         }}>
-                            {this.state.level_info_list===null ? <Dropdown.Item>loading...</Dropdown.Item> : this.state.level_info_list.map(d=><Dropdown.Item onClick={e=>{
+                            {this.state.level_info_list === null ? <Dropdown.Item>loading...</Dropdown.Item> : this.state.level_info_list.map(d => <Dropdown.Item onClick={e => {
                                 let new_inst = _.cloneDeep(this.state.edit_instructor)
                                 new_inst.level = d.id
                                 new_inst.level_string = d.level_string
@@ -306,19 +313,27 @@ class InstructorDetailModal extends React.Component {
                                 })
 
                             }}>{d.level_string}</Dropdown.Item>)}
-                            {/* {INSTRUCTOR_LEVEL_LIST.map(d => <Dropdown.Item onClick={e => {
-                                let updated_instructor = this.state.edit_instructor
-                                updated_instructor.level = d
-                                this.setState({
-                                    edit_instructor: updated_instructor
-                                })
-                            }}>
-                                {d}
-                            </Dropdown.Item>)} */}
                         </DropdownButton>
                     </td>
                 </tr>
-               
+                <tr>
+                    <td>
+                        지도자과정 강사여부
+                    </td>
+                    <td>
+                        <Switch checked={this.state.edit_instructor.allow_teach_apprentice} onChange={e => {
+                            console.log(e)
+                            const new_instructor = _.cloneDeep(this.state.edit_instructor)
+                            new_instructor.allow_teach_apprentice = e.target.checked
+                            console.log('new_instructor')
+                            console.log(new_instructor)
+                            this.setState({
+                                edit_instructor: new_instructor
+                            })
+                        }} />
+                    </td>
+                </tr>
+
                 <tr>
                     <td>자격증취득일</td>
                     <td>
@@ -396,7 +411,7 @@ class InstructorDetailModal extends React.Component {
             // not edit mode
 
             if (this.state.base_instructor === null) {
-                body = <div><Spinner animation='border'/></div>
+                body = <div><Spinner animation='border' /></div>
             }
             else {
                 body = <Table className="view-kv-table">
@@ -426,7 +441,11 @@ class InstructorDetailModal extends React.Component {
                         <td>레벨</td>
                         <td>{this.state.base_instructor.level_string}</td>
                     </tr>
-                   
+                    <tr>
+                        <td>지도자과정 강사여부</td>
+                        <td><Switch checked={this.state.base_instructor.allow_teach_apprentice}/></td>
+                    </tr>
+
                     <tr>
                         <td>자격증취득일</td>
                         <td>{this.state.base_instructor.validation_date == null ? null : moment(this.state.base_instructor.validation_date).format('YYYY-MM-DD')}</td>

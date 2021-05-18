@@ -231,9 +231,20 @@ module.exports = {
                 console.log(`apprentice_lessons after adding domain info: ${apprentice_lessons}`)
                 console.log(apprentice_lessons)
 
-                await pgclient.query('COMMIT')
 
-                const all_lessons = normal_lessons.concat(apprentice_lessons)
+                // fetch special schedules
+                res = await pgclient.query(`select id as indomain_id, starttime, endtime, title, memo from special_schedule where  (tstzrange(starttime, endtime) && tstzrange($1, $2) )`, [args.start_time, args.end_time])
+
+                console.log(res.rows)
+                const special_schedules = res.rows
+
+                special_schedules.forEach((d,i)=>{
+                    d['lesson_domain'] = 'special_schedule'
+                })
+
+                await pgclient.query('end')
+
+                const all_lessons = normal_lessons.concat(apprentice_lessons).concat(special_schedules)
 
                 all_lessons.forEach((d, i) => {
                     d['id'] = i

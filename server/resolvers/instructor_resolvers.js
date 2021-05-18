@@ -67,7 +67,7 @@ module.exports = {
 
             console.log(args)
 
-            let result = await pgclient.query('select instructor.id as id, name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, instructor_level.level_string as level_string, disabled from instructor left join instructor_level on level = instructor_level.id where instructor.id=$1', [args.id]).then(res => {
+            let result = await pgclient.query('select instructor.id as id, name,phonenumber, created, is_apprentice, birthdate, validation_date, memo, job, address, email, gender, level, instructor_level.level_string as level_string, disabled, allow_teach_apprentice from instructor left join instructor_level on level = instructor_level.id where instructor.id=$1', [args.id]).then(res => {
 
                 if (res.rowCount == 1) {
                     return {
@@ -173,11 +173,11 @@ module.exports = {
                 birthdate = incoming_time_string_to_postgres_epoch_time(birthdate)
             }
 
-            let _args = [args.name, args.phonenumber, parse_incoming_gender_str(args.gender), args.email, args.level, args.address, validation_date, birthdate, args.memo, args.is_apprentice, args.job, args.id]
+            let _args = [args.name, args.phonenumber, parse_incoming_gender_str(args.gender), args.email, args.level, args.address, validation_date, birthdate, args.memo, args.is_apprentice, args.job, args.allow_teach_apprentice, args.id]
 
             console.log(_args)
 
-            let ret = await pgclient.query('update instructor set name=$1, phonenumber=$2, gender=$3, email=$4, level=$5, address=$6, validation_date=to_timestamp($7), birthdate=to_timestamp($8), memo=$9, is_apprentice=$10, job=$11 where id=$12', _args).then(res => {
+            let ret = await pgclient.query('update instructor set name=$1, phonenumber=$2, gender=$3, email=$4, level=$5, address=$6, validation_date=to_timestamp($7), birthdate=to_timestamp($8), memo=$9, is_apprentice=$10, job=$11, allow_teach_apprentice=$12 where id=$13', _args).then(res => {
                 if (res.rowCount > 0) {
                     return {
                         success: true

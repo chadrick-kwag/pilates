@@ -51,7 +51,7 @@ type Mutation {
     disable_instructor_by_id(id:Int!): SuccessResult
     able_instructor_by_id(id:Int!): SuccessResult
     
-    update_instructor(id: Int!, name: String!, phonenumber: String!, birthdate: String, validation_date: String, memo: String, address: String, is_apprentice: Boolean, email: String, job: String, level: Int, gender: String): SuccessResult
+    update_instructor(id: Int!, name: String!, phonenumber: String!, birthdate: String, validation_date: String, memo: String, address: String, is_apprentice: Boolean, email: String, job: String, level: Int, gender: String, allow_teach_apprentice: Boolean!): SuccessResult
 
     update_instructor_level(id:Int!, level_string:String!, active: Boolean!, non_group_lesson_pay_percentage:Float!, group_lesson_perhour_payment: Int!, group_lesson_perhour_penalized_payment: Int!, rank:Int!): SuccessResult
     
