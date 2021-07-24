@@ -6,7 +6,20 @@ import PropTypes from 'prop-types'
 import client from '../apolloclient'
 import {FETCH_CLIENTINFO_AND_CHECKIN_LESSONS} from '../common/gql_defs'
 import { propTypes } from 'react-bootstrap/esm/Image';
+import {DateTime} from 'luxon'
 
+
+
+const format_lesson_time = (st, et)=>{
+    const _st = DateTime.fromMillis(parseInt(st)).setZone('UTC+9')
+    const _et = DateTime.fromMillis(parseInt(et)).setZone('UTC+9')
+
+    let date_str = _st.toFormat('LL-dd')
+    let start_time_str = _st.toFormat('HH:mm')
+    let end_time_str = _et.toFormat('HH:mm')
+
+    return `${date_str} ${start_time_str}-${end_time_str}`
+}
 
 
 function SelectCheckIn({clientid, onSuccess}){
@@ -18,18 +31,23 @@ function SelectCheckIn({clientid, onSuccess}){
 
     useEffect(()=>{
         // fetch client data
+
+        const _vars = {
+            clientid: clientid
+        }
+
+        console.log(_vars)
+
         client.query({
             query:FETCH_CLIENTINFO_AND_CHECKIN_LESSONS,
             fetchPolicy: 'no-cache',
-            variables: {
-                clientid: clientid
-            }
+            variables: _vars
 
         }).then(res=>{
             console.log(res)
-            if(res.data.success){
+            if(res.data.query_checkin_lessons_of_client.success){
                 
-                setCheckinLessons(res.data.lessons)
+                setCheckinLessons(res.data.query_checkin_lessons_of_client.lessons)
                 setLoading(false)
             }
             else{
@@ -45,6 +63,11 @@ function SelectCheckIn({clientid, onSuccess}){
     },[])
 
 
+    const submit_attendance=(lessonid)=>{
+
+    }
+
+
     if(loading){
         return (<div><CircularProgress/></div>)
     }
@@ -52,14 +75,29 @@ function SelectCheckIn({clientid, onSuccess}){
         return <div><span>{error}</span></div>
     }
     else{
-        return <div>some data</div>
+        if(checkinLessons.length===0){
+            return <div>출석 가능한 수업이 없습니다</div>
+        }
+        else{
+            return <div>
+                <Grid container>
+                    {checkinLessons.map(d=><Grid item xs={12}>
+                        <Paper onClick={d.id}>
+                            <span>{format_lesson_time(d.starttime, d.endtime)}</span>
+                            <span>{d.instructorname} 강사님</span>
+                        </Paper>
+                    </Grid>)}
+                    
+                </Grid>
+            </div>
+        }
     }
 }
 
 
-SelectCheckIn.PropTypes={
-    clientid: propTypes.number,
-    onSuccess: propTypes.func
+SelectCheckIn.propTypes={
+    clientid: PropTypes.number,
+    onSuccess: PropTypes.func
 
 }
 

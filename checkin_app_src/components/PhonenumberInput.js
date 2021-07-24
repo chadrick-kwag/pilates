@@ -92,8 +92,7 @@ function PhonenumberInput({onSubmit}) {
                 alert('fetch data failed')
             }
         }).catch(e=>{
-            console.log(JSON.stringify(e))
-            console.log(e)
+            
             alert('fetch data error')
         })
     }

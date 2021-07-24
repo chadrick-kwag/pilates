@@ -2,7 +2,7 @@ module.exports = `
 
 type Query {
     query_clients_by_phonenumber(phonenumber:String!): SuccessAndClientsResult
-    query_checkin_lessons_of_client: SuccessAndCheckInLessonsResult
+    query_checkin_lessons_of_client(clientid:Int!): SuccessAndCheckInLessonsResult
 }
 
 
@@ -12,7 +12,7 @@ type CheckInLessons{
     endtime: String!
     instructorid: Int!
     instructorname: String!
-    group_type: String!
+    grouping_type: String!
     activity_type: String!
 }
 

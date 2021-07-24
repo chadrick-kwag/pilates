@@ -25,9 +25,19 @@ export const FETCH_CLIENTINFO_AND_CHECKIN_LESSONS = gql`
                 endtime
                 instructorid
                 instructorname
-                group_type
+                grouping_type
                 activity_type
             }
+        }
+    }
+`
+
+
+export const SUBMIT_LESSON_ATTENDANCE = gql`
+    mutation($clientid:Int!, $lessonid: Int!){
+        checkin_lesson_for_client(clientid:$clientid, lessonid: $lessonid){
+            success
+            msg
         }
     }
 `
