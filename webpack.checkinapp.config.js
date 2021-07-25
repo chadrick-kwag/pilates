@@ -27,8 +27,8 @@ module.exports = {
     },
     plugins: [
         new hwp({
-            template: "./checkin_app_src/template.html"
-            
+            template: "./checkin_app_src/template.html",
+            publicPath: "/checkin"
         })
 
     ],
