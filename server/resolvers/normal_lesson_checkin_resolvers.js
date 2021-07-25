@@ -97,7 +97,7 @@ module.exports = {
             catch(e){
 
                 try{
-                    await pgclient.query('END')
+                    await pgclient.query('ROLLBACK')
 
                 }
                 catch(e2){
