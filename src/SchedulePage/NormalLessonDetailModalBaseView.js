@@ -1,5 +1,5 @@
 import React, { useState, createRef } from 'react'
-
+import { makeStyles } from '@material-ui/core/styles';
 import { Button, Menu, MenuItem, Table, TableRow, TableCell, Chip, Dialog, DialogActions, DialogContent } from '@material-ui/core'
 
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
@@ -8,12 +8,32 @@ import { DateTime } from 'luxon'
 import client from '../apolloclient'
 import { DELETE_LESSON_WITH_REQUEST_TYPE_GQL } from '../common/gql_defs'
 
+
+const useStyles = makeStyles(theme => {
+    return {
+        attendance_chip_false: {
+            padding: '5px',
+            backgroundColor: 'red',
+            marginLeft: '2px'
+            
+        },
+        attendance_chip_true: {
+            padding: '5px',
+            backgroundColor: 'green',
+            color: 'white',
+            marginLeft: '2px'
+        }
+    }
+})
+
 export default function NormalLessonDetailModalBaseView(props) {
 
     console.log(props)
 
     const [showCancelMenu, setShowCancelMenu] = useState(false)
     const [cancelBtnRef, setCancelBtnRef] = useState(null)
+
+    const classes = useStyles()
 
 
     const delete_lesson_with_request_type = (request_type, ignore_warning = false) => {
@@ -68,33 +88,7 @@ export default function NormalLessonDetailModalBaseView(props) {
 
     }
 
-    let client_arr = props.data.client_info_arr.map(d => {
-        return {
-            clientid: d.clientid,
-            clientname: d.clientname,
-            clientphonenumber: d.clientphonenumber
-
-        }
-    })
-
-    let unique_client_arr = []
-    client_arr.forEach(d => {
-        let _cid = d.clientid
-        let included = false
-        for (let i = 0; i < unique_client_arr.length; i++) {
-            if (unique_client_arr[i].clientid == _cid) {
-                included = true;
-                break
-            }
-        }
-
-        if (!included) {
-            unique_client_arr.push(d)
-        }
-    })
-
-    console.log('unique_client_arr')
-    console.log(unique_client_arr)
+    let unique_client_arr = props.data.client_info_arr
 
     return (
         <>
@@ -111,7 +105,15 @@ export default function NormalLessonDetailModalBaseView(props) {
                         <TableCell>회원</TableCell>
                         <TableCell>
 
-                            {unique_client_arr?.map(d => <Chip label={`${d.clientname}(${d.clientphonenumber})`} />)}
+                            {unique_client_arr?.map(d => <Chip label={<div>{d.clientname}({d.clientphonenumber}){(() => {
+                                console.log(d)
+                                if (d.checkin_time !== null) {
+                                    return <span className={classes.attendance_chip_true}>출석</span>
+                                }
+                                else {
+                                    return <span className={classes.attendance_chip_false}>미출석</span>
+                                }
+                            })()}</div>} />)}
 
 
 

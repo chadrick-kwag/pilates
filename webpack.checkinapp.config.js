@@ -3,16 +3,16 @@ const path = require('path')
 const {GRAPHQL_PORT_INTERNAL} = require('./config.js')
 
 module.exports = {
-    entry: './src/app.js',
+    entry: './checkin_app_src/app.js',
     output: {
-        path: path.resolve(__dirname, 'dist'),
+        path: path.resolve(__dirname, 'checkin_app_dist'),
         filename: 'bundle.js'
     },
     module: {
         rules: [
             {
                 test: /\.jsx?$/,
-                include: path.resolve(__dirname, 'src'),
+                include: path.resolve(__dirname, 'checkin_app_src'),
                 exclude: "/node_modules",
                 use: "babel-loader"
             },
@@ -27,15 +27,15 @@ module.exports = {
     },
     plugins: [
         new hwp({
-            template: "./src/template.html",
-            favicon: "./src/assets/favicon.ico"
+            template: "./checkin_app_src/template.html",
+            publicPath: "/checkin"
         })
 
     ],
     devServer: {
         open: "chrome",
-        host: '0.0.0.0',
-        port: 8899,
+        host: 'localhost',
+        port: 9001,
         compress: false,
         proxy: {
             '/graphql': `http://localhost:${GRAPHQL_PORT_INTERNAL}`
