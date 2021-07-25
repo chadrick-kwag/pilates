@@ -5,7 +5,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types'
 import {FETCH_CLIENTS_BY_PHONENUMBER} from '../common/gql_defs'
 import client from '../apolloclient'
-
+import CancelIcon from '@material-ui/icons/Cancel';
+import KeyboardBackspaceIcon from '@material-ui/icons/KeyboardBackspace';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -15,7 +16,10 @@ const useStyles = makeStyles((theme) => ({
         padding: theme.spacing(2),
         textAlign: 'center',
         color: theme.palette.text.secondary,
-        fontFamily: 'Noto Sans KR'
+        fontFamily: 'Noto Sans KR',
+        "&:active":{
+            backgroundColor: 'gray'
+        }
     },
     stringholder: {
         height: "4rem",
@@ -135,14 +139,14 @@ function PhonenumberInput({onSubmit}) {
                     <Paper elevation={5} className={classes.paper}>9</Paper>
                 </Grid>
                 <Grid item xs={4} onClick={() => clear()}>
-                    <Paper elevation={5} className={classes.paper}>x</Paper>
+                    <Paper elevation={5} className={classes.paper}><CancelIcon/></Paper>
                 </Grid>
                 <Grid item xs={4} onClick={() => add_char_to_phonenumber("0")}>
                     <Paper elevation={5} className={classes.paper}>0</Paper>
                 </Grid>
 
                 <Grid item xs={4} onClick={() => edit_back()}>
-                    <Paper elevation={5} className={classes.paper}>back</Paper>
+                    <Paper elevation={5} className={classes.paper}><KeyboardBackspaceIcon/></Paper>
                 </Grid>
                 <Grid item xs={12} >
                     <Grid container justify="center" direction="row" alignItems="center">
