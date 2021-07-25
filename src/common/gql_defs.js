@@ -69,7 +69,8 @@ const QUERY_LESSON_WITH_DATERANGE_GQL = gql`query($start_time: String!, $end_tim
                 clientid
                 clientname
                 clientphonenumber
-                ticketid
+                ticketid_arr
+                checkin_time
             }
             instructorid
             instructorname

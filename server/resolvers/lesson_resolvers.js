@@ -154,38 +154,45 @@ module.exports = {
             console.log(args)
 
             try {
-                let res = await pgclient.query('BEGIN')
+                await pgclient.query('BEGIN')
 
                 // gather normal lessons
 
-                res = await pgclient.query(`select  lesson.id as indomain_id, instructor.id as instructorid,
-                        instructor.name as instructorname, 
-                        instructor.phonenumber as instructorphonenumber,
-                        lesson.starttime, lesson.endtime,
-                        lesson.activity_type,
-                        lesson.grouping_type,
-                        
+                // first get basic lesson info
+                let res = await pgclient.query(`select lesson.id as indomain_id, 'normal_lesson' as lesson_domain, lesson.instructorid, instructor.name as instructorname, instructor.phonenumber as instructorphonenumber, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type from lesson
+                left join instructor on lesson.instructorid = instructor.id
+                where lesson.canceled_time is null
+                and (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1,$2))`, [args.start_time, args.end_time])
+
+                // get client info arr for each lesson
+                const normal_lessons = []
+                for(let i=0;i<res.rowCount;i++){
+                    const d = res.rows[i]
+
+                    const lessonid = d.indomain_id
+
+                    let sub_result = await pgclient.query(`WITH A AS (select DISTINCT ON(ticketid) normal_lesson_attendance.checkin_time, client.phonenumber as clientphonenumber, client.name as clientname,
+                    assign_ticket.lessonid, assign_ticket.ticketid, 
+                    assign_ticket.created, assign_ticket.canceled_time,
+                    plan.clientid from assign_ticket
+                    left join ticket on ticket.id = assign_ticket.ticketid
+                    left join plan on ticket.creator_plan_id = plan.id
+                    left join client on plan.clientid = client.id
+                                left join normal_lesson_attendance on normal_lesson_attendance.lessonid = assign_ticket.lessonid and normal_lesson_attendance.clientid = client.id
+                                where assign_ticket.lessonid = $1
+                    ORDER BY ticketid, created desc)
                     
-                        lesson.canceled_time as lesson_canceled_time,
-                        
-                        array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber, 'ticketid', ticket.id )) as client_info_arr
-                        from lesson 
-                        inner join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
-                        left join ticket on A.ticketid = ticket.id
-                        left join plan on ticket.creator_plan_id = plan.id
-                        left join client on plan.clientid = client.id
-                        left join instructor on lesson.instructorid = instructor.id
-                        where lesson.canceled_time is null
-                        and A.canceled_time is null
-                        AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1, $2) )
-                            
-                        GROUP BY lesson.id, instructor.id  `, [args.start_time, args.end_time])
+                    select  A.clientid, A.clientname, A.clientphonenumber, 
+                    array_agg(A.ticketid) as ticketid_arr, 
+                    A.checkin_time from A where A.canceled_time is null
+                    and A.clientid is not null
+                    group by  A.clientid, A.clientname, A.clientphonenumber, A.checkin_time`, [lessonid])
 
-                const normal_lessons = res.rows
-
-                normal_lessons.forEach((d, i) => {
-                    d['lesson_domain'] = 'normal_lesson'
-                })
+                    if(sub_result.rowCount>0){
+                        d.client_info_arr = sub_result.rows
+                        normal_lessons.push(d)
+                    }
+                }
 
                 console.log(`modified normal lessons: ${normal_lessons}`)
 
