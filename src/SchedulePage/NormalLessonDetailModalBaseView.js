@@ -111,7 +111,7 @@ export default function NormalLessonDetailModalBaseView(props) {
                         <TableCell>회원</TableCell>
                         <TableCell>
 
-                            {unique_client_arr?.map(d => <Chip label={<div>{d.clientname}({d.clientphonenumber})</div>} />)}
+                            {unique_client_arr?.map(d => <Chip label={`${d.clientname}(${d.clientphonenumber})`} />)}
 
 
 

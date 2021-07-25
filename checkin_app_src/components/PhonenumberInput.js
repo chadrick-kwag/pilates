@@ -10,10 +10,7 @@ import KeyboardBackspaceIcon from '@material-ui/icons/KeyboardBackspace';
 
 const useStyles = makeStyles((theme) => ({
     root: {
-        width: "100%",
-        height: "100%",
-        justifyContent: "center",
-        alignItems: "center"
+        flexGrow: 1,
     },
     paper: {
         padding: theme.spacing(2),
