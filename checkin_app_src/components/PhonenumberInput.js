@@ -14,11 +14,13 @@ const useStyles = makeStyles((theme) => ({
     paper: {
         padding: theme.spacing(2),
         textAlign: 'center',
-        color: theme.palette.text.secondary
+        color: theme.palette.text.secondary,
+        fontFamily: 'Noto Sans KR'
     },
     stringholder: {
         height: "4rem",
         backgroundColor: theme.palette.primary.main,
+        fontFamily: 'Noto Sans KR',
         margin: "1rem"
     },
     stringholder_span: {
@@ -106,46 +108,46 @@ function PhonenumberInput({onSubmit}) {
                     <span className={classes.stringholder_span}>{phonenumber}</span>
                 </Grid>
                 <Grid item xs={4} onClick={() => add_char_to_phonenumber("1")}>
-                    <Paper className={classes.paper}>1</Paper>
+                    <Paper elevation={5} className={classes.paper}>1</Paper>
                 </Grid>
                 <Grid item xs={4} onClick={() => add_char_to_phonenumber("2")}>
-                    <Paper className={classes.paper}>2</Paper>
+                    <Paper elevation={5} className={classes.paper}>2</Paper>
                 </Grid>
                 <Grid item xs={4} onClick={() => add_char_to_phonenumber("3")}>
-                    <Paper className={classes.paper}>3</Paper>
+                    <Paper elevation={5} className={classes.paper}>3</Paper>
                 </Grid>
                 <Grid item xs={4} onClick={() => add_char_to_phonenumber("4")}>
-                    <Paper className={classes.paper}>4</Paper>
+                    <Paper elevation={5} className={classes.paper}>4</Paper>
                 </Grid>
                 <Grid item xs={4} onClick={() => add_char_to_phonenumber("5")}>
-                    <Paper className={classes.paper}>5</Paper>
+                    <Paper elevation={5} className={classes.paper}>5</Paper>
                 </Grid>
                 <Grid item xs={4} onClick={() => add_char_to_phonenumber("6")}>
-                    <Paper className={classes.paper}>6</Paper>
+                    <Paper elevation={5} className={classes.paper}>6</Paper>
                 </Grid>
                 <Grid item xs={4} onClick={() => add_char_to_phonenumber("7")}>
-                    <Paper className={classes.paper}>7</Paper>
+                    <Paper elevation={5} className={classes.paper}>7</Paper>
                 </Grid>
                 <Grid item xs={4} onClick={() => add_char_to_phonenumber("8")}>
-                    <Paper className={classes.paper}>8</Paper>
+                    <Paper elevation={5} className={classes.paper}>8</Paper>
                 </Grid>
                 <Grid item xs={4} onClick={() => add_char_to_phonenumber("9")}>
-                    <Paper className={classes.paper}>9</Paper>
+                    <Paper elevation={5} className={classes.paper}>9</Paper>
                 </Grid>
                 <Grid item xs={4} onClick={() => clear()}>
-                    <Paper className={classes.paper}>x</Paper>
+                    <Paper elevation={5} className={classes.paper}>x</Paper>
                 </Grid>
                 <Grid item xs={4} onClick={() => add_char_to_phonenumber("0")}>
-                    <Paper className={classes.paper}>0</Paper>
+                    <Paper elevation={5} className={classes.paper}>0</Paper>
                 </Grid>
 
                 <Grid item xs={4} onClick={() => edit_back()}>
-                    <Paper className={classes.paper}>back</Paper>
+                    <Paper elevation={5} className={classes.paper}>back</Paper>
                 </Grid>
                 <Grid item xs={12} >
                     <Grid container justify="center" direction="row" alignItems="center">
                         <Grid item>
-                            <Button onClick={()=>fetch_clients()}>OK</Button>
+                            <Button variant='outlined' onClick={()=>fetch_clients()}>OK</Button>
                         </Grid>
                     </Grid>
 

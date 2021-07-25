@@ -4,11 +4,12 @@ import { ApolloProvider, } from '@apollo/react-hooks';
 import client from './apolloclient'
 import PhonenumberInput from './components/PhonenumberInput'
 import SelectCheckIn from './components/SelectCheckIn'
-import { nullFormat } from 'numeral';
+
+import SelectClient from './components/SelectClient'
 
 class App extends React.Component {
 
-    
+
     constructor(props) {
         super(props)
         this.state = {
@@ -18,11 +19,11 @@ class App extends React.Component {
         }
 
         this.reset = this.reset.bind(this)
-        
+
     }
 
 
-    reset(){
+    reset() {
         this.setState({
             phase: "phonenumber",
             phonenumber: "",
@@ -33,28 +34,32 @@ class App extends React.Component {
 
     render() {
 
-        if(this.state.phase === 'phonenumber'){
-            return <PhonenumberInput onSubmit={(fetched_clients)=>{
-                if(fetched_clients.length==1){
+        if (this.state.phase === 'phonenumber') {
+            return <PhonenumberInput onSubmit={(fetched_clients) => {
+                if (fetched_clients.length == 1) {
                     this.setState({
                         selected_client_info: fetched_clients[0],
                         phase: "select-lesson"
                     })
                 }
-                else{
+                else {
                     this.setState({
                         candidate_clients: fetched_clients,
                         phase: 'select-client'
                     })
-                }   
-            }}/>
+                }
+            }} />
         }
-        else if(this.state.phase === 'select-client'){
-            return <div>hello</div>
+        else if (this.state.phase === 'select-client') {
+            return <SelectClient clients={this.state.candidate_clients} onSelected={(c) => this.setState({
+                candidate_clients: [],
+                selected_client_info: c,
+                phase: 'select-lesson'
+            })} onCancel={() => this.reset()} />
         }
-        else if(this.state.phase === 'select-lesson'){
-            return <SelectCheckIn clientid={this.state.selected_client_info.id} onSuccess={()=>this.reset()}
-            onToFirstScreen={()=>this.reset()}
+        else if (this.state.phase === 'select-lesson') {
+            return <SelectCheckIn clientid={this.state.selected_client_info.id} onSuccess={() => this.reset()}
+                onToFirstScreen={() => this.reset()}
             />
         }
 
