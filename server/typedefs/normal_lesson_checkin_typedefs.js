@@ -5,6 +5,18 @@ type Query {
     query_checkin_lessons_of_client(clientid:Int!): SuccessAndCheckInLessonsResult
 }
 
+type Mutation{
+    checkin_lesson_for_client(clientid:Int!, lessonid: Int!): CheckinResponse
+    
+}
+
+
+type CheckinResponse{
+    success: Boolean
+    msg: String
+}
+
+
 
 type CheckInLessons{
     id: Int!

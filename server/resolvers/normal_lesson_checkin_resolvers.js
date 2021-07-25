@@ -71,6 +71,45 @@ module.exports = {
                 }
             }
         }
+    },
+    Mutation: {
+        checkin_lesson_for_client: async (parent, args)=>{
+            try{
+                await pgclient.query('BEGIN')
+
+
+                let result = await pgclient.query(`insert into normal_lesson_attendance(lessonid, clientid, checkin_time) values ($1, $2, now())`,[args.lessonid, args.clientid])
+
+                if(result.rowCount!==1){
+                    throw "insert row count not 1"   
+                }
+
+                await pgclient.query('COMMIT')
+
+                return {
+                    success: true
+
+                }
+            }
+            catch(e){
+
+                try{
+                    await pgclient.query('END')
+
+                }
+                catch(e2){
+                    return {
+                        success: false,
+                        msg: e2.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        }
     }
 
 }

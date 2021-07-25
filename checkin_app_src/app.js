@@ -53,7 +53,9 @@ class App extends React.Component {
             return <div>hello</div>
         }
         else if(this.state.phase === 'select-lesson'){
-            return <SelectCheckIn clientid={this.state.selected_client_info.id} onSuccess={()=>this.reset()}/>
+            return <SelectCheckIn clientid={this.state.selected_client_info.id} onSuccess={()=>this.reset()}
+            onToFirstScreen={()=>this.reset()}
+            />
         }
 
         return
