@@ -5,7 +5,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types'
 import client from '../apolloclient'
 import { FETCH_CLIENTINFO_AND_CHECKIN_LESSONS, SUBMIT_LESSON_ATTENDANCE } from '../common/gql_defs'
-import { propTypes } from 'react-bootstrap/esm/Image';
 import { DateTime } from 'luxon'
 
 
@@ -116,6 +115,8 @@ function SelectCheckIn({ clientid, onSuccess, onToFirstScreen }) {
     }
     else {
         if (checkinLessons.length === 0) {
+
+            setTimeout(()=>onToFirstScreen?.(), 2000)
             return <div style={{ width: '100%', height: "100%", display: 'flex', flexDirection:'column', justifyContent: 'center', alignItems: 'center' }}>
                 <span>출석 가능한 수업이 없습니다</span>
                 <Button variant='outlined' onClick={()=>onToFirstScreen?.()}>처음으로</Button>
@@ -124,6 +125,9 @@ function SelectCheckIn({ clientid, onSuccess, onToFirstScreen }) {
         else {
             return <div style={{ width: '100%', height: "100%", display: 'flex', flexDirection:'column', justifyContent: 'flex-start', alignItems: 'center' }}>
                 <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                        <Button variant='outlined' onClick={()=>onToFirstScreen?.()}>처음으로</Button>
+                    </Grid>
                     {checkinLessons.map(d => <Grid item xs={12}>
                         <Paper className={classes.paper} elevation={3} onClick={()=>submit_attendance(d.id)}>
                             <span>{format_lesson_time(d.starttime, d.endtime)}</span>
