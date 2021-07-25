@@ -49,10 +49,13 @@ module.exports = {
                 left join ticket on assign_ticket.ticketid = ticket.id
                 left join plan on plan.id = ticket.creator_plan_id
                 left join instructor on lesson.instructorid = instructor.id
+				left join (select * from normal_lesson_attendance where clientid=$3) as B on B.lessonid = lesson.id
                 
                 where (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1, $2))
                 and lesson.canceled_time is null
                 and plan.clientid = $3
+				and B.id is null
+				
                 group by lesson.id, lesson.starttime, lesson.endtime, instructor.id, instructor.name, 
                 lesson.activity_type, lesson.grouping_type`,[span_start.toJSDate(), span_end.toJSDate(), args.clientid])
 
