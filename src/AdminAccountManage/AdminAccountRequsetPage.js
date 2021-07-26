@@ -5,7 +5,7 @@ import { DateTime } from 'luxon'
 import { FETCH_ADMIN_ACCOUNT_CREATE_REQUESTS, APPROVE_ADMIN_ACCOUNT_REQUEST } from '../common/gql_defs'
 
 
-function AdminAccountManagePage() {
+function AdminAccountRequestPage() {
 
 
     const [adminRequests, setAdminRequests] = useState([])
@@ -118,4 +118,4 @@ function AdminAccountManagePage() {
     }
 }
 
-export default AdminAccountManagePage
+export default AdminAccountRequestPage

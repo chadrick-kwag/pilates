@@ -5,6 +5,24 @@ const token_cache = {}
 
 module.exports = {
     Query: {
+        fetch_admin_accounts: async (parent, args) => {
+            try {
+                let result = await pgclient.query(`select id, username, created, is_core_admin from admin_account`)
+
+                return {
+                    success: true,
+                    accounts: result.rows
+                }
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
         check_token_is_core_admin: async (parent, args) => {
             try {
                 //check token is valid
@@ -17,7 +35,7 @@ module.exports = {
                         msg: 'invalid token'
                     }
                 }
-                
+
                 // fetch is_core_admin 
                 let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [admin_account_id])
 

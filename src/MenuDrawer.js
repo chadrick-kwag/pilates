@@ -62,8 +62,13 @@ function MenuDrawer({ history, closeDrawer, open }) {
                 <CoreAdminUserCheck>
                     <ListItem button onClick={() => {
                         closeDrawer()
-                        history.push('/adminaccountmanage')
-                    }}>관리자 계정 관리</ListItem>
+                        history.push('/adminaccountapprove')
+                    }}>관리자 계정 승인</ListItem>
+                    <ListItem button onClick={() => {
+                        closeDrawer()
+                        history.push('/adminaccountcontrol')
+                    }}>관리자 계정 관리
+                    </ListItem>
                 </CoreAdminUserCheck>
 
             </List>

@@ -42,7 +42,8 @@ import AuthenticateWrapper from './components/AuthenticateWrapper'
 import LoginPage from './loginPage/main'
 import SignUpPage from './signup/main'
 import MenuDrawer from './MenuDrawer'
-import AdminAccountManagePage from './AdminAccountManage/main'
+import AdminAccountRequestPage from './AdminAccountManage/AdminAccountRequsetPage'
+import AdminAccountControlPage from './AdminAccountManage/AdminAccountControlPage'
 
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
@@ -59,46 +60,7 @@ class App extends React.Component {
             userprofile_el: null
         }
 
-        this.getMainView = this.getMainView.bind(this)
         this.profile_handleClose = this.profile_handleClose.bind(this)
-    }
-
-
-    getMainView() {
-
-        if (this.state.viewmode === "schedule") {
-            return <SchedulePage apolloclient={client} />
-        }
-        else if (this.state.viewmode === "client_manage") {
-            return <ClientManagePage apolloclient={client} />
-        }
-        else if (this.state.viewmode === 'instructor_manage') {
-            return <InstructorManagePage apolloclient={client} />
-        }
-        else if (this.state.viewmode === "plan_manage") {
-            return <SubscriptionManagePage apolloclient={client} />
-        }
-        else if (this.state.viewmode === 'instructor_stat') {
-            return <InstructorStatManagePage />
-        }
-        else if (this.state.viewmode === 'adminpage') {
-            return <AdminPage />
-        }
-        else if (this.state.viewmode === 'apprentice_personnel') {
-            return <ApprenticePersonnelPage />
-        }
-        else if (this.state.viewmode === 'apprentice_course') {
-            return <ApprenticeCoursePage />
-        }
-        else if (this.state.viewmode === 'apprentice_plan') {
-            return <ApprenticePlanPage />
-        }
-        else if (this.state.viewmode === 'dashboard') {
-            return <DashBoardContainer />
-        }
-        else {
-            return <div>not yet implemented</div>
-        }
     }
 
     profile_handleClose() {
@@ -195,13 +157,16 @@ class App extends React.Component {
                         <Route path='/login'>
                             <LoginPage />
                         </Route>
-                        <Route path='/adminaccountmanage'>
-                            <AdminAccountManagePage/>
+                        <Route path='/adminaccountapprove'>
+                            <AdminAccountRequestPage />
+                        </Route>
+                        <Route path='/adminaccountcontrol'>
+                            <AdminAccountControlPage />
                         </Route>
                         <Route path='/'>
                             <Redirect to="/schedule" />
                         </Route>
-                        
+
 
                     </Switch>
                 </div>

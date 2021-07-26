@@ -1191,6 +1191,23 @@ export const CHECK_TOKEN_IS_CORE_ADMIN = gql`
     }
 `
 
+
+//fetch_admin_accounts
+export const FETCH_ADMIN_ACCOUNTS = gql`
+    query{
+        fetch_admin_accounts{
+            success
+            msg 
+            accounts {
+                id
+                username
+                created
+                is_core_admin
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

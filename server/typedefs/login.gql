@@ -3,6 +3,7 @@ type Query{
     check_admin_authtoken(token:String!): SimpleResponse
     fetch_admin_account_create_requests: AdminCreateRequestResponse
     check_token_is_core_admin(token:String!): IsCoreAdminResponse
+    fetch_admin_accounts: FetchAdminAccountsResponse
 
 }
 
@@ -10,6 +11,20 @@ type Mutation{
     create_account(username: String!, password: String!): SimpleResponse
     request_admin_account_creation(username:String!, password: String!, contact: String): SimpleResponse
     approve_admin_account_request(id:Int!): SimpleResponse
+}
+
+type AdminAccount{
+    id: Int!
+    username: String!
+    created: String
+    is_core_admin: Boolean
+
+}
+
+type FetchAdminAccountsResponse{
+    success: Boolean!
+    msg: String
+    accounts: [AdminAccount]
 }
 
 type IsCoreAdminResponse{
