@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Drawer, List, ListItem, Divider } from '@material-ui/core'
 import { withRouter } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import CoreAdminUserCheck from './components/CoreAdminUserCheck'
 
 
 function MenuDrawer({ history, closeDrawer, open }) {
@@ -58,10 +59,13 @@ function MenuDrawer({ history, closeDrawer, open }) {
                     history.push('/adminpage')
                 }}>관리자설정</ListItem>
 
-                <ListItem button onClick={() => {
-                    closeDrawer()
-                    history.push('/adminaccountmanage')
-                }}>관리자 계정 관리</ListItem>
+                <CoreAdminUserCheck>
+                    <ListItem button onClick={() => {
+                        closeDrawer()
+                        history.push('/adminaccountmanage')
+                    }}>관리자 계정 관리</ListItem>
+                </CoreAdminUserCheck>
+
             </List>
         </div>
 

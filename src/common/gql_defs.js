@@ -1179,6 +1179,18 @@ export const APPROVE_ADMIN_ACCOUNT_REQUEST = gql`
     }
 `
 
+//check_token_is_core_admin
+
+export const CHECK_TOKEN_IS_CORE_ADMIN = gql`
+    query($token:String!){
+        check_token_is_core_admin(token:$token){
+            success
+            msg
+            is_core
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

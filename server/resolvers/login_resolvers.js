@@ -5,6 +5,40 @@ const token_cache = {}
 
 module.exports = {
     Query: {
+        check_token_is_core_admin: async (parent, args) => {
+            try {
+                //check token is valid
+
+                const admin_account_id = token_cache[args.token]
+
+                if (admin_account_id === undefined) {
+                    return {
+                        success: false,
+                        msg: 'invalid token'
+                    }
+                }
+                
+                // fetch is_core_admin 
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [admin_account_id])
+
+                if (result.rowCount !== 1) {
+                    throw 'no account found'
+                }
+
+                return {
+                    success: true,
+                    is_core: result.rows[0].is_core_admin
+
+                }
+
+            } catch (e) {
+                console.log(e)
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
         try_login: async (parent, args) => {
 
             try {
@@ -175,11 +209,11 @@ module.exports = {
         request_admin_account_creation: async (parent, args) => {
             try {
                 await pgclient.query('BEGIN')
-                
-                // check incoming username does not exist in admin accounts
-                let result = await pgclient.query(`select id from admin_account where username=$1`,[args.username])
 
-                if(result.rowCount>0){
+                // check incoming username does not exist in admin accounts
+                let result = await pgclient.query(`select id from admin_account where username=$1`, [args.username])
+
+                if (result.rowCount > 0) {
                     throw "username already in use"
                 }
 
@@ -189,7 +223,7 @@ module.exports = {
                     throw 'insert failed'
                 }
 
-                
+
 
                 await pgclient.query('COMMIT')
 
