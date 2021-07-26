@@ -43,6 +43,7 @@ import packagejson from '../package.json'
 import AuthenticateWrapper from './components/AuthenticateWrapper'
 import LoginPage from './loginPage/main'
 import SignUpPage from './signup/main'
+import MenuDrawer from './MenuDrawer'
 
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
@@ -127,9 +128,6 @@ class App extends React.Component {
 
                         </Grid>
                         <Grid item style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center' }} xs={4}>
-
-
-
                             <div style={{ height: '100%', display: 'flex', flexDirection: 'row-reverse', alignItems: 'center' }}>
                                 <span style={{ color: 'white', marginRight: '2rem' }}>ver {packagejson.version}</span>
 
@@ -155,7 +153,7 @@ class App extends React.Component {
                                         localStorage.removeItem('pilates-auth-token')
                                         this.props.history.push('/login')
 
-                                    }}>logout</MenuItem>
+                                    }}>로그아웃</MenuItem>
 
                                 </Menu>
                             </div>
@@ -178,7 +176,7 @@ class App extends React.Component {
                             <SubscriptionManagePage apolloclient={client} />
                         </Route>
                         <Route path='/instructormanage'>
-                            <InstructorStatManagePage />
+                            <InstructorManagePage />
                         </Route>
                         <Route path='/apprenticecourse'>
                             <ApprenticeCoursePage />
@@ -206,60 +204,7 @@ class App extends React.Component {
                 </div>
 
 
-
-
-                <Drawer anchor='left' open={this.state.showDrawer} onClose={() => this.setState({ showDrawer: false })}>
-                    <div>
-                        <List component="nav">
-
-                            <ListItem button onClick={e => this.setState({
-                                showDrawer: false
-
-                            }, () => this.props.history.push('/dashboard'))}>홈</ListItem>
-                            <Divider />
-                            <ListItem button onClick={e => this.setState({
-                                showDrawer: false
-
-                            }, () => this.props.history.push('/schedule'))}>스케쥴</ListItem>
-                            <Divider />
-                            <ListItem button onClick={e => this.setState({
-                                showDrawer: false
-
-                            }, () => this.props.history.push('/clientmanage'))}>회원관리</ListItem>
-                            <ListItem button onClick={e => this.setState({
-                                showDrawer: false,
-                                viewmode: 'plan_manage'
-                            }, () => this.props.history.push('/planmanage'))}>회원플랜관리</ListItem>
-                            <ListItem button onClick={e => this.setState({
-                                showDrawer: false,
-                                viewmode: 'instructor_manage'
-                            }, () => this.props.history.push('/instructormanage'))}>강사관리</ListItem>
-                            <Divider variant='fullWidth' />
-                            <ListItem button onClick={e => this.setState({
-                                showDrawer: false,
-                                viewmode: 'apprentice_course'
-                            }, () => this.props.history.push('/apprenticecourse'))}>견습강사 과정</ListItem>
-                            <ListItem button onClick={e => this.setState({
-                                showDrawer: false,
-                                viewmode: 'apprentice_personnel'
-                            }, () => this.props.history.push('/apprenticepersonnel'))}>견습강사 관리</ListItem>
-                            <ListItem button onClick={e => this.setState({
-                                showDrawer: false,
-                                viewmode: 'apprentice_plan'
-                            }, () => this.props.history.push('/apprentice_plan'))}>견습강사 플랜</ListItem>
-                            <Divider />
-                            <ListItem button onClick={e => this.setState({
-                                showDrawer: false,
-                                viewmode: 'instructor_stat'
-                            }, () => this.props.history.push('/instructorstat'))}>강사통계</ListItem>
-                            <ListItem button onClick={e => this.setState({
-                                showDrawer: false,
-                                viewmode: 'adminpage'
-                            }, () => this.props.history.push('/adminpage'))}>관리자설정</ListItem>
-                        </List>
-                    </div>
-
-                </Drawer>
+                <MenuDrawer open={this.state.showDrawer} closeDrawer={() => this.setState({ showDrawer: false })} />
 
             </div>
         )
