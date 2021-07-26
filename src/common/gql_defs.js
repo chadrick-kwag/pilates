@@ -1066,7 +1066,7 @@ export const UPDATE_NORMAL_PLAN_BASICINFO = gql`
 `
 
 //create_special_schedule 
-export const CREATE_SPECIAL_SCHEDULE  = gql`
+export const CREATE_SPECIAL_SCHEDULE = gql`
     mutation($starttime: String!, $endtime: String!, $title: String!, $memo: String){
         create_special_schedule(starttime: $starttime, endtime: $endtime, title: $title, memo: $memo){
             success
@@ -1106,6 +1106,38 @@ export const DELETE_SPECIAL_SCHEDULE_BY_ID = gql`
     mutation($id: Int!){
         delete_special_schedule(id:$id){
             success 
+            msg
+        }
+    }
+`
+
+export const TRY_LOGIN = gql`
+    query($username: String!, $password: String!){
+        try_login(username:$username, password:$password){
+            success
+            msg
+            token
+            username
+        }
+    }
+`
+
+
+export const CREATE_ACCOUNT = gql`
+    mutation($username: String!, $password: String!){
+        create_account(username:$username, password: $password){
+            success
+            msg
+        }
+    }
+`
+
+
+export const CHECK_AUTHTOKEN_VALID = gql`
+    query($token:String!){
+        check_authtoken(token:$token){
+
+            success
             msg
         }
     }

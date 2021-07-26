@@ -1,0 +1,22 @@
+type Query{
+    try_login(username:String!, password: String!): LoginResponse
+    check_authtoken(token:String!): SimpleResponse
+}
+
+type Mutation{
+    create_account(username: String!, password: String!): SimpleResponse
+}
+
+
+type SimpleResponse{
+    success: Boolean!
+    msg: String
+}
+
+type LoginResponse{
+    success: Boolean!
+    msg: String
+    token: String,
+    username: String
+
+}
