@@ -5,6 +5,7 @@ import PropTypes from 'prop-types'
 
 
 function MenuDrawer({ history, closeDrawer, open }) {
+
     return <Drawer anchor='left' open={open} onClose={()=>closeDrawer()}>
         <div>
             <List component="nav">

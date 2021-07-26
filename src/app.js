@@ -4,7 +4,7 @@ import {
     HashRouter as Router,
     Switch,
     Route,
-    Link, Redirect, withRouter
+    Redirect, withRouter
 } from "react-router-dom";
 
 import './common/subscription.css'
@@ -14,7 +14,6 @@ import { ApolloProvider, } from '@apollo/react-hooks';
 import SchedulePage from './SchedulePage/SchedulePage'
 
 import ClientManagePage from './ClientManage/ClientManagePage'
-import TopNavBar from './TopNavBar'
 
 import InstructorManagePage from './InstructorManage/InstructorManagePage'
 import SubscriptionManagePage from './SubscriptionManage/SubscriptionManagePage'
@@ -22,9 +21,8 @@ import SubscriptionManagePage from './SubscriptionManage/SubscriptionManagePage'
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 
 // pick a date util library
-import MomentUtils from '@date-io/moment';
 import DateFnsUtils from '@date-io/date-fns';
-import LuxonUtils from '@date-io/luxon';
+
 
 
 import client from './apolloclient'
@@ -36,7 +34,7 @@ import ApprenticePlanPage from './ApprenticeManage/ApprenticePlan/ApprenticePlan
 
 import DashBoardContainer from './dashboard/container'
 
-import { Grid, Button, Drawer, List, Divider, ListItem, ListItemAvatar, Menu, MenuItem, Popper } from '@material-ui/core'
+import { Grid, Button, Menu, MenuItem } from '@material-ui/core'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen';
 
 import packagejson from '../package.json'
