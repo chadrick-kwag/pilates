@@ -1,6 +1,5 @@
 const pgclient = require('../pgclient')
 const randomstring = require("randomstring");
-
 const token_cache = {}
 
 async function transaction_wrapper(mainfunc) {
@@ -161,6 +160,39 @@ module.exports = {
         }
     },
     Mutation: {
+        update_core_status_of_admin_account: async (parent, args) => {
+            try {
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`update admin_account set is_core_admin=$1 where id=$2`, [args.status, args.id])
+
+                if (result.rowCount !== 1) {
+                    throw 'update failed'
+                }
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                try {
+                    await pgclient.query('rollback')
+
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+            }
+        },
         delete_admin_account: async (parent, args) => {
 
             try {

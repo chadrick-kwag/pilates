@@ -5,6 +5,7 @@ import { FETCH_ADMIN_ACCOUNTS } from '../common/gql_defs'
 import { DateTime } from 'luxon'
 import ResetPasswordModal from './ResetPasswordModal'
 import DeleteAdminAccountDialog from './DeleteDialog'
+import ChangeCoreStatusDialog from './ChangeCoreStatusDialog'
 
 function AdminAccountControlPage() {
 
@@ -13,6 +14,7 @@ function AdminAccountControlPage() {
     const [accountInfoArr, setAccountInfoArr] = useState([])
     const [resetPasswordAccountId, setResetPasswordAccountId] = useState(null)
     const [deleteAccountId, setDeleteAccountId] = useState(null)
+    const [coreUpdateDialog, setCoreUpdateDialog] = useState(null)
 
     const fetch_data = () => {
         client.query({
@@ -91,7 +93,15 @@ function AdminAccountControlPage() {
                             <div>
                                 <Button variant='outlined' onClick={() => setResetPasswordAccountId(d.id)}>비번리셋</Button>
                                 <Button variant='outlined' onClick={() => setDeleteAccountId(d.id)}>삭제</Button>
-                                {d.is_core_admin ? <Button variant='outlined'>코어박탈</Button> : <Button variant='outlined'>코어승격</Button>}
+                                {d.is_core_admin ? <Button variant='outlined' onClick={() => {
+                                    setCoreUpdateDialog(<ChangeCoreStatusDialog accountId={d.id} mode='dropCore' onClose={() => setCoreUpdateDialog(null)} onSuccess={() => {
+                                        setCoreUpdateDialog(null)
+                                        fetch_data()
+                                    }} />)
+                                }}>코어박탈</Button> : <Button variant='outlined' onClick={() => setCoreUpdateDialog(<ChangeCoreStatusDialog  accountId={d.id} mode='setCore' onClose={() => setCoreUpdateDialog(null)} onSuccess={() => {
+                                    setCoreUpdateDialog(null)
+                                    fetch_data()
+                                }} />)}>코어승격</Button>}
                             </div>
                         </TableCell>
 
@@ -116,6 +126,8 @@ function AdminAccountControlPage() {
                     setDeleteAccountId(null)
                     fetch_data()
                 }} /> : null}
+
+                {coreUpdateDialog}
 
             </>
 

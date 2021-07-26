@@ -1229,6 +1229,16 @@ export const DELETE_ADMIN_ACCOUNT = gql`
     }
 `
 
+// update_core_status_of_admin_account
+export const UPDATE_CORE_STATUS_OF_ADMIN_ACCOUNT = gql`
+    mutation($id: Int!, $status: Boolean!){
+        update_core_status_of_admin_account(id:$id, status:$status){
+            success
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
