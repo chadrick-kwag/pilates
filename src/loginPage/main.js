@@ -43,7 +43,7 @@ function MainPage({ history }) {
 
     return <div style={{ width: "100%", height: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <div>
-            <div style={{ marginBottom: '1rem' }}>
+            <div style={{ marginBottom: '1rem', textAlign:'center' }}>
                 <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>아트필라테스 관리자 로그인</span>
             </div>
             <div>

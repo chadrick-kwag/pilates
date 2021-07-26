@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { withRouter } from 'react-router-dom'
 import client from '../apolloclient'
-import { CHECK_AUTHTOKEN_VALID } from '../common/gql_defs'
+import { CHECK_ADMIN_AUTHTOKEN_VALID } from '../common/gql_defs'
 import { CircularProgress } from '@material-ui/core'
 
 function AuthenticateWrapper({ children, history }) {
@@ -12,14 +12,14 @@ function AuthenticateWrapper({ children, history }) {
 
     const check_authtoken_valid = (token) => {
         client.query({
-            query: CHECK_AUTHTOKEN_VALID,
+            query: CHECK_ADMIN_AUTHTOKEN_VALID,
             variables: {
                 token: token
             },
             fetchPolicy: 'no-cache'
         }).then(res => {
             console.log(res)
-            if (res.data.check_authtoken.success) {
+            if (res.data.check_admin_authtoken.success) {
                 setIsValid(true)
                 setLoading(false)
             }

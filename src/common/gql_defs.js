@@ -1133,10 +1133,20 @@ export const CREATE_ACCOUNT = gql`
 `
 
 
-export const CHECK_AUTHTOKEN_VALID = gql`
+export const CHECK_ADMIN_AUTHTOKEN_VALID = gql`
     query($token:String!){
-        check_authtoken(token:$token){
+        check_admin_authtoken(token:$token){
 
+            success
+            msg
+        }
+    }
+`
+
+//request_admin_account_creation
+export const REQUEST_ADMIN_ACCOUNT_CREATION = gql`
+    mutation($username: String!, $password: String!, $contact: String){
+        request_admin_account_creation(username:$username, password:$password, contact: $contact){
             success
             msg
         }

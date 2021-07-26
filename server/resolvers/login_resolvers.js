@@ -49,7 +49,7 @@ module.exports = {
 
 
         },
-        check_authtoken: async (parent, args) => {
+        check_admin_authtoken: async (parent, args) => {
 
             console.log(args.token)
             console.log(token_cache[args.token])
@@ -105,6 +105,47 @@ module.exports = {
                 }
             }
 
+        },
+        request_admin_account_creation: async (parent, args) => {
+            try {
+                await pgclient.query('BEGIN')
+
+                let result = await pgclient.query(`insert into admin_account_request(username, password, contact) values ($1, $2, $3)`, [args.username, args.password, args.contact])
+
+                if (result.rowCount === 0) {
+                    throw 'insert failed'
+                }
+
+                await pgclient.query('COMMIT')
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('ROLLBACK')
+                    
+                    if(e.code==='23505'){
+                        return {
+                            success: false,
+                            msg: 'username exist'
+                        }
+                    }
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e2.detail
+                    }
+                }
+            }
         }
     }
 }

@@ -1,10 +1,12 @@
 type Query{
     try_login(username:String!, password: String!): LoginResponse
-    check_authtoken(token:String!): SimpleResponse
+    check_admin_authtoken(token:String!): SimpleResponse
+
 }
 
 type Mutation{
     create_account(username: String!, password: String!): SimpleResponse
+    request_admin_account_creation(username:String!, password: String!, contact: String): SimpleResponse
 }
 
 
@@ -18,5 +20,4 @@ type LoginResponse{
     msg: String
     token: String,
     username: String
-
 }
