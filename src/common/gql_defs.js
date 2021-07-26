@@ -1208,6 +1208,27 @@ export const FETCH_ADMIN_ACCOUNTS = gql`
     }
 `
 
+
+//change_admin_account_password
+export const CHANGE_ADMIN_ACCOUNT_PASSWORD = gql`
+    mutation($id:Int!, $password: String!){
+        change_admin_account_password(id:$id, password: $password){
+            success
+            msg
+        }
+    }
+`
+
+// delete_admin_account
+export const DELETE_ADMIN_ACCOUNT = gql`
+    mutation($id: Int!){
+        delete_admin_account(id:$id){
+            success
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

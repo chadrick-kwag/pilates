@@ -3,12 +3,16 @@ import { CircularProgress, Table, TableRow, TableCell, Button } from '@material-
 import client from '../apolloclient'
 import { FETCH_ADMIN_ACCOUNTS } from '../common/gql_defs'
 import { DateTime } from 'luxon'
+import ResetPasswordModal from './ResetPasswordModal'
+import DeleteAdminAccountDialog from './DeleteDialog'
 
 function AdminAccountControlPage() {
 
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [accountInfoArr, setAccountInfoArr] = useState([])
+    const [resetPasswordAccountId, setResetPasswordAccountId] = useState(null)
+    const [deleteAccountId, setDeleteAccountId] = useState(null)
 
     const fetch_data = () => {
         client.query({
@@ -56,42 +60,64 @@ function AdminAccountControlPage() {
                     <span>데이터 없음</span>
                 </div>
             }
-            return <Table>
-                <TableRow>
-                    <TableCell>
-                        username
-                    </TableCell>
-                    <TableCell>
-                        created
-                    </TableCell>
-                    <TableCell>
-                        is_core
-                    </TableCell>
-                    <TableCell>
+            return <>
+                <Table>
+                    <TableRow>
+                        <TableCell>
+                            username
+                        </TableCell>
+                        <TableCell>
+                            created
+                        </TableCell>
+                        <TableCell>
+                            is_core
+                        </TableCell>
+                        <TableCell>
 
-                    </TableCell>
-                </TableRow>
-                {accountInfoArr.map(d => <TableRow>
-                    <TableCell>
-                        {d.username}
-                    </TableCell>
-                    <TableCell>
-                        {DateTime.fromMillis(parseInt(d.created)).setZone('utc+9').toFormat('y-LL-dd HH:mm')}
-                    </TableCell>
-                    <TableCell>
-                        {d.is_core_admin ? <span>Y</span> : <span>N</span>}
-                    </TableCell>
+                        </TableCell>
+                    </TableRow>
+                    {accountInfoArr.map(d => <TableRow>
+                        <TableCell>
+                            {d.username}
+                        </TableCell>
+                        <TableCell>
+                            {DateTime.fromMillis(parseInt(d.created)).setZone('utc+9').toFormat('y-LL-dd HH:mm')}
+                        </TableCell>
+                        <TableCell>
+                            {d.is_core_admin ? <span>Y</span> : <span>N</span>}
+                        </TableCell>
 
-                    <TableCell>
-                        <div>
-                            <Button variant='outlined'>비번리셋</Button>
-                            <Button variant='outlined'>삭제</Button>
-                            {d.is_core_admin ? <Button variant='outlined'>코어박탈</Button> : <Button variant='outlined'>코어승격</Button>}
-                        </div>
-                    </TableCell>
+                        <TableCell>
+                            <div>
+                                <Button variant='outlined' onClick={() => setResetPasswordAccountId(d.id)}>비번리셋</Button>
+                                <Button variant='outlined' onClick={() => setDeleteAccountId(d.id)}>삭제</Button>
+                                {d.is_core_admin ? <Button variant='outlined'>코어박탈</Button> : <Button variant='outlined'>코어승격</Button>}
+                            </div>
+                        </TableCell>
 
-                </TableRow>)}
-            </Table>
+                    </TableRow>)}
+                </Table>
+
+                {resetPasswordAccountId !== null ? <ResetPasswordModal accountId={resetPasswordAccountId} open={true} onClose={() => setResetPasswordAccountId(null)} onSuccess={() => {
+                    setResetPasswordAccountId(null)
+                    fetch_data()
+                }} /> : null}
+
+                {deleteAccountId !== null ? <DeleteAdminAccountDialog accountId={deleteAccountId} username={(() => {
+                    // fetch username with account id
+                    for (let i = 0; i < accountInfoArr.length; i++) {
+                        if (accountInfoArr[i].id === deleteAccountId) {
+                            return accountInfoArr[i].username
+                        }
+                    }
+
+                    return null
+                })()} open={true} onClose={() => setDeleteAccountId(null)} onSuccess={() => {
+                    setDeleteAccountId(null)
+                    fetch_data()
+                }} /> : null}
+
+            </>
 
         }
     }

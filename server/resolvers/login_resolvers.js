@@ -3,6 +3,30 @@ const randomstring = require("randomstring");
 
 const token_cache = {}
 
+async function transaction_wrapper(mainfunc) {
+    try {
+
+
+        await mainfunc()
+    }
+    catch (e) {
+        try {
+            await pgclient.query('rollback')
+
+            return {
+                success: false,
+                msg: e.detail
+            }
+        }
+        catch (e2) {
+            return {
+                success: false,
+                msg: e.detail
+            }
+        }
+    }
+}
+
 module.exports = {
     Query: {
         fetch_admin_accounts: async (parent, args) => {
@@ -137,6 +161,76 @@ module.exports = {
         }
     },
     Mutation: {
+        delete_admin_account: async (parent, args) => {
+
+            try {
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`delete from admin_account where id=$1`, [args.id])
+
+                if (result.rowCount !== 1) {
+                    throw "delete fail"
+                }
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                try {
+                    await pgclient.query('rollback')
+
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+            }
+
+
+        },
+        change_admin_account_password: async (parent, args) => {
+            try {
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`update admin_account set password=$1 where id=$2`, [args.password, args.id])
+
+                if (result.rowCount !== 1) {
+                    throw 'no update done'
+                }
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+            } catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
         approve_admin_account_request: async (parent, args) => {
             try {
                 await pgclient.query('BEGIN')

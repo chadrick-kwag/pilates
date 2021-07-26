@@ -11,6 +11,8 @@ type Mutation{
     create_account(username: String!, password: String!): SimpleResponse
     request_admin_account_creation(username:String!, password: String!, contact: String): SimpleResponse
     approve_admin_account_request(id:Int!): SimpleResponse
+    change_admin_account_password(id:Int!, password: String!): SimpleResponse
+    delete_admin_account(id: Int!): SimpleResponse
 }
 
 type AdminAccount{
