@@ -131,7 +131,7 @@ class App extends React.Component {
 
                             </div>
                             <div>
-                                <Button style={{ textTransform: 'none' }} variant='contained' onClick={(e) => {
+                                <Button style={{ textTransform: 'none', marginRight: '0.5rem' }} variant='contained' onClick={(e) => {
                                     this.setState({
                                         userprofile_el: e.target
                                     })
