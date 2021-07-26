@@ -1,14 +1,28 @@
 type Query{
     try_login(username:String!, password: String!): LoginResponse
     check_admin_authtoken(token:String!): SimpleResponse
+    fetch_admin_account_create_requests: AdminCreateRequestResponse
 
 }
 
 type Mutation{
     create_account(username: String!, password: String!): SimpleResponse
     request_admin_account_creation(username:String!, password: String!, contact: String): SimpleResponse
+    approve_admin_account_request(id:Int!): SimpleResponse
 }
 
+type AdminCreateRequestInfo{
+    id: Int!
+    username: String!
+    request_time: String
+    
+}
+
+type AdminCreateRequestResponse{
+    success: Boolean!
+    msg: String
+    requests: [AdminCreateRequestInfo]
+}
 
 type SimpleResponse{
     success: Boolean!

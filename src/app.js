@@ -42,6 +42,7 @@ import AuthenticateWrapper from './components/AuthenticateWrapper'
 import LoginPage from './loginPage/main'
 import SignUpPage from './signup/main'
 import MenuDrawer from './MenuDrawer'
+import AdminAccountManagePage from './AdminAccountManage/main'
 
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
@@ -194,9 +195,13 @@ class App extends React.Component {
                         <Route path='/login'>
                             <LoginPage />
                         </Route>
+                        <Route path='/adminaccountmanage'>
+                            <AdminAccountManagePage/>
+                        </Route>
                         <Route path='/'>
                             <Redirect to="/schedule" />
                         </Route>
+                        
 
                     </Switch>
                 </div>

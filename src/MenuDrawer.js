@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 
 function MenuDrawer({ history, closeDrawer, open }) {
 
-    return <Drawer anchor='left' open={open} onClose={()=>closeDrawer()}>
+    return <Drawer anchor='left' open={open} onClose={() => closeDrawer()}>
         <div>
             <List component="nav">
 
@@ -57,6 +57,11 @@ function MenuDrawer({ history, closeDrawer, open }) {
                     closeDrawer()
                     history.push('/adminpage')
                 }}>관리자설정</ListItem>
+
+                <ListItem button onClick={() => {
+                    closeDrawer()
+                    history.push('/adminaccountmanage')
+                }}>관리자 계정 관리</ListItem>
             </List>
         </div>
 

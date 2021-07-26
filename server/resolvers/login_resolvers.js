@@ -8,7 +8,7 @@ module.exports = {
         try_login: async (parent, args) => {
 
             try {
-                let result = await pgclient.query(`select id from user_pw where username=$1 and password=$2`, [args.username, args.password])
+                let result = await pgclient.query(`select id from admin_account where username=$1 and password=$2`, [args.username, args.password])
 
                 if (result.rowCount === 0) {
                     throw "no user found"
@@ -65,14 +65,80 @@ module.exports = {
                 msg: 'token invalid'
             }
 
+        },
+        fetch_admin_account_create_requests: async (parent, args) => {
+            try {
+                let result = await pgclient.query(`select id, username, request_time from admin_account_request`)
+
+                return {
+                    success: true,
+                    requests: result.rows
+                }
+            } catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
         }
     },
     Mutation: {
+        approve_admin_account_request: async (parent, args) => {
+            try {
+                await pgclient.query('BEGIN')
+
+                let result = await pgclient.query(`select username, password from admin_account_request where id=$1`, [args.id])
+
+                if (result.rowCount !== 1) {
+                    throw 'no request found'
+                }
+
+                const a = result.rows[0]
+
+                result = await pgclient.query(`insert into admin_account(username, password) values ($1, $2)`, [a.username, a.password])
+
+                if (result.rowCount !== 1) {
+                    throw 'creating fail'
+                }
+
+                //  remove from request table
+                result = await pgclient.query(`delete from admin_account_request where id=$1`, [args.id])
+
+                if (result.rowCount !== 1) {
+                    throw 'delete from request failed'
+                }
+
+                await pgclient.query('COMMIT')
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e2.detail
+                    }
+                }
+            }
+        },
         create_account: async (parent, args) => {
 
             try {
                 await pgclient.query('BEGIN')
-
 
                 let result = await pgclient.query(`insert into user_pw(username, password, is_client, is_apprentice, is_instructor, is_admin) values ($1, $2, true, false, false, false)
                 `, [args.username, args.password])
@@ -109,12 +175,21 @@ module.exports = {
         request_admin_account_creation: async (parent, args) => {
             try {
                 await pgclient.query('BEGIN')
+                
+                // check incoming username does not exist in admin accounts
+                let result = await pgclient.query(`select id from admin_account where username=$1`,[args.username])
 
-                let result = await pgclient.query(`insert into admin_account_request(username, password, contact) values ($1, $2, $3)`, [args.username, args.password, args.contact])
+                if(result.rowCount>0){
+                    throw "username already in use"
+                }
+
+                result = await pgclient.query(`insert into admin_account_request(username, password, contact) values ($1, $2, $3)`, [args.username, args.password, args.contact])
 
                 if (result.rowCount === 0) {
                     throw 'insert failed'
                 }
+
+                
 
                 await pgclient.query('COMMIT')
 
@@ -127,8 +202,8 @@ module.exports = {
 
                 try {
                     await pgclient.query('ROLLBACK')
-                    
-                    if(e.code==='23505'){
+
+                    if (e.code === '23505') {
                         return {
                             success: false,
                             msg: 'username exist'

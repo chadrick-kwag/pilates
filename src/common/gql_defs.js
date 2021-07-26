@@ -1153,6 +1153,31 @@ export const REQUEST_ADMIN_ACCOUNT_CREATION = gql`
     }
 `
 
+// fetch_admin_account_create_requests
+export const FETCH_ADMIN_ACCOUNT_CREATE_REQUESTS = gql`
+    query{
+        fetch_admin_account_create_requests{
+            success
+            msg
+            requests {
+                id
+                username
+                request_time
+            }
+        }
+    }
+`
+
+
+// approve_admin_account_request
+export const APPROVE_ADMIN_ACCOUNT_REQUEST = gql`
+    mutation($id: Int!){
+        approve_admin_account_request(id:$id){
+            success
+            msg
+        }
+    }
+`
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
