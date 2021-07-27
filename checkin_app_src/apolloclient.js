@@ -20,7 +20,7 @@ const httplink = createHttpLink({
 
 const authLink = setContext((_, { headers }) => {
     // get the authentication token from local storage if it exists
-    const token = localStorage.getItem('checkin-auth-token');
+    const token = sessionStorage.getItem('checkin-auth-token');
     // return the headers to the context so httpLink can read them
     return {
         headers: {

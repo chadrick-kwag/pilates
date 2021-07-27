@@ -22,11 +22,12 @@ function CoreAdminUserCheck({ children }) {
                 setLoading(false)
             }
             else {
-                alert('fail')
+                
+                setLoading(false)
             }
         }).catch(e => {
             console.log(JSON.stringify(e))
-            alert('error')
+            setLoading(false)
         })
     }, [])
 

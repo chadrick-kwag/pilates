@@ -21,6 +21,7 @@ const server = new ApolloServer({
 
         }
         else if (domain === 'checkin') {
+            
             if(check_token(token)){
                 return {
                     checkinAuthorized: true

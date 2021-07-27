@@ -79,6 +79,7 @@ module.exports = {
         check_token_is_core_admin: async (parent, args, context) => {
 
             if (!ensure_admin_account_id_in_context(context)) {
+                
                 return {
                     success: false,
                     msg: 'invalid token'

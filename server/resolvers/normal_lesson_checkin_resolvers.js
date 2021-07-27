@@ -8,7 +8,7 @@ const { token_cache, add_token, check_token } = require('../checkintokencache')
 module.exports = {
     Query: {
         check_token: async (parent, args, context) => {
-
+            
             try {
 
                 if (!context.checkinAuthorized) {
