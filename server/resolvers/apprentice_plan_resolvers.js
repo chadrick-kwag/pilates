@@ -134,7 +134,7 @@ module.exports = {
         },
         fetch_apprentice_plans_of_apprentice_instructor_and_agtype: async (parent, args, context) => {
 
-            
+
             if (!ensure_admin_account_id_in_context(context)) {
 
                 return {
@@ -145,7 +145,7 @@ module.exports = {
 
 
             try {
-                
+
                 const instid = args.apprentice_instructor_id
 
 
@@ -220,7 +220,7 @@ module.exports = {
         },
         fetch_apprentice_plans_of_apprentice_instructor: async (parent, args, context) => {
 
-            
+
             if (!ensure_admin_account_id_in_context(context)) {
 
                 return {
@@ -341,7 +341,7 @@ module.exports = {
                 res = await pgclient.query(`insert into apprentice_ticket (expire_time, creator_plan_id) (select $3, $1 from generate_series(1,$2))`, [id, args.rounds, args.expiretime])
 
                 await pgclient.query('COMMIT')
-                
+
                 return {
                     success: true
                 }
@@ -380,6 +380,18 @@ module.exports = {
             try {
 
                 let res = await pgclient.query('BEGIN')
+
+
+                // check admin is core
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
+
+                if (result.rowCount !== 1) {
+                    throw "no account"
+                }
+
+                if (!result.rows[0].is_core_admin) {
+                    throw "not core user"
+                }
 
                 // check plan with id exist
                 res = await pgclient.query(`select * from apprentice_instructor_plan where id=$1`, [args.id])
@@ -463,15 +475,6 @@ module.exports = {
         },
         change_expire_time_of_apprentice_tickets: async (parent, args, context) => {
 
-            
-            if (!ensure_admin_account_id_in_context(context)) {
-
-                return {
-                    success: false,
-                    msg: 'invalid token'
-                }
-            }
-
 
             if (!ensure_admin_account_id_in_context(context)) {
 
@@ -480,6 +483,7 @@ module.exports = {
                     msg: 'invalid token'
                 }
             }
+
 
 
             if (args.id_arr.length === 0) {
@@ -491,6 +495,18 @@ module.exports = {
 
             try {
                 let res = await pgclient.query('BEGIN')
+
+
+                // check admin is core
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
+
+                if (result.rowCount !== 1) {
+                    throw "no account"
+                }
+
+                if (!result.rows[0].is_core_admin) {
+                    throw "not core user"
+                }
 
                 for (let i = 0; i < args.id_arr.length; i++) {
                     res = await pgclient.query(`update apprentice_ticket set expire_time=$1 where id=$2`, [args.new_expire_time, args.id_arr[i]])
@@ -541,10 +557,20 @@ module.exports = {
 
             try {
 
-                console.log("inside transfer_apprentice_tickets_to_apprentice")
-                console.log(args)
 
                 let res = await pgclient.query('BEGIN')
+
+
+                // check admin is core
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
+
+                if (result.rowCount !== 1) {
+                    throw "no account"
+                }
+
+                if (!result.rows[0].is_core_admin) {
+                    throw "not core user"
+                }
 
                 // check id exist
                 res = await pgclient.query(`select * from apprentice_instructor where id=$1`, [args.apprentice_id])
@@ -673,6 +699,18 @@ module.exports = {
 
             try {
                 let res = await pgclient.query('BEGIN')
+
+
+                // check admin is core
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
+
+                if (result.rowCount !== 1) {
+                    throw "no account"
+                }
+
+                if (!result.rows[0].is_core_admin) {
+                    throw "not core user"
+                }
 
                 // check ticket id_arr are valid and belong to same plan id
                 let planid = null
