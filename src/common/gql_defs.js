@@ -1274,6 +1274,22 @@ export const DECLINE_ADMIN_ACCOUNT_REQUEST = gql`
     }
 `
 
+
+// fetch_checkin_configs
+export const FETCH_CHECKIN_CONFIGS = gql`
+    query{
+        fetch_checkin_configs{
+            success
+            msg
+            config {
+                scan_prev_hours
+                scan_next_hours
+                password
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

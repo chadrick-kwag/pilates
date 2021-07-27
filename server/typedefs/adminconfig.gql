@@ -1,0 +1,15 @@
+type Query{
+    fetch_checkin_configs: CheckinConfigResponse
+}
+
+type CheckInConfig{
+    scan_prev_hours: Int
+    scan_next_hours: Int
+    password: String
+}
+
+type CheckinConfigResponse{
+    success: Boolean!
+    msg: String
+    config: CheckInConfig
+}
