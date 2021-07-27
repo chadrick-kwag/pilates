@@ -43,7 +43,7 @@ function MainPage({ history }) {
 
     return <div style={{ width: "100%", height: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <div>
-            <div style={{ marginBottom: '1rem', textAlign:'center' }}>
+            <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
                 <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>아트필라테스 관리자 로그인</span>
             </div>
             <div>
@@ -62,7 +62,13 @@ function MainPage({ history }) {
                             비밀번호
                         </TableCell>
                         <TableCell>
-                            <TextField style={{ width: '100%' }} type='password' variant='outlined' value={password} onChange={a => setPassword(a.target.value)} />
+                            <TextField style={{ width: '100%' }} type='password' variant='outlined' value={password} onChange={a => setPassword(a.target.value)} onKeyDown={e => {
+                                if (e.key === 'Enter') {
+                                    if (!submit_btn_disabled()) {
+                                        submit()
+                                    }
+                                }
+                            }} />
                         </TableCell>
                     </TableRow>
                 </Table>

@@ -92,10 +92,16 @@ function SignUpPage({ history }) {
                 </TableRow>
                 <TableRow>
                     <TableCell>
-                        연락처
+                        연락처(전화번호/이메일)
                     </TableCell>
                     <TableCell>
-                        <TextField variant='outlined' value={contact} onChange={a => setContact(a.target.value)} />
+                        <TextField variant='outlined' value={contact} onChange={a => setContact(a.target.value)} onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                                if (!submit_btn_disabled()) {
+                                    create_user()
+                                }
+                            }
+                        }} />
                     </TableCell>
                 </TableRow>
 
