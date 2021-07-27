@@ -10,7 +10,8 @@ const server = new ApolloServer({
         const domain = req.headers.authdomain || '';
         const token = req.headers.authorization || '';
 
-        if (domain !== '') {
+
+        if (domain === '') {
             // ADMIN TOKEN
             let account_id = get_account_id_for_token(token)
 

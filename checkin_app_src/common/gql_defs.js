@@ -41,3 +41,26 @@ export const SUBMIT_LESSON_ATTENDANCE = gql`
         }
     }
 `
+
+//get_new_token
+export const GET_NEW_TOKEN = gql`
+    mutation($password: String!){
+        get_new_token(password: $password){
+            success
+            msg
+            token
+        }
+    }
+`
+
+//check_token
+export const CHECK_TOKEN = gql`
+    query{
+        check_token{
+            success
+            msg
+            is_valid
+        }
+    }
+`
+

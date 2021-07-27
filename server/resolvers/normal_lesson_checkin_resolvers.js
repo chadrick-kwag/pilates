@@ -1,10 +1,41 @@
 const pgclient = require('../pgclient')
 const { DateTime } = require('luxon')
 const { setting } = require('../adminappconfig')
+const randomstring = require("randomstring");
+const { token_cache, add_token, check_token } = require('../checkintokencache')
 
 
 module.exports = {
     Query: {
+        check_token: async (parent, args, context) => {
+
+            try {
+
+                if (!context.checkinAuthorized) {
+                    return {
+                        success: true,
+                        msg: 'invalid token',
+                        is_valid: false
+
+                    }
+                }
+
+
+                return {
+                    success: true,
+                    is_valid: true
+                }
+            }
+            catch (e) {
+                console.log(e)
+                return {
+                    success: false,
+                    msg: 'error'
+                }
+            }
+
+
+        },
         query_clients_by_phonenumber: async (parent, args, context) => {
 
             if (!context.checkinAuthorized) {
@@ -105,16 +136,44 @@ module.exports = {
         }
     },
     Mutation: {
+        get_new_token: async (parent, args, context) => {
+            // check incoming password
+            // if correct, then return token
+
+
+            // check password
+            if (args.password !== setting.checkin_options.password) {
+                return {
+                    success: false,
+                    msg: 'incorrect password'
+                }
+            }
+
+            // generate token
+            let token = randomstring.generate({ length: 10 })
+
+            while (check_token(token)) {
+                token = randomstring.generate({ length: 10 })
+            }
+
+            add_token(token)
+
+            return {
+                success: true,
+                token: token
+            }
+
+        },
         checkin_lesson_for_client: async (parent, args, context) => {
 
-            
-            if(!context.checkinAuthorized){
+
+            if (!context.checkinAuthorized) {
                 return {
                     success: false,
                     msg: 'invalid token'
                 }
             }
-            
+
             try {
                 await pgclient.query('BEGIN')
 
