@@ -1239,6 +1239,22 @@ export const UPDATE_CORE_STATUS_OF_ADMIN_ACCOUNT = gql`
     }
 `
 
+//fetch_admin_account_profile
+export const FETCH_ADMIN_ACCOUNT_PROFILE = gql`
+    query{
+        fetch_admin_account_profile{
+            success
+            msg
+            profile{
+                id
+                username
+                created
+                contact
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

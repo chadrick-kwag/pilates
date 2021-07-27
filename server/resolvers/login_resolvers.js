@@ -1,35 +1,63 @@
 const pgclient = require('../pgclient')
 const randomstring = require("randomstring");
-const token_cache = {}
+const { tokenCache } = require('../tokenCache')
+const token_cache = tokenCache
+const { ensure_admin_account_id_in_context } = require('./common')
 
-async function transaction_wrapper(mainfunc) {
-    try {
-
-
-        await mainfunc()
-    }
-    catch (e) {
-        try {
-            await pgclient.query('rollback')
-
-            return {
-                success: false,
-                msg: e.detail
-            }
-        }
-        catch (e2) {
-            return {
-                success: false,
-                msg: e.detail
-            }
-        }
-    }
-}
 
 module.exports = {
     Query: {
-        fetch_admin_accounts: async (parent, args) => {
+        fetch_admin_account_profile: async (parent, args, context) => {
+
+            
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
             try {
+
+
+                const id = context.account_id
+
+                let result = await pgclient.query(`select id, username, null as contact, created from admin_account where id=$1`, [id])
+
+                if (result.rowCount !== 1) {
+                    throw 'fetch failed'
+                }
+
+
+                return {
+                    success: true,
+                    profile: result.rows[0]
+
+                }
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
+        fetch_admin_accounts: async (parent, args, context) => {
+            
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
+            try {
+
+
                 let result = await pgclient.query(`select id, username, created, is_core_admin from admin_account`)
 
                 return {
@@ -46,9 +74,19 @@ module.exports = {
                 }
             }
         },
-        check_token_is_core_admin: async (parent, args) => {
+        check_token_is_core_admin: async (parent, args, context) => {
+            
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
             try {
                 //check token is valid
+
 
                 const admin_account_id = token_cache[args.token]
 
@@ -80,7 +118,7 @@ module.exports = {
                 }
             }
         },
-        try_login: async (parent, args) => {
+        try_login: async (parent, args, context) => {
 
             try {
                 let result = await pgclient.query(`select id from admin_account where username=$1 and password=$2`, [args.username, args.password])
@@ -126,9 +164,6 @@ module.exports = {
         },
         check_admin_authtoken: async (parent, args) => {
 
-            console.log(args.token)
-            console.log(token_cache[args.token])
-
             if (token_cache[args.token] !== undefined) {
                 return {
                     success: true
@@ -141,8 +176,19 @@ module.exports = {
             }
 
         },
-        fetch_admin_account_create_requests: async (parent, args) => {
+        fetch_admin_account_create_requests: async (parent, args, context) => {
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
             try {
+
+
+
                 let result = await pgclient.query(`select id, username, request_time from admin_account_request`)
 
                 return {
@@ -160,8 +206,19 @@ module.exports = {
         }
     },
     Mutation: {
-        update_core_status_of_admin_account: async (parent, args) => {
+        update_core_status_of_admin_account: async (parent, args, context) => {
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
             try {
+
+
+
                 await pgclient.query('begin')
 
                 let result = await pgclient.query(`update admin_account set is_core_admin=$1 where id=$2`, [args.status, args.id])
@@ -193,12 +250,29 @@ module.exports = {
                 }
             }
         },
-        delete_admin_account: async (parent, args) => {
+        delete_admin_account: async (parent, args, context) => {
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
             try {
+
+
+
                 await pgclient.query('begin')
 
-                let result = await pgclient.query(`delete from admin_account where id=$1`, [args.id])
+                /// check if current user is core user
+                let result = await pgclient.query(`select id from admin_account where is_core_admin=true and id=$1`, [context.account_id])
+
+                if (result.rowCount !== 1) {
+                    throw "current user is not core user"
+                }
+
+                result = await pgclient.query(`delete from admin_account where id=$1`, [args.id])
 
                 if (result.rowCount !== 1) {
                     throw "delete fail"
@@ -229,8 +303,18 @@ module.exports = {
 
 
         },
-        change_admin_account_password: async (parent, args) => {
+        change_admin_account_password: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
             try {
+
                 await pgclient.query('begin')
 
                 let result = await pgclient.query(`update admin_account set password=$1 where id=$2`, [args.password, args.id])
@@ -263,8 +347,20 @@ module.exports = {
                 }
             }
         },
-        approve_admin_account_request: async (parent, args) => {
+        approve_admin_account_request: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
             try {
+
+
+
                 await pgclient.query('BEGIN')
 
                 let result = await pgclient.query(`select username, password from admin_account_request where id=$1`, [args.id])
@@ -313,7 +409,15 @@ module.exports = {
                 }
             }
         },
-        create_account: async (parent, args) => {
+        create_account: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
             try {
                 await pgclient.query('BEGIN')
@@ -350,8 +454,19 @@ module.exports = {
             }
 
         },
-        request_admin_account_creation: async (parent, args) => {
+        request_admin_account_creation: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
             try {
+
                 await pgclient.query('BEGIN')
 
                 // check incoming username does not exist in admin accounts

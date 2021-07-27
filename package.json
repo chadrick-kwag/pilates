@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "wds": "webpack serve --mode=development",
+    "admin-devserver": "webpack serve --mode=development",
     "deploy": "node server/mainserver.js",
     "checkin_app_dev": "webpack serve --mode=development -c webpack.checkinapp.config.js",
     "run-test-backend": "nodemon --watch server server/test.js",

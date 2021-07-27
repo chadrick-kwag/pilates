@@ -44,6 +44,7 @@ import SignUpPage from './signup/main'
 import MenuDrawer from './MenuDrawer'
 import AdminAccountRequestPage from './AdminAccountManage/AdminAccountRequsetPage'
 import AdminAccountControlPage from './AdminAccountManage/AdminAccountControlPage'
+import ProfilePage from './profilePage/main'
 
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
@@ -110,11 +111,19 @@ class App extends React.Component {
                                     transformOrigin={{ vertical: "top", horizontal: "center" }}
                                 >
                                     <MenuItem onClick={() => {
+                                        this.setState({
+                                            userprofile_el: null
+                                        })
+                                        this.props.history.push('/profile')
+                                    }}>
+                                        프로필</MenuItem>
+                                    <MenuItem onClick={() => {
                                         localStorage.removeItem('pilates-username')
                                         localStorage.removeItem('pilates-auth-token')
                                         this.props.history.push('/login')
 
                                     }}>로그아웃</MenuItem>
+
 
                                 </Menu>
                             </div>
@@ -162,6 +171,9 @@ class App extends React.Component {
                         </Route>
                         <Route path='/adminaccountcontrol'>
                             <AdminAccountControlPage />
+                        </Route>
+                        <Route path='/profile'>
+                            <ProfilePage />
                         </Route>
                         <Route path='/'>
                             <Redirect to="/schedule" />
