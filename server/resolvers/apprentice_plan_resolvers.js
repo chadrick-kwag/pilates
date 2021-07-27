@@ -1,47 +1,69 @@
 const { FlareSharp } = require('@material-ui/icons')
 const pgclient = require('../pgclient')
+const { ensure_admin_account_id_in_context } = require('./common')
 
 
 module.exports = {
 
     Query: {
 
-        fetch_apprentice_instructor_plans: async (parent, args) => {
+        fetch_apprentice_instructor_plans: async (parent, args, context) => {
 
-            let result = await pgclient.query(`select array_agg(json_build_object(
-                'id', apprentice_instructor_plan.id,
-                'apprentice_instructor_name', apprentice_instructor.name,
-                'apprentice_instructor_id', apprentice_instructor.id,
-                'activity_type', activity_type,
-                'grouping_type', grouping_type,
-                'created', apprentice_instructor_plan.created,
-                'totalcost', apprentice_instructor_plan.totalcost,
-                'rounds', apprentice_instructor_plan.rounds,
-                'apprentice_instructor_phonenumber',apprentice_instructor.phonenumber
-                
-            )) as data from apprentice_instructor_plan
-            left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id`).then(
-                res => {
-                    console.log(res)
-                    return {
-                        success: true,
-                        plans: res.rows[0].data
-                    }
 
-                }
-            ).catch(e => {
-                console.log(e)
+            if (!ensure_admin_account_id_in_context(context)) {
+
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: 'invalid token'
                 }
+            }
 
-            })
-            console.log(result)
-            return result
-        },
-        fetch_apprentice_plan_by_id: async (parent, args) => {
             try {
+                let res = await pgclient.query(`select array_agg(json_build_object(
+                    'id', apprentice_instructor_plan.id,
+                    'apprentice_instructor_name', apprentice_instructor.name,
+                    'apprentice_instructor_id', apprentice_instructor.id,
+                    'activity_type', activity_type,
+                    'grouping_type', grouping_type,
+                    'created', apprentice_instructor_plan.created,
+                    'totalcost', apprentice_instructor_plan.totalcost,
+                    'rounds', apprentice_instructor_plan.rounds,
+                    'apprentice_instructor_phonenumber',apprentice_instructor.phonenumber
+                    
+                )) as data from apprentice_instructor_plan
+                left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id`)
+
+                return {
+                    success: true,
+                    plans: res.rows[0].data
+                }
+            }
+            catch (e) {
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
+
+        },
+        fetch_apprentice_plan_by_id: async (parent, args, context) => {
+
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
+            try {
+
+
+
                 let res = await pgclient.query(`select array_agg(json_build_object(
                     'id', apprentice_instructor_plan.id,
                     'apprentice_instructor_name', apprentice_instructor.name,
@@ -56,22 +78,11 @@ module.exports = {
                 )) as data from apprentice_instructor_plan
                 left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id where apprentice_instructor_plan.id=$1`, [args.id])
 
-                await pgclient.query('COMMIT')
-
                 return {
                     success: true,
                     plans: res.rows[0].data
                 }
             } catch (e) {
-                try {
-                    await pgclient.query('ROLLBACK')
-                }
-                catch (err) {
-                    return {
-                        success: false,
-                        msg: err.detail
-                    }
-                }
 
                 return {
                     success: false,
@@ -80,14 +91,21 @@ module.exports = {
             }
 
         },
-        fetch_apprentice_tickets_of_plan: async (parent, args) => {
+        fetch_apprentice_tickets_of_plan: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
             try {
-                let res = await pgclient.query('BEGIN')
 
-                console.log('fetch_apprentice_tickets_of_plan')
-                console.log(args)
-
-                res = await pgclient.query(`select apprentice_ticket.id as id, 
+                let res = await pgclient.query(`select apprentice_ticket.id as id, 
                 apprentice_ticket.expire_time,
                 
                 case 
@@ -99,9 +117,6 @@ module.exports = {
                 left join apprentice_lesson on apprentice_lesson.id = A.apprentice_lesson_id
                 where creator_plan_id = $1`, [args.id])
 
-                console.log(res.rows)
-
-                await pgclient.query('COMMIT')
 
                 return {
                     success: true,
@@ -111,27 +126,29 @@ module.exports = {
 
             } catch (e) {
                 console.log(e)
-                try {
-                    await pgclient.query('ROLLBACK')
-                    return {
-                        success: false,
-                        msg: e.detail
-                    }
+                return {
+                    success: false,
+                    msg: err.detail
                 }
-                catch (err) {
-                    return {
-                        success: false,
-                        msg: err.detail
-                    }
-                }
+
             }
         },
-        fetch_apprentice_plans_of_apprentice_instructor_and_agtype: async (parent, args) => {
+        fetch_apprentice_plans_of_apprentice_instructor_and_agtype: async (parent, args, context) => {
+
+            
+            if (!ensure_admin_account_id_in_context(context)) {
+
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
             try {
-                console.log('fetch_apprentice_plans_of_apprentice_instructor_and_agtype')
+                
                 const instid = args.apprentice_instructor_id
 
-                console.log(args)
 
                 let res = await pgclient.query(`BEGIN`)
 
@@ -176,11 +193,8 @@ module.exports = {
                     fetched_plans[i]['rounds'] = totalrounds
                 }
 
-                // check remain rounds populated
-                console.log('fetched plans')
-                console.log(fetched_plans)
 
-                await pgclient.query(`COMMIT`)
+                await pgclient.query(`commit`)
 
                 return {
                     success: true,
@@ -205,11 +219,20 @@ module.exports = {
                 }
             }
         },
-        fetch_apprentice_plans_of_apprentice_instructor: async (parent, args) => {
+        fetch_apprentice_plans_of_apprentice_instructor: async (parent, args, context) => {
+
+            
+            if (!ensure_admin_account_id_in_context(context)) {
+
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
 
             try {
-                console.log('fetch_apprentice_plans_of_apprentice_instructor')
-                console.log(args)
 
                 let res = await pgclient.query(`BEGIN`)
 
@@ -256,11 +279,8 @@ module.exports = {
                     fetched_plans[i]['rounds'] = totalrounds
                 }
 
-                // check remain rounds populated
-                console.log('fetched plans')
-                console.log(fetched_plans)
 
-                await pgclient.query(`COMMIT`)
+                await pgclient.query(`commit`)
 
                 return {
                     success: true,
@@ -287,9 +307,31 @@ module.exports = {
 
     },
     Mutation: {
-        create_apprentice_plan: async (parent, args) => {
+        create_apprentice_plan: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
             try {
-                let res = await pgclient.query('BEGIN')
+                await pgclient.query('BEGIN')
+
+                // check if core user
+                let res = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
+
+                if (res.rowCount !== 1) {
+                    throw "no account"
+                }
+
+                if (!res.rows[0].is_core_admin) {
+                    throw "not core user"
+                }
+
 
                 res = await pgclient.query(`insert into apprentice_instructor_plan (apprentice_instructor_id, rounds, totalcost, activity_type, grouping_type, created) values ($1, $2, $3, $4, $5, now()) returning id`, [args.apprentice_instructor_id, args.rounds, args.totalcost, args.activity_type, args.grouping_type])
 
@@ -300,7 +342,7 @@ module.exports = {
                 res = await pgclient.query(`insert into apprentice_ticket (expire_time, creator_plan_id) (select $3, $1 from generate_series(1,$2))`, [id, args.rounds, args.expiretime])
 
                 await pgclient.query('COMMIT')
-                console.log('commit finished')
+                
                 return {
                     success: true
                 }
@@ -318,15 +360,24 @@ module.exports = {
                 catch (e) {
                     return {
                         success: false,
-                        msg: e.detail
+                        msg: err.detail
                     }
                 }
             }
 
         },
-        add_apprentice_tickets_to_plan: async (parent, args) => {
+        add_apprentice_tickets_to_plan: async (parent, args, context) => {
 
-            console.log(args)
+
+            if (!ensure_admin_account_id_in_context(context)) {
+
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
             try {
 
                 let res = await pgclient.query('BEGIN')
@@ -411,9 +462,26 @@ module.exports = {
                 }
             }
         },
-        change_expire_time_of_apprentice_tickets: async (parent, args) => {
+        change_expire_time_of_apprentice_tickets: async (parent, args, context) => {
 
-            console.log(args)
+            
+            if (!ensure_admin_account_id_in_context(context)) {
+
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
 
             if (args.id_arr.length === 0) {
                 return {
@@ -453,7 +521,17 @@ module.exports = {
                 }
             }
         },
-        transfer_apprentice_tickets_to_apprentice: async (parent, args) => {
+        transfer_apprentice_tickets_to_apprentice: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
 
             if (args.id_arr.length == 0) {
                 return {
@@ -583,8 +661,17 @@ module.exports = {
                 }
             }
         },
-        delete_apprentice_tickets: async (parent, args) => {
-            console.log(args)
+        delete_apprentice_tickets: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
             try {
                 let res = await pgclient.query('BEGIN')
 
@@ -612,8 +699,6 @@ module.exports = {
                     }
                 }
 
-                console.log('planid')
-                console.log(planid)
 
                 // get totalcost of plan
                 res = await pgclient.query(`select totalcost from apprentice_instructor_plan where id=$1`, [planid])
@@ -626,9 +711,6 @@ module.exports = {
                 const ticket_count = res.rows[0].count
 
                 const percost = totalcost / ticket_count
-
-
-
 
 
                 for (let i = 0; i < args.id_arr.length; i++) {
