@@ -1,7 +1,8 @@
 const pgclient = require('../pgclient')
 const randomstring = require("randomstring");
-const { tokenCache } = require('../tokenCache')
-const token_cache = tokenCache
+const { add_token_for_id,
+    remove_token_for_id, get_account_id_for_token } = require('../tokenCache')
+
 const { ensure_admin_account_id_in_context } = require('./common')
 
 
@@ -88,7 +89,7 @@ module.exports = {
                 //check token is valid
 
 
-                const admin_account_id = token_cache[args.token]
+                const admin_account_id = context.account_id
 
                 if (admin_account_id === undefined) {
                     return {
@@ -136,12 +137,11 @@ module.exports = {
                     // generate token
 
                     let token = randomstring.generate({ length: 10 })
-                    while (token_cache[token] !== undefined) {
+                    while (get_account_id_for_token(token) !== null) {
                         token = randomstring.generate({ length: 10 })
                     }
-                    token_cache[token] = user_id
+                    add_token_for_id(token, user_id)
 
-                    console.log(token_cache)
                     return {
                         success: true,
                         username: args.username,
@@ -164,7 +164,7 @@ module.exports = {
         },
         check_admin_authtoken: async (parent, args) => {
 
-            if (token_cache[args.token] !== undefined) {
+            if (get_account_id_for_token(args.token) !== null) {
                 return {
                     success: true
                 }
@@ -316,7 +316,7 @@ module.exports = {
 
             // check if trying to delete self. not allowed
             const userid = context.account_id
-            if(userid === args.id){
+            if (userid === args.id) {
                 return {
                     success: false,
                     msg: 'cannot delete self'
@@ -343,6 +343,10 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+
+                // remove from token cache
+                remove_token_for_id(userid)
+
 
                 return {
                     success: true
@@ -519,14 +523,6 @@ module.exports = {
 
         },
         request_admin_account_creation: async (parent, args, context) => {
-
-
-            if (!ensure_admin_account_id_in_context(context)) {
-                return {
-                    success: false,
-                    msg: 'invalid token'
-                }
-            }
 
 
             try {
