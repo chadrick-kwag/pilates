@@ -4,6 +4,7 @@ import CreateApprenticeComponent from './CreateApprenticePlanComponent'
 import DetailViewComponent from './DetailViewComponent'
 
 
+
 export default function ApprenticePlanPage(props) {
 
     const [viewMode, setViewMode] = useState('list')

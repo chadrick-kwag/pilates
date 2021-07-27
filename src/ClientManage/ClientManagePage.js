@@ -4,7 +4,7 @@ import { Button } from 'react-bootstrap'
 
 import CreateClientPage from './CreateClientPage'
 import ListClientPageV2 from './ListClientPage_v2'
-import CoreAdminUserCheck from '../components/CoreAdminUserCheck'
+
 
 
 
@@ -23,13 +23,13 @@ class ClientManagePage extends React.Component {
 
         if (this.state.view_mode == "list") {
             return <div>
-                <CoreAdminUserCheck>
+                
                     <div>
                         <Button onClick={e => this.setState({
                             view_mode: 'create'
                         })}>회원생성</Button>
                     </div>
-                </CoreAdminUserCheck>
+                
 
                 <div>
                     {/* <ListClientPage apolloclient={this.props.apolloclient} /> */}
