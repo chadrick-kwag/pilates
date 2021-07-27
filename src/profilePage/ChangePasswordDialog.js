@@ -2,13 +2,26 @@ import React, { useState } from 'react'
 import { CircularProgress, Dialog, DialogContent, DialogActions, TextField, Button } from '@material-ui/core'
 import client from '../apolloclient'
 import { CHANGE_MY_ADMIN_ACCOUNT_PASSWORD } from '../common/gql_defs'
-import { useMutation  } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 
 
 function ChangePasswordDialog({ onClose, onSuccess }) {
 
     const [updatePW, { loading, data, error }] = useMutation(CHANGE_MY_ADMIN_ACCOUNT_PASSWORD, {
-        fetchPolicy: 'no-cache', client: client
+        fetchPolicy: 'no-cache', client: client,
+        onCompleted: d => {
+            if (d.change_my_admin_account_password.success) {
+                onSuccess?.()
+            }
+            else {
+                alert('변경 실패')
+            }
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+            alert('변경 에러')
+        }
+
     })
     const [currentpw, setCurrentpw] = useState("")
     const [newpw, setNewpw] = useState("")
@@ -35,11 +48,6 @@ function ChangePasswordDialog({ onClose, onSuccess }) {
         }
 
         return false
-    }
-
-    if(data && data.change_my_admin_account_password.success){
-        onSuccess?.()
-        return null
     }
 
     return <Dialog open={true}>

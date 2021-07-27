@@ -196,8 +196,6 @@ module.exports = {
 
             try {
 
-
-
                 let result = await pgclient.query(`select id, username, request_time from admin_account_request`)
 
                 return {
