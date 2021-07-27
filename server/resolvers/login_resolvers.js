@@ -50,6 +50,7 @@ module.exports = {
         fetch_admin_accounts: async (parent, args, context) => {
 
             if (!ensure_admin_account_id_in_context(context)) {
+                console.log(context.account_id)
                 return {
                     success: false,
                     msg: 'invalid token'
@@ -359,7 +360,7 @@ module.exports = {
                 await pgclient.query('commit')
 
                 // remove from token cache
-                remove_token_for_id(userid)
+                remove_token_for_id(args.id)
 
 
                 return {
@@ -367,6 +368,7 @@ module.exports = {
                 }
             }
             catch (e) {
+                console.log(e)
                 try {
                     await pgclient.query('rollback')
 
@@ -462,7 +464,7 @@ module.exports = {
 
 
                 // check if current user is core user
-                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, context.account_id)
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
 
                 if (result.rowCount !== 1) {
                     throw 'not core user'

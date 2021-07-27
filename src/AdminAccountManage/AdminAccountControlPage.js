@@ -78,7 +78,9 @@ function AdminAccountControlPage() {
 
                         </TableCell>
                     </TableRow>
-                    {accountInfoArr.map(d => <TableRow>
+                    {accountInfoArr.sort((a, b) => {
+                        return a.id < b.id
+                    }).map(d => <TableRow>
                         <TableCell>
                             {d.username}
                         </TableCell>
@@ -98,7 +100,7 @@ function AdminAccountControlPage() {
                                         setCoreUpdateDialog(null)
                                         fetch_data()
                                     }} />)
-                                }}>코어박탈</Button> : <Button variant='outlined' onClick={() => setCoreUpdateDialog(<ChangeCoreStatusDialog  accountId={d.id} mode='setCore' onClose={() => setCoreUpdateDialog(null)} onSuccess={() => {
+                                }}>코어박탈</Button> : <Button variant='outlined' onClick={() => setCoreUpdateDialog(<ChangeCoreStatusDialog accountId={d.id} mode='setCore' onClose={() => setCoreUpdateDialog(null)} onSuccess={() => {
                                     setCoreUpdateDialog(null)
                                     fetch_data()
                                 }} />)}>코어승격</Button>}
