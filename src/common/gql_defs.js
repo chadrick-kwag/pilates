@@ -1254,6 +1254,15 @@ export const FETCH_ADMIN_ACCOUNT_PROFILE = gql`
         }
     }
 `
+//change_my_admin_account_password
+export const CHANGE_MY_ADMIN_ACCOUNT_PASSWORD = gql`
+    mutation($existpassword:String!, $newpassword:String!){
+        change_my_admin_account_password(existpassword:$existpassword, newpassword:$newpassword){
+            success
+            msg
+        }
+    }
+`
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,

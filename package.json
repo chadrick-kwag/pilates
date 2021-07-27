@@ -7,7 +7,7 @@
     "admin-devserver": "webpack serve --mode=development",
     "deploy": "node server/mainserver.js",
     "checkin_app_dev": "webpack serve --mode=development -c webpack.checkinapp.config.js",
-    "run-test-backend": "nodemon --watch server server/test.js",
+    "run-test-backend": "nodemon --watch server -e js,gql,ts,json server/test.js",
     "build-main": "webpack -c webpack.config.js --mode=production",
     "build-checkin": "webpack -c webpack.checkinapp.config.js --mode=production"
   },

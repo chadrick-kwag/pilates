@@ -9,7 +9,7 @@ module.exports = {
     Query: {
         fetch_admin_account_profile: async (parent, args, context) => {
 
-            
+
             if (!ensure_admin_account_id_in_context(context)) {
                 return {
                     success: false,
@@ -46,7 +46,7 @@ module.exports = {
             }
         },
         fetch_admin_accounts: async (parent, args, context) => {
-            
+
             if (!ensure_admin_account_id_in_context(context)) {
                 return {
                     success: false,
@@ -75,7 +75,7 @@ module.exports = {
             }
         },
         check_token_is_core_admin: async (parent, args, context) => {
-            
+
             if (!ensure_admin_account_id_in_context(context)) {
                 return {
                     success: false,
@@ -206,6 +206,61 @@ module.exports = {
         }
     },
     Mutation: {
+        change_my_admin_account_password: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+            const userid = context.account_id
+
+            try {
+                await pgclient.query('begin')
+
+                // check if prev password is correct
+                let result = await pgclient.query(`select id from admin_account where id=$1 and password=$2`, [userid, args.existpassword])
+
+                if (result.rowCount !== 1) {
+                    throw "existing password incorrect"
+                }
+
+                result = await pgclient.query(`update admin_account set password=$1 where id=$2`, [args.newpassword, userid])
+
+                if (result.rowCount !== 1) {
+                    throw "update failed"
+                }
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                try {
+                    await pgclient.query('rollback')
+
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (e2) {
+
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+
+            }
+
+
+        },
         update_core_status_of_admin_account: async (parent, args, context) => {
 
             if (!ensure_admin_account_id_in_context(context)) {
