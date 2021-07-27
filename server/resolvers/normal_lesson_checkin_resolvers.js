@@ -1,11 +1,19 @@
 const pgclient = require('../pgclient')
 const { DateTime } = require('luxon')
-const {setting} = require('../adminappconfig')
+const { setting } = require('../adminappconfig')
 
 
 module.exports = {
     Query: {
-        query_clients_by_phonenumber: async (parent, args) => {
+        query_clients_by_phonenumber: async (parent, args, context) => {
+
+            if (!context.checkinAuthorized) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
             try {
 
                 console.log(args)
@@ -32,7 +40,16 @@ module.exports = {
                 }
             }
         },
-        query_checkin_lessons_of_client: async (parent, args) => {
+        query_checkin_lessons_of_client: async (parent, args, context) => {
+
+
+            if (!context.checkinAuthorized) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
             try {
 
                 console.log(args)
@@ -41,17 +58,17 @@ module.exports = {
                 const scan_prev_hours = setting.checkin_options.scan_prev_hours
                 const scan_next_hours = setting.checkin_options.scan_prev_hours
 
-                if(typeof(scan_prev_hours)!=='number' || scan_prev_hours <=0){
+                if (typeof (scan_prev_hours) !== 'number' || scan_prev_hours <= 0) {
                     throw 'invalid scan_prev_hours'
                 }
 
-                if(typeof(scan_next_hours)!=='number' || scan_next_hours <=0){
+                if (typeof (scan_next_hours) !== 'number' || scan_next_hours <= 0) {
                     throw 'invalid scan_next_hours'
                 }
 
-                const span_start = dt_now.minus({hours: scan_prev_hours})
-        
-                const span_end = dt_now.plus({hours: scan_next_hours})
+                const span_start = dt_now.minus({ hours: scan_prev_hours })
+
+                const span_end = dt_now.plus({ hours: scan_next_hours })
 
                 console.log(span_start)
                 console.log(span_end)
@@ -69,7 +86,7 @@ module.exports = {
 				and B.id is null
 				
                 group by lesson.id, lesson.starttime, lesson.endtime, instructor.id, instructor.name, 
-                lesson.activity_type, lesson.grouping_type`,[span_start.toJSDate(), span_end.toJSDate(), args.clientid])
+                lesson.activity_type, lesson.grouping_type`, [span_start.toJSDate(), span_end.toJSDate(), args.clientid])
 
                 console.log(results)
 
@@ -88,15 +105,24 @@ module.exports = {
         }
     },
     Mutation: {
-        checkin_lesson_for_client: async (parent, args)=>{
-            try{
+        checkin_lesson_for_client: async (parent, args, context) => {
+
+            
+            if(!context.checkinAuthorized){
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+            
+            try {
                 await pgclient.query('BEGIN')
 
 
-                let result = await pgclient.query(`insert into normal_lesson_attendance(lessonid, clientid, checkin_time) values ($1, $2, now())`,[args.lessonid, args.clientid])
+                let result = await pgclient.query(`insert into normal_lesson_attendance(lessonid, clientid, checkin_time) values ($1, $2, now())`, [args.lessonid, args.clientid])
 
-                if(result.rowCount!==1){
-                    throw "insert row count not 1"   
+                if (result.rowCount !== 1) {
+                    throw "insert row count not 1"
                 }
 
                 await pgclient.query('COMMIT')
@@ -106,13 +132,13 @@ module.exports = {
 
                 }
             }
-            catch(e){
+            catch (e) {
 
-                try{
+                try {
                     await pgclient.query('END')
 
                 }
-                catch(e2){
+                catch (e2) {
                     return {
                         success: false,
                         msg: e2.detail
