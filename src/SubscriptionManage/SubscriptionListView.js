@@ -4,7 +4,6 @@ import moment from 'moment'
 
 import { QUERY_SUBSCRIPTIONS_BY_CLIENTID, SEARCH_CLIENT_WITH_NAME, DELETE_SUBSCRITION_GQL } from '../common/gql_defs'
 
-import ViewSubscriptionDetailModal from './ViewSubscriptionDetailModal'
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 import numeral from 'numeral'
 
@@ -186,14 +185,16 @@ class SubscriptionListView extends React.Component {
                 }}>검색</Button>
             </div>
 
-            {this.state.client_candidates.length == 0 ? (this.state.data === null ? <div>no results</div> :
+            {this.state.client_candidates.length == 0 ? (this.state.data === null ? <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                <span>결과 없음</span>
+            </div> :
 
                 <div>
                     <Table className="row-clickable-table">
                         <thead>
                             <th>
                                 id
-                        </th>
+                            </th>
                             <th>client id</th>
                             <th>client name</th>
                             <th>type</th>

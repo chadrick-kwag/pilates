@@ -29,7 +29,7 @@ function MenuDrawer({ history, closeDrawer, open }) {
                 }}>회원관리</ListItem>
                 <ListItem button onClick={e => {
                     closeDrawer()
-                    history.push('/planmanage')
+                    history.push('/clientplanmanage')
                 }}>회원플랜관리</ListItem>
                 <ListItem button onClick={e => {
                     closeDrawer()
