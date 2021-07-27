@@ -87,10 +87,6 @@ module.exports = {
                 const scan_prev_hours = setting.checkin_options.scan_prev_hours
                 const scan_next_hours = setting.checkin_options.scan_next_hours
 
-                console.log('scan range')
-                console.log(scan_prev_hours)
-                console.log(scan_next_hours)
-
                 if (typeof (scan_prev_hours) !== 'number' || scan_prev_hours <= 0) {
                     throw 'invalid scan_prev_hours'
                 }
@@ -102,9 +98,6 @@ module.exports = {
                 const span_start = dt_now.minus({ hours: scan_prev_hours })
 
                 const span_end = dt_now.plus({ hours: scan_next_hours })
-
-                console.log(span_start)
-                console.log(span_end)
 
                 let results = await pgclient.query(`select lesson.id, lesson.starttime, lesson.endtime, instructor.id as instructorid, instructor.name as instructorname, lesson.activity_type, lesson.grouping_type from  lesson
                 left join assign_ticket on assign_ticket.lessonid = lesson.id
