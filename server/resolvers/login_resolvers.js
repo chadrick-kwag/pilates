@@ -4,8 +4,9 @@ const { add_token_for_id,
     remove_token_for_id, get_account_id_for_token } = require('../tokenCache')
 
 const { ensure_admin_account_id_in_context } = require('./common')
+const bcrypt = require('bcrypt')
 
-
+const saltrounds = 10
 module.exports = {
     Query: {
         fetch_admin_account_profile: async (parent, args, context) => {
@@ -122,31 +123,39 @@ module.exports = {
         try_login: async (parent, args, context) => {
 
             try {
-                let result = await pgclient.query(`select id from admin_account where username=$1 and password=$2`, [args.username, args.password])
 
-                if (result.rowCount === 0) {
+                // fetch hashed password
+                let result = await pgclient.query(`select id,convert_from(password, 'utf8') as password from admin_account where username=$1`, [args.username])
+
+                if (result.rowCount !== 1) {
                     throw "no user found"
                 }
-                else if (result.rowCount > 1) {
-                    throw "multiple account found"
-                }
-                else {
 
-                    const user_id = result.rows[0].id
+                const user_id = result.rows[0].id
+                const db_pw = result.rows[0].password
 
-                    // generate token
+                console.log(db_pw)
 
-                    let token = randomstring.generate({ length: 10 })
-                    while (get_account_id_for_token(token) !== null) {
-                        token = randomstring.generate({ length: 10 })
-                    }
-                    add_token_for_id(token, user_id)
 
+                if (!bcrypt.compareSync(args.password, db_pw)) {
                     return {
-                        success: true,
-                        username: args.username,
-                        token: token
+                        success: false,
+                        msg: 'incorrect password'
                     }
+                }
+
+
+                // generate token for this user
+                let token = randomstring.generate({ length: 10 })
+                while (get_account_id_for_token(token) !== null) {
+                    token = randomstring.generate({ length: 10 })
+                }
+                add_token_for_id(token, user_id)
+
+                return {
+                    success: true,
+                    username: args.username,
+                    token: token
                 }
             }
             catch (e) {
@@ -221,14 +230,20 @@ module.exports = {
             try {
                 await pgclient.query('begin')
 
-                // check if prev password is correct
-                let result = await pgclient.query(`select id from admin_account where id=$1 and password=$2`, [userid, args.existpassword])
 
-                if (result.rowCount !== 1) {
-                    throw "existing password incorrect"
+                // check if prev password is correct
+
+                let result = await pgclient.query(`select convert_from(password, 'utf8') as password from admin_account where id=$1`, [userid])
+
+                const db_exist_pw = result.rows[0].password
+
+                if (!bcrypt.compareSync(args.existpassword, db_exist_pw)) {
+                    throw 'existing password incorrect'
                 }
 
-                result = await pgclient.query(`update admin_account set password=$1 where id=$2`, [args.newpassword, userid])
+                const encrypt_new_pw = bcrypt.hashSync(args.newpassword, saltrounds)
+
+                result = await pgclient.query(`update admin_account set password=$1 where id=$2`, [encrypt_new_pw, userid])
 
                 if (result.rowCount !== 1) {
                     throw "update failed"
@@ -381,11 +396,26 @@ module.exports = {
                 }
             }
 
+
+
             try {
 
                 await pgclient.query('begin')
 
-                let result = await pgclient.query(`update admin_account set password=$1 where id=$2`, [args.password, args.id])
+                // check core user
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
+
+                if (result.rowCount !== 1) {
+                    throw "no user found"
+                }
+
+                if (!result.rows[0].is_core_admin) {
+                    throw 'not core user'
+                }
+
+                const encryptpw = bcrypt.hashSync(args.password, saltrounds)
+
+                result = await pgclient.query(`update admin_account set password=$1 where id=$2`, [encryptpw, args.id])
 
                 if (result.rowCount !== 1) {
                     throw 'no update done'
@@ -488,18 +518,24 @@ module.exports = {
         create_account: async (parent, args, context) => {
 
 
-            if (!ensure_admin_account_id_in_context(context)) {
-                return {
-                    success: false,
-                    msg: 'invalid token'
-                }
-            }
+            // if (!ensure_admin_account_id_in_context(context)) {
+            //     return {
+            //         success: false,
+            //         msg: 'invalid token'
+            //     }
+            // }
 
             try {
                 await pgclient.query('BEGIN')
 
-                let result = await pgclient.query(`insert into user_pw(username, password, is_client, is_apprentice, is_instructor, is_admin) values ($1, $2, true, false, false, false)
-                `, [args.username, args.password])
+                // encrypt password
+                const salt = bcrypt.genSaltSync(saltrounds)
+                const pwhash = bcrypt.hashSync(args.password, salt)
+
+                console.log(pwhash)
+
+                let result = await pgclient.query(`insert into admin_account(username, password) values ($1, $2)
+                `, [args.username, pwhash])
 
                 if (result.rowCount !== 1) {
                     throw "create account failed"
@@ -600,7 +636,11 @@ module.exports = {
                     throw "username already in use"
                 }
 
-                result = await pgclient.query(`insert into admin_account_request(username, password, contact) values ($1, $2, $3)`, [args.username, args.password, args.contact])
+
+                const salt = bcrypt.genSaltSync(saltrounds)
+                const encryptpw = bcrypt.hashSync(args.password, salt)
+
+                result = await pgclient.query(`insert into admin_account_request(username, password, contact) values ($1, $2, $3)`, [args.username, encryptpw, args.contact])
 
                 if (result.rowCount === 0) {
                     throw 'insert failed'
