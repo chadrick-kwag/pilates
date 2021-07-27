@@ -83,11 +83,13 @@ module.exports = {
 
             try {
 
-                console.log(args)
-
                 const dt_now = DateTime.now()
                 const scan_prev_hours = setting.checkin_options.scan_prev_hours
-                const scan_next_hours = setting.checkin_options.scan_prev_hours
+                const scan_next_hours = setting.checkin_options.scan_next_hours
+
+                console.log('scan range')
+                console.log(scan_prev_hours)
+                console.log(scan_next_hours)
 
                 if (typeof (scan_prev_hours) !== 'number' || scan_prev_hours <= 0) {
                     throw 'invalid scan_prev_hours'
