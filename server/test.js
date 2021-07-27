@@ -1,9 +1,6 @@
-
-const { ApolloServer, gql } = require('apollo-server');
 const { graphql_server_options } = require('../config.js')
-const { typeDefs, resolvers } = require('./merged_gql')
-const { get_account_id_for_token } = require('./tokenCache')
 const pgclient = require('./pgclient')
+const server = require('./apolloserver')
 
 
 pgclient.connect(err => {
@@ -17,23 +14,6 @@ pgclient.connect(err => {
     }
 })
 
-
-
-
-const server = new ApolloServer({
-    typeDefs, resolvers,
-    context: ({ req }) => {
-        const token = req.headers.authorization || '';
-
-        let account_id = get_account_id_for_token(token)
-        console.log(token)
-        console.log(account_id)
-
-        return {
-            account_id
-        }
-    }
-});
 
 
 // The `listen` method launches a web server.
