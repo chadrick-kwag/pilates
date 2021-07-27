@@ -113,7 +113,7 @@ export default function EditTicketTable(props) {
                     <span>{DateTime.fromMillis(parseInt(d.created_date)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')}</span>
                 </TableCell>
                 <TableCell>
-                    <span>{d.consumed_date === null ? '-' : DateTime.fromMillis(parseInt(d.destroyed_date)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')}</span>
+                    <span>{d.destroyed_date === null ? '-' : DateTime.fromMillis(parseInt(d.destroyed_date)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')}</span>
                 </TableCell>
             </TableRow>)}
         </Table>
