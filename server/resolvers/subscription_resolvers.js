@@ -3,15 +3,22 @@ const pgclient = require('../pgclient')
 const {
     parse_incoming_date_utc_string,
     parse_incoming_gender_str,
-    incoming_time_string_to_postgres_epoch_time
+    incoming_time_string_to_postgres_epoch_time, ensure_admin_account_id_in_context
 } = require('./common')
 
 module.exports = {
     Query: {
 
-        fetch_normal_plan_detail_info: async (parent, args) => {
+        fetch_normal_plan_detail_info: async (parent, args, context) => {
             try {
-                console.log('inside fetch_normal_plan_detail_info')
+
+
+                if (!ensure_admin_account_id_in_context(context)) {
+                    return {
+                        success: false,
+                        msg: 'invalid token'
+                    }
+                }
 
                 const planid = args.planid
 
@@ -54,7 +61,6 @@ module.exports = {
                 _result.totalcost = totalcost
                 _result.tickets = tickets
 
-                console.log(_result)
 
                 return {
                     success: true,
@@ -74,11 +80,18 @@ module.exports = {
             }
         },
 
-        fetch_ticket_available_plan_for_clientid_and_lessontypes: async (parent, args) => {
+        fetch_ticket_available_plan_for_clientid_and_lessontypes: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
             try {
 
-                console.log('fetch_ticket_available_plan_for_clientid_and_lessontypes')
-                console.log(args)
 
                 const clientid = args.clientid
                 const activity_type = args.activity_type
@@ -113,7 +126,6 @@ module.exports = {
                     avail_plan_and_tickets[i].plan_total_rounds = result.rows[0].totalcount
                 }
 
-                console.log(avail_plan_and_tickets)
 
                 await pgclient.query(`end`)
 
@@ -140,9 +152,15 @@ module.exports = {
             }
         },
 
-        query_subscription_info_with_ticket_info: async (parent, args) => {
-            console.log('query_subscription_info_with_ticket_info')
-            console.log(args)
+        query_subscription_info_with_ticket_info: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
 
             let result = await pgclient.query(`with A as (select ticket.id as id, plan.created as created_date, ticket.expire_time ,
@@ -202,9 +220,16 @@ module.exports = {
             return result
         },
 
-        fetch_tickets_for_subscription_id: async (parent, args) => {
+        fetch_tickets_for_subscription_id: async (parent, args, context) => {
 
-            console.log('fetch_tickets_for_subscription_id')
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
 
             try {
 
@@ -235,6 +260,7 @@ module.exports = {
 
             }
             catch (e) {
+                console.log(e)
                 return {
                     success: false,
                     msg: e.detail
@@ -244,7 +270,15 @@ module.exports = {
 
         },
 
-        query_all_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
+        query_all_subscriptions_with_remainrounds_for_clientid: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
             try {
 
@@ -294,9 +328,6 @@ module.exports = {
 
                 }
 
-                console.log('plan_arr')
-                console.log(plan_arr)
-
                 return {
                     success: true,
                     allSubscriptionsWithRemainRounds: plan_arr
@@ -311,9 +342,15 @@ module.exports = {
             }
 
         },
-        query_subscriptions_by_clientid: async (parent, args) => {
-            console.log('inside query_subscriptions_by_clientid')
-            console.log(args)
+        query_subscriptions_by_clientid: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
             try {
 
@@ -324,15 +361,10 @@ module.exports = {
                 where client.id = $1
                 `, [args.clientid])
 
-                console.log(result)
-
-
                 return {
                     success: true,
                     subscriptions: result.rows
                 }
-
-
 
             } catch (e) {
                 console.log(e)
@@ -346,10 +378,16 @@ module.exports = {
 
         },
 
-        query_subscriptions_of_clientname: async (parent, args) => {
+        query_subscriptions_of_clientname: async (parent, args, context) => {
 
-            console.log('inside query_subscriptions_of_clientname')
-            console.log(args)
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
 
             let subscriptions = await pgclient.query('select plan.id, plan.clientid, client.name as clientname, rounds, totalcost, plan.created, plan.activity_type, plan.grouping_type, plan.coupon_backed from plan left join client on plan.clientid=client.id where client.name=$1', [args.clientname])
                 .then(res => {
@@ -369,52 +407,58 @@ module.exports = {
             }
             else {
 
-                let retobj = {
+                return {
                     success: true,
                     subscriptions: subscriptions
                 }
-                console.log(retobj)
-                return retobj
             }
 
 
 
         },
 
-        query_subscriptions: async (parent, args) => {
-            console.log(args)
+        query_subscriptions: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
             let subscriptions = await pgclient.query("select subscription.id, subscription.clientid, client.name as clientname, rounds, totalcost, subscription.created, subscription.activity_type, subscription.grouping_type, subscription.coupon_backed from pilates.subscription left join pilates.client on subscription.clientid=client.id").then(res => {
-                console.log(res.rows)
                 return res.rows
             }).catch(e => {
                 console.log(e)
                 return null
             })
 
-            console.log(subscriptions)
 
             if (subscriptions == null) {
                 return {
-                    success: false,
+                    success: true,
                     subscriptions: []
                 }
             }
             else {
 
-                let retobj = {
+                return {
                     success: true,
                     "subscriptions": subscriptions
                 }
-                console.log(retobj)
-                return retobj
             }
 
         },
-        query_subscriptions_with_remainrounds_for_clientid: async (parent, args) => {
-            console.log(args)
+        query_subscriptions_with_remainrounds_for_clientid: async (parent, args, context) => {
 
 
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
             let result = await pgclient.query(`WITH B AS (select plan.id as planid,
                 plan.clientid, client.name as clientname, 
@@ -433,7 +477,6 @@ module.exports = {
                 ) 
                 select * from B where avail_ticket_count >0`, [args.clientid, args.activity_type, args.grouping_type]).then(res => {
 
-                console.log(res)
 
                 return {
                     success: true,
@@ -452,7 +495,16 @@ module.exports = {
         },
     },
     Mutation: {
-        update_normal_plan_basicinfo: async (parent, args) => {
+        update_normal_plan_basicinfo: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
             try {
 
 
@@ -545,9 +597,6 @@ module.exports = {
                     }
                 }
 
-                console.log(`to_remove_id_arr: ${to_remove_id_arr}`)
-                console.log('to_add_types')
-                console.log(to_add_types)
 
                 // execute removal
                 for (let i = 0; i < to_remove_id_arr.length; i++) {
@@ -577,7 +626,6 @@ module.exports = {
                 try {
                     await pgclient.query('rollback')
 
-
                 } catch (err) {
                     return {
                         success: false,
@@ -591,9 +639,15 @@ module.exports = {
                 }
             }
         },
-        create_subscription: async (parent, args) => {
-            console.log('create_subscrition')
-            console.log(args)
+        create_subscription: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
 
             // check args
@@ -683,9 +737,15 @@ module.exports = {
 
 
         },
-        delete_subscription: async (parent, args) => {
-            console.log('delete subscription')
-            console.log(args)
+        delete_subscription: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
             try {
 
@@ -821,10 +881,15 @@ module.exports = {
             return result
 
         },
-        transfer_tickets_to_clientid: async (parent, args) => {
-            console.log('transfer_tickets_to_clientid')
+        transfer_tickets_to_clientid: async (parent, args, context) => {
 
-            console.log(args)
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
             try {
                 await pgclient.query('begin')
@@ -900,7 +965,15 @@ module.exports = {
             }
 
         },
-        update_expdate_of_tickets: async (parent, args) => {
+        update_expdate_of_tickets: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
             let new_expdate = parse_incoming_date_utc_string(args.new_expdate)
             if (args.ticket_id_list.length === 0) {
@@ -936,9 +1009,15 @@ module.exports = {
             return ret
 
         },
-        delete_tickets: async (parent, args) => {
-            console.log('delete_tickets')
-            console.log(args)
+        delete_tickets: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
             try {
                 await pgclient.query('begin')
@@ -972,9 +1051,16 @@ module.exports = {
 
 
         },
-        add_tickets: async (parent, args) => {
-            console.log('add tickets')
-            console.log(args)
+        add_tickets: async (parent, args, context) => {
+
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
 
             try {
 
@@ -997,6 +1083,7 @@ module.exports = {
 
             }
             catch (e) {
+                console.log(e)
                 try {
 
                     await pgclient.query(`rollback`)
@@ -1017,7 +1104,16 @@ module.exports = {
             }
 
         },
-        change_plan_totalcost: async (parent, args) => {
+        change_plan_totalcost: async (parent, args, context) => {
+
+            
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
             let result = await pgclient.query(`update plan set totalcost=$1 where id = $2`, [args.totalcost, args.planid]).then(res => {
                 if (res.rowCount !== 1) {
                     return {
