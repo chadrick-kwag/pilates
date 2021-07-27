@@ -34,6 +34,8 @@ const update_setting = (new_config, part) => {
 
     console.log(setting)
 
+    save_setting()
+
     return true
 }
 

@@ -1,5 +1,6 @@
 const pgclient = require('../pgclient')
 const { DateTime } = require('luxon')
+const {setting} = require('../adminappconfig')
 
 
 module.exports = {
@@ -37,9 +38,20 @@ module.exports = {
                 console.log(args)
 
                 const dt_now = DateTime.now()
-                const span_start = dt_now.minus({hours: 1})
+                const scan_prev_hours = setting.checkin_options.scan_prev_hours
+                const scan_next_hours = setting.checkin_options.scan_prev_hours
+
+                if(typeof(scan_prev_hours)!=='number' || scan_prev_hours <=0){
+                    throw 'invalid scan_prev_hours'
+                }
+
+                if(typeof(scan_next_hours)!=='number' || scan_next_hours <=0){
+                    throw 'invalid scan_next_hours'
+                }
+
+                const span_start = dt_now.minus({hours: scan_prev_hours})
         
-                const span_end = dt_now.plus({hours: 10})
+                const span_end = dt_now.plus({hours: scan_next_hours})
 
                 console.log(span_start)
                 console.log(span_end)
