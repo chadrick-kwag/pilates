@@ -45,6 +45,7 @@ import MenuDrawer from './MenuDrawer'
 import AdminAccountRequestPage from './AdminAccountManage/AdminAccountRequsetPage'
 import AdminAccountControlPage from './AdminAccountManage/AdminAccountControlPage'
 import ProfilePage from './profilePage/main'
+import PersonIcon from '@material-ui/icons/Person';
 
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
@@ -99,9 +100,11 @@ class App extends React.Component {
                                     this.setState({
                                         userprofile_el: e.target
                                     })
-                                }}>{(() => {
-                                    return localStorage.getItem('pilates-username')
-                                })()} 님</Button>
+                                }}>
+                                    <PersonIcon style={{ rightMargin: '0.5rem' }} />
+                                    {(() => {
+                                        return localStorage.getItem('pilates-username')
+                                    })()} 님</Button>
                                 <Menu
                                     anchorEl={this.state.userprofile_el}
                                     open={this.state.userprofile_el !== null}
