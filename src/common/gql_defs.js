@@ -1290,6 +1290,17 @@ export const FETCH_CHECKIN_CONFIGS = gql`
     }
 `
 
+
+// update_checkin_configs
+export const UPDATE_CHECKIN_CONFIGS = gql`
+    mutation($newconfig:String!){
+        update_checkin_configs(newconfig:$newconfig){
+            success
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
