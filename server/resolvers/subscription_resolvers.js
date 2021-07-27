@@ -751,8 +751,20 @@ module.exports = {
 
                 await pgclient.query('begin')
 
+                
+                // check admin is core
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
+
+                if(result.rowCount!==1){
+                    throw "no account"
+                }
+
+                if(!result.rows[0].is_core_admin){
+                    throw "not core user"
+                }
+
                 // check plan id exists
-                let result = await pgclient.query(`select id from plan where id=$1`, [args.id])
+                result = await pgclient.query(`select id from plan where id=$1`, [args.id])
 
                 if (result.rows.length !== 1) {
                     throw {
@@ -894,6 +906,18 @@ module.exports = {
             try {
                 await pgclient.query('begin')
 
+                
+                // check admin is core
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
+
+                if(result.rowCount!==1){
+                    throw "no account"
+                }
+
+                if(!result.rows[0].is_core_admin){
+                    throw "not core user"
+                }
+
                 // create new plan with new client
                 const ticket_id_arr = args.ticket_id_list
                 const recv_clientid = args.clientid
@@ -907,7 +931,7 @@ module.exports = {
                 // fetch plan info of existing tickets
                 // simply select the plan types of the first ticket id
 
-                let result = await pgclient.query(`select creator_plan_id as id from ticket where id=$1`, [ticket_id_arr[0]])
+                result = await pgclient.query(`select creator_plan_id as id from ticket where id=$1`, [ticket_id_arr[0]])
 
                 const existing_plan_id = result.rows[0].id
 
@@ -1022,6 +1046,18 @@ module.exports = {
             try {
                 await pgclient.query('begin')
 
+                
+                // check admin is core
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
+
+                if(result.rowCount!==1){
+                    throw "no account"
+                }
+
+                if(!result.rows[0].is_core_admin){
+                    throw "not core user"
+                }
+
                 for (let i = 0; i < args.ticketid_arr.length; i++) {
                     await pgclient.query('delete from ticket where id=$1', [args.ticketid_arr[i]])
                 }
@@ -1065,6 +1101,17 @@ module.exports = {
             try {
 
                 await pgclient.query('begin')
+
+                // check admin is core
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
+
+                if(result.rowCount!==1){
+                    throw "no account"
+                }
+
+                if(!result.rows[0].is_core_admin){
+                    throw "not core user"
+                }
 
                 const per_ticket_cost = args.per_ticket_cost
                 const planid = args.planid
