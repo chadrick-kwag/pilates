@@ -11,6 +11,7 @@ type Query{
 type Mutation{
     create_account(username: String!, password: String!): SimpleResponse
     request_admin_account_creation(username:String!, password: String!, contact: String): SimpleResponse
+    decline_admin_account_request(id:Int!): SimpleResponse
     approve_admin_account_request(id:Int!): SimpleResponse
     change_admin_account_password(id:Int!, password: String!): SimpleResponse
     change_my_admin_account_password(existpassword:String!, newpassword:String!): SimpleResponse

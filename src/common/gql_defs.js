@@ -1264,6 +1264,16 @@ export const CHANGE_MY_ADMIN_ACCOUNT_PASSWORD = gql`
     }
 `
 
+//decline_admin_account_request
+export const DECLINE_ADMIN_ACCOUNT_REQUEST = gql`
+    mutation($id:Int!){
+        decline_admin_account_request(id:$id){
+            success
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

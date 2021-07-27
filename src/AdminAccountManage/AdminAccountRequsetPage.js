@@ -2,14 +2,31 @@ import React, { useState, useEffect } from 'react'
 import { Button, CircularProgress, Table, TableRow, TableCell } from '@material-ui/core'
 import client from '../apolloclient'
 import { DateTime } from 'luxon'
-import { FETCH_ADMIN_ACCOUNT_CREATE_REQUESTS, APPROVE_ADMIN_ACCOUNT_REQUEST } from '../common/gql_defs'
-
+import { FETCH_ADMIN_ACCOUNT_CREATE_REQUESTS, APPROVE_ADMIN_ACCOUNT_REQUEST, DECLINE_ADMIN_ACCOUNT_REQUEST } from '../common/gql_defs'
+import { useMutation } from '@apollo/client';
 
 function AdminAccountRequestPage() {
 
 
     const [adminRequests, setAdminRequests] = useState([])
     const [loading, setLoading] = useState(true)
+    const [declineRequest, { declineLoading, declineData, declineError }] = useMutation(DECLINE_ADMIN_ACCOUNT_REQUEST, {
+        fetchPolicy: 'no-cache',
+        client: client,
+        onCompleted: (data) => {
+            console.log(data)
+            if (data.decline_admin_account_request.success) {
+                fetch_data()
+            }
+            else {
+                alert('삭제 실패')
+            }
+        },
+        onError: (e) => {
+            console.log(JSON.stringify(e))
+            alert('삭제 에러')
+        }
+    })
 
 
 
@@ -105,7 +122,11 @@ function AdminAccountRequestPage() {
                         <TableCell>
                             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                                 <Button variant='outlined' onClick={() => approve_request(d.id)}>승인</Button>
-                                <Button variant='outlined'>삭제</Button>
+                                <Button variant='outlined' onClick={() => declineRequest({
+                                    variables: {
+                                        id: d.id
+                                    }
+                                })}>삭제</Button>
                             </div>
 
                         </TableCell>

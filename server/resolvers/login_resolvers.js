@@ -431,7 +431,15 @@ module.exports = {
 
                 await pgclient.query('BEGIN')
 
-                let result = await pgclient.query(`select username, password from admin_account_request where id=$1`, [args.id])
+
+                // check if current user is core user
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, context.account_id)
+
+                if (result.rowCount !== 1) {
+                    throw 'not core user'
+                }
+
+                result = await pgclient.query(`select username, password from admin_account_request where id=$1`, [args.id])
 
                 if (result.rowCount !== 1) {
                     throw 'no request found'
@@ -518,6 +526,62 @@ module.exports = {
                 return {
                     success: false,
                     msg: e.details
+                }
+            }
+
+        },
+        decline_admin_account_request: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
+
+            try {
+
+                await pgclient.query('BEGIN')
+
+                // check if current user is core user
+                let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
+
+                if (result.rowCount !== 1) {
+                    throw "not core user"
+                }
+
+                //  remove from request table
+                result = await pgclient.query(`delete from admin_account_request where id=$1`, [args.id])
+
+                if (result.rowCount !== 1) {
+                    throw 'delete from request failed'
+                }
+
+                await pgclient.query('COMMIT')
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e2.detail
+                    }
                 }
             }
 
