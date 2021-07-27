@@ -82,29 +82,29 @@ class App extends React.Component {
 
                 <div style={{ flex: '0 min-content', backgroundColor: 'black' }}>
                     <Grid container>
-                        <Grid item xs={4}>
+                        <Grid item xs={4} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
                             <MenuOpenIcon onClick={e => this.setState({
                                 showDrawer: true
                             })} fontSize='large' style={{ color: 'white', margin: '5px' }} />
                         </Grid>
-                        <Grid item xs={4}>
+                        <Grid item xs={2} s={4}>
 
                         </Grid>
-                        <Grid item style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center' }} xs={4}>
-                            <div style={{ height: '100%', display: 'flex', flexDirection: 'row-reverse', alignItems: 'center' }}>
-                                <span style={{ color: 'white', marginRight: '2rem' }}>ver {packagejson.version}</span>
+                        <Grid item xs={6} s={4}>
+                            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'row-reverse', justifyContent: 'flex-start', alignItems: 'center' }}>
 
-                            </div>
-                            <div>
-                                <Button style={{ textTransform: 'none', marginRight: '0.5rem' }} variant='contained' onClick={(e) => {
+                                <span style={{ color: 'white', marginRight: '2rem', whiteSpace: 'nowrap' }}>ver {packagejson.version}</span>
+
+                                <Button style={{ textTransform: 'none', marginRight: '0.5rem', width: 'min-content'}} variant='contained' onClick={(e) => {
                                     this.setState({
                                         userprofile_el: e.target
                                     })
                                 }}>
-                                    <PersonIcon style={{ rightMargin: '0.5rem' }} />
-                                    {(() => {
+                                    <div style={{display: 'flex', flexDirection: 'row'}}><PersonIcon style={{ rightMargin: '0.5rem' }} />
+                                    <span style={{whiteSpace: 'nowrap'}}>{(() => {
                                         return localStorage.getItem('pilates-username')
-                                    })()} 님</Button>
+                                    })()}님</span></div>
+                                </Button>
                                 <Menu
                                     anchorEl={this.state.userprofile_el}
                                     open={this.state.userprofile_el !== null}
@@ -129,7 +129,10 @@ class App extends React.Component {
 
 
                                 </Menu>
+
                             </div>
+
+
                         </Grid>
                     </Grid>
                 </div>
