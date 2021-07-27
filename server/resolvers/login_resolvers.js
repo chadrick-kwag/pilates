@@ -314,6 +314,15 @@ module.exports = {
                 }
             }
 
+            // check if trying to delete self. not allowed
+            const userid = context.account_id
+            if(userid === args.id){
+                return {
+                    success: false,
+                    msg: 'cannot delete self'
+                }
+            }
+
             try {
 
 
