@@ -136,10 +136,9 @@ module.exports = {
                 const user_id = result.rows[0].id
                 const db_pw = result.rows[0].password
 
-                console.log(db_pw)
+                const compare_result = bcrypt.compareSync(args.password, db_pw)
 
-
-                if (!bcrypt.compareSync(args.password, db_pw)) {
+                if (!compare_result) {
                     return {
                         success: false,
                         msg: 'incorrect password'
