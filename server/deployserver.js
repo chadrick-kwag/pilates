@@ -3,9 +3,10 @@ const path = require('path');
 const {MAIN_SERVE_PORT, GRAPHQL_SUBPATH}= require('../config')
 const app = express();
 
-const { ApolloServer } = require('apollo-server-express');
+// const { ApolloServer } = require('apollo-server-express');
 const pgclient  = require('./pgclient')
-const {typeDefs, resolvers} = require('./merged_gql')
+// const {typeDefs, resolvers} = require('./merged_gql')
+const graphql_server = require('./apolloserver')
 
 
 
@@ -49,10 +50,10 @@ pgclient.connect(err => {
     }
 })
 
-const server = new ApolloServer({ typeDefs, resolvers });
+// const server = new ApolloServer({ typeDefs, resolvers });
 
 console.log(`GRAPHQL_SUBPATH: ${GRAPHQL_SUBPATH}`)
-server.applyMiddleware({app, path: GRAPHQL_SUBPATH})
+graphql_server.applyMiddleware({app, path: GRAPHQL_SUBPATH})
 
 
 app.listen(MAIN_SERVE_PORT, function () {

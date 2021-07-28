@@ -12,6 +12,7 @@ import CreateNormalLessonPage from './CreateNormalLessonView/CreateNormalLessonP
 import ScheduleViewer from './AllScheduleView/ScheduleViewer'
 import CreateApprenticeLesson from './CreateApprenticeLesson'
 import CreateSpecialSchedule from './CreateSpecialScheduleView/container'
+import CoreAdminUserCheck from '../components/CoreAdminUserCheck'
 
 
 class SchedulePage extends React.Component {
@@ -60,24 +61,15 @@ class SchedulePage extends React.Component {
         else if (this.state.viewmode === 'create_special_schedule') {
             mainview = <CreateSpecialSchedule onCancel={() => this.setState({ viewmode: 'all' })} onSuccess={() => this.setState({
                 viewmode: 'all'
-            })} 
-            
+            })}
+
             />
         }
 
         return <div>
-            <div className="topbar-container">
-                <div className={this.state.viewmode == "all" ? "topbar-selected topbar-item" : "topbar-notselected topbar-item"} onClick={e => this.setState({
-                    viewmode: "all"
-                })}>전체보기</div>
-                <div className={this.state.viewmode == "instructor" ? "topbar-selected topbar-item" : " topbar-notselected topbar-item"} onClick={e => this.setState({
-                    viewmode: "instructor"
-                })}>강사별보기</div>
-                <div className={this.state.viewmode == "client" ? "topbar-selected topbar-item" : "topbar-notselected topbar-item"} onClick={e => this.setState({
-                    viewmode: "client"
-                })}>회원별보기</div>
-            </div>
+
             <div>
+
                 <Button variant='contained' color='primary' onClick={e => this.setState({
                     showCreateLessonMenu: true,
                     createLessonMenuAnchor: e.currentTarget
@@ -101,6 +93,8 @@ class SchedulePage extends React.Component {
                         showCreateLessonMenu: false
                     })}>기타 스케쥴</MenuItem>
                 </Menu>
+
+
             </div>
 
             {mainview}

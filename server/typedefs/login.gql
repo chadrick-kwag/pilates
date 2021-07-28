@@ -1,0 +1,81 @@
+type Query{
+    try_login(username:String!, password: String!): LoginResponse
+    check_admin_authtoken(token:String!): SimpleResponse
+    fetch_admin_account_create_requests: AdminCreateRequestResponse
+    check_token_is_core_admin(token:String!): IsCoreAdminResponse
+    fetch_admin_accounts: FetchAdminAccountsResponse
+    fetch_admin_account_profile: AdminProfileResponse
+
+}
+
+type Mutation{
+    create_account(username: String!, password: String!): SimpleResponse
+    request_admin_account_creation(username:String!, password: String!, contact: String): SimpleResponse
+    decline_admin_account_request(id:Int!): SimpleResponse
+    approve_admin_account_request(id:Int!): SimpleResponse
+    change_admin_account_password(id:Int!, password: String!): SimpleResponse
+    change_my_admin_account_password(existpassword:String!, newpassword:String!): SimpleResponse
+    delete_admin_account(id: Int!): SimpleResponse
+    update_core_status_of_admin_account(id:Int!, status: Boolean!): SimpleResponse
+}
+
+
+type AdminProfileResponse{
+    success: Boolean
+    msg: String
+    profile: AdminProfile
+
+}
+
+type AdminProfile{
+    id: Int!
+    username: String!
+    created: String
+    contact: String
+
+}
+
+type AdminAccount{
+    id: Int!
+    username: String!
+    created: String
+    is_core_admin: Boolean
+
+}
+
+type FetchAdminAccountsResponse{
+    success: Boolean!
+    msg: String
+    accounts: [AdminAccount]
+}
+
+type IsCoreAdminResponse{
+    success: Boolean!
+    msg: String
+    is_core: Boolean
+}
+
+type AdminCreateRequestInfo{
+    id: Int!
+    username: String!
+    request_time: String
+    
+}
+
+type AdminCreateRequestResponse{
+    success: Boolean!
+    msg: String
+    requests: [AdminCreateRequestInfo]
+}
+
+type SimpleResponse{
+    success: Boolean!
+    msg: String
+}
+
+type LoginResponse{
+    success: Boolean!
+    msg: String
+    token: String,
+    username: String
+}

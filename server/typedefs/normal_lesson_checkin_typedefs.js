@@ -3,17 +3,31 @@ module.exports = `
 type Query {
     query_clients_by_phonenumber(phonenumber:String!): SuccessAndClientsResult
     query_checkin_lessons_of_client(clientid:Int!): SuccessAndCheckInLessonsResult
+    check_token: CheckTokenResponse
 }
 
 type Mutation{
     checkin_lesson_for_client(clientid:Int!, lessonid: Int!): CheckinResponse
-    
+    get_new_token(password: String!): GetNewTokenResponse
 }
 
+
+type CheckTokenResponse{
+    success: Boolean!
+    msg: String
+    is_valid: Boolean
+
+}
 
 type CheckinResponse{
     success: Boolean
     msg: String
+}
+
+type GetNewTokenResponse{
+    success: Boolean!
+    msg: String
+    token: String
 }
 
 

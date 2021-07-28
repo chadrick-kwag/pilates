@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
         textAlign: 'center',
         padding: '1rem'
     },
-    
+
 }));
 
 
@@ -69,7 +69,7 @@ function SelectCheckIn({ clientid, onSuccess, onToFirstScreen }) {
                 setError('error fetching data')
                 setLoading(false)
             }
-        }).catch(e=>{
+        }).catch(e => {
             console.log(JSON.stringify(e))
 
             setError('error while fetching data')
@@ -84,21 +84,19 @@ function SelectCheckIn({ clientid, onSuccess, onToFirstScreen }) {
             lessonid: lessonid
         }
 
-        console.log(_vars)
-
         client.mutate({
             mutation: SUBMIT_LESSON_ATTENDANCE,
             variables: _vars,
             fetchPolicy: 'no-cache'
-        }).then(res=>{
-            if(res.data.checkin_lesson_for_client.success){
+        }).then(res => {
+            if (res.data.checkin_lesson_for_client.success) {
                 alert('출석체크 되었습니다')
                 onSuccess?.()
             }
-            else{
+            else {
                 alert('submit fail')
             }
-        }).catch(e=>{
+        }).catch(e => {
             console.log(JSON.stringify(e))
 
             alert('submit error')
@@ -108,28 +106,28 @@ function SelectCheckIn({ clientid, onSuccess, onToFirstScreen }) {
 
 
     if (loading) {
-        return (<div><CircularProgress /></div>)
+        return (<div style={{ width: '100%', height: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}><CircularProgress /></div>)
     }
     else if (error !== null) {
-        return <div><span>{error}</span></div>
+        return <div style={{ width: '100%', height: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}><span>{error}</span></div>
     }
     else {
         if (checkinLessons.length === 0) {
 
-            setTimeout(()=>onToFirstScreen?.(), 2000)
-            return <div style={{ width: '100%', height: "100%", display: 'flex', flexDirection:'column', justifyContent: 'center', alignItems: 'center' }}>
-                <span>출석 가능한 수업이 없습니다</span>
-                <Button variant='outlined' onClick={()=>onToFirstScreen?.()}>처음으로</Button>
-                </div>
+            setTimeout(() => onToFirstScreen?.(), 2000)
+            return <div style={{ width: '100%', height: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                <span style={{ marginBottom: '1rem' }}>출석 가능한 수업이 없습니다</span>
+                <Button variant='outlined' onClick={() => onToFirstScreen?.()}>처음으로</Button>
+            </div>
         }
         else {
-            return <div style={{ width: '100%', height: "100%", display: 'flex', flexDirection:'column', justifyContent: 'flex-start', alignItems: 'center' }}>
+            return <div style={{ width: '100%', height: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center' }}>
                 <Grid container spacing={3}>
                     <Grid item xs={12}>
-                        <Button variant='outlined' onClick={()=>onToFirstScreen?.()}>처음으로</Button>
+                        <Button variant='outlined' onClick={() => onToFirstScreen?.()}>처음으로</Button>
                     </Grid>
                     {checkinLessons.map(d => <Grid item xs={12}>
-                        <Paper className={classes.paper} elevation={3} onClick={()=>submit_attendance(d.id)}>
+                        <Paper className={classes.paper} elevation={3} onClick={() => submit_attendance(d.id)}>
                             <span>{format_lesson_time(d.starttime, d.endtime)}</span>
                             <span>{d.instructorname} 강사님</span>
                         </Paper>

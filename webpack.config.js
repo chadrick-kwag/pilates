@@ -34,7 +34,7 @@ module.exports = {
     ],
     devServer: {
         open: "chrome",
-        host: '0.0.0.0',
+        host: 'localhost',
         port: 8899,
         compress: false,
         proxy: {

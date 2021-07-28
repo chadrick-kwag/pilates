@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from 'react'
 import { Table, TableRow, TableHead, TableCell, Select, MenuItem, Button, CircularProgress, Chip } from '@material-ui/core'
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
-import ErrorIcon from '@material-ui/icons/Error';
-
 
 
 import client from '../../apolloclient'

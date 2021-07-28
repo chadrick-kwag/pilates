@@ -7,6 +7,7 @@ import ListClientPageV2 from './ListClientPage_v2'
 
 
 
+
 class ClientManagePage extends React.Component {
 
     constructor(props) {
@@ -22,12 +23,14 @@ class ClientManagePage extends React.Component {
 
         if (this.state.view_mode == "list") {
             return <div>
+                
+                    <div>
+                        <Button onClick={e => this.setState({
+                            view_mode: 'create'
+                        })}>회원생성</Button>
+                    </div>
+                
 
-                <div>
-                    <Button onClick={e => this.setState({
-                        view_mode: 'create'
-                    })}>회원생성</Button>
-                </div>
                 <div>
                     {/* <ListClientPage apolloclient={this.props.apolloclient} /> */}
                     <ListClientPageV2 />

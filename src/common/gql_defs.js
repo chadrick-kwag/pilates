@@ -1066,7 +1066,7 @@ export const UPDATE_NORMAL_PLAN_BASICINFO = gql`
 `
 
 //create_special_schedule 
-export const CREATE_SPECIAL_SCHEDULE  = gql`
+export const CREATE_SPECIAL_SCHEDULE = gql`
     mutation($starttime: String!, $endtime: String!, $title: String!, $memo: String){
         create_special_schedule(starttime: $starttime, endtime: $endtime, title: $title, memo: $memo){
             success
@@ -1111,6 +1111,195 @@ export const DELETE_SPECIAL_SCHEDULE_BY_ID = gql`
     }
 `
 
+export const TRY_LOGIN = gql`
+    query($username: String!, $password: String!){
+        try_login(username:$username, password:$password){
+            success
+            msg
+            token
+            username
+        }
+    }
+`
+
+
+export const CREATE_ACCOUNT = gql`
+    mutation($username: String!, $password: String!){
+        create_account(username:$username, password: $password){
+            success
+            msg
+        }
+    }
+`
+
+
+export const CHECK_ADMIN_AUTHTOKEN_VALID = gql`
+    query($token:String!){
+        check_admin_authtoken(token:$token){
+
+            success
+            msg
+        }
+    }
+`
+
+//request_admin_account_creation
+export const REQUEST_ADMIN_ACCOUNT_CREATION = gql`
+    mutation($username: String!, $password: String!, $contact: String){
+        request_admin_account_creation(username:$username, password:$password, contact: $contact){
+            success
+            msg
+        }
+    }
+`
+
+// fetch_admin_account_create_requests
+export const FETCH_ADMIN_ACCOUNT_CREATE_REQUESTS = gql`
+    query{
+        fetch_admin_account_create_requests{
+            success
+            msg
+            requests {
+                id
+                username
+                request_time
+            }
+        }
+    }
+`
+
+
+// approve_admin_account_request
+export const APPROVE_ADMIN_ACCOUNT_REQUEST = gql`
+    mutation($id: Int!){
+        approve_admin_account_request(id:$id){
+            success
+            msg
+        }
+    }
+`
+
+//check_token_is_core_admin
+
+export const CHECK_TOKEN_IS_CORE_ADMIN = gql`
+    query($token:String!){
+        check_token_is_core_admin(token:$token){
+            success
+            msg
+            is_core
+        }
+    }
+`
+
+
+//fetch_admin_accounts
+export const FETCH_ADMIN_ACCOUNTS = gql`
+    query{
+        fetch_admin_accounts{
+            success
+            msg 
+            accounts {
+                id
+                username
+                created
+                is_core_admin
+            }
+        }
+    }
+`
+
+
+//change_admin_account_password
+export const CHANGE_ADMIN_ACCOUNT_PASSWORD = gql`
+    mutation($id:Int!, $password: String!){
+        change_admin_account_password(id:$id, password: $password){
+            success
+            msg
+        }
+    }
+`
+
+// delete_admin_account
+export const DELETE_ADMIN_ACCOUNT = gql`
+    mutation($id: Int!){
+        delete_admin_account(id:$id){
+            success
+            msg
+        }
+    }
+`
+
+// update_core_status_of_admin_account
+export const UPDATE_CORE_STATUS_OF_ADMIN_ACCOUNT = gql`
+    mutation($id: Int!, $status: Boolean!){
+        update_core_status_of_admin_account(id:$id, status:$status){
+            success
+            msg
+        }
+    }
+`
+
+//fetch_admin_account_profile
+export const FETCH_ADMIN_ACCOUNT_PROFILE = gql`
+    query{
+        fetch_admin_account_profile{
+            success
+            msg
+            profile{
+                id
+                username
+                created
+                contact
+            }
+        }
+    }
+`
+//change_my_admin_account_password
+export const CHANGE_MY_ADMIN_ACCOUNT_PASSWORD = gql`
+    mutation($existpassword:String!, $newpassword:String!){
+        change_my_admin_account_password(existpassword:$existpassword, newpassword:$newpassword){
+            success
+            msg
+        }
+    }
+`
+
+//decline_admin_account_request
+export const DECLINE_ADMIN_ACCOUNT_REQUEST = gql`
+    mutation($id:Int!){
+        decline_admin_account_request(id:$id){
+            success
+            msg
+        }
+    }
+`
+
+
+// fetch_checkin_configs
+export const FETCH_CHECKIN_CONFIGS = gql`
+    query{
+        fetch_checkin_configs{
+            success
+            msg
+            config {
+                scan_prev_hours
+                scan_next_hours
+                password
+            }
+        }
+    }
+`
+
+
+// update_checkin_configs
+export const UPDATE_CHECKIN_CONFIGS = gql`
+    mutation($newconfig:String!){
+        update_checkin_configs(newconfig:$newconfig){
+            success
+            msg
+        }
+    }
+`
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,

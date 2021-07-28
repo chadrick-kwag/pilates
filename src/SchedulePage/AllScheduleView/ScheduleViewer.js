@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button } from 'react-bootstrap'
+import { Button } from '@material-ui/core'
 
 
 
@@ -252,9 +252,6 @@ class ScheduleViewer extends React.Component {
 
                     console.log(d)
 
-                    // const bgcolor = 'yellow'
-                    // const fontcolor = 'black'
-
                     let split_range_arr = split_time_range_by_day(starttime, endtime)
 
                     console.log('split_range_arr')
@@ -404,7 +401,7 @@ class ScheduleViewer extends React.Component {
 
                     </div>
                     <div className="row-gravity-center">
-                        <Button onClick={e => {
+                        <Button variant='outlined' onClick={e => {
                             this.calendar.calendarInst.prev()
                             // update current view date
                             let new_date = new Date(this.state.view_date)
@@ -416,7 +413,7 @@ class ScheduleViewer extends React.Component {
                                 this.fetchdata()
                             })
 
-                        }}>prev week</Button>
+                        }}>이전 주</Button>
 
                         <DatePicker
                             style={{
@@ -439,7 +436,7 @@ class ScheduleViewer extends React.Component {
                             }}
 
                         />
-                        <Button onClick={e => {
+                        <Button variant='outlined' onClick={e => {
                             this.calendar.calendarInst.next()
                             // update current view date
                             let new_date = new Date(this.state.view_date)
@@ -450,7 +447,7 @@ class ScheduleViewer extends React.Component {
                             }, () => {
                                 this.fetchdata()
                             })
-                        }}>next week</Button>
+                        }}>다음 주</Button>
                     </div>
 
                     <div>

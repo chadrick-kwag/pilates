@@ -10,6 +10,7 @@ import numeral from 'numeral'
 import { DateTime } from 'luxon'
 
 import ApprenticeInstructorSearchComponent from '../../components/ApprenticeInstructorSearchComponent'
+import CoreAdminUserCheck from '../../components/CoreAdminUserCheck'
 
 
 
@@ -62,7 +63,9 @@ export default function ListPlanComponent(props) {
 
             <Grid container>
                 <Grid item xs style={{ display: 'flex', justifyContent: 'start' }}>
-                    <Button variant='contained' color='primary' onClick={e => props.onCreate()}>플랜생성</Button>
+                    <CoreAdminUserCheck>
+                        <Button variant='contained' color='primary' onClick={e => props.onCreate()}>플랜생성</Button>
+                    </CoreAdminUserCheck>
                 </Grid>
                 <Grid item xs style={{ display: 'flex', justifyContent: 'center' }}>
                     <h2>견습강사플랜</h2>
@@ -113,7 +116,7 @@ export default function ListPlanComponent(props) {
                     }
                 }
             })()}
-    
+
         </div>
 
     )
