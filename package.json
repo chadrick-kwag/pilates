@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "admin-devserver": "webpack serve --mode=development",
-    "deploy": "node server/mainserver.js",
-    "checkin-devserver": "webpack serve --node-env WEBPACK_DEV_SERVER --mode=development -c webpack.checkinapp.config.js ",
-    "run-test-backend": "nodemon --watch server -e js,gql,ts,json server/test.js",
-    "build-main": "webpack -c webpack.config.js --mode=production",
-    "build-checkin": "webpack -c webpack.checkinapp.config.js --mode=production"
+    "dev-admin-app": "webpack serve --mode=development",
+    "deploy": "node server/deployserver.js",
+    "dev-checkin-app": "webpack serve --node-env WEBPACK_DEV_SERVER --mode=development -c webpack.checkinapp.config.js ",
+    "dev-backend-server": "nodemon --watch server -e js,gql,ts,json server/testserver.js",
+    "build-admin-app": "webpack -c webpack.config.js --mode=production",
+    "build-checkin-app": "webpack -c webpack.checkinapp.config.js --mode=production"
   },
   "keywords": [],
   "author": "",

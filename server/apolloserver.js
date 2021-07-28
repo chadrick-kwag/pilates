@@ -1,4 +1,4 @@
-const { ApolloServer, gql } = require('apollo-server');
+const { ApolloServer, gql } = require('apollo-server-express');
 const { typeDefs, resolvers } = require('./merged_gql')
 const { get_account_id_for_token } = require('./tokenCache')
 const { check_token } = require('./checkintokencache')
