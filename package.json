@@ -8,8 +8,9 @@
     "deploy": "node server/deployserver.js",
     "dev-checkin-app": "webpack serve --node-env WEBPACK_DEV_SERVER --mode=development -c webpack.checkinapp.config.js ",
     "dev-backend-server": "nodemon --watch server -e js,gql,ts,json server/testserver.js",
-    "build-admin-app": "webpack -c webpack.config.js --mode=production",
-    "build-checkin-app": "webpack -c webpack.checkinapp.config.js --mode=production"
+    "build-admin-app": "webpack -c webpack.config.js --mode=production --progress",
+    "build-checkin-app": "webpack -c webpack.checkinapp.config.js --mode=production --progress",
+    "clean-dist": "rm -rf dist && rm -rf checkin_app_dist"
   },
   "keywords": [],
   "author": "",
