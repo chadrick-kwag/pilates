@@ -1,0 +1,4 @@
+checkin_options:
+  scan_prev_hours: 1
+  scan_next_hours: 3
+  password: testpw3
