@@ -15,8 +15,6 @@ module.exports = {
         query_lesson_detail_with_lessonid: async (parent, args) => {
             try {
 
-                console.log('query_lesson_detail_with_lessonid')
-                console.log(args)
 
                 await pgclient.query('begin')
 

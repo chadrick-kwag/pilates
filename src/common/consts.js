@@ -22,5 +22,10 @@ export const person_type_to_kor={
 }
 
 
+export const lesson_domain_type_to_kor = {
+    'normal_lesson': '일반 수업',
+    'apprentice_lesson': '견습강사 주도수업'
+}
+
 export const INSTRUCTOR_LEVEL_LIST = ['LV1', 'LV2', 'LV3']
 
