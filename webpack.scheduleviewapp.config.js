@@ -28,7 +28,18 @@ module.exports = {
     plugins: [
         new hwp({
             template: "./scheduleview_src/template.html",
-            favicon: "./src/assets/favicon.ico"
+            favicon: "./src/assets/favicon.ico",
+            publicPath: (() => {
+
+                console.log(process.env.NODE_ENV)
+
+                if (process.env.NODE_ENV === 'WEBPACK_DEV_SERVER') {
+                    return '/'
+                }
+                else {
+                    return "/openschedule"
+                }
+            })()
         })
 
     ],

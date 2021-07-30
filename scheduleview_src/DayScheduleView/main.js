@@ -94,6 +94,8 @@ const get_y_offset = (start_hour, curr_time, per_hour_height) => {
 
 function Container({ onSlotClicked, targetDate }) {
 
+    console.log('scheduler init')
+
     const _var = {
         start_time: DateTime.fromJSDate(targetDate).set({ hour: 0, minute: 0, second: 0, millisecond: 0 }),
         end_time: DateTime.fromJSDate(targetDate).set({ hour: 0, minute: 0, second: 0, millisecond: 0 }).plus({ day: 1 }),
@@ -142,31 +144,21 @@ function Container({ onSlotClicked, targetDate }) {
 
     const [processed_schedules, colsize] = process_schedules(schedules)
 
-    console.log('processed_schedules')
-    console.log(processed_schedules)
-
-
-
     const get_time_grid_lines = () => {
 
         let output = []
 
-        console.log('inside get time grid lines')
-        console.log(parentdiv)
-        
-
         for (let i = start_hour; i <= end_hour; i++) {
             const line = <div style={{
                 width: (() => {
-                    if(parentdiv.current===null){
+                    if (parentdiv.current === null) {
                         return "0px"
                     }
 
                     const parent_width = parentdiv.current.offsetWidth
                     const reduced_width = parent_width - legend_width
-                    console.log(reduced_width)
                     return Math.max(slot_width * colsize, reduced_width) + 'px'
-                    
+
                 })(),
                 height: '2px',
                 backgroundColor: 'gray',
@@ -237,8 +229,24 @@ function Container({ onSlotClicked, targetDate }) {
                         padding: '3px',
                         boxSizing: 'border-box'
                     }}>
-                        <div className='schedule-slot' style={{ flexGrow: 1, borderRadius: '0.5rem' }} onClick={() => onSlotClicked(s.lesson_domain, s.indomain_id)}>
-                            <span>{s.title}</span>
+                        <div className='schedule-slot' style={{ flexGrow: 1, borderRadius: '0.5rem' }} onClick={() => onSlotClicked(s)}>
+                            <span>{(() => {
+                                let outstring = s.instructorname + ' 강사'
+                                let clientstring = ""
+                                let name_arr = s.client_info_arr?.map(a => a.clientname)
+                                console.log(name_arr)
+                                if (name_arr!==undefined) {
+                                    clientstring = name_arr.join(', ')
+                                }
+
+                                if (clientstring === "") {
+                                    return outstring
+                                }
+                                else {
+                                    return outstring + " / " + clientstring
+                                }
+
+                            })()}</span>
                         </div>
 
                     </div>
@@ -255,13 +263,13 @@ function Container({ onSlotClicked, targetDate }) {
 
 
     if (loading) {
-        return <div style={{ width: '100%', heigh: '100%', displya: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        return <div style={{ width: '100%', heigh: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <CircularProgress />
         </div>
     }
     else {
         if (error) {
-            return <div style={{ width: '100%', heigh: '100%', displya: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            return <div style={{ width: '100%', heigh: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <span>error</span>
             </div>
         }

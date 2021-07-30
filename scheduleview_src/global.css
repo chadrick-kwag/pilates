@@ -30,3 +30,19 @@ body {
     padding: 3px;
     box-shadow: 5px 5px 5px gray;
 }
+
+.arrow-box{
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 0.7rem;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+
+.table-keycell{
+    word-break: keep-all;
+}

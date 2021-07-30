@@ -8,6 +8,7 @@ type Query{
 
     query_lesson_data_of_instructorid(instructorid: Int!, search_starttime:String!, search_endtime: String!): query_stat_lesson_return
     query_lesson_detail_with_lessonid(lessonid:Int!): query_lesson_detail_return
+    
 }
 
 
