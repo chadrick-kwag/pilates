@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev-admin-app": "webpack serve --mode=development ",
-    "dev-scheduleview-app": "webpack serve --node-env WEBPACK_DEV_SERVER --mode=development -c webpack.scheduleviewapp.config.js",
+    "dev-scheduleview-app": "webpack serve --mode=development -c webpack.scheduleviewapp.config.js",
     "deploy": "node server/deployserver.js",
-    "dev-checkin-app": "webpack serve --node-env WEBPACK_DEV_SERVER --mode=development -c webpack.checkinapp.config.js ",
+    "dev-checkin-app": "webpack serve --mode=development -c webpack.checkinapp.config.js ",
     "dev-backend-server": "nodemon --watch server -e js,gql,ts,json server/testserver.js",
     "build-admin-app": "webpack -c webpack.config.js --mode=production --progress",
     "build-checkin-app": "webpack -c webpack.checkinapp.config.js --mode=production --progress",
