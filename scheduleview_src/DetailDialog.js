@@ -15,7 +15,7 @@ function DetailDialog({ onClose, schedule_info }) {
                 </TableRow>
                 <TableRow>
                     <TableCell className='table-keycell'>강사</TableCell>
-                    <TableCell>{schedule_info.instructorname}({schedule_info.instructorphonenumber})</TableCell>
+                    <TableCell>{schedule_info.instructorname} 강사</TableCell>
                 </TableRow>
                 {schedule_info.client_info_arr ? <TableRow>
                     <TableCell className='table-keycell'>회원</TableCell>

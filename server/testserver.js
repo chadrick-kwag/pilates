@@ -7,15 +7,16 @@ const app = express();
 pgclient.connect(err => {
     if (err) {
         console.log(err)
-        console.log("pgclient connect err")
+        console.log("!!! pgclient connect err")
     }
 
     else {
-        console.log("pgclient connect success")
+        console.log(">> pgclient connect success")
     }
 })
 
-graphql_server.applyMiddleware({app, path: GRAPHQL_SUBPATH})
-app.listen(GRAPHQL_PORT_INTERNAL, function () {
+graphql_server.applyMiddleware({ app, path: GRAPHQL_SUBPATH })
+app.listen(GRAPHQL_PORT_INTERNAL, () => {
     console.log('### Test backend server listening on port: ' + GRAPHQL_PORT_INTERNAL);
 });
+ 

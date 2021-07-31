@@ -4,7 +4,7 @@ import { useQuery } from '@apollo/client'
 import client from '../apolloclient'
 import { CircularProgress } from '@material-ui/core'
 
-import { QUERY_LESSON_WITH_DATERANGE_GQL } from '../common/gql'
+import { QUERY_LESSONS_WITH_DATERANGE_SENSITIVE_INFO_REMOVED } from '../common/gql'
 
 
 const get_sequence_schedules = (schedules) => {
@@ -94,8 +94,6 @@ const get_y_offset = (start_hour, curr_time, per_hour_height) => {
 
 function Container({ onSlotClicked, targetDate }) {
 
-    console.log('scheduler init')
-
     const _var = {
         start_time: DateTime.fromJSDate(targetDate).set({ hour: 0, minute: 0, second: 0, millisecond: 0 }),
         end_time: DateTime.fromJSDate(targetDate).set({ hour: 0, minute: 0, second: 0, millisecond: 0 }).plus({ day: 1 }),
@@ -106,15 +104,15 @@ function Container({ onSlotClicked, targetDate }) {
     const [schedules, setSchedules] = useState(null)
     const parentdiv = useRef(null)
 
-    const { loading, error, data } = useQuery(QUERY_LESSON_WITH_DATERANGE_GQL, {
+    const { loading, error, data } = useQuery(QUERY_LESSONS_WITH_DATERANGE_SENSITIVE_INFO_REMOVED, {
         client: client,
         fetchPolicy: 'no-cache',
         variables: _var,
         onCompleted: d => {
             console.log(d)
-            if (d.query_lessons_with_daterange.success) {
+            if (d.query_lessons_with_daterange_sensitive_info_removed.success) {
 
-                let pd = d.query_lessons_with_daterange.lessons.map(a => {
+                let pd = d.query_lessons_with_daterange_sensitive_info_removed.lessons.map(a => {
                     a.start = DateTime.fromMillis(parseInt(a.starttime)).setZone('utc+9')
                     a.end = DateTime.fromMillis(parseInt(a.endtime)).setZone('utc+9')
 
