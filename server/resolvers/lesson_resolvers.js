@@ -1,9 +1,7 @@
-const { duration } = require('@material-ui/core');
-const moment = require('moment-timezone');
 const pgclient = require('../pgclient')
 const {
     parse_incoming_date_utc_string,
-    parse_incoming_gender_str,
+    
     incoming_time_string_to_postgres_epoch_time
 } = require('./common')
 
@@ -257,18 +255,7 @@ module.exports = {
                 }
             }
         },
-        query_all_lessons: async (parent, args) => {
-
-            let results = await pgclient.query("select  lesson.id, lesson.clientid, lesson.instructorid, lesson.starttime, lesson.endtime, client.name as clientname, instructor.name as instructorname from pilates.lesson left join pilates.client on lesson.clientid=client.id left join pilates.instructor on instructor.id=lesson.instructorid").then(res => {
-                return res.rows
-            })
-                .catch(e => [])
-
-            let result = results[0]
-
-
-            return results
-        },
+       
 
         query_lessons_with_daterange: async (parent, args) => {
 
@@ -281,8 +268,9 @@ module.exports = {
                 // gather normal lessons
 
                 // first get basic lesson info
-                let res = await pgclient.query(`select lesson.id as indomain_id, 'normal_lesson' as lesson_domain, lesson.instructorid, instructor.name as instructorname, instructor.phonenumber as instructorphonenumber, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type from lesson
+                let res = await pgclient.query(`select lesson.id as indomain_id, 'normal_lesson' as lesson_domain, lesson.instructorid, person.name as instructorname, person.phonenumber as instructorphonenumber, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type from lesson
                 left join instructor on lesson.instructorid = instructor.id
+                left join person on person.id = instructor.personid
                 where lesson.canceled_time is null
                 and (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1,$2))`, [args.start_time, args.end_time])
 
@@ -293,15 +281,16 @@ module.exports = {
 
                     const lessonid = d.indomain_id
 
-                    let sub_result = await pgclient.query(`WITH A AS (select DISTINCT ON(ticketid) normal_lesson_attendance.checkin_time, client.phonenumber as clientphonenumber, client.name as clientname,
+                    let sub_result = await pgclient.query(`WITH A AS (select DISTINCT ON(ticketid) normal_lesson_attendance.checkin_time, person.phonenumber as clientphonenumber, person.name as clientname,
                     assign_ticket.lessonid, assign_ticket.ticketid, 
                     assign_ticket.created, assign_ticket.canceled_time,
                     plan.clientid from assign_ticket
                     left join ticket on ticket.id = assign_ticket.ticketid
                     left join plan on ticket.creator_plan_id = plan.id
                     left join client on plan.clientid = client.id
-                                left join normal_lesson_attendance on normal_lesson_attendance.lessonid = assign_ticket.lessonid and normal_lesson_attendance.clientid = client.id
-                                where assign_ticket.lessonid = $1
+                    left join person on person.id = client.personid
+                    left join normal_lesson_attendance on normal_lesson_attendance.lessonid = assign_ticket.lessonid and normal_lesson_attendance.clientid = client.id
+                    where assign_ticket.lessonid = $1
                     ORDER BY ticketid, created desc)
                     
                     select  A.clientid, A.clientname, A.clientphonenumber, 
@@ -322,8 +311,8 @@ module.exports = {
 
                 res = await pgclient.query(`select apprentice_lesson.id as indomain_id,
                 apprentice_lesson.apprentice_instructor_id as instructorid,
-                apprentice_instructor.name as instructorname,
-                apprentice_instructor.phonenumber as instructorphonenumber,
+                person.name as instructorname,
+                person.phonenumber as instructorphonenumber,
                 apprentice_lesson.starttime,
                 apprentice_lesson.endtime,
                 apprentice_lesson.created,
@@ -337,18 +326,14 @@ module.exports = {
                 left join (select distinct on(apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc)
                 as A on A.apprentice_lesson_id = apprentice_lesson.id
                 left join apprentice_instructor on apprentice_instructor.id  = apprentice_lesson.apprentice_instructor_id
+                left join person on person.id = apprentice_instructor.personid
                 where apprentice_lesson.canceled_time is null
                 AND (tstzrange(apprentice_lesson.starttime, apprentice_lesson.endtime) && tstzrange($1, $2) )
-                
-                
-                group by apprentice_lesson.id, apprentice_instructor.id`, [args.start_time, args.end_time])
+                group by apprentice_lesson.id, apprentice_instructor.id, person.name, person.phonenumber`, [args.start_time, args.end_time])
 
-                console.log(res.rows)
 
                 const apprentice_lessons = res.rows.filter(d => d.assigned_ticket_count > 0)
 
-                console.log(`apprentice_lessons: ${apprentice_lessons}`)
-                console.log(apprentice_lessons)
 
                 // assign domain type 
 
@@ -357,14 +342,11 @@ module.exports = {
 
                 })
 
-                console.log(`apprentice_lessons after adding domain info: ${apprentice_lessons}`)
-                console.log(apprentice_lessons)
 
 
                 // fetch special schedules
                 res = await pgclient.query(`select id as indomain_id, starttime, endtime, title, memo from special_schedule where  (tstzrange(starttime, endtime) && tstzrange($1, $2) )`, [args.start_time, args.end_time])
 
-                console.log(res.rows)
                 const special_schedules = res.rows
 
                 special_schedules.forEach((d, i) => {
@@ -379,8 +361,6 @@ module.exports = {
                     d['id'] = i
                 })
 
-                console.log(`all_lessons: ${all_lessons}`)
-                console.log(all_lessons)
 
                 return {
                     success: true,
@@ -388,7 +368,8 @@ module.exports = {
 
                 }
             } catch (e) {
-                console.log(e)
+                // throw e
+                console.error(e)
                 try {
                     await pgclient.query('ROLLBACK')
                     return {
@@ -397,6 +378,7 @@ module.exports = {
                     }
                 }
                 catch (err) {
+                    console.error(err)
                     return {
                         success: false,
                         msg: err.detail

@@ -1,8 +1,6 @@
 const pgclient = require('../pgclient')
 
 const {
-    parse_incoming_date_utc_string,
-    parse_incoming_gender_str,
     incoming_time_string_to_postgres_epoch_time
 } = require('./common')
 
@@ -31,7 +29,9 @@ module.exports = {
         },
 
         fetch_clients: async (parent, args) => {
-            let results = await pgclient.query("select id, name, phonenumber, created, job, email, birthdate, address, gender, memo, disabled from client").then(res => {
+            let results = await pgclient.query(`select client.id as id, person.name as name, person.phonenumber, person.created, job, email, birthdate, address, person.gender, memo, disabled from client
+            left join person on person.id = client.personid
+            `).then(res => {
 
                 return {
                     success: true,
@@ -47,76 +47,101 @@ module.exports = {
             return results
         },
         search_client_with_name: async (parent, args, context, info) => {
-            console.log(args)
+
+            if (args.name.trim() === "") {
+                return []
+            }
 
             let pattern = '%' + args.name + '%'
-            console.log(pattern)
-            let results = await pgclient.query("select * from client where name like $1", [pattern]).then(res => {
 
-                return res.rows
+            try {
+                let results = await pgclient.query("select * from client left join person on person.id = client.personid where name like $1", [pattern])
 
-
-            }).catch(e => {
+                return results
+            }
+            catch (e) {
                 console.log(e)
                 return []
-            })
+            }
 
-
-            return results
         },
         query_clients_by_name: async (parent, args) => {
-            let results = await pgclient.query("select * from client where name=$1", [args.name]).then(res => {
+
+            try {
+                let result = await pgclient.query(`select client.id,
+                person.name,
+                person.phonenumber,
+                person.created,
+                client.job,
+                person.email,
+                client.memo,
+                client.address,
+                person.gender,
+                client.birthdate,
+                client.disabled
+                from client 
+                left join person on person.id = client.personid
+                where person.name=$1`, [args.name])
 
                 return {
                     success: true,
-                    clients: res.rows
+                    clients: result.rows
                 }
-
-
-            }).catch(e => {
+            }
+            catch (e) {
                 console.log(e)
+
                 return {
-                    success: false
+                    success: false,
+                    msg: e.detail
                 }
-            })
+            }
 
 
-            return results
         },
         query_clientinfo_by_clientid: async (parent, args) => {
-            let result = await pgclient.query("select * from client where id=$1", [args.clientid]).then(res => {
 
-                if (res.rowCount == 1) {
-                    return {
-                        success: true,
-                        client: res.rows[0]
+
+            try {
+                let result = await pgclient.query(`select client.id,
+                person.name,
+                person.phonenumber,
+                person.created,
+                client.job,
+                person.email,
+                client.memo,
+                client.address,
+                person.gender,
+                client.birthdate,
+                client.disabled
+                from client 
+                left join person on person.id = client.personid
+                where client.id=$1`, [args.clientid])
+
+                if (result.rowCount !== 1) {
+                    throw {
+                        detail: 'not one client found'
                     }
                 }
-                else {
-                    return {
-                        success: false,
-                        msg: "row count not 1"
-                    }
+
+                return {
+                    success: true,
+                    client: result.rows[0]
                 }
-
-
-
-            }).catch(e => {
+            } catch (e) {
                 console.log(e)
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: e.detail
                 }
-            })
+            }
 
-
-            return result
         }
     },
     Mutation: {
 
         createclient: async (parent, args) => {
-            console.log(args)
+
 
             let gender = null
             if (args.gender !== null) {
@@ -128,90 +153,142 @@ module.exports = {
                 }
             }
 
-            let birthdate = -1
-            if (args.birthdate) {
-                birthdate = incoming_time_string_to_postgres_epoch_time(args.birthdate)
-            }
+            try {
+                // check if person with name, phonenumber exists. this can be done by insert into person, thanks to unique constraint
+                await pgclient.query('begin')
 
-            let pre_args = [args.name, args.phonenumber, gender, args.job, args.address, args.memo, args.email, birthdate]
+                let result = await pgclient.query(`select id from person where name=$1 and phonenumber=$2`, [args.name, args.phonenumber])
 
-            let ret = await pgclient.query("insert into client (name, phonenumber, gender, job, address, memo, email, birthdate) values ($1, $2, $3, $4, $5, $6, $7, CASE WHEN $8 = -1 THEN NULL ELSE to_timestamp($8) END ) ON CONFLICT (name, phonenumber) DO NOTHING", pre_args).then(res => {
-                console.log(res)
+                let personid
+                if (result.rowCount === 0) {
+                    let result = await pgclient.query(`insert into person(name, phonenumber, gender) ($1, $2, $3) returning id`, [args.name, args.phonenumber, gender])
 
-                if (res.rowCount > 0) {
-                    return {
-                        success: true
+                    personid = result.rows[0].id
+                }
+                else {
+                    personid = result.rows[0].id
+                }
+
+
+                // create new client with personid
+                result = await pgclient.query(`insert into client (job, birthdate, address, memo, personid) ($1, $2, $3, $4, $5) `, [args.job, args.birthdate, args.address, args.memo, personid])
+
+                if (result.rowCount !== 1) {
+                    throw {
+                        detail: 'insert error'
                     }
                 }
 
-                return {
-                    success: false,
-                    msg: 'failed to insert'
-                }
-            }).catch(err => {
-                console.log(err)
-                return {
-                    success: false,
-                    msg: 'error inserting query'
-                }
-            })
+                await pgclient.query('commit')
 
-            return ret
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+            }
 
         },
 
         disable_client_by_clientid: async (parent, args) => {
-            let ret = await pgclient.query('update client set disabled=true where id=$1', [args.clientid]).then(res => {
-                console.log(res)
-                if (res.rowCount == 1) {
-                    return {
-                        success: true
+
+            try {
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`update client set disabled=true where id=$1`, [args.clientid])
+
+                if (result.rowCount !== 1) {
+                    throw {
+                        detail: 'not one client affected'
                     }
                 }
-                else {
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+
                     return {
                         success: false,
-                        msg: 'rowcount not 1'
+                        msg: e.detail
                     }
                 }
-            }).catch(e => {
-                console.log(e)
-                return {
-                    success: false,
-                    msg: "query error"
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
                 }
-            })
+            }
 
-            return ret
         },
 
         able_client_by_clientid: async (parent, args) => {
-            let ret = await pgclient.query('update client set disabled=false where id=$1', [args.clientid]).then(res => {
-                console.log(res)
-                if (res.rowCount == 1) {
-                    return {
-                        success: true
+
+            try {
+
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`update client set disabled=false where id=$1`, [args.clientid])
+
+                if (result.rowCount !== 1) {
+                    throw {
+                        detail: 'not one client affected'
                     }
                 }
-                else {
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            }
+            catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+
                     return {
                         success: false,
-                        msg: 'rowcount not 1'
+                        msg: e.detail
                     }
                 }
-            }).catch(e => {
-                console.log(e)
-                return {
-                    success: false,
-                    msg: "query error"
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
                 }
-            })
-
-            return ret
+            }
         },
 
         deleteclient: async (parent, args) => {
-            console.log('delete client inside')
+
 
             try {
                 await pgclient.query('begin')
@@ -223,8 +300,6 @@ module.exports = {
                         detail: 'no client with that id exist'
                     }
                 }
-
-
 
                 await pgclient.query('commit')
 
@@ -254,8 +329,6 @@ module.exports = {
 
         update_client: async (parent, args) => {
 
-            console.log(args)
-
             let gender = null
             if (args.gender != null) {
                 if (args.gender.toLowerCase() == 'male') {
@@ -266,46 +339,54 @@ module.exports = {
                 }
             }
 
+            try {
+                await pgclient.query('begin')
 
-            let birthdate = null
+                // update client info
 
-            if (args.birthdate) {
-                birthdate = incoming_time_string_to_postgres_epoch_time(args.birthdate)
+                let result = await pgclient.query(`update client set job=$1, birthdate=$2, address=$3, memo=$4 where id=$5 returning personid`, [args.job, args.birthdate, args.address, args.memo, args.id])
+
+
+                if (result.rowCount !== 1) {
+                    throw {
+                        detail: 'not one client update'
+                    }
+                }
+
+                const personid = result.rows[0].personid
+
+                result = await pgclient.query(`update person set name=$1, phonenumber=$2, gender=$3 where id=$4`, [args.name, args.phonenumber, gender, personid])
+
+                if (result.rowCount !== 1) {
+                    throw {
+                        detail: 'not one person update'
+                    }
+                }
+                await pgclient.query('commit')
+
+
+                return {
+                    success: true
+                }
             }
+            catch (e) {
+                try {
+                    await pgclient.query('rollback')
 
-            let prep_args = [
-                args.name,
-                args.phonenumber,
-                args.email,
-                args.memo,
-                args.address,
-                gender,
-                args.job,
-                birthdate,
-                args.id
-            ]
-
-            let ret = await pgclient.query('update client set name=$1, phonenumber=$2, email=$3, memo=$4, address=$5, gender=$6, job=$7, birthdate=to_timestamp($8) where id=$9', prep_args).then(res => {
-                console.log(res)
-                if (res.rowCount > 0) {
+                }
+                catch (e2) {
                     return {
-                        success: true
+                        success: false,
+                        msg: e2.detail
                     }
                 }
 
                 return {
                     success: false,
-                    msg: 'update did not happen'
+                    msg: e.detail
                 }
-            }).catch(e => {
-                console.log(e)
-                return {
-                    success: false,
-                    msg: 'error updating'
-                }
-            })
+            }
 
-            return ret
         },
     }
 
