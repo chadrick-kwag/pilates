@@ -57,7 +57,7 @@ module.exports = {
             try {
                 let results = await pgclient.query("select * from client left join person on person.id = client.personid where name like $1", [pattern])
 
-                return results
+                return results.rows
             }
             catch (e) {
                 console.log(e)

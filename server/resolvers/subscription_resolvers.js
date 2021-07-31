@@ -45,12 +45,13 @@ module.exports = {
 
                 // gather plan info
 
-                result = await pgclient.query(`select plan.id, client.id as clientid, client.name as clientname, client.phonenumber as clientphonenumber,
+                result = await pgclient.query(`select plan.id, client.id as clientid, person.name as clientname, person.phonenumber as clientphonenumber,
                 A.types, plan.created
                 from plan
                 left join (select planid, array_agg(json_build_object('activity_type', activity_type, 'grouping_type', grouping_type)) as types from plan_type group by planid)
                 as A on A.planid = plan.id
                 left join client on plan.clientid = client.id
+                left join person on person.id = client.personid
                 where plan.id = $1`, [planid])
 
                 const plan_info = result.rows[0]
@@ -177,7 +178,7 @@ module.exports = {
                     left join lesson on lesson.id = A.lessonid
                     where plan.id = $1 AND ticket.id is not null)
                     
-                    select plan.id, plan.clientid, (array_agg(client.name))[1] as clientname, rounds, totalcost, plan.created, 
+                    select plan.id, plan.clientid, (array_agg(person.name))[1] as clientname, rounds, totalcost, plan.created, 
                     plan.activity_type, plan.grouping_type, plan.coupon_backed ,
                     json_agg(json_build_object('id',A.id,
                                     'created_date', A.created_date,
@@ -188,6 +189,7 @@ module.exports = {
                     from plan
                     left join client on plan.clientid=client.id 
                     left join A on A.planid = plan.id
+                    left join person on person.id = client.personid
                     where plan.id = $1
                     group by plan.id`, [args.id]).then(res => {
                 if (res.rowCount === 1) {
@@ -352,8 +354,9 @@ module.exports = {
 
             try {
 
-                let result = await pgclient.query(`select plan.id, plan.created, client.id as clientid, client.name as clientname, client.phonenumber as clientphonenumber, A.types, B.rounds, B.totalcost, plan.coupon_backed from plan
+                let result = await pgclient.query(`select plan.id, plan.created, client.id as clientid, person.name as clientname, person.phonenumber as clientphonenumber, A.types, B.rounds, B.totalcost, plan.coupon_backed from plan
                 left join client on client.id = plan.clientid
+                left join person on person.id = client.personid
                 left join (select array_agg(json_build_object('activity_type',activity_type, 'grouping_type',grouping_type)) as types , planid from plan_type group by planid) as A on A.planid = plan.id
                 left join (select count(1) as rounds, sum(cost) as totalcost, creator_plan_id from ticket group by creator_plan_id) as B on B.creator_plan_id = plan.id
                 where client.id = $1
@@ -387,7 +390,10 @@ module.exports = {
             }
 
 
-            let subscriptions = await pgclient.query('select plan.id, plan.clientid, client.name as clientname, rounds, totalcost, plan.created, plan.activity_type, plan.grouping_type, plan.coupon_backed from plan left join client on plan.clientid=client.id where client.name=$1', [args.clientname])
+            let subscriptions = await pgclient.query(`select plan.id, plan.clientid, person.name as clientname, rounds, totalcost, plan.created, plan.activity_type, plan.grouping_type, plan.coupon_backed from plan 
+            left join client on plan.clientid=client.id 
+            left join person on person.id = client.personid
+            where client.name=$1`, [args.clientname])
                 .then(res => {
                     console.log(res.rows)
                     return res.rows
@@ -425,7 +431,10 @@ module.exports = {
                 }
             }
 
-            let subscriptions = await pgclient.query("select subscription.id, subscription.clientid, client.name as clientname, rounds, totalcost, subscription.created, subscription.activity_type, subscription.grouping_type, subscription.coupon_backed from pilates.subscription left join pilates.client on subscription.clientid=client.id").then(res => {
+            let subscriptions = await pgclient.query(`select subscription.id, subscription.clientid, person.name as clientname, rounds, totalcost, subscription.created, subscription.activity_type, subscription.grouping_type, subscription.coupon_backed from pilates.subscription 
+            left join pilates.client on subscription.clientid=client.id
+            left join person on person.id = client.personid
+            `).then(res => {
                 return res.rows
             }).catch(e => {
                 console.log(e)
@@ -459,19 +468,20 @@ module.exports = {
             }
 
             let result = await pgclient.query(`WITH B AS (select plan.id as planid,
-                plan.clientid, client.name as clientname, 
-                client.phonenumber as clientphonenumber, 
+                plan.clientid, person.name as clientname, 
+                person.phonenumber as clientphonenumber, 
                 count(1)::int as total_ticket_count,  
                 count(1) filter(where  ticket.expire_time > now() AND  ( (A.canceled_time is not NULL AND A.id is not NULL) OR A.id is null) AND ticket.destroyer_plan_id is null)  as avail_ticket_count, 
                 array_agg(ticket.id) filter (where  ticket.expire_time > now() AND  ( (A.canceled_time is not NULL AND A.id is not NULL) OR A.id is null) AND ticket.destroyer_plan_id is null) as avail_ticket_id_list 
                              from plan  
                             left join client on plan.clientid = client.id  
+                            left join person on person.id = client.personid
                             left join ticket on plan.id = ticket.creator_plan_id 
                             left join (select distinct on(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) AS A on A.ticketid = ticket.id 
                             where clientid = $1 
                             and activity_type = $2 
                             and grouping_type = $3 
-                            group by plan.id, plan.clientid, client.name, client.phonenumber 
+                            group by plan.id, plan.clientid, person.name, person.phonenumber 
                 ) 
                 select * from B where avail_ticket_count >0`, [args.clientid, args.activity_type, args.grouping_type]).then(res => {
 
