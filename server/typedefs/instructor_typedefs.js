@@ -44,7 +44,7 @@ type SuccessResultWithId{
 
 type Mutation {
     
-    create_instructor(name: String!, phonenumber: String!, email: String, job: String, validation_date: String, memo: String, address: String, birthdate: String, is_apprentice: Boolean, level: String, gender: String): SuccessResult
+    create_instructor(name: String!, phonenumber: String!, email: String, job: String, validation_date: String, memo: String, address: String, birthdate: String, is_apprentice: Boolean, level: Int, gender: String): SuccessResult
       
     deleteinstructor(id: Int!): SuccessResult
     
