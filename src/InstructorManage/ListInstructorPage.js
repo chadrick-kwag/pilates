@@ -79,7 +79,7 @@ class ListInstructorPage extends React.Component {
     }
 
     fetchdata() {
-        console.log('inside fetchdata')
+        
         this.props.apolloclient.query({
             query: LIST_INSTRUCTOR_GQL,
             fetchPolicy: "no-cache"

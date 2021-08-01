@@ -15,7 +15,8 @@ import SchedulePage from './SchedulePage/SchedulePage'
 
 import ClientManagePage from './ClientManage/ClientManagePage'
 
-import InstructorManagePage from './InstructorManage/InstructorManagePage'
+// import InstructorManagePage from './InstructorManage/InstructorManagePage'
+import InstructorManagePage from './InstructorManage/main'
 import SubscriptionManagePage from './SubscriptionManage/SubscriptionManagePage'
 
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
@@ -46,6 +47,7 @@ import AdminAccountRequestPage from './AdminAccountManage/AdminAccountRequsetPag
 import AdminAccountControlPage from './AdminAccountManage/AdminAccountControlPage'
 import ProfilePage from './profilePage/main'
 import PersonIcon from '@material-ui/icons/Person';
+import './common/subscription.css'
 
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
@@ -137,7 +139,7 @@ class App extends React.Component {
                     </Grid>
                 </div>
 
-                <div style={{ flex: '1' }}>
+                <div style={{ flex: '1 0 auto'}}>
                     <Switch>
                         <Route path='/dashboard'>
                             <DashBoardContainer />
