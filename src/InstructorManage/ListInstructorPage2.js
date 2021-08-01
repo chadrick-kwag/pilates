@@ -11,6 +11,7 @@ import { useLazyQuery, useMutation } from '@apollo/client'
 import { DateTime } from 'luxon'
 import { withRouter } from 'react-router-dom'
 
+import './local.css'
 
 
 const filter_data_by_searchname = (data, searchname) => {
@@ -165,8 +166,8 @@ function ListInstructorPage({ history }) {
                                 </TableRow>
                             </TableHead>
 
-                            {filter_data_by_searchname(data, searchName).map(a => <TableRow onClick={() => {
-                                
+                            {filter_data_by_searchname(data, searchName).map(a => <TableRow className="table-row" onClick={() => {
+
                                 history.push(`/instructormanage/info/${a.id}`)
                             }}>
                                 <TableCell>
@@ -179,15 +180,16 @@ function ListInstructorPage({ history }) {
                                     {DateTime.fromMillis(parseInt(a.created)).setZone('utc+9').toFormat('y-LL-dd HH:mm')}
                                 </TableCell>
                                 <TableCell>
-                                    {a.disabled ? <Button variant='outlined' onClick={() => {
-
+                                    {a.disabled ? <Button variant='outlined' onClick={(e) => {
+                                        e.stopPropagation()
                                         enableInstructor({
                                             variables: {
                                                 id: a.id
                                             }
                                         })
 
-                                    }}>활성화</Button> : <Button variant='outlined' onClick={() => {
+                                    }}>활성화</Button> : <Button variant='outlined' onClick={(e) => {
+                                        e.stopPropagation()
                                         disableInstructor({
                                             variables: {
                                                 id: a.id
