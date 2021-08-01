@@ -18,24 +18,25 @@ module.exports = {
             }
 
             try {
-                let res = await pgclient.query(`select array_agg(json_build_object(
-                    'id', apprentice_instructor_plan.id,
-                    'apprentice_instructor_name', apprentice_instructor.name,
-                    'apprentice_instructor_id', apprentice_instructor.id,
-                    'activity_type', activity_type,
-                    'grouping_type', grouping_type,
-                    'created', apprentice_instructor_plan.created,
-                    'totalcost', apprentice_instructor_plan.totalcost,
-                    'rounds', apprentice_instructor_plan.rounds,
-                    'apprentice_instructor_phonenumber',apprentice_instructor.phonenumber
-                    
-                )) as data from apprentice_instructor_plan
-                left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id`)
+
+                let res = await pgclient.query(`select apprentice_instructor_plan.id, person.name as apprentice_instructor_name, 
+                apprentice_instructor.id as apprentice_instructor_id,
+                activity_type,
+                grouping_type,
+                apprentice_instructor_plan.created,
+                totalcost,
+                rounds,
+                person.phonenumber as apprentice_instructor_phonenumber
+                from apprentice_instructor_plan
+                left join apprentice_instructor on apprentice_instructor_plan.apprentice_instructor_id = apprentice_instructor.id
+                left join person on person.id = apprentice_instructor.personid
+                `)
 
                 return {
                     success: true,
-                    plans: res.rows[0].data
+                    plans: res.rows
                 }
+
             }
             catch (e) {
                 return {
@@ -61,27 +62,27 @@ module.exports = {
 
             try {
 
+                let res = await pgclient.query(`select apprentice_instructor_plan.id as id, person.name as apprentice_instructor_name, person.phonenumber as apprentice_instructor_phonenumber,
+                apprentice_instructor.id as apprentice_instructor_id,
+                activity_type,
+                grouping_type,
+                apprentice_instructor_plan.created,
+                totalcost,
+                rounds
+                from apprentice_instructor_plan
+                left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id
+                left join person on person.id = apprentice_instructor.personid
+                where apprentice_instructor_plan.id=$1
+                `, [args.id])
 
 
-                let res = await pgclient.query(`select array_agg(json_build_object(
-                    'id', apprentice_instructor_plan.id,
-                    'apprentice_instructor_name', apprentice_instructor.name,
-                    'apprentice_instructor_id', apprentice_instructor.id,
-                    'activity_type', activity_type,
-                    'grouping_type', grouping_type,
-                    'created', apprentice_instructor_plan.created,
-                    'totalcost', apprentice_instructor_plan.totalcost,
-                    'rounds', apprentice_instructor_plan.rounds,
-                    'apprentice_instructor_phonenumber',apprentice_instructor.phonenumber
-                    
-                )) as data from apprentice_instructor_plan
-                left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id where apprentice_instructor_plan.id=$1`, [args.id])
 
                 return {
                     success: true,
-                    plans: res.rows[0].data
+                    plans: res.rows
                 }
             } catch (e) {
+                cosnole.log(e)
 
                 return {
                     success: false,
@@ -152,15 +153,16 @@ module.exports = {
                 let res = await pgclient.query(`BEGIN`)
 
                 res = await pgclient.query(`select apprentice_instructor_plan.id as id, 
-                apprentice_instructor.name as apprentice_instructor_name,
+                person.name as apprentice_instructor_name,
                 apprentice_instructor.id as apprentice_instructor_id,
-                apprentice_instructor.phonenumber as apprentice_instructor_phonenumber,
+                person.phonenumber as apprentice_instructor_phonenumber,
                 apprentice_instructor_plan.activity_type as activity_type,
                 apprentice_instructor_plan.grouping_type as grouping_type,
                 apprentice_instructor_plan.created as created,
                 apprentice_instructor_plan.totalcost as totalcost
                 from apprentice_instructor_plan
                 left join apprentice_instructor on apprentice_instructor_plan.apprentice_instructor_id = apprentice_instructor.id
+                left join person on persn.id = apprentice_instructor.personid
                 where apprentice_instructor_id=$1
                 and activity_type=$2 and grouping_type=$3
                 `, [instid, args.activity_type, args.grouping_type])
@@ -238,15 +240,16 @@ module.exports = {
 
                 // get basic plan info of condition
                 res = await pgclient.query(`select apprentice_instructor_plan.id as id, 
-                apprentice_instructor.name as apprentice_instructor_name,
+                person.name as apprentice_instructor_name,
                 apprentice_instructor.id as apprentice_instructor_id,
-                apprentice_instructor.phonenumber as apprentice_instructor_phonenumber,
+                person.phonenumber as apprentice_instructor_phonenumber,
                 apprentice_instructor_plan.activity_type as activity_type,
                 apprentice_instructor_plan.grouping_type as grouping_type,
                 apprentice_instructor_plan.created as created,
                 apprentice_instructor_plan.totalcost as totalcost
                 from apprentice_instructor_plan
                 left join apprentice_instructor on apprentice_instructor_plan.apprentice_instructor_id = apprentice_instructor.id
+                left join person on person.id  = apprentice_instructor.personid
                 where apprentice_instructor_id=$1
                 
                 `, [args.appinst_id])
@@ -306,6 +309,51 @@ module.exports = {
 
     },
     Mutation: {
+        update_totalcost_of_plan: async (parent, args, context) =>{
+
+            
+            if (!ensure_admin_account_id_in_context(context)) {
+
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+            try{
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`update apprentice_instructor_plan set totalcost=$1 where id=$2`, [args.totalcost, args.id])
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+            }
+            catch(e){
+                console.log(e)
+
+                try{
+                    await pgclient.query('rollback')
+
+
+                }
+                catch(e2){
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
+
+        },
         create_apprentice_plan: async (parent, args, context) => {
 
 
