@@ -447,7 +447,7 @@ const FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query a($clie
 }`
 
 
-const CREATE_INSTRUCTOR_GQL = gql`mutation a($name: String!, $phonenumber: String!, $job: String, $address: String, $birthdate: String, $validation_date: String, $gender: String, $email: String, $memo: String, $level: String, $is_apprentice: Boolean){
+const CREATE_INSTRUCTOR_GQL = gql`mutation a($name: String!, $phonenumber: String!, $job: String, $address: String, $birthdate: String, $validation_date: String, $gender: String, $email: String, $memo: String, $level: Int, $is_apprentice: Boolean){
 
     create_instructor(name: $name, phonenumber: $phonenumber, job: $job, gender: $gender, address: $address, birthdate: $birthdate, validation_date: $validation_date, email: $email, memo: $memo, level: $level, is_apprentice: $is_apprentice){
         success
@@ -1295,6 +1295,18 @@ export const FETCH_CHECKIN_CONFIGS = gql`
 export const UPDATE_CHECKIN_CONFIGS = gql`
     mutation($newconfig:String!){
         update_checkin_configs(newconfig:$newconfig){
+            success
+            msg
+        }
+    }
+`
+
+
+//update_totalcost_of_plan
+
+export const UPDATE_TOTALCOST_OF_PLAN = gql`
+    mutation($id: Int!, $totalcost: Int!){
+        update_totalcost_of_plan(id: $id, totalcost: $totalcost){
             success
             msg
         }
