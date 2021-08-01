@@ -8,22 +8,23 @@ module.exports = {
         fetch_apprentice_courses: async (parent, args) =>{
             console.log('fetch_apprentice_courses')
 
-            let result = pgclient.query(`select id,name from apprentice_course`).then(
-                res=>{
-                    return {
-                        success: true,
-                        courses: res.rows
-                    }
+            try{
+                let result = await pgclient.query(`select id,name from apprentice_course`)
+
+                return {
+                    success: true,
+                    courses: result.rows
                 }
-            ).catch(e=>{
+            }
+            catch(e){
                 console.log(e)
+
                 return {
                     success: false,
                     msg: e.detail
                 }
-            })
+            }
 
-            return result
         }
     },
     Mutation: {
@@ -31,29 +32,36 @@ module.exports = {
             console.log('create_apprentice_course')
             console.log(args)
 
-            let result = pgclient.query(`insert into apprentice_course (name) values ($1)`, [args.name]).then(
-                res=>{
-                    if(res.rowCount===1){
-                        return {
-                            success: true
-                        }
-                    }
-                    else{
-                        return {
-                            success: false,
-                            msg: "rowcount not 1"
-                        }
+            try{
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`insert into apprentice_course (name) values ($1)`, [args.name])
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+            }
+            catch(e){
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e.detail
                     }
                 }
-            ).catch(e=>{
-                console.log(e)
+
                 return {
                     success: false,
                     msg: e.detail
                 }
-            })
+            }
 
-            return result
         }
     }
 
