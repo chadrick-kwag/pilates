@@ -116,21 +116,14 @@ export default function SelectPlanAndTicketDialog(props) {
                     }
                 }
 
-                console.log('filtered tickets')
-                console.log(filtered_tickets)
-
-
 
                 if (filtered_tickets.length > 0) {
-                    const new_plan = _.cloneDeep(p)
+                    const new_plan = {...p}
                     new_plan.tickets = filtered_tickets
                     plan_ticket_info.push(new_plan)
                 }
 
             }
-
-            console.log('new plan_ticket_info')
-            console.log(plan_ticket_info)
 
             setExistingTicketsRemovedAvailableTicketInfo(plan_ticket_info)
             return

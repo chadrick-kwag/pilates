@@ -89,7 +89,7 @@ module.exports = {
                 person.email,
                 person.created
                  from instructor 
-                left join person on person.id = insturctor.personid
+                left join person on person.id = instructor.personid
                 where person.name=$1`, [args.name])
 
                 return results.rows

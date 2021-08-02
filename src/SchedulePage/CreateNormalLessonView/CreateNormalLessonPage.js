@@ -17,7 +17,8 @@ import AddClientDialog from './AddClientDialog'
 import SelectPlanAndTicketDialog from './SelectPlanAndTicketsDialog'
 
 import { CREATE_LESSON_GQL } from '../../common/gql_defs'
-import {withRouter} from 'react-router-dom'
+import { withRouter } from 'react-router-dom'
+import { useLazyQuery, useMutation } from '@apollo/client';
 
 
 const get_init_lesson_start_date = () => {
@@ -31,7 +32,7 @@ const get_init_lesson_start_date = () => {
     return d
 }
 
- 
+
 function CreateNormalLessonPage(props) {
 
 
@@ -52,7 +53,22 @@ function CreateNormalLessonPage(props) {
     const [showSelectPlanAndTicketDialog, setShowSelectPlanAndTicketDialog] = useState(false)
     const [selectPlanAndTicketDialogClientIndex, setSelectPlanAndTicketDialogClientIndex] = useState(null)
 
+    const [requestCreate, { loading, request_create_response, error }] = useMutation(CREATE_LESSON_GQL, {
+        client: client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            if (d.create_lesson.success) {
+                props.history.push('/schedule')
+                return
+            }
 
+            alert('생성 실패')
+        },
+        onError: e => {
+            console.log(e)
+            alert('생성 에러')
+        }
+    })
 
 
     const request_create = () => {
@@ -143,24 +159,28 @@ function CreateNormalLessonPage(props) {
 
         console.log(_var)
 
-        client.mutate({
-            mutation: CREATE_LESSON_GQL,
-            variables: _var,
-            fetchPolicy: 'no-cache'
-        }).then(res => {
-            console.log(res)
-
-            if (res.data.create_lesson.success) {
-                props.onSuccess?.()
-            }
-            else {
-                alert(`create lesson failed. msg: ${res.data.create_lesson.msg}`)
-            }
-        }).catch(e => {
-            console.log(JSON.stringify(e))
-            console.log(e)
-            alert('create lesson error')
+        requestCreate({
+            variables: _var
         })
+
+        // client.mutate({
+        //     mutation: CREATE_LESSON_GQL,
+        //     variables: _var,
+        //     fetchPolicy: 'no-cache'
+        // }).then(res => {
+        //     console.log(res)
+
+        //     if (res.data.create_lesson.success) {
+        //         props.onSuccess?.()
+        //     }
+        //     else {
+        //         alert(`create lesson failed. msg: ${res.data.create_lesson.msg}`)
+        //     }
+        // }).catch(e => {
+        //     console.log(JSON.stringify(e))
+        //     console.log(e)
+        //     alert('create lesson error')
+        // })
     }
 
     return (
@@ -171,7 +191,7 @@ function CreateNormalLessonPage(props) {
                     <TableRow>
                         <TableCell>
                             액티비티
-                </TableCell>
+                        </TableCell>
                         <TableCell>
                             <Select value={activityType} onChange={e => setActivityType(e.target.value)} >
                                 <MenuItem value={'PILATES'}>필라테스</MenuItem>
@@ -185,7 +205,7 @@ function CreateNormalLessonPage(props) {
                     <TableRow>
                         <TableCell>
                             그룹
-                    </TableCell>
+                        </TableCell>
                         <TableCell>
                             <Select value={groupingType} onChange={e => setGroupingType(e.target.value)} >
                                 <MenuItem value={'INDIVIDUAL'}>개별</MenuItem>
@@ -291,7 +311,7 @@ function CreateNormalLessonPage(props) {
 
 
             <div className="row-gravity-center children-padding">
-                <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>이전</Button>
+                <Button variant='outlined' color='secondary' onClick={e => props.history.goBack()}>이전</Button>
                 <Button variant='outlined' onClick={e => request_create()}>생성</Button>
             </div>
 
