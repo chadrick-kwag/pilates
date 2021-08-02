@@ -16,6 +16,8 @@ import CoreAdminUserCheck from '../components/CoreAdminUserCheck'
 import { withRouter, Switch, Route } from 'react-router-dom'
 import client from '../apolloclient'
 
+import CreateOtherSchedule from './CreateSpecialScheduleView/container'
+
 
 function MainPage({ history, match }) {
 
@@ -29,13 +31,13 @@ function MainPage({ history, match }) {
                 <CreateNormalLessonPage />
             </Route>
             <Route path={`${match.url}/create/apprentice-leading-lesson`}>
-                <CreateApprenticeLesson/>
+                <CreateApprenticeLesson />
             </Route>
             <Route path={`${match.url}/create/apprentice-teaching-lesson`}>
                 <div>hello</div>
             </Route>
             <Route path={`${match.url}/create/etc-schedule`}>
-                <div>etc schedule</div>
+                <CreateOtherSchedule />
             </Route>
             <Route >
                 <div style={{ display: 'flex', flexDirection: 'row' }}>
