@@ -8,7 +8,6 @@ import client from '../../apolloclient'
 import koLocale from "date-fns/locale/ko";
 
 import DateFnsUtils from "@date-io/date-fns";
-import { DateTime } from 'luxon'
 
 import InstructorSearchComponent from '../../components/InstructorSearchComponent4'
 
@@ -18,6 +17,7 @@ import AddClientDialog from './AddClientDialog'
 import SelectPlanAndTicketDialog from './SelectPlanAndTicketsDialog'
 
 import { CREATE_LESSON_GQL } from '../../common/gql_defs'
+import {withRouter} from 'react-router-dom'
 
 
 const get_init_lesson_start_date = () => {
@@ -32,7 +32,7 @@ const get_init_lesson_start_date = () => {
 }
 
  
-export default function CreateNormalLessonPage(props) {
+function CreateNormalLessonPage(props) {
 
 
 
@@ -325,3 +325,6 @@ export default function CreateNormalLessonPage(props) {
         </>
     )
 }
+
+
+export default withRouter(CreateNormalLessonPage)

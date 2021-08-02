@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
 
 import { Button, Menu, MenuItem } from '@material-ui/core'
 
@@ -13,96 +13,59 @@ import ScheduleViewer from './AllScheduleView/ScheduleViewer'
 import CreateApprenticeLesson from './CreateApprenticeLesson'
 import CreateSpecialSchedule from './CreateSpecialScheduleView/container'
 import CoreAdminUserCheck from '../components/CoreAdminUserCheck'
+import { withRouter, Switch, Route } from 'react-router-dom'
+import client from '../apolloclient'
 
 
-class SchedulePage extends React.Component {
+function MainPage({ history, match }) {
 
-    constructor(props) {
-        super(props)
-        this.state = {
-            viewmode: "all",
-            showCreateLessonMenu: false,
-            createLessonMenuAnchor: null
-        }
+    const menuRef = useRef(null)
+    const [showMenu, setShowMenu] = useState(false)
 
-    }
+    return <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
 
-    render() {
-
-
-        let mainview = null
-
-        if (this.state.viewmode === "all") {
-            mainview = <ScheduleViewer apolloclient={this.props.apolloclient} />
-        }
-        else if (this.state.viewmode === "client") {
-            mainview = <ClientScheduleViewer apolloclient={this.props.apolloclient} />
-        }
-        else if (this.state.viewmode === "instructor") {
-            mainview = <InstructorScheduleViewer apolloclient={this.props.apolloclient} />
-        }
-
-        else if (this.state.viewmode === "createlesson") {
-
-
-            mainview = <CreateNormalLessonPage onCancel={() => this.setState({
-                viewmode: 'all'
-            })}
-                onSuccess={() => {
-                    this.setState({
-                        viewmode: 'all'
-                    })
-                }}
-            />
-        }
-        else if (this.state.viewmode === 'create_apprentice_lesson') {
-            mainview = <CreateApprenticeLesson onCancel={() => this.setState({ viewmode: 'all' })} onSuccess={() => this.setState({ viewmode: 'all' })} />
-        }
-        else if (this.state.viewmode === 'create_special_schedule') {
-            mainview = <CreateSpecialSchedule onCancel={() => this.setState({ viewmode: 'all' })} onSuccess={() => this.setState({
-                viewmode: 'all'
-            })}
-
-            />
-        }
-
-        return <div>
-
-            <div>
-
-                <Button variant='contained' color='primary' onClick={e => this.setState({
-                    showCreateLessonMenu: true,
-                    createLessonMenuAnchor: e.currentTarget
-                })}>수업등록</Button>
-                <Menu open={this.state.showCreateLessonMenu}
-                    anchorEl={this.state.createLessonMenuAnchor}
-                    onClose={e => this.setState({ showCreateLessonMenu: false })}>
-                    <MenuItem onClick={e => {
-                        this.setState({
-                            showCreateLessonMenu: false,
-                            viewmode: "createlesson"
-                        })
-
-                    }}>회원수업</MenuItem>
-                    <MenuItem onClick={e => this.setState({
-                        viewmode: 'create_apprentice_lesson',
-                        showCreateLessonMenu: false
-                    })}>견습강사수업</MenuItem>
-                    <MenuItem onClick={e => this.setState({
-                        viewmode: 'create_special_schedule',
-                        showCreateLessonMenu: false
-                    })}>기타 스케쥴</MenuItem>
-                </Menu>
-
-
-            </div>
-
-            {mainview}
-
-
-
-        </div >
-    }
+        <Switch>
+            <Route path={`${match.url}/create/normal-lesson`}>
+                <CreateNormalLessonPage />
+            </Route>
+            <Route path={`${match.url}/create/apprentice-leading-lesson`}>
+                <CreateApprenticeLesson/>
+            </Route>
+            <Route path={`${match.url}/create/apprentice-teaching-lesson`}>
+                <div>hello</div>
+            </Route>
+            <Route path={`${match.url}/create/etc-schedule`}>
+                <div>etc schedule</div>
+            </Route>
+            <Route >
+                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <Button ref={menuRef} variant='contained' onClick={() => setShowMenu(true)}>수업등록</Button>
+                    <Menu open={showMenu} anchorEl={menuRef?.current} onClose={() => setShowMenu(false)}>
+                        <MenuItem onClick={() => {
+                            setShowMenu(false)
+                            history.push('/schedule/create/normal-lesson')
+                        }}>일반 수업</MenuItem>
+                        <MenuItem onClick={() => {
+                            setShowMenu(false)
+                            history.push('/schedule/create/apprentice-leading-lesson')
+                        }}>견습 주도수업</MenuItem>
+                        <MenuItem onClick={() => {
+                            setShowMenu(false)
+                            history.push('/schedule/create/apprentice-teaching-lesson')
+                        }}>지도자과정 수업</MenuItem>
+                        <MenuItem onClick={() => {
+                            setShowMenu(false)
+                            history.push('/schedule/create/etc-schedule')
+                        }}>기타일정</MenuItem>
+                    </Menu>
+                </div>
+                <div>
+                    <ScheduleViewer apolloclient={client} />
+                </div>
+            </Route>
+        </Switch>
+    </div>
 }
 
-export default SchedulePage
+
+export default withRouter(MainPage)

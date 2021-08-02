@@ -162,7 +162,7 @@ module.exports = {
                 apprentice_instructor_plan.totalcost as totalcost
                 from apprentice_instructor_plan
                 left join apprentice_instructor on apprentice_instructor_plan.apprentice_instructor_id = apprentice_instructor.id
-                left join person on persn.id = apprentice_instructor.personid
+                left join person on person.id = apprentice_instructor.personid
                 where apprentice_instructor_id=$1
                 and activity_type=$2 and grouping_type=$3
                 `, [instid, args.activity_type, args.grouping_type])
