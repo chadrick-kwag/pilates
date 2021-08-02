@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { withRouter } from 'react-router-dom'
-import { Table, TableRow, TableCell, Button, TextField, Radio, FormControlLabel, RadioGroup, TextareaAutosize, CircularProgress, Select, MenuItem } from '@material-ui/core'
+import { Table, TableRow, TableCell, Button, TextField, Radio, FormControlLabel, Checkbox, RadioGroup, TextareaAutosize, CircularProgress, Select, MenuItem } from '@material-ui/core'
 import { DateTime } from 'luxon'
 import { DatePicker } from '@material-ui/pickers'
 import client from '../apolloclient'
@@ -132,6 +132,15 @@ function EditInfoPage({ match, history, initInfo }) {
 
                 </TableCell>
             </TableRow>
+            <TableRow>
+                <TableCell>
+                    지도 옵션
+                </TableCell>
+                <TableCell>
+                    <FormControlLabel label="지도자과정 수업지도 가능" control={<Checkbox checked={info.allow_teach_apprentice} onChange={e => setInfo(set_obj_value({ ...info }, 'allow_teach_apprentice', e.target.checked))} />} />
+                </TableCell>
+            </TableRow>
+
             <TableRow>
                 <TableCell style={{ maxWidth: 'min-content' }}>
                     메모

@@ -1313,6 +1313,58 @@ export const UPDATE_TOTALCOST_OF_PLAN = gql`
     }
 `
 
+// fetch_master_instructors
+export const FETCH_MASTER_INSTRUCTORS = gql`
+    query{
+        fetch_master_instructors{
+            success
+            msg
+            instructors {
+                id
+                name 
+                phonenumber
+                email
+                gender
+                created
+            }
+        }
+    }
+`
+
+// fetch_persons_by_name_and_phonenumber
+export const FETCH_PERSONS_BY_NAME_AND_PHONENUMBER = gql`
+    query($name: String!, $phonenumber: String!){
+        fetch_persons_by_name_and_phonenumber(name:$name, phonenumber:$phonenumber){
+            success
+            msg
+            persons {
+                id
+                name 
+                phonenumber 
+                email
+                gender
+            }
+        }
+    }
+`
+
+// fetch_persons_by_name
+export const FETCH_PERSONS_BY_NAME = gql`
+    query($name: String!){
+        fetch_persons_by_name(name: $name){
+            success
+            msg
+            persons {
+                id
+                name 
+                phonenumber 
+                email
+                gender
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

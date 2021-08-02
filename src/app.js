@@ -49,6 +49,7 @@ import ProfilePage from './profilePage/main'
 import PersonIcon from '@material-ui/icons/Person';
 import './common/subscription.css'
 
+
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
 };
@@ -97,15 +98,15 @@ class App extends React.Component {
 
                                 <span style={{ color: 'white', marginRight: '2rem', whiteSpace: 'nowrap' }}>ver {packagejson.version}</span>
 
-                                <Button style={{ textTransform: 'none', marginRight: '0.5rem', width: 'min-content'}} variant='contained' onClick={(e) => {
+                                <Button style={{ textTransform: 'none', marginRight: '0.5rem', width: 'min-content' }} variant='contained' onClick={(e) => {
                                     this.setState({
                                         userprofile_el: e.target
                                     })
                                 }}>
-                                    <div style={{display: 'flex', flexDirection: 'row'}}><PersonIcon style={{ rightMargin: '0.5rem' }} />
-                                    <span style={{whiteSpace: 'nowrap'}}>{(() => {
-                                        return localStorage.getItem('pilates-username')
-                                    })()}님</span></div>
+                                    <div style={{ display: 'flex', flexDirection: 'row' }}><PersonIcon style={{ rightMargin: '0.5rem' }} />
+                                        <span style={{ whiteSpace: 'nowrap' }}>{(() => {
+                                            return localStorage.getItem('pilates-username')
+                                        })()}님</span></div>
                                 </Button>
                                 <Menu
                                     anchorEl={this.state.userprofile_el}
@@ -139,7 +140,7 @@ class App extends React.Component {
                     </Grid>
                 </div>
 
-                <div style={{ flex: '1 0 auto'}}>
+                <div style={{ flex: '1 0 auto' }}>
                     <Switch>
                         <Route path='/dashboard'>
                             <DashBoardContainer />

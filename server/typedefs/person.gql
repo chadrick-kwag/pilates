@@ -1,0 +1,19 @@
+type Query{
+    fetch_persons_by_name_and_phonenumber(name:String!, phonenumber: String!): resp_with_persons
+    fetch_persons_by_name(name: String!): resp_with_persons
+}
+
+type Person{
+    id:Int
+    name: String
+    phonenumber: String
+    email: String
+    gender: String
+}
+
+type resp_with_persons{
+    success: Boolean!
+    msg: String
+    persons: [Person]
+}
+

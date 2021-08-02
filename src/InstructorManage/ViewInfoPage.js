@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom'
 import client from '../apolloclient'
 import { UPDATE_INSTRUCTOR_INFO_GQL, FETCH_INSTRUCTOR_INFO_BY_INSTRUCTOR_ID, FETCH_INSTRUCTOR_LEVEL_INFO } from '../common/gql_defs'
 import { useQuery } from '@apollo/client'
-import { CircularProgress, Table, TableRow, TableCell, Button } from '@material-ui/core'
+import { CircularProgress, Table, TableRow, TableCell, Button, Checkbox, FormControlLabel } from '@material-ui/core'
 import { DateTime } from 'luxon'
 
 
@@ -78,7 +78,7 @@ function ViewInfoPage({ match, history, onInfoReceived }) {
 
                                     return '-'
                                 })()}
-                                
+
                             </TableCell>
                         </TableRow>
                         <TableRow>
@@ -95,6 +95,14 @@ function ViewInfoPage({ match, history, onInfoReceived }) {
                             </TableCell>
                             <TableCell>
                                 {info.memo}
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>
+                                지도 옵션
+                            </TableCell>
+                            <TableCell>
+                                <FormControlLabel label='지도자과정 수업지도 가능' control={<Checkbox disabled checked={info.allow_teach_apprentice} />} />
                             </TableCell>
                         </TableRow>
                         <TableRow>
