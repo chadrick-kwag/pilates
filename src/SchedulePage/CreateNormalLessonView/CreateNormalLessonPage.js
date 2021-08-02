@@ -163,24 +163,6 @@ function CreateNormalLessonPage(props) {
             variables: _var
         })
 
-        // client.mutate({
-        //     mutation: CREATE_LESSON_GQL,
-        //     variables: _var,
-        //     fetchPolicy: 'no-cache'
-        // }).then(res => {
-        //     console.log(res)
-
-        //     if (res.data.create_lesson.success) {
-        //         props.onSuccess?.()
-        //     }
-        //     else {
-        //         alert(`create lesson failed. msg: ${res.data.create_lesson.msg}`)
-        //     }
-        // }).catch(e => {
-        //     console.log(JSON.stringify(e))
-        //     console.log(e)
-        //     alert('create lesson error')
-        // })
     }
 
     return (
