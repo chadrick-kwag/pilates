@@ -112,8 +112,8 @@ class App extends React.Component {
                                         userprofile_el: e.target
                                     })
                                 }}>
-                                    <div style={{ display: 'flex', flexDirection: 'row' }}><PersonIcon style={{ rightMargin: '0.5rem' }} />
-                                        <span style={{ whiteSpace: 'nowrap' }}>{(() => {
+                                    <div style={{ display: 'flex', flexDirection: 'row', textOverflow: 'ellipsis', overflow: 'hidden' }}><PersonIcon style={{ rightMargin: '0.5rem' }} />
+                                        <span style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{(() => {
                                             return localStorage.getItem('pilates-username')
                                         })()}님</span></div>
                                 </Button>
