@@ -1,280 +1,171 @@
-import React from 'react'
-import { Form, Button, Table } from 'react-bootstrap'
+import React, { useState } from 'react'
+import { Button, Table, TableRow, TableCell, FormControlLabel, Radio, RadioGroup, TextField } from '@material-ui/core'
+import { Form } from 'react-bootstrap'
 import moment from 'moment'
 
 import { CREATE_CLIENT_GQL } from '../common/gql_defs'
-import { KeyboardDatePicker } from "@material-ui/pickers";
+import { withRouter } from 'react-router-dom'
+import client from '../apolloclient'
+import { useMutation } from '@apollo/client'
+
+import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import DateFnsUtils from "@date-io/date-fns";
+import koLocale from "date-fns/locale/ko";
 
 
 
-function extract_date_from_birthdate_str(bd_str) {
-
-    console.log('inside extract_date_from_birthdate_str')
-
-    try {
-        let _bd_str = bd_str.trim()
-
-        if (_bd_str.length != 8) {
-            return null
-        }
-
-        let year_str = _bd_str.slice(0, 4)
-        let month_str = _bd_str.slice(4, 6)
-        let day_str = _bd_str.slice(6, 8)
+function CreateClientPage({ history, onSubmitSuccess, cancelBtnCallback }) {
 
 
-        let month = parseInt(month_str) - 1
-        let day = parseInt(day_str)
+    const [name, setName] = useState("")
+    const [phonenumber, setPhonenumber] = useState("")
+    const [email, setEmail] = useState("")
+    const [gender, setGender] = useState(null)
+    const [job, setJob] = useState("")
+    const [address, setAddress] = useState("")
+    const [memo, setMemo] = useState("")
+    const [birthdate, setBirthdate] = useState(null)
 
 
-        if (day > 31) {
-            return null
-        }
-
-        if (month < 0 || month > 11) {
-            return null
-        }
-
-        let output = moment()
-        output.year(year_str)
-        output.month(month)
-        output.date(day_str)
-
-
-        return output
-
-    } catch (err) {
-        console.log(err)
-        return null
-    }
-}
-
-class CreateClientPage extends React.Component {
-
-    constructor(props) {
-        super(props)
-
-        this.state = {
-            name: "",
-            phonenumber: "",
-            email: "",
-            gender: null,
-            job: "",
-            address: "",
-            memo: "",
-            birthdate: null
-
-
-        }
-
-        this.submitcallback = this.submitcallback.bind(this)
-    }
-
-
-
-    check_input() {
-
-        // necessary values
-
-        if (this.state.name.trim() == "") {
-            return 'invalid name'
-        }
-
-        if (this.state.phonenumber.trim() == "") {
-            return 'invalid phone number'
-        }
-        if (this.state.birthdate!==null && isNaN(this.state.birthdate)) {
-            return 'invalid birthdate'
-
-        }
-
-        return null
-    }
-
-
-    submitcallback() {
-
-
-        let check_msg = this.check_input()
-
-        if (check_msg != null) {
-            return alert('invalid input\n' + check_msg)
-        }
-
-        let birthdate_str
-        if (this.state.birthdate === null ) {
-            birthdate_str = ""
-        }
-        else {
-            
-            birthdate_str = this.state.birthdate.toUTCString()
-        }
-
-        // console.log(birthdate_date)
-
-
-        // let birthdate_str = birthdate_date.toDate().toUTCString()
-
-
-        let _variables = {
-            name: this.state.name,
-            phonenumber: this.state.phonenumber,
-            job: this.state.job,
-            address: this.state.address,
-            gender: this.state.gender,
-            memo: this.state.memo,
-            birthdate: birthdate_str,
-            email: this.state.email
-
-
-        }
-
-        console.log(_variables)
-
-        this.props.apolloclient.mutate({
-            mutation: CREATE_CLIENT_GQL,
-            variables: _variables
-        }).then(d => {
+    const [doSubmit, { loading, data, error }] = useMutation(CREATE_CLIENT_GQL, {
+        client: client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
             console.log(d)
-            if (d.data.createclient.success) {
-                this.props.onSubmitSuccess()
+
+            if (d.createclient.success) {
+                onSubmitSuccess?.()
             }
             else {
-                this.props.onSubmitFail()
+                alert('생성 실패')
             }
-            // this.props.changeViewMode('list_client')
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+            alert('생성 에러')
+        }
+    })
+
+
+    const is_submit_disabled = () => {
+        if (name.trim() === "" || phonenumber.replace('-', '').trim() === "") {
+            return true
+        }
+
+        return false
+    }
+
+
+    const request_submit = () => {
+        if (is_submit_disabled()) {
+            return
+        }
+
+
+        doSubmit({
+            variables: {
+                phonenumber,
+                job,
+                name,
+                gender,
+                birthdate: birthdate !== null ? birthdate.toUTCString() : null,
+                email,
+                memo
+            }
         })
-            .catch(e => {
-                console.log(e)
-                console.log(JSON.stringify(e))
-                // alert('failed to reigster client')
-                this.props.onSubmitFail()
-            })
     }
 
+    return <div style={{ width: '100%', height: '100%' }}>
 
-    render() {
-        return <div>
-            <div className='row-gravity-center'>
-                <h2>회원생성</h2>
-            </div>
+        <Table>
+            <TableRow>
+                <TableCell>
+                    이름
+                </TableCell>
+                <TableCell>
+                    <TextField variant='outlined' value={name} onChange={e => setName(e.target.value)} />
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell>
+                    연락처
+                </TableCell>
+                <TableCell>
+                    <TextField variant='outlined' value={phonenumber} onChange={e => setPhonenumber(e.target.value)} />
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell>
+                    성별
+                </TableCell>
+                <TableCell>
+                    <RadioGroup value={gender} onChange={e => setGender(e.target.value)}>
+                        <FormControlLabel control={<Radio />} label="남" value="MALE" />
+                        <FormControlLabel control={<Radio />} label="여" value="FEMALE" />
 
-            <div>
-                <Table className="view-kv-table">
-                    <tr>
-                        <td>이름*</td>
-                        <td><Form.Control value={this.state.name} onChange={e => {
-                            this.setState({
-                                name: e.target.value
-                            })
-                        }} /></td>
-                    </tr>
-                    <tr>
-                        <td>성별</td>
-                        <td>
-                            <div>
-                                <Button variant={this.state.gender == 'male' ? 'warning' : 'light'}
-                                    onClick={e => {
-                                        this.setState({
-                                            gender: "male"
-                                        })
-                                    }}
-                                >남</Button>
-                                <Button variant={this.state.gender == 'female' ? 'warning' : 'light'}
-                                    onClick={e => {
-                                        this.setState({
-                                            gender: "female"
-                                        })
-                                    }}
-                                >여</Button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>생년월일</td>
-                        <td>
-                            {/* <Form.Control value={this.state.birthdate} onChange={e => {
-                                this.setState({
-                                    birthdate: e.target.value
-                                })
-                            }} /> */}
-                            <KeyboardDatePicker
-                                placeholder="19901127"
-                                value={this.state.birthdate}
-                                onChange={date => {
-                                    console.log(date)
-                                    this.setState({
-                                        birthdate: date
-                                    })
-                                }}
-                                format="yyyyMMdd"
-                            />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>연락처*</td>
-                        <td><Form.Control value={this.state.phonenumber} onChange={e => {
-                            this.setState({
-                                phonenumber: e.target.value
-                            })
-                        }} /></td>
-                    </tr>
-                    <tr>
-                        <td>주소</td>
-                        <td>
-                            <Form.Control value={this.state.address} onChange={e => {
-                                this.setState({
-                                    address: e.target.value
-                                })
-                            }} />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>이메일</td>
-                        <td>
-                            <Form.Control value={this.state.email} onChange={e => {
-                                this.setState({
-                                    email: e.target.value
-                                })
-                            }} />
+                    </RadioGroup>
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell>
+                    생일
+                </TableCell>
+                <TableCell>
+                    <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
+                        <DateTimePicker
+                            emptyLabel="날짜를 선택해주세요"
+                            variant="inline"
+                            value={birthdate}
+                            onChange={e => {
+                                setBirthdate(e)
+                            }}
+                            minutesStep={15}
+                            ampm={false}
+                        />
+                    </MuiPickersUtilsProvider>
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell>
+                    주소
+                </TableCell>
+                <TableCell>
+                    <TextField variant='outlined' value={address} onChange={e => setAddress(e.target.value)} />
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell>
+                    이메일
+                </TableCell>
+                <TableCell>
+                    <TextField variant='outlined' value={email} onChange={e => setEmail(e.target.value)} />
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell>
+                    직업
+                </TableCell>
+                <TableCell>
+                    <TextField variant='outlined' value={job} onChange={e => setJob(e.target.value)} />
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell>
+                    메모
+                </TableCell>
+                <TableCell>
+                    <Form.Control as='textarea' rows='5' value={memo} onChange={e => setMemo(e.target.value)} />
+                </TableCell>
+            </TableRow>
+        </Table>
+        <div style={{ width: '100%', padding: '0.5rem', display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', boxSizing: 'border-box' }}>
+            <Button varaint='outlined' onClick={() => cancelBtnCallback?.()}>이전</Button>
+            <Button disabled={is_submit_disabled()} varaint='outlined' onClick={() => request_submit()} >생성</Button>
 
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>직업</td>
-                        <td>
-                            <Form.Control value={this.state.job} onChange={e => {
-                                this.setState({
-                                    job: e.target.value
-                                })
-                            }} />
-
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>메모</td>
-                        <td><Form.Control as='textarea' rows='5' value={this.state.memo} onChange={e => {
-                            this.setState({
-                                memo: e.target.value
-                            })
-
-                        }} /></td>
-                    </tr>
-
-
-                </Table>
-
-            </div>
-            <div className='row-gravity-center children-padding'>
-                <Button onClick={e => this.props.cancelBtnCallback()}>취소</Button>
-                <Button onClick={e => this.submitcallback()}>생성</Button>
-            </div>
         </div>
-    }
+
+    </div>
+
 }
 
-export default CreateClientPage
-
-export {
-    extract_date_from_birthdate_str
-}
+export default withRouter(CreateClientPage)
