@@ -176,7 +176,7 @@ export default function ListClientPageV2(props) {
     }
 
     return (
-        <>
+        <div style={{ width: '100%', height: '100%', maxWidth: '100%', overflowX: 'scroll' }}>
             <Grid container>
 
                 <>
@@ -263,12 +263,12 @@ export default function ListClientPageV2(props) {
 
                 }}
                 onRefreshData={() => fetch_all_clients()}
-                onDelete={()=>{
+                onDelete={() => {
                     setShowDetailClientId(null)
                     fetch_all_clients()
                 }}
             /> : null}
-        </>
+        </div>
     )
 
 }

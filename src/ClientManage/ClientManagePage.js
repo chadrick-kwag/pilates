@@ -22,17 +22,16 @@ class ClientManagePage extends React.Component {
     render() {
 
         if (this.state.view_mode == "list") {
-            return <div>
-                
-                    <div>
-                        <Button onClick={e => this.setState({
-                            view_mode: 'create'
-                        })}>회원생성</Button>
-                    </div>
-                
+            return <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
 
-                <div>
-                    {/* <ListClientPage apolloclient={this.props.apolloclient} /> */}
+                <div >
+                    <Button onClick={e => this.setState({
+                        view_mode: 'create'
+                    })}>회원생성</Button>
+                </div>
+
+
+                <div style={{ flexGrow: 1 }}>
                     <ListClientPageV2 />
                 </div>
 
