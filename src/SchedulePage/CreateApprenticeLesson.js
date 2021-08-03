@@ -127,7 +127,8 @@ function CreateApprenticeLesson({ history }) {
 
 
     return (
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+            <span style={{ wordBreak: 'keep-all', fontSize: '2rem' }}>견습강사 주도수업</span>
             <div>
                 <Table>
                     <TableRow>
