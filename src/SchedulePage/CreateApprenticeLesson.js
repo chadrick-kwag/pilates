@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Table, TableRow, TableHead, TableCell, Select, MenuItem, Button, CircularProgress } from '@material-ui/core'
+import { Grid, Table, TableRow, TableHead, TableCell, Select, MenuItem, Button, CircularProgress } from '@material-ui/core'
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import ErrorIcon from '@material-ui/icons/Error';
 import ApprenticeInstructorSearchComponent from '../components/ApprenticeInstructorSearchComponent'
@@ -26,7 +26,7 @@ const get_init_lesson_start_date = () => {
 }
 
 
-function CreateApprenticeLesson({history}) {
+function CreateApprenticeLesson({ history }) {
 
     const [activityType, setActivityType] = useState(null)
     const [groupingType, setGroupingType] = useState(null)
@@ -131,7 +131,7 @@ function CreateApprenticeLesson({history}) {
             <div>
                 <Table>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             액티비티
                         </TableCell>
                         <TableCell>
@@ -142,7 +142,7 @@ function CreateApprenticeLesson({history}) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             그룹
                         </TableCell>
                         <TableCell>
@@ -154,7 +154,7 @@ function CreateApprenticeLesson({history}) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             견습강사 선택
                         </TableCell>
                         <TableCell>
@@ -162,7 +162,7 @@ function CreateApprenticeLesson({history}) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             플랜선택
                         </TableCell>
                         <TableCell>
@@ -231,36 +231,42 @@ function CreateApprenticeLesson({history}) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             수업시간선택
                         </TableCell>
                         <TableCell>
                             <div className='row-gravity-left children-padding'>
-                                <div className="children-padding row-gravity-center">
-                                    <span>시작시간</span>
-                                    <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
 
-                                        <DateTimePicker
-                                            variant="inline"
+                                <Grid container style={{ alignItems: 'center' }}>
+                                    <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+                                        <span style={{ wordBreak: 'keep-all' }}>시작시간</span>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+                                        <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
 
-                                            value={lessonStartTime}
-                                            onChange={e => {
-                                                setLessonStartTime(e)
-                                            }}
-                                            minutesStep={15}
-                                            ampm={false}
-                                        />
-                                    </MuiPickersUtilsProvider>
-                                </div>
-                                <div className="children-padding row-gravity-center">
-                                    <span>길이시간</span>
-                                    <Select value={lessonDurationHours} onChange={e => setLessonDurationHours(e.target.value)}>
+                                            <DateTimePicker
+                                                variant="inline"
 
-                                        {availLessonDurationHours.map(d => <MenuItem value={d}>{d}</MenuItem>)}
+                                                value={lessonStartTime}
+                                                onChange={e => {
+                                                    setLessonStartTime(e)
+                                                }}
+                                                minutesStep={15}
+                                                ampm={false}
+                                            />
+                                        </MuiPickersUtilsProvider>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+                                        <span style={{ wordBreak: 'keep-all' }}>길이시간</span>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+                                        <Select value={lessonDurationHours} onChange={e => setLessonDurationHours(e.target.value)}>
 
-                                    </Select>
-                                </div>
+                                            {availLessonDurationHours.map(d => <MenuItem value={d}>{d}</MenuItem>)}
 
+                                        </Select>
+                                    </Grid>
+                                </Grid>
 
                             </div>
 

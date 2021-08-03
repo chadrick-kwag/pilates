@@ -171,7 +171,7 @@ function CreateNormalLessonPage(props) {
             <div style={{ width: '100%' }}>
                 <Table>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             액티비티
                         </TableCell>
                         <TableCell>
@@ -185,7 +185,7 @@ function CreateNormalLessonPage(props) {
 
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             그룹
                         </TableCell>
                         <TableCell>
@@ -197,7 +197,7 @@ function CreateNormalLessonPage(props) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             강사 선택
                         </TableCell>
                         <TableCell>
@@ -205,7 +205,7 @@ function CreateNormalLessonPage(props) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             회원선택
                         </TableCell>
                         <TableCell>
@@ -257,7 +257,7 @@ function CreateNormalLessonPage(props) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             수업시간선택
                         </TableCell>
                         <TableCell>
