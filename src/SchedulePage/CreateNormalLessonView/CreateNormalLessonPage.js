@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react'
-import { Table, TableRow, TableHead, TableCell, Select, MenuItem, Button, CircularProgress, Chip } from '@material-ui/core'
+import { Grid, Table, TableRow, TableHead, TableCell, Select, MenuItem, Button, CircularProgress, Chip } from '@material-ui/core'
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 
 
@@ -168,7 +168,8 @@ function CreateNormalLessonPage(props) {
     return (
         <>
 
-            <div style={{ width: '100%' }}>
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '2rem' }}>일반 수업</span>
                 <Table>
                     <TableRow>
                         <TableCell style={{ wordBreak: 'keep-all' }}>
@@ -261,9 +262,11 @@ function CreateNormalLessonPage(props) {
                             수업시간선택
                         </TableCell>
                         <TableCell>
-                            <div className='row-gravity-left children-padding'>
-                                <div className="children-padding row-gravity-center">
-                                    <span>시작시간</span>
+                            <Grid container style={{ alignItems: 'center' }}>
+                                <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+                                    <span style={{ wordBreak: 'keep-all' }}>시작시간</span>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
                                     <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
                                         <DateTimePicker
                                             variant="inline"
@@ -275,16 +278,21 @@ function CreateNormalLessonPage(props) {
                                             ampm={false}
                                         />
                                     </MuiPickersUtilsProvider>
-                                </div>
-                                <div className="children-padding row-gravity-center">
-                                    <span>길이시간</span>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+                                    <span style={{ wordBreak: 'keep-all' }}>길이시간</span>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+
                                     <Select value={lessonDurationHours} onChange={e => setLessonDurationHours(e.target.value)}>
 
                                         {availLessonDurationHours.map(d => <MenuItem value={d}>{d}</MenuItem>)}
 
                                     </Select>
-                                </div>
-                            </div>
+                                </Grid>
+
+
+                            </Grid>
 
                         </TableCell>
                     </TableRow>
