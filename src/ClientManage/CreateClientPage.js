@@ -8,7 +8,7 @@ import { withRouter } from 'react-router-dom'
 import client from '../apolloclient'
 import { useMutation } from '@apollo/client'
 
-import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
 import koLocale from "date-fns/locale/ko";
 
@@ -112,15 +112,14 @@ function CreateClientPage({ history, onSubmitSuccess, cancelBtnCallback }) {
                 </TableCell>
                 <TableCell>
                     <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
-                        <DateTimePicker
+                        <DatePicker
                             emptyLabel="날짜를 선택해주세요"
                             variant="inline"
                             value={birthdate}
                             onChange={e => {
                                 setBirthdate(e)
                             }}
-                            minutesStep={15}
-                            ampm={false}
+                            autoOk
                         />
                     </MuiPickersUtilsProvider>
                 </TableCell>
