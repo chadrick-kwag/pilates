@@ -1,13 +1,15 @@
 import React, { useState, useRef } from 'react'
 
-import { TextField, Button, FormControl, FormHelperText, MenuItem, Box, InputAdornment } from '@material-ui/core'
+import { TextField, Button, FormControl, FormHelperText, MenuItem, Box, InputAdornment, Popover } from '@material-ui/core'
 import client from '../apolloclient'
 import { QUERY_APPRENTICE_INSTRUCTOR_BY_NAME } from '../common/gql_defs'
 import CheckIcon from '@material-ui/icons/Check';
+import PropTypes from 'prop-types';
 
 
 
-export default function ApprenticeInstructorSearchComponent(props) {
+
+function ApprenticeInstructorSearchComponent({ onSelect }) {
 
 
     const [name, setName] = useState(null)
@@ -32,7 +34,7 @@ export default function ApprenticeInstructorSearchComponent(props) {
             },
             fetchPolicy: 'no-cache'
         }).then(res => {
-            console.log(res)
+            
             if (res.data.query_apprentice_instructor_by_name.success) {
                 setSearchResult(res.data.query_apprentice_instructor_by_name.apprenticeInstructors)
                 setShowResult(true)
@@ -52,7 +54,7 @@ export default function ApprenticeInstructorSearchComponent(props) {
 
     return (
         <div className="row-gravity-left children-padding">
-            <span>이름</span>
+            <span style={{ wordBreak: 'keep-all', marginRight: '0.5rem' }}>이름</span>
             <div style={{ position: 'relative' }}>
                 <TextField ref={searchTextField} value={name} onChange={e => {
                     setName(e.target.value)
@@ -74,13 +76,22 @@ export default function ApprenticeInstructorSearchComponent(props) {
                     }}
                 ></TextField>
 
-                {showResult ? <div style={{ position: 'absolute', zIndex: '9000', top: searchTextField.current.height, left: '0px', backgroundColor: 'white' }}>
+                <Popover open={showResult} anchorEl={searchTextField?.current} onClose={() => setShowResult(false)} anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center',
+                    }}>
                     {searchResult?.map(d => <MenuItem style={{ width: searchTextField.current.width }} onClick={e => {
                         setShowResult(false)
                         setSelected(true)
-                        props.onSelect?.(d)
+                        onSelect?.(d)
                     }}>{d.name}({d.phonenumber})</MenuItem>)}
-                </div> : null}
+                </Popover>
+
+
             </div>
 
             <Button variant='outlined' onClick={e => try_search()}>검색</Button>
@@ -90,3 +101,9 @@ export default function ApprenticeInstructorSearchComponent(props) {
     )
 
 }
+
+ApprenticeInstructorSearchComponent.propTypes = {
+    onSelect: PropTypes.func
+}
+
+export default ApprenticeInstructorSearchComponent

@@ -142,6 +142,9 @@ module.exports = {
 
         createclient: async (parent, args) => {
 
+            console.log('createclient')
+            console.log(args)
+
 
             let gender = null
             if (args.gender !== null) {
@@ -161,7 +164,7 @@ module.exports = {
 
                 let personid
                 if (result.rowCount === 0) {
-                    let result = await pgclient.query(`insert into person(name, phonenumber, gender) ($1, $2, $3) returning id`, [args.name, args.phonenumber, gender])
+                    let result = await pgclient.query(`insert into person(name, phonenumber, gender) values ($1, $2, $3) returning id`, [args.name, args.phonenumber, gender])
 
                     personid = result.rows[0].id
                 }
@@ -171,7 +174,7 @@ module.exports = {
 
 
                 // create new client with personid
-                result = await pgclient.query(`insert into client (job, birthdate, address, memo, personid) ($1, $2, $3, $4, $5) `, [args.job, args.birthdate, args.address, args.memo, personid])
+                result = await pgclient.query(`insert into client (job, birthdate, address, memo, personid) values ($1, $2, $3, $4, $5) `, [args.job, args.birthdate, args.address, args.memo, personid])
 
                 if (result.rowCount !== 1) {
                     throw {

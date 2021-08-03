@@ -1365,6 +1365,35 @@ export const FETCH_PERSONS_BY_NAME = gql`
     }
 `
 
+// query_instructors_allowed_to_teach_apprentice_with_name
+export const QUERY_INSTRUCTORS_ALLOWED_TO_TEACH_APPRENTICE_WITH_NAME = gql`
+    query($name: String!){
+        query_instructors_allowed_to_teach_apprentice_with_name(name: $name){
+            success
+            msg
+            instructors {
+                id
+                name
+                phonenumber
+                created
+                job
+                memo
+                address
+                level
+                level_string
+                validation_date
+                gender
+                email
+                birthdate
+                is_apprentice
+                disabled
+                allow_teach_apprentice
+            }
+        }
+    }
+`
+
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

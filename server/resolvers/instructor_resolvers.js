@@ -1,13 +1,43 @@
 const pgclient = require('../pgclient')
 const {
-    parse_incoming_date_utc_string,
-    parse_incoming_gender_str,
-    incoming_time_string_to_postgres_epoch_time,
     ensure_admin_account_id_in_context
 } = require('./common')
 
 module.exports = {
     Query: {
+
+        query_instructors_allowed_to_teach_apprentice_with_name: async (parent, args, context) => {
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'not admin'
+                }
+            }
+
+            try {
+                let result = await pgclient.query(`select instructor.id as id,
+                person.name as name,
+                person.phonenumber as phonenumber, 
+                person.created, is_apprentice, birthdate, validation_date, memo, job, address, person.email, person.gender, level, instructor_level.level_string as level_string, disabled from instructor
+                left join person on person.id = instructor.personid
+                left join instructor_level on level=instructor_level.id
+                where instructor.allow_teach_apprentice = true
+                and person.name = $1
+                 `, [args.name])
+
+                return {
+                    success: true,
+                    instructors: result.rows
+                }
+            } catch (e) {
+                console.log(e)
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
 
         fetch_instructor_stat: async (parent, args, context) => {
 

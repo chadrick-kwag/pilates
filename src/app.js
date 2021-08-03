@@ -49,11 +49,20 @@ import ProfilePage from './profilePage/main'
 import PersonIcon from '@material-ui/icons/Person';
 import './common/subscription.css'
 
+import { createTheme, ThemeProvider } from '@material-ui/core/styles'
+
+
 
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
 };
 
+
+const theme = createTheme({
+    typography: {
+        fontFamily: 'Noto Sans KR, sans-serif'
+    }
+});
 
 class App extends React.Component {
 
@@ -205,22 +214,25 @@ const _App = withRouter(App)
 
 ReactDOM.render(<ApolloProvider client={client}>
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
-        <Router>
-            <Switch>
-                <Route path='/login'>
-                    <LoginPage />
-                </Route>
-                <Route path='/signup'>
-                    <SignUpPage />
-                </Route>
-                <Route path='/'>
-                    <AuthenticateWrapper>
-                        <_App />
-                    </AuthenticateWrapper>
-                </Route>
-            </Switch>
+        <ThemeProvider theme={theme}>
+            <Router>
+                <Switch>
+                    <Route path='/login'>
+                        <LoginPage />
+                    </Route>
+                    <Route path='/signup'>
+                        <SignUpPage />
+                    </Route>
+                    <Route path='/'>
+                        <AuthenticateWrapper>
+                            <_App />
+                        </AuthenticateWrapper>
+                    </Route>
+                </Switch>
 
 
-        </Router>
+            </Router>
+        </ThemeProvider>
+
 
     </MuiPickersUtilsProvider></ApolloProvider>, document.getElementById('app'))

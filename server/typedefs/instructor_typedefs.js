@@ -7,6 +7,9 @@ type Query{
     fetch_instructor_with_id(id: Int!): ResultInstructor
     fetch_instructor_level_info: SuccessAndInstructorLevels
     fetch_instructor_stat: SuccessAndInstructorStatResult
+
+
+    query_instructors_allowed_to_teach_apprentice_with_name(name:String!): SuccessAndInstructors
 }
 
 

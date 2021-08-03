@@ -3,10 +3,6 @@ import React, { useRef, useState } from 'react'
 import { Button, Menu, MenuItem } from '@material-ui/core'
 
 import './schedulepage.css'
-
-
-import ClientScheduleViewer from './ClientScheduleView/ClientScheduleViewer'
-import InstructorScheduleViewer from './InstructorScheduleView/InstructorScheduleViewer'
 import CreateNormalLessonPage from './CreateNormalLessonView/CreateNormalLessonPage'
 
 import ScheduleViewer from './AllScheduleView/ScheduleViewer'
@@ -17,6 +13,7 @@ import { withRouter, Switch, Route } from 'react-router-dom'
 import client from '../apolloclient'
 
 import CreateOtherSchedule from './CreateSpecialScheduleView/container'
+import CreateMasterInstructorClass from './CreateMasterInstructorClass/main'
 
 
 function MainPage({ history, match }) {
@@ -34,7 +31,7 @@ function MainPage({ history, match }) {
                 <CreateApprenticeLesson />
             </Route>
             <Route path={`${match.url}/create/apprentice-teaching-lesson`}>
-                <div>hello</div>
+                <CreateMasterInstructorClass />
             </Route>
             <Route path={`${match.url}/create/etc-schedule`}>
                 <CreateOtherSchedule />
@@ -50,15 +47,15 @@ function MainPage({ history, match }) {
                         <MenuItem onClick={() => {
                             setShowMenu(false)
                             history.push('/schedule/create/apprentice-leading-lesson')
-                        }}>견습 주도수업</MenuItem>
-                        <MenuItem onClick={() => {
+                        }}>견습강사 주도수업</MenuItem>
+                        <MenuItem disabled onClick={() => {
                             setShowMenu(false)
                             history.push('/schedule/create/apprentice-teaching-lesson')
-                        }}>지도자과정 수업</MenuItem>
-                        <MenuItem onClick={() => {
+                        }}>지도자과정 수업(준비중)</MenuItem>
+                        <MenuItem disabled onClick={() => {
                             setShowMenu(false)
                             history.push('/schedule/create/etc-schedule')
-                        }}>기타일정</MenuItem>
+                        }}>기타일정(준비중)</MenuItem>
                     </Menu>
                 </div>
                 <div>
