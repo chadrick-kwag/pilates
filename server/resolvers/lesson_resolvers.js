@@ -1,7 +1,7 @@
 const pgclient = require('../pgclient')
 const {
     parse_incoming_date_utc_string,
-    
+    ensure_admin_account_id_in_context,
     incoming_time_string_to_postgres_epoch_time
 } = require('./common')
 
@@ -258,7 +258,7 @@ module.exports = {
                 }
             }
         },
-       
+
 
         query_lessons_with_daterange: async (parent, args) => {
 
@@ -733,10 +733,16 @@ module.exports = {
             return result
         },
 
-        create_lesson: async (parent, args) => {
+        create_lesson: async (parent, args, context) => {
             console.log('inside create_lesson')
             console.log(args)
 
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'not admin'
+                }
+            }
 
 
             try {
@@ -781,7 +787,7 @@ module.exports = {
 
                 // check if overlapping lesson exist for instructor
 
-                result = await pgclient.query(`select lesson.id from lesson where ( tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1,$2) ) and instructorid=$3`, [args.starttime, args.endtime, args.instructorid])
+                result = await pgclient.query(`select lesson.id from lesson where ( tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1,$2) ) and instructorid=$3 and canceled_time is null`, [args.starttime, args.endtime, args.instructorid])
 
                 if (result.rowCount > 0) {
                     throw {
@@ -820,8 +826,6 @@ module.exports = {
 
                     result = await pgclient.query(`insert into assign_ticket (ticketid, lessonid, created) values ($1, $2, now())`, [args.ticketids[i], created_lesson_id])
                 }
-
-
 
 
                 await pgclient.query('commit')
@@ -1087,8 +1091,6 @@ module.exports = {
 
         },
         create_individual_lesson: async (parent, args) => {
-            console.log('inside create individual lesson')
-            console.log(args)
 
             // check that ticket's owner matches given client id
 
