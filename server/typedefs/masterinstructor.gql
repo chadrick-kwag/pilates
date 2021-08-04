@@ -1,0 +1,19 @@
+type Query{
+    fetch_master_instructors: resp_with_master_instructors
+}
+
+
+type resp_with_master_instructors{
+    success: Boolean!
+    msg: String
+    instructors: [MasterInstructor]
+}
+
+type MasterInstructor{
+    id: Int!
+    name: String
+    phonenumber: String
+    email: String
+    gender: String
+    created: String
+}

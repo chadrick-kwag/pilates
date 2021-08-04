@@ -10,8 +10,9 @@ import client from '../../apolloclient'
 import DateFnsUtils from "@date-io/date-fns";
 import { DateTime } from 'luxon'
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import { withRouter } from 'react-router-dom'
 
-export default function Container(props) {
+function Container({ history }) {
 
     const [startTime, setStartTime] = useState(new Date())
     const [endTime, setEndTime] = useState(new Date())
@@ -34,7 +35,7 @@ export default function Container(props) {
             console.log(res)
 
             if (res.data.create_special_schedule.success) {
-                props.onSuccess?.()
+                history.push('/schedule')
             }
             else {
                 alert(`스케쥴 생성 실패(${res.data.create_special_schedule.msg})`)
@@ -83,7 +84,7 @@ export default function Container(props) {
                         <TableRow>
                             <TableCell>
                                 시작시간
-                </TableCell>
+                            </TableCell>
                             <TableCell>
                                 <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
                                     <DateTimePicker
@@ -101,7 +102,7 @@ export default function Container(props) {
                         <TableRow>
                             <TableCell>
                                 종료시간
-                </TableCell>
+                            </TableCell>
                             <TableCell>
                                 <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
                                     <DateTimePicker
@@ -119,7 +120,7 @@ export default function Container(props) {
                         <TableRow>
                             <TableCell>
                                 스케쥴 이름
-                    </TableCell>
+                            </TableCell>
                             <TableCell>
                                 <TextField value={title} onChange={e => setTitle(e.target.value)} />
                             </TableCell>
@@ -138,8 +139,8 @@ export default function Container(props) {
                 <Grid item xs={12}>
 
                     <div className="row-gravity-center children-padding">
-                        <Button onClick={() => props.onCancel?.()}>취소</Button>
-                        <Button disabled={!is_input_okay()} onClick={() => request_create()}>생성</Button>
+                        <Button variant='outlined' onClick={() => history.goBack()}>취소</Button>
+                        <Button variant='outlined' disabled={!is_input_okay()} onClick={() => request_create()}>생성</Button>
                     </div>
 
                 </Grid>
@@ -149,3 +150,5 @@ export default function Container(props) {
         </>
     )
 }
+
+export default withRouter(Container)

@@ -447,7 +447,7 @@ const FETCH_ALL_SUBSCRIPTIONS_WITH_REMAINROUNDS_FOR_CLIENTID = gql`query a($clie
 }`
 
 
-const CREATE_INSTRUCTOR_GQL = gql`mutation a($name: String!, $phonenumber: String!, $job: String, $address: String, $birthdate: String, $validation_date: String, $gender: String, $email: String, $memo: String, $level: String, $is_apprentice: Boolean){
+const CREATE_INSTRUCTOR_GQL = gql`mutation a($name: String!, $phonenumber: String!, $job: String, $address: String, $birthdate: String, $validation_date: String, $gender: String, $email: String, $memo: String, $level: Int, $is_apprentice: Boolean){
 
     create_instructor(name: $name, phonenumber: $phonenumber, job: $job, gender: $gender, address: $address, birthdate: $birthdate, validation_date: $validation_date, email: $email, memo: $memo, level: $level, is_apprentice: $is_apprentice){
         success
@@ -1300,6 +1300,99 @@ export const UPDATE_CHECKIN_CONFIGS = gql`
         }
     }
 `
+
+
+//update_totalcost_of_plan
+
+export const UPDATE_TOTALCOST_OF_PLAN = gql`
+    mutation($id: Int!, $totalcost: Int!){
+        update_totalcost_of_plan(id: $id, totalcost: $totalcost){
+            success
+            msg
+        }
+    }
+`
+
+// fetch_master_instructors
+export const FETCH_MASTER_INSTRUCTORS = gql`
+    query{
+        fetch_master_instructors{
+            success
+            msg
+            instructors {
+                id
+                name 
+                phonenumber
+                email
+                gender
+                created
+            }
+        }
+    }
+`
+
+// fetch_persons_by_name_and_phonenumber
+export const FETCH_PERSONS_BY_NAME_AND_PHONENUMBER = gql`
+    query($name: String!, $phonenumber: String!){
+        fetch_persons_by_name_and_phonenumber(name:$name, phonenumber:$phonenumber){
+            success
+            msg
+            persons {
+                id
+                name 
+                phonenumber 
+                email
+                gender
+            }
+        }
+    }
+`
+
+// fetch_persons_by_name
+export const FETCH_PERSONS_BY_NAME = gql`
+    query($name: String!){
+        fetch_persons_by_name(name: $name){
+            success
+            msg
+            persons {
+                id
+                name 
+                phonenumber 
+                email
+                gender
+            }
+        }
+    }
+`
+
+// query_instructors_allowed_to_teach_apprentice_with_name
+export const QUERY_INSTRUCTORS_ALLOWED_TO_TEACH_APPRENTICE_WITH_NAME = gql`
+    query($name: String!){
+        query_instructors_allowed_to_teach_apprentice_with_name(name: $name){
+            success
+            msg
+            instructors {
+                id
+                name
+                phonenumber
+                created
+                job
+                memo
+                address
+                level
+                level_string
+                validation_date
+                gender
+                email
+                birthdate
+                is_apprentice
+                disabled
+                allow_teach_apprentice
+            }
+        }
+    }
+`
+
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,

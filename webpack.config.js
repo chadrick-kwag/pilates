@@ -1,8 +1,9 @@
 const hwp = require('html-webpack-plugin')
 const path = require('path')
-const {GRAPHQL_PORT_INTERNAL} = require('./config.js')
+const { GRAPHQL_PORT_INTERNAL } = require('./config.js')
+const TerserPlugin = require("terser-webpack-plugin");
 
-module.exports = {
+let config = {
     entry: './src/app.js',
     output: {
         path: path.resolve(__dirname, 'dist'),
@@ -32,6 +33,7 @@ module.exports = {
         })
 
     ],
+   
     devServer: {
         open: "chrome",
         host: 'localhost',
@@ -41,4 +43,26 @@ module.exports = {
             '/graphql': `http://localhost:${GRAPHQL_PORT_INTERNAL}`
         }
     }
+}
+
+
+
+module.exports = (env, argv)=>{
+
+    if(argv.mode === 'production'){
+        config.optimization = {
+            minimize: true,
+            minimizer: [new TerserPlugin({
+                terserOptions: {
+                    compress: {
+                        drop_console: true
+                    }
+                }
+            })]
+        }
+    }
+
+    console.log(config)
+
+    return config
 }

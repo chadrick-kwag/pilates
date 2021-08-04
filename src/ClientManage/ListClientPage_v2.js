@@ -176,7 +176,7 @@ export default function ListClientPageV2(props) {
     }
 
     return (
-        <>
+        <div style={{ width: '100%', height: '100%', maxWidth: '100%', overflowX: 'scroll' }}>
             <Grid container>
 
                 <>
@@ -195,19 +195,17 @@ export default function ListClientPageV2(props) {
                         {isLoading ? <CircularProgress /> : data === null ? <span>회원이 없습니다.</span> : <Table className='row-clickable-table'>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>
-                                        회원id
-                                    </TableCell>
-                                    <TableCell>
+
+                                    <TableCell style={{ wordBreak: 'keep-all' }}>
                                         회원이름
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell style={{ wordBreak: 'keep-all' }}>
                                         연락처
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell style={{ wordBreak: 'keep-all' }}>
                                         생성일시
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell style={{ wordBreak: 'keep-all' }}>
                                         설정
                                     </TableCell>
                                 </TableRow>
@@ -223,7 +221,7 @@ export default function ListClientPageV2(props) {
                                     }
 
                                     return <TableRow onClick={() => setShowDetailClientId(d.id)} className={classes.tablebodyrow}>
-                                        <TableCell>{d.id}</TableCell>
+
                                         <TableCell>{d.name}</TableCell>
                                         <TableCell>{d.phonenumber}</TableCell>
                                         <TableCell>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</TableCell>
@@ -263,12 +261,12 @@ export default function ListClientPageV2(props) {
 
                 }}
                 onRefreshData={() => fetch_all_clients()}
-                onDelete={()=>{
+                onDelete={() => {
                     setShowDetailClientId(null)
                     fetch_all_clients()
                 }}
             /> : null}
-        </>
+        </div>
     )
 
 }

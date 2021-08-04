@@ -5,6 +5,8 @@ import client from '../../apolloclient'
 import numeral from 'numeral'
 import PhoneIcon from '@material-ui/icons/Phone';
 import ErrorIcon from '@material-ui/icons/Error';
+import { UPDATE_TOTALCOST_OF_PLAN } from '../../common/gql_defs'
+import { useMutation } from '@apollo/client'
 
 
 export default function DetailEdit(props) {
@@ -17,12 +19,43 @@ export default function DetailEdit(props) {
     const [created, setCreated] = useState(props.data.created)
     const [activityType, setActivityType] = useState(props.data.activityType)
     const [groupingType, setGroupingType] = useState(props.data.groupingType)
-
+    const [updateTotalcost] = useMutation(UPDATE_TOTALCOST_OF_PLAN, {
+        client: client,
+        onCompleted: d => {
+            console.log(d)
+            if (d.update_totalcost_of_plan.success) {
+                props.onSuccess?.()
+            }
+            else {
+                alert('total cost update fail')
+            }
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+            console.log(e)
+            alert('total cost update error')
+        }
+    })
 
     const submit = () => {
-        // check input
 
-        alert('test submit')
+        if (isNaN(parseInt(totalCost))) {
+            alert('총비용 값이 올바르지 않습니다')
+            return
+        }
+
+        if (parseInt(totalCost) < 0) {
+            alert('총비용 값이 올바르지 않습니다')
+            return
+        }
+
+        updateTotalcost({
+            variables: {
+                id: appInst.id,
+                totalcost: parseInt(totalCost)
+            },
+            fetchPolicy: 'no-cache'
+        })
 
     }
 
