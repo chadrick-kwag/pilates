@@ -1,12 +1,14 @@
 import React, { useState, createRef } from 'react'
 import { makeStyles } from '@material-ui/core/styles';
-import { Button, Menu, MenuItem, Table, TableRow, TableCell, Chip, Dialog, DialogActions, DialogContent } from '@material-ui/core'
+import { Button, Menu, MenuItem, Table, TableRow, TableCell, Chip, Dialog, DialogActions, DialogContent, CircularProgress } from '@material-ui/core'
 
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 import { DateTime } from 'luxon'
 
 import client from '../apolloclient'
-import { DELETE_LESSON_WITH_REQUEST_TYPE_GQL } from '../common/gql_defs'
+import { DELETE_LESSON_WITH_REQUEST_TYPE_GQL, QUERY_LESSON_DETAIL_WITH_LESSONID } from '../common/gql_defs'
+
+import { useQuery } from '@apollo/client'
 
 
 const useStyles = makeStyles(theme => {
@@ -15,7 +17,7 @@ const useStyles = makeStyles(theme => {
             padding: '5px',
             backgroundColor: 'red',
             marginLeft: '2px'
-            
+
         },
         attendance_chip_true: {
             padding: '5px',
@@ -32,6 +34,21 @@ export default function NormalLessonDetailModalBaseView(props) {
 
     const [showCancelMenu, setShowCancelMenu] = useState(false)
     const [cancelBtnRef, setCancelBtnRef] = useState(null)
+
+    const { loading, data, error } = useQuery(QUERY_LESSON_DETAIL_WITH_LESSONID, {
+        client: client,
+        fetchPolicy: 'no-cache',
+        variables: {
+            lessonid: props.data.indomain_id
+        },
+        onCompleted: d => {
+            console.log('onCompleted')
+            console.log(d)
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+        }
+    })
 
     const classes = useStyles()
 
@@ -90,14 +107,37 @@ export default function NormalLessonDetailModalBaseView(props) {
 
     let unique_client_arr = props.data.client_info_arr
 
+    if (loading) {
+        return <>
+            <DialogContent>
+                <CircularProgress />
+            </DialogContent>
+        </>
+    }
+
+    console.log(error)
+    console.log(data)
+    console.log(data?.query_lesson_detail_with_lessonid?.success)
+
+    if (error || data?.query_lesson_detail_with_lessonid?.success === false) {
+        return <>
+            <DialogContent>
+                <span>error</span>
+            </DialogContent>
+        </>
+    }
+
+    const lesson_data = data?.query_lesson_detail_with_lessonid?.detail
+
     return (
         <>
             <DialogContent>
+
                 <Table>
                     <TableRow>
                         <TableCell>강사</TableCell>
                         <TableCell>
-                            <Chip label={`${props.data.instructorname}(${props.data.instructorphonenumber})`} />
+                            <Chip label={`${lesson_data.instructorname}(${lesson_data.instructorphonenumber})`} />
                         </TableCell>
 
                     </TableRow>
@@ -105,7 +145,7 @@ export default function NormalLessonDetailModalBaseView(props) {
                         <TableCell>회원</TableCell>
                         <TableCell>
 
-                            {unique_client_arr?.map(d => <Chip label={<div>{d.clientname}({d.clientphonenumber}){(() => {
+                            {lesson_data?.client_info_arr?.map(d => <Chip label={<div>{d.clientname}({d.clientphonenumber}){(() => {
                                 console.log(d)
                                 if (d.checkin_time !== null) {
                                     return <span className={classes.attendance_chip_true}>출석</span>
@@ -124,7 +164,7 @@ export default function NormalLessonDetailModalBaseView(props) {
                             수업종류
                         </TableCell>
                         <TableCell>
-                            <span>{activity_type_to_kor[props.data.activity_type]}/{grouping_type_to_kor[props.data.grouping_type]}</span>
+                            <span>{activity_type_to_kor[lesson_data.activity_type]}/{grouping_type_to_kor[lesson_data.grouping_type]}</span>
                         </TableCell>
                     </TableRow>
                     <TableRow>
@@ -132,7 +172,7 @@ export default function NormalLessonDetailModalBaseView(props) {
                             수업시간
                         </TableCell>
                         <TableCell>
-                            <span>{DateTime.fromMillis(parseInt(props.data.starttime)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')} ~ {DateTime.fromMillis(parseInt(props.data.endtime)).setZone('UTC+9').toFormat('HH:mm')}</span>
+                            <span>{DateTime.fromMillis(parseInt(lesson_data.starttime)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')} ~ {DateTime.fromMillis(parseInt(lesson_data.endtime)).setZone('UTC+9').toFormat('HH:mm')}</span>
                         </TableCell>
                     </TableRow>
 

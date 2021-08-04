@@ -140,13 +140,16 @@ module.exports = {
         query_lesson_detail_with_lessonid: async (parent, args) => {
             try {
 
-
+                console.log(args)
                 await pgclient.query('begin')
 
                 const lessonid = args.lessonid
 
-                let result = await pgclient.query(`select lesson.id as id, instructor.name as instructor_name, instructor.phonenumber as instructor_phonenumber, instructor.id as instructor_id, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type from lesson
-                left join instructor on instructor.id = lesson.instructorid where lesson.id= $1 `, [lessonid])
+                // fetch instructor and lesson basic info
+                let result = await pgclient.query(`select lesson.id as id, person.name as instructorname, person.phonenumber as instructorphonenumber, instructor.id as instructorid, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type from lesson
+                left join instructor on instructor.id = lesson.instructorid 
+                left join person on person.id = instructor.personid
+                where lesson.id= $1 `, [lessonid])
 
                 if (result.rows.length !== 1) {
                     throw {
@@ -159,73 +162,26 @@ module.exports = {
                 console.log('lesson_basic_info')
                 console.log(lesson_basic_info)
 
-                result = await pgclient.query(`select distinct on(ticketid) ticketid, client.id as clientid, client.name as client_name, client.phonenumber as client_phonenumber, plan.id as planid  from assign_ticket
+                // fetch client and ticket info
+                result = await pgclient.query(`WITH A as (select distinct on(ticketid) ticketid, client.id as clientid, person.name as clientname, person.phonenumber as clientphonenumber, plan.id as planid, assign_ticket.canceled_time
+                from assign_ticket
                 left join ticket on ticket.id = assign_ticket.ticketid
                 left join plan on ticket.creator_plan_id = plan.id
                 left join client on client.id = plan.clientid
-                where canceled_time is null
-                and lessonid = $1
-                order by ticketid, assign_ticket.created desc  `, [lessonid])
+                left join person on person.id = client.personid
+                where assign_ticket.lessonid = $1
+                order by ticketid, assign_ticket.created desc)
 
-                // convert to client-ticketid arr format
-                let client_to_ticket_id_arr_map = {}
-                let clientid_to_clientinfo_map = {}
+                select A.clientid, A.clientname, array_agg(A.ticketid) as ticketid_arr, A.clientphonenumber, normal_lesson_attendance.checkin_time from A
+                left join normal_lesson_attendance on normal_lesson_attendance.clientid = A.clientid and normal_lesson_attendance.lessonid = $1
+                where A.canceled_time is null
+                group by A.clientid, A.clientname, A.clientphonenumber, normal_lesson_attendance.checkin_time
+                `, [lessonid])
 
-                for (let i = 0; i < result.rows.length; i++) {
-                    const item = result.rows[i]
-
-                    const ticketid = item.ticketid
-                    const clientid = item.clientid
-
-                    let arr = client_to_ticket_id_arr_map[clientid]
-                    if (arr === undefined || arr === null) {
-                        client_to_ticket_id_arr_map[clientid] = [{
-                            ticketid: ticketid
-                        }]
-                    }
-                    else {
-                        arr.push({
-                            ticketid: ticketid
-                        })
-                    }
-
-
-                    const a = clientid_to_clientinfo_map[clientid]
-                    if (a === undefined) {
-                        clientid_to_clientinfo_map[clientid] = {
-                            clientid: clientid,
-                            clientname: item.client_name,
-                            clientphonenumber: item.client_phonenumber
-                        }
-                    }
-
-
-                }
-
-                console.log('client_to_ticket_id_arr_map')
-                console.log(client_to_ticket_id_arr_map)
-
-                const client_tickets = []
-
-                for (let p in client_to_ticket_id_arr_map) {
-                    let out = {}
-
-                    out = { ...clientid_to_clientinfo_map[p] }
-
-                    out.tickets = client_to_ticket_id_arr_map[p]
-
-                    console.log('single client tickets item')
-                    console.log(out)
-
-                    client_tickets.push(out)
-                }
-
-                console.log('client_tickets')
-                console.log(client_tickets)
-
+               
                 const detail = {
                     ...lesson_basic_info,
-                    client_tickets: client_tickets
+                    client_info_arr: result.rows
                 }
 
                 console.log('detail')

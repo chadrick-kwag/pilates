@@ -27,11 +27,16 @@ type ClientTickets {
 
 type LessonDetail {
     id: Int
+    client_info_arr: [LessonClientInfo]
+    instructorid: Int
+    instructorname: String
+    instructorphonenumber: String
     starttime: String
     endtime: String
     activity_type: String
     grouping_type: String
-    client_tickets: [ClientTickets]
+    memo: String
+    title: String
 }
 
 type query_lesson_detail_return{

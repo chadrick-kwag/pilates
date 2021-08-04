@@ -977,17 +977,21 @@ export const QUERY_LESSON_DETAIL_WITH_LESSONID = gql`
             msg
             detail {
                 id
+                instructorid
+                instructorname
+                instructorphonenumber
                 starttime
                 endtime
                 activity_type
                 grouping_type
-                client_tickets{
+                memo
+                title
+                client_info_arr{
                     clientid
                     clientname
                     clientphonenumber
-                    tickets{
-                        ticketid
-                    }
+                    ticketid_arr,
+                    checkin_time
                 }
             }
         }
