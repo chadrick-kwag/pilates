@@ -158,7 +158,7 @@ function CreateClientPage({ history, onSubmitSuccess, cancelBtnCallback }) {
             </TableRow>
         </Table>
         <div style={{ width: '100%', padding: '0.5rem', display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', boxSizing: 'border-box' }}>
-            <Button varaint='outlined' onClick={() => cancelBtnCallback?.()}>이전</Button>
+            <Button varaint='outlined' onClick={() => history.goBack()}>이전</Button>
             <Button disabled={is_submit_disabled()} varaint='outlined' onClick={() => request_submit()} >생성</Button>
 
         </div>

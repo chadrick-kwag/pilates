@@ -1,5 +1,7 @@
 import React from 'react'
-import { Button } from 'react-bootstrap'
+
+import { Button } from '@material-ui/core'
+import { withRouter, Switch, Route } from 'react-router-dom'
 
 
 import CreateClientPage from './CreateClientPage'
@@ -8,64 +10,30 @@ import ListClientPageV2 from './ListClientPage_v2'
 
 
 
-class ClientManagePage extends React.Component {
+function ClientManagePage({ history, match }) {
 
-    constructor(props) {
-        super(props)
 
-        this.state = {
-            view_mode: "list",
-            data: []
-        }
-    }
+    return <div style={{ width: '100%', height: '100%' }}>
+        <Switch>
+            <Route path={`${match.url}/create`}>
+                <CreateClientPage onSubmitSuccess={() => history.push(match.url)} />
+            </Route>
+            <Route path={match.url}>
+                <div style={{ width: '100%', height: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <div >
+                        <Button variant='outlined' onClick={e => history.push(`${match.url}/create`)}>회원생성</Button>
+                    </div>
+                    <div>
+                        <ListClientPageV2 />
+                    </div>
 
-    render() {
-
-        if (this.state.view_mode == "list") {
-            return <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-
-                <div >
-                    <Button onClick={e => this.setState({
-                        view_mode: 'create'
-                    })}>회원생성</Button>
                 </div>
+            </Route>
+        </Switch>
+    </div>
 
-
-                <div style={{ flexGrow: 1 }}>
-                    <ListClientPageV2 />
-                </div>
-
-            </div>
-        }
-        else if (this.state.view_mode == 'create') {
-            return <div>
-                <CreateClientPage apolloclient={this.props.apolloclient}
-                    cancelBtnCallback={() => {
-                        console.log('cancael btn clicked')
-                        this.setState({
-                            view_mode: 'list'
-                        })
-                    }}
-
-                    onSubmitSuccess={() => {
-                        this.setState({
-                            view_mode: 'list'
-                        })
-                    }}
-
-                    onSubmitFail={() => {
-                        alert('create client failed')
-                    }}
-                />
-            </div>
-        }
-        else {
-            return <div>invalid</div>
-        }
-
-    }
 }
 
 
 
-export default ClientManagePage
+export default withRouter(ClientManagePage)
