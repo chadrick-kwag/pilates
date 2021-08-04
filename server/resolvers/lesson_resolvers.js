@@ -1017,6 +1017,9 @@ module.exports = {
                     // remove assign tickets
                     await pgclient.query(`delete from assign_ticket where lessonid=$1`, [args.lessonid])
 
+                    // remove related attendances
+                    await pgclient.query(`delete from normal_lesson_attendance where lessonid=$1`, [args.lessonid])
+
                     // remove lesson
                     await pgclient.query(`delete from lesson where id=$1`, [args.lessonid])
 
@@ -1026,8 +1029,17 @@ module.exports = {
                     }
                 }
                 else if (args.request_type === 'instructor_req') {
-                    // remove assign tickets which are alive
 
+                    // if attended client exist, then abort
+                    let result = await pgclient.query(`select id from normal_lesson_attendance where lessonid=$1`, [args.lessonid])
+
+                    if (result.rowCount > 0) {
+                        throw {
+                            detail: "attended client exist"
+                        }
+                    }
+
+                    // remove assign tickets which are alive
                     await pgclient.query(`delete from assign_ticket where lessonid=$1 and canceled_time is null`, [args.lessonid])
 
                     // do not remove lesson but populate cancel time wth cancel type
@@ -1043,9 +1055,6 @@ module.exports = {
                         detail: "invalid request type"
                     }
                 }
-
-
-
 
             } catch (e) {
                 console.log(e)
@@ -1065,29 +1074,6 @@ module.exports = {
                     msg: e.detail
                 }
             }
-
-            let result = await pgclient.query(`select * from cancel_lesson_with_reqtype($1, $2) as (success bool, msg text)`, [args.lessonid, args.request_type.toLowerCase()]).then(res => {
-                console.log(res)
-
-                if (res.rowCount !== 1) {
-                    return {
-                        success: false,
-                        msg: 'rowcount not 1'
-                    }
-                }
-                else {
-                    return res.rows[0]
-                }
-            }).catch(e => {
-                console.log(e)
-                return {
-                    success: false,
-                    msg: 'query error'
-                }
-            })
-
-            return result
-
 
         },
         create_individual_lesson: async (parent, args) => {
