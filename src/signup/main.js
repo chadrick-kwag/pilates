@@ -58,7 +58,7 @@ function SignUpPage({ history }) {
 
     return <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
-            <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>아트필라테스 관리자 계정생성</span>
+            <span style={{ fontSize: '2.5rem', fontWeight: 'bold', wordBreak: 'keep-all', padding: '0.5rem', display: 'flex', justifyContent: 'center' }}>아트필라테스 관리자 계정생성</span>
         </div>
 
         <div>
@@ -91,8 +91,8 @@ function SignUpPage({ history }) {
                     </TableCell>
                 </TableRow>
                 <TableRow>
-                    <TableCell>
-                        연락처(전화번호/이메일)
+                    <TableCell styl={{ wordBreak: 'keep-all' }}>
+                        연락처 (전화번호/이메일)
                     </TableCell>
                     <TableCell>
                         <TextField variant='outlined' value={contact} onChange={a => setContact(a.target.value)} onKeyDown={e => {

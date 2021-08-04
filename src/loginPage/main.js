@@ -44,13 +44,13 @@ function MainPage({ history }) {
     return <div style={{ width: "100%", height: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <div>
             <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
-                <span style={{ fontSize: '2.5rem', fontWeight: 'bold', padding: '1rem' }}>아트필라테스 관리자 로그인</span>
+                <span style={{ fontSize: '2.5rem', fontWeight: 'bold', padding: '1rem', wordBreak: 'keep-all', display: 'flex', justifyContent: 'center' }}>아트필라테스 관리자 로그인</span>
             </div>
             <div>
 
                 <Table>
                     <TableRow>
-                        <TableCell style={{whiteSpace: 'nowrap'}}>
+                        <TableCell style={{ whiteSpace: 'nowrap' }}>
                             아이디
                         </TableCell>
                         <TableCell>
@@ -58,7 +58,7 @@ function MainPage({ history }) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell style={{whiteSpace: 'nowrap'}}>
+                        <TableCell style={{ whiteSpace: 'nowrap' }}>
                             비밀번호
                         </TableCell>
                         <TableCell>
