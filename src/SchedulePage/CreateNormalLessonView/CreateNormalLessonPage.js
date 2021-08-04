@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react'
-import { Table, TableRow, TableHead, TableCell, Select, MenuItem, Button, CircularProgress, Chip } from '@material-ui/core'
+import { Grid, Table, TableRow, TableHead, TableCell, Select, MenuItem, Button, CircularProgress, Chip } from '@material-ui/core'
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 
 
@@ -8,7 +8,6 @@ import client from '../../apolloclient'
 import koLocale from "date-fns/locale/ko";
 
 import DateFnsUtils from "@date-io/date-fns";
-import { DateTime } from 'luxon'
 
 import InstructorSearchComponent from '../../components/InstructorSearchComponent4'
 
@@ -18,6 +17,8 @@ import AddClientDialog from './AddClientDialog'
 import SelectPlanAndTicketDialog from './SelectPlanAndTicketsDialog'
 
 import { CREATE_LESSON_GQL } from '../../common/gql_defs'
+import { withRouter } from 'react-router-dom'
+import { useLazyQuery, useMutation } from '@apollo/client';
 
 
 const get_init_lesson_start_date = () => {
@@ -31,8 +32,8 @@ const get_init_lesson_start_date = () => {
     return d
 }
 
- 
-export default function CreateNormalLessonPage(props) {
+
+function CreateNormalLessonPage(props) {
 
 
 
@@ -52,7 +53,22 @@ export default function CreateNormalLessonPage(props) {
     const [showSelectPlanAndTicketDialog, setShowSelectPlanAndTicketDialog] = useState(false)
     const [selectPlanAndTicketDialogClientIndex, setSelectPlanAndTicketDialogClientIndex] = useState(null)
 
+    const [requestCreate, { loading, request_create_response, error }] = useMutation(CREATE_LESSON_GQL, {
+        client: client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            if (d.create_lesson.success) {
+                props.history.push('/schedule')
+                return
+            }
 
+            alert('생성 실패')
+        },
+        onError: e => {
+            console.log(e)
+            alert('생성 에러')
+        }
+    })
 
 
     const request_create = () => {
@@ -143,35 +159,22 @@ export default function CreateNormalLessonPage(props) {
 
         console.log(_var)
 
-        client.mutate({
-            mutation: CREATE_LESSON_GQL,
-            variables: _var,
-            fetchPolicy: 'no-cache'
-        }).then(res => {
-            console.log(res)
-
-            if (res.data.create_lesson.success) {
-                props.onSuccess?.()
-            }
-            else {
-                alert(`create lesson failed. msg: ${res.data.create_lesson.msg}`)
-            }
-        }).catch(e => {
-            console.log(JSON.stringify(e))
-            console.log(e)
-            alert('create lesson error')
+        requestCreate({
+            variables: _var
         })
+
     }
 
     return (
         <>
 
-            <div style={{ width: '100%' }}>
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '2rem' }}>일반 수업</span>
                 <Table>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             액티비티
-                </TableCell>
+                        </TableCell>
                         <TableCell>
                             <Select value={activityType} onChange={e => setActivityType(e.target.value)} >
                                 <MenuItem value={'PILATES'}>필라테스</MenuItem>
@@ -183,9 +186,9 @@ export default function CreateNormalLessonPage(props) {
 
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             그룹
-                    </TableCell>
+                        </TableCell>
                         <TableCell>
                             <Select value={groupingType} onChange={e => setGroupingType(e.target.value)} >
                                 <MenuItem value={'INDIVIDUAL'}>개별</MenuItem>
@@ -195,7 +198,7 @@ export default function CreateNormalLessonPage(props) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             강사 선택
                         </TableCell>
                         <TableCell>
@@ -203,7 +206,7 @@ export default function CreateNormalLessonPage(props) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             회원선택
                         </TableCell>
                         <TableCell>
@@ -255,13 +258,15 @@ export default function CreateNormalLessonPage(props) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             수업시간선택
                         </TableCell>
                         <TableCell>
-                            <div className='row-gravity-left children-padding'>
-                                <div className="children-padding row-gravity-center">
-                                    <span>시작시간</span>
+                            <Grid container style={{ alignItems: 'center' }}>
+                                <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+                                    <span style={{ wordBreak: 'keep-all' }}>시작시간</span>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
                                     <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
                                         <DateTimePicker
                                             variant="inline"
@@ -273,16 +278,21 @@ export default function CreateNormalLessonPage(props) {
                                             ampm={false}
                                         />
                                     </MuiPickersUtilsProvider>
-                                </div>
-                                <div className="children-padding row-gravity-center">
-                                    <span>길이시간</span>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+                                    <span style={{ wordBreak: 'keep-all' }}>길이시간</span>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+
                                     <Select value={lessonDurationHours} onChange={e => setLessonDurationHours(e.target.value)}>
 
                                         {availLessonDurationHours.map(d => <MenuItem value={d}>{d}</MenuItem>)}
 
                                     </Select>
-                                </div>
-                            </div>
+                                </Grid>
+
+
+                            </Grid>
 
                         </TableCell>
                     </TableRow>
@@ -291,7 +301,7 @@ export default function CreateNormalLessonPage(props) {
 
 
             <div className="row-gravity-center children-padding">
-                <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>이전</Button>
+                <Button variant='outlined' color='secondary' onClick={e => props.history.goBack()}>이전</Button>
                 <Button variant='outlined' onClick={e => request_create()}>생성</Button>
             </div>
 
@@ -325,3 +335,6 @@ export default function CreateNormalLessonPage(props) {
         </>
     )
 }
+
+
+export default withRouter(CreateNormalLessonPage)

@@ -31,18 +31,8 @@ module.exports = (env, argv) => {
             },
             plugins: [
                 new hwp({
-                    template: "./checkin_app_src/template.html",
-                    publicPath: (() => {
-
-                        console.log(process.env.NODE_ENV)
-
-                        if (process.env.NODE_ENV === 'WEBPACK_DEV_SERVER') {
-                            return '/'
-                        }
-                        else {
-                            return "/checkin"
-                        }
-                    })()
+                    template: "./checkin_app_src/template.html"
+                    
                 })
 
             ],

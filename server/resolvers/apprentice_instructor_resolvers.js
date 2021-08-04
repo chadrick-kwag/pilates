@@ -6,70 +6,74 @@ module.exports = {
 
     Query: {
         fetch_apprentice_instructors: async (parent, args) => {
-            console.log('fetch_apprentice_instructors')
 
-            let result = pgclient.query(`select apprentice_instructor.id as id,apprentice_instructor.name as name, phonenumber, apprentice_course.name as course_name, gender from apprentice_instructor left join apprentice_course on apprentice_instructor.course = apprentice_course.id`).then(
-                res => {
+            try {
+                let result = await pgclient.query(`select apprentice_instructor.id as id,person.name as name, person.phonenumber, apprentice_course.name as course_name, person.gender from apprentice_instructor 
+                left join apprentice_course on apprentice_instructor.course = apprentice_course.id
+                left join person on person.id = apprentice_instructor.personid
+                `)
 
-                    return {
-                        success: true,
-                        apprenticeInstructors: res.rows
-                    }
+                return {
+                    success: true,
+                    apprenticeInstructors: result.rows
                 }
-            ).catch(e => {
+            }
+            catch (e) {
                 console.log(e)
                 return {
                     success: false,
                     msg: e.detail
                 }
-            })
+            }
 
-            return result
         },
         query_apprentice_instructor_by_name: async (parent, args) => {
-            let result = await pgclient.query(`select array_agg(json_build_object('id', id,
-            'phonenumber', phonenumber,
-            'name', name,
-            'gender', gender
-           )) as data from apprentice_instructor where name=$1`, [args.name]).then(res => {
-                console.log(res.rows)
+
+            try {
+                let result = await pgclient.query(`select apprentice_instructor.id, person.name, person.phonenumber, person.gender from apprentice_instructor
+                left join person on person.id = apprentice_instructor.personid where person.name=$1`, [args.name])
+
                 return {
                     success: true,
-                    apprenticeInstructors: res.rows[0].data
+                    apprenticeInstructors: result.rows
                 }
-            }).catch(e => {
+            }
+            catch (e) {
                 console.log(e)
-                return {
-                    success: false,
-                    msg: 'query error'
-                }
-            })
 
-            console.log(result)
-
-            return result
-        },
-        fetch_apprentice_instructor_by_id: async (parent, args) => {
-            let result = await pgclient.query(`select array_agg(json_build_object('id', apprentice_instructor.id,
-            'phonenumber', phonenumber,
-            'name', apprentice_instructor.name,
-            'gender', gender,
-            'course_name', apprentice_course.name,
-            'course_id', apprentice_course.id
-           )) as data from apprentice_instructor left join apprentice_course on apprentice_course.id = apprentice_instructor.course where apprentice_instructor.id=$1`, [args.id]).then(res => {
-                return {
-                    success: true,
-                    apprenticeInstructors: res.rows[0].data
-                }
-            }).catch(e => {
-                console.log(e)
                 return {
                     success: false,
                     msg: e.detail
                 }
-            })
+            }
 
-            return result
+        },
+        fetch_apprentice_instructor_by_id: async (parent, args) => {
+
+
+            try {
+                let result = await pgclient.query(`select apprentice_instructor.id, person.name, person.phonenumber, person.gender, 
+                apprentice_course.name as course_name, apprentice_course.id as course_id
+                from apprentice_instructor
+                left join apprentice_course on apprentice_course.id = apprentice_instructor.course
+                left join person on person.id = apprentice_instructor.personid
+                where apprentice_instructor.id=$1
+                `, [args.id])
+
+                return {
+                    success: true,
+                    apprenticeInstructors: result.rows
+                }
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+         
 
         }
     },
@@ -78,56 +82,94 @@ module.exports = {
             console.log('create_apprentice_instructor')
             console.log(args)
 
-            let _args = [args.name, args.phonenumber, args.course_id, args.gender]
-            console.log(_args)
+            try {
 
-            let result = pgclient.query(`insert into apprentice_instructor (name, phonenumber, course, gender) values ($1, $2, $3, $4)`, _args).then(
-                res => {
-                    if (res.rowCount === 1) {
-                        return {
-                            success: true
-                        }
-                    }
-                    else {
-                        return {
-                            success: false,
-                            msg: "rowcount not 1"
-                        }
-                    }
+                await pgclient.query('begin')
+
+                // check if person exists
+
+                let result = await pgclient.query(`select id from person where name=$1 and phonenumber=$2`, [args.name, args.phonenumber])
+
+                let personid
+                if(result.rowCount>0){
+                    personid = result.rows[0].id
                 }
-            ).catch(e => {
-                console.log(e)
-                return {
-                    success: false,
-                    msg: e.detail
+                else{
+                    result = await pgclient.query('insert into person (name, phonenumber, gender) values ($1, $2, $3) returning id', [ args.name, args.phonenumber, args.gender])
+                    
+
+                    personid = result.rows[0].id
                 }
-            })
 
-            return result
-        },
-        update_apprentice_instructor: async (parent, args) => {
+                // create apprentice instructor
+                result = await pgclient.query(`insert into apprentice_instructor (course, personid) values ($1, $2)`, [args.course_id, personid])
 
-            console.log('update_apprentice_instructor')
+                
+                await pgclient.query('commit')
 
-            let _args = [
-                args.name, args.phonenumber, args.course_id, args.gender, args.id
-            ]
-
-            console.log(_args)
-
-            let result = await pgclient.query(`update apprentice_instructor set name=$1, phonenumber=$2, course=$3, gender=$4 where id=$5`, _args).then(res => {
                 return {
                     success: true
                 }
-            }).catch(e => {
+
+            } catch (e) {
                 console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+
                 return {
                     success: false,
                     msg: e.detail
                 }
-            })
+            }
 
-            return result
+         
+        },
+        update_apprentice_instructor: async (parent, args) => {
+
+            try{
+
+                await pgclient.query('begin')
+
+                // update apprentice instructor
+                let result = await pgclient.query(`update apprentice_instructor set course=$1 where id=$2 returning personid`, [args.course_id, args.id])
+
+                let personid = result.rows[0].personid
+
+                result = await pgclient.query(`update person set name=$1, phonenumber=$2, gender=$3 where id=$4`, [args.name, args.phonenumber, args.gender, personid])
+                
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            }catch(e){
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
 
         }
     }

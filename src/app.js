@@ -15,7 +15,8 @@ import SchedulePage from './SchedulePage/SchedulePage'
 
 import ClientManagePage from './ClientManage/ClientManagePage'
 
-import InstructorManagePage from './InstructorManage/InstructorManagePage'
+// import InstructorManagePage from './InstructorManage/InstructorManagePage'
+import InstructorManagePage from './InstructorManage/main'
 import SubscriptionManagePage from './SubscriptionManage/SubscriptionManagePage'
 
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
@@ -46,11 +47,22 @@ import AdminAccountRequestPage from './AdminAccountManage/AdminAccountRequsetPag
 import AdminAccountControlPage from './AdminAccountManage/AdminAccountControlPage'
 import ProfilePage from './profilePage/main'
 import PersonIcon from '@material-ui/icons/Person';
+import './common/subscription.css'
+
+import { createTheme, ThemeProvider } from '@material-ui/core/styles'
+
+
 
 Number.prototype.format = function () {
     return this.toString().split(/(?=(?:\d{3})+(?:\.|$))/g).join(",");
 };
 
+
+const theme = createTheme({
+    typography: {
+        fontFamily: 'Noto Sans KR, sans-serif'
+    }
+});
 
 class App extends React.Component {
 
@@ -95,15 +107,15 @@ class App extends React.Component {
 
                                 <span style={{ color: 'white', marginRight: '2rem', whiteSpace: 'nowrap' }}>ver {packagejson.version}</span>
 
-                                <Button style={{ textTransform: 'none', marginRight: '0.5rem', width: 'min-content'}} variant='contained' onClick={(e) => {
+                                <Button style={{ textTransform: 'none', marginRight: '0.5rem', width: 'min-content' }} variant='contained' onClick={(e) => {
                                     this.setState({
                                         userprofile_el: e.target
                                     })
                                 }}>
-                                    <div style={{display: 'flex', flexDirection: 'row'}}><PersonIcon style={{ rightMargin: '0.5rem' }} />
-                                    <span style={{whiteSpace: 'nowrap'}}>{(() => {
-                                        return localStorage.getItem('pilates-username')
-                                    })()}님</span></div>
+                                    <div style={{ display: 'flex', flexDirection: 'row', textOverflow: 'ellipsis', overflow: 'hidden' }}><PersonIcon style={{ rightMargin: '0.5rem' }} />
+                                        <span style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{(() => {
+                                            return localStorage.getItem('pilates-username')
+                                        })()}님</span></div>
                                 </Button>
                                 <Menu
                                     anchorEl={this.state.userprofile_el}
@@ -137,7 +149,7 @@ class App extends React.Component {
                     </Grid>
                 </div>
 
-                <div style={{ flex: '1' }}>
+                <div style={{ flex: '1 0 auto' }}>
                     <Switch>
                         <Route path='/dashboard'>
                             <DashBoardContainer />
@@ -202,22 +214,25 @@ const _App = withRouter(App)
 
 ReactDOM.render(<ApolloProvider client={client}>
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
-        <Router>
-            <Switch>
-                <Route path='/login'>
-                    <LoginPage />
-                </Route>
-                <Route path='/signup'>
-                    <SignUpPage />
-                </Route>
-                <Route path='/'>
-                    <AuthenticateWrapper>
-                        <_App />
-                    </AuthenticateWrapper>
-                </Route>
-            </Switch>
+        <ThemeProvider theme={theme}>
+            <Router>
+                <Switch>
+                    <Route path='/login'>
+                        <LoginPage />
+                    </Route>
+                    <Route path='/signup'>
+                        <SignUpPage />
+                    </Route>
+                    <Route path='/'>
+                        <AuthenticateWrapper>
+                            <_App />
+                        </AuthenticateWrapper>
+                    </Route>
+                </Switch>
 
 
-        </Router>
+            </Router>
+        </ThemeProvider>
+
 
     </MuiPickersUtilsProvider></ApolloProvider>, document.getElementById('app'))

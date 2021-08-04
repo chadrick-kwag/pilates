@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Table, TableRow, TableHead, TableCell, Select, MenuItem, Button, CircularProgress } from '@material-ui/core'
+import { Grid, Table, TableRow, TableHead, TableCell, Select, MenuItem, Button, CircularProgress } from '@material-ui/core'
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import ErrorIcon from '@material-ui/icons/Error';
 import ApprenticeInstructorSearchComponent from '../components/ApprenticeInstructorSearchComponent'
@@ -10,6 +10,8 @@ import koLocale from "date-fns/locale/ko";
 
 import DateFnsUtils from "@date-io/date-fns";
 import { DateTime } from 'luxon'
+import { withRouter } from 'react-router-dom'
+import { useLazyQuery, useMutation } from '@apollo/client'
 
 
 const get_init_lesson_start_date = () => {
@@ -21,12 +23,10 @@ const get_init_lesson_start_date = () => {
     d.setMilliseconds(0)
 
     return d
-
-
 }
 
 
-export default function CreateApprenticeLesson(props) {
+function CreateApprenticeLesson({ history }) {
 
     const [activityType, setActivityType] = useState(null)
     const [groupingType, setGroupingType] = useState(null)
@@ -35,6 +35,33 @@ export default function CreateApprenticeLesson(props) {
     const [selectedPlan, setSelectedPlan] = useState(null)
     const [lessonStartTime, setLessonStartTime] = useState(get_init_lesson_start_date())
     const [lessonDurationHours, setLessonDurationHours] = useState(null)
+
+
+    const [fetchPlans, { loading, data: fetchedPlans, error }] = useLazyQuery(FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE, {
+        client: client,
+        fetchPolicy: 'no-cache',
+
+    })
+
+
+    const [requestCreate, { loading: loading2, data: request_create_response, error: error2 }] = useMutation(CREATE_APPRENTICE_LESSON, {
+        client: client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            console.log(d)
+            if (d.create_apprentice_lesson.success) {
+                history.push('/schedule')
+            }
+            else {
+                alert('생성 실패')
+            }
+        },
+        onError: e => {
+            console.log(e)
+            alert('생성 에러')
+        }
+
+    })
 
 
     const availLessonDurationHours = [1, 2, 3, 4, 5, 6, 7]
@@ -56,29 +83,15 @@ export default function CreateApprenticeLesson(props) {
             plan_id: selectedPlan.id
         }
 
-        client.mutate({
-            mutation: CREATE_APPRENTICE_LESSON,
-            variables: _var,
-            fetchPolicy: 'no-cache'
-        }).then(res => {
-            console.log(res)
-            if (res.data.create_apprentice_lesson.success) {
-                props.onSuccess?.()
-            }
-            else {
-                const msg = res.data.create_apprentice_lesson.msg
-                alert(`create lesson failed. msg: ${msg}`)
-            }
-        }).catch(e => {
-            console.log(JSON.stringify(e))
-            alert('create lesson error')
+        requestCreate({
+            variables: _var
         })
+
+
 
     }
 
     const fetch_plans = () => {
-
-        console.log('fetch plans')
 
 
         // check input
@@ -93,25 +106,9 @@ export default function CreateApprenticeLesson(props) {
             grouping_type: groupingType
         }
 
-        console.log(_var)
 
-        client.query({
-            query: FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE,
-            variables: _var,
-            fetchPolicy: 'no-cache'
-        }).then(res => {
-            console.log(res)
-            if (res.data.fetch_apprentice_plans_of_apprentice_instructor_and_agtype.success) {
-                const arr = res.data.fetch_apprentice_plans_of_apprentice_instructor_and_agtype.plans
-                setPlanArr(arr)
-            }
-            else {
-                const msg = res.data.fetch_apprentice_plans_of_apprentice_instructor_and_agtype.msg
-                alert(`fetch plans failed. msg: ${msg}`)
-            }
-        }).catch(e => {
-            console.log(JSON.stringify(e))
-            alert('fetch plans error')
+        fetchPlans({
+            variables: _var
         })
     }
 
@@ -127,17 +124,17 @@ export default function CreateApprenticeLesson(props) {
 
     }, [activityType, groupingType, selectedAppInst])
 
-    console.log('plan arr')
-    console.log(planArr)
+
 
     return (
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+            <span style={{ wordBreak: 'keep-all', fontSize: '2rem' }}>견습강사 주도수업</span>
             <div>
                 <Table>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             액티비티
-                    </TableCell>
+                        </TableCell>
                         <TableCell>
                             <Select value={activityType} onChange={e => setActivityType(e.target.value)} >
                                 <MenuItem value={'PILATES'}>필라테스</MenuItem>
@@ -146,9 +143,9 @@ export default function CreateApprenticeLesson(props) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             그룹
-                    </TableCell>
+                        </TableCell>
                         <TableCell>
                             <Select value={groupingType} onChange={e => setGroupingType(e.target.value)} >
                                 <MenuItem value={'INDIVIDUAL'}>개별</MenuItem>
@@ -158,7 +155,7 @@ export default function CreateApprenticeLesson(props) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             견습강사 선택
                         </TableCell>
                         <TableCell>
@@ -166,92 +163,111 @@ export default function CreateApprenticeLesson(props) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             플랜선택
                         </TableCell>
                         <TableCell>
                             {(() => {
                                 // if no appinst selected, disable
+
                                 if (selectedAppInst === null || activityType === null || groupingType === null) {
                                     return <span>강사,수업종류를 먼저 선택해주세요</span>
                                 }
 
-                                if (planArr === null) {
+                                if (loading) {
                                     return <CircularProgress />
                                 }
-                                else if (planArr.length === 0) {
-                                    return <div><ErrorIcon /><span>플랜 없음</span></div>
+
+
+
+                                //FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE
+
+                                console.log('fetchedPlans')
+                                console.log(fetchedPlans)
+
+                                if (error || fetchedPlans?.fetch_apprentice_plans_of_apprentice_instructor_and_agtype?.success === false) {
+                                    return <span><ErrorIcon />플랜 조회 실패</span>
                                 }
-                                else {
-                                    return <Select value={selectedPlan === null ? null : selectedPlan.id} onChange={e => {
-                                        // find plan with id
-                                        for (let j = 0; j < planArr.length; j++) {
-                                            if (planArr[j].id === e.target.value) {
-                                                setSelectedPlan(planArr[j])
-                                                break
+                                const plans = fetchedPlans?.fetch_apprentice_plans_of_apprentice_instructor_and_agtype?.plans
+
+                                if (plans === undefined) {
+                                    return null
+                                }
+
+                                return <Select value={selectedPlan === null ? null : selectedPlan.id} onChange={e => {
+                                    // find plan with id
+                                    for (let j = 0; j < plans.length; j++) {
+                                        if (plans[j].id === e.target.value) {
+                                            setSelectedPlan(plans[j])
+                                            break
+                                        }
+                                    }
+
+                                }}
+                                    label={selectedPlan === null ? '검색해주세요' : '선택되었습니다'}
+                                >
+                                    {(() => {
+
+                                        const filtered_plan_arr = plans.filter(d => {
+                                            if (d.remainrounds > 0) {
+                                                return true
                                             }
+                                            return false
+                                        })
+
+
+
+                                        if (filtered_plan_arr.length === 0) {
+                                            const retarr = new Array()
+                                            retarr.push(<MenuItem>no results</MenuItem>)
+                                            return retarr
+                                        }
+                                        else {
+                                            return filtered_plan_arr.map((d, i) => <MenuItem value={d.id}>남은횟수:{d.remainrounds}(플랜생성일:{DateTime.fromMillis(parseInt(d.created)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')})</MenuItem>)
                                         }
 
-                                    }}
-                                    label={selectedPlan===null? '검색해주세요' : '선택되었습니다'}
-                                    >
-                                        {(() => {
-
-                                            const filtered_plan_arr = planArr.filter(d => {
-                                                if (d.remainrounds > 0) {
-                                                    return true
-                                                }
-                                                return false
-                                            })
-
-
-
-                                            if (filtered_plan_arr.length === 0) {
-                                                const retarr = new Array()
-                                                retarr.push(<MenuItem>no results</MenuItem>)
-                                                return retarr
-                                            }
-                                            else {
-                                                return filtered_plan_arr.map((d, i) => <MenuItem value={d.id}>남은횟수:{d.remainrounds}(플랜생성일:{DateTime.fromMillis(parseInt(d.created)).setZone('UTC+9').toFormat('y-LL-dd HH:mm')})</MenuItem>)
-                                            }
-
-                                        })().map(d => d)}
-                                    </Select>
-                                }
+                                    })().map(d => d)}
+                                </Select>
                             })()}
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
                             수업시간선택
                         </TableCell>
                         <TableCell>
                             <div className='row-gravity-left children-padding'>
-                                <div className="children-padding row-gravity-center">
-                                    <span>시작시간</span>
-                                    <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
 
-                                        <DateTimePicker
-                                            variant="inline"
+                                <Grid container style={{ alignItems: 'center' }}>
+                                    <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+                                        <span style={{ wordBreak: 'keep-all' }}>시작시간</span>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+                                        <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
 
-                                            value={lessonStartTime}
-                                            onChange={e => {
-                                                setLessonStartTime(e)
-                                            }}
-                                            minutesStep={15}
-                                            ampm={false}
-                                        />
-                                    </MuiPickersUtilsProvider>
-                                </div>
-                                <div className="children-padding row-gravity-center">
-                                    <span>길이시간</span>
-                                    <Select value={lessonDurationHours} onChange={e => setLessonDurationHours(e.target.value)}>
+                                            <DateTimePicker
+                                                variant="inline"
 
-                                        {availLessonDurationHours.map(d => <MenuItem value={d}>{d}</MenuItem>)}
+                                                value={lessonStartTime}
+                                                onChange={e => {
+                                                    setLessonStartTime(e)
+                                                }}
+                                                minutesStep={15}
+                                                ampm={false}
+                                            />
+                                        </MuiPickersUtilsProvider>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+                                        <span style={{ wordBreak: 'keep-all' }}>길이시간</span>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={3} style={{ padding: '0.5rem' }}>
+                                        <Select value={lessonDurationHours} onChange={e => setLessonDurationHours(e.target.value)}>
 
-                                    </Select>
-                                </div>
+                                            {availLessonDurationHours.map(d => <MenuItem value={d}>{d}</MenuItem>)}
 
+                                        </Select>
+                                    </Grid>
+                                </Grid>
 
                             </div>
 
@@ -260,11 +276,14 @@ export default function CreateApprenticeLesson(props) {
                 </Table>
             </div>
             <div className="row-gravity-center children-padding">
-                <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>이전</Button>
-                <Button variant='outlined' onClick={e => request_create()}>생성</Button>
+                <Button variant='outlined' color='secondary' onClick={e => history.goBack()}>이전</Button>
+                <Button variant='outlined' onClick={e => request_create()}>{loading2 ? <CircularProgress /> : '생성'}</Button>
             </div>
 
 
         </div>
     )
 }
+
+
+export default withRouter(CreateApprenticeLesson)

@@ -15,6 +15,7 @@ type Mutation{
     change_expire_time_of_apprentice_tickets(id_arr:[Int!], new_expire_time: String!): SuccessResult
     transfer_apprentice_tickets_to_apprentice(id_arr:[Int!], apprentice_id: Int!): SuccessResult
     delete_apprentice_tickets(id_arr:[Int!]): SuccessResult
+    update_totalcost_of_plan(id:Int!, totalcost: Int!): SuccessResult
 }
 
 type SuccessAndApprenticeTicketResult{
