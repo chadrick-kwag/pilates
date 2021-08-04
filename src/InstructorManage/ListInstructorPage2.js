@@ -124,20 +124,20 @@ function ListInstructorPage({ history }) {
                     <div style={{ width: '100%', display: 'flex', height: '4rem', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
 
                         <Grid container>
-                            <Grid item xs={4} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                            <Grid item xs={3} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                 <Button variant='contained' color="primary" onClick={() => {
                                     history.push('/instructormanage/create')
                                 }}>강사생성</Button>
 
                             </Grid>
-                            <Grid item xs={4}>
+                            <Grid item xs={6}>
                                 <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
 
-                                    <span style={{ marginRight: '0.5rem' }}>이름검색</span>
+                                    <span style={{ marginRight: '0.5rem', wordBreak: 'keep-all' }}>이름검색</span>
                                     <TextField variant='outlined' value={searchName} onChange={a => setSearchName(a.target.value)} />
                                 </div>
                             </Grid>
-                            <Grid item xs={4}>
+                            <Grid item xs={3}>
 
                             </Grid>
 
