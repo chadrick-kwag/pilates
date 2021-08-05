@@ -13,7 +13,7 @@ export default function Container(props) {
     console.log('container')
     console.log(props)
 
-    const [tickets, setTickets] = useState(props.clientTickets.tickets)
+    const [tickets, setTickets] = useState(props.clientTickets.ticketid_arr)
     const [viewMode, setViewMode] = useState('base')
 
     if (viewMode === 'base') {
@@ -36,11 +36,11 @@ export default function Container(props) {
             clientid={props.clientTickets.clientid}
             activity_type={props.activity_type}
             grouping_type={props.grouping_type}
-            existingTicketIdArr={tickets.map(d=>d.ticketid)}
+            existingTicketIdArr={tickets.map(d => d.ticketid)}
             onTicketAdd={t => {
                 console.log('ticket selected. ticket id:')
                 console.log(t)
-                const _tickets = [...tickets, { ticketid: t }]
+                const _tickets = [...tickets, t]
                 setTickets(_tickets)
                 setViewMode('base')
             }}

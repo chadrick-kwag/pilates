@@ -6,6 +6,9 @@ import AddIcon from '@material-ui/icons/Add';
 
 
 export default function BaseView(props) {
+    
+    console.log('baseview')
+    console.log(props)
 
     return (
         <>
@@ -30,7 +33,7 @@ export default function BaseView(props) {
                             <List>
                                 {props.tickets.map((d, i) => <ListItem >
                                     <div>
-                                        <span>id: {d.ticketid}</span>
+                                        <span>id: {d}</span>
                                     </div>
                                     <IconButton onClick={() => {
                                         const new_tickets = [...props.tickets]

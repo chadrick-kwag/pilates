@@ -39,8 +39,8 @@ export default function BaseView(props) {
         for (let i = 0; i < props.clientsAndTickets.length; i++) {
             const ct = props.clientsAndTickets[i]
 
-            if (ct.tickets.length !== durationHours) {
-                console.log(`duration: ${durationHours}, tickets length: ${ct.tickets.length}`)
+            if (ct.ticketid_arr.length !== durationHours) {
+                console.log(`duration: ${durationHours}, tickets length: ${ct.ticketid_arr.length}`)
                 return false
             }
 
@@ -81,7 +81,7 @@ export default function BaseView(props) {
                                 <Box>
                                     {props.clientsAndTickets.map((d, i) => <ClientTicketChip name={d.clientname} slotTotal={props.durationHours}
                                         phonenumber={d.clientphonenumber}
-                                        tickets={d.tickets}
+                                        tickets={d.ticketid_arr}
                                         onEditClientTickets={() => {
                                             props.switchToClientTicketEditMode(i)
                                         }}

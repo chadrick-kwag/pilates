@@ -61,27 +61,27 @@ export default function AddTicketView(props) {
                 // remove existing ticket
                 const new_data = []
 
-                for(let i=0;i<data.length;i++){
+                for (let i = 0; i < data.length; i++) {
                     const a = data[i]
 
                     const new_tickets = []
 
                     // redo tickets, remove if ticket has same id as existing ticket id arr
-                    for(let j=0;j<a.tickets.length;j++){
+                    for (let j = 0; j < a.tickets.length; j++) {
                         let match_exist = false
-                        for(let k=0;k<props.existingTicketIdArr.length;k++){
-                            if(a.tickets[j].id === props.existingTicketIdArr[k]){
+                        for (let k = 0; k < props.existingTicketIdArr.length; k++) {
+                            if (a.tickets[j].id === props.existingTicketIdArr[k]) {
                                 match_exist = true
                                 break
                             }
                         }
 
-                        if(!match_exist){
+                        if (!match_exist) {
                             new_tickets.push(a.tickets[j])
                         }
                     }
 
-                    if(new_tickets.length>0){
+                    if (new_tickets.length > 0) {
                         a.tickets = new_tickets
                         new_data.push(a)
                     }
@@ -114,7 +114,10 @@ export default function AddTicketView(props) {
             <>
                 <DialogContent>
                     <List>
-                        {plans.map(p => <ListItem button onClick={() => props.onTicketAdd?.(p.tickets[0].id)}>
+                        {plans.map(p => <ListItem button onClick={() => {
+                            console.log('clicked')
+                            props.onTicketAdd?.(p.tickets[0].id)
+                        }}>
                             <span>잔여횟수: {p.tickets.length}/{p.plan_total_rounds}, 가장빠른만료기한:{format_date(get_fastest_expiretime_ticket(p.tickets))}</span>
                         </ListItem>)}
                     </List>

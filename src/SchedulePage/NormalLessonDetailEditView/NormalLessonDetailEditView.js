@@ -6,10 +6,13 @@ import BaseView from './BaseView'
 import AddClientView from './AddClientView'
 import ChangeInstructorView from './ChangeInstructorView'
 
+import { CircularProgress } from '@material-ui/core'
 
 import client from '../../apolloclient'
 import { QUERY_LESSON_DETAIL_WITH_LESSONID, CHANGE_NORMAL_LESSON_OVERALL } from '../../common/gql_defs'
 import ClientTicketMangePage from './ClientTicketManagePage/Container'
+
+import { useQuery } from '@apollo/client'
 
 export default function NormalLessonDetailEditView(props) {
 
@@ -32,6 +35,46 @@ export default function NormalLessonDetailEditView(props) {
     const [clientTicketsIndexToEdit, setClientTicketsIndexToEdit] = useState(null)
 
 
+    const { loading, error, data: initialData } = useQuery(QUERY_LESSON_DETAIL_WITH_LESSONID, {
+        client: client,
+        fetchPolicy: 'no-cache',
+        variables: {
+            lessonid: props.data.indomain_id
+        },
+        onCompleted: res => {
+            console.log(res)
+
+            if (res.query_lesson_detail_with_lessonid.success == false) {
+                return alert('데이터 조회 실패')
+            }
+
+            const d = res.query_lesson_detail_with_lessonid.detail
+
+            // distribute data to each states
+            setActivityType(d.activity_type)
+            setGroupingType(d.grouping_type)
+
+            setStartTime(DateTime.fromMillis(parseInt(d.starttime)).setZone('UTC+9'))
+
+            const _st = DateTime.fromMillis(parseInt(d.starttime))
+            const et = DateTime.fromMillis(parseInt(d.endtime))
+
+            const duration = et.diff(_st)
+            const hours = duration.as('hours')
+
+            setDurationHours(hours)
+            setClientsAndTickets(d.client_info_arr)
+
+            setData(d)
+
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+            alert('데이터 조회 에러')
+        }
+    })
+
+
 
     const [data, setData] = useState(null)
 
@@ -44,7 +87,7 @@ export default function NormalLessonDetailEditView(props) {
         const _cts = clientsAndTickets.map(d => {
             return {
                 clientid: d.clientid,
-                tickets: d.tickets.map(a => a.ticketid)
+                tickets: d.tickets
             }
         })
 
@@ -55,8 +98,6 @@ export default function NormalLessonDetailEditView(props) {
             starttime: startTime.toSQL(),
             endtime: endtime.toSQL()
         }
-
-
 
         client.mutate({
             mutation: CHANGE_NORMAL_LESSON_OVERALL,
@@ -75,47 +116,54 @@ export default function NormalLessonDetailEditView(props) {
         })
     }
 
-    useEffect(() => {
-        client.query({
-            query: QUERY_LESSON_DETAIL_WITH_LESSONID,
-            variables: {
-                lessonid: props.data.indomain_id
-            },
-            fetchPolicy: 'no-cache'
-        }).then(res => {
-            if (res.data.query_lesson_detail_with_lessonid.success) {
-                const d = res.data.query_lesson_detail_with_lessonid.detail
+    // useEffect(() => {
+    //     client.query({
+    //         query: QUERY_LESSON_DETAIL_WITH_LESSONID,
+    //         variables: {
+    //             lessonid: props.data.indomain_id
+    //         },
+    //         fetchPolicy: 'no-cache'
+    //     }).then(res => {
+    //         console.log(res)
+    //         if (res.data.query_lesson_detail_with_lessonid.success) {
+    //             const d = res.data.query_lesson_detail_with_lessonid.detail
 
-                // distribute data to each states
-                setActivityType(d.activity_type)
-                setGroupingType(d.grouping_type)
+    //             // distribute data to each states
+    //             setActivityType(d.activity_type)
+    //             setGroupingType(d.grouping_type)
 
-                setStartTime(DateTime.fromMillis(parseInt(d.starttime)).setZone('UTC+9'))
+    //             setStartTime(DateTime.fromMillis(parseInt(d.starttime)).setZone('UTC+9'))
 
-                const _st = DateTime.fromMillis(parseInt(d.starttime))
-                const et = DateTime.fromMillis(parseInt(d.endtime))
+    //             const _st = DateTime.fromMillis(parseInt(d.starttime))
+    //             const et = DateTime.fromMillis(parseInt(d.endtime))
 
-                const duration = et.diff(_st)
-                const hours = duration.as('hours')
+    //             const duration = et.diff(_st)
+    //             const hours = duration.as('hours')
 
-                setDurationHours(hours)
-                setClientsAndTickets(d.client_tickets)
+    //             setDurationHours(hours)
+    //             setClientsAndTickets(d.client_tickets)
 
-                setData(d)
-            }
-            else {
-                alert('fetch lesson info fail')
-            }
-        }).catch(e => {
-            console.log(JSON.stringify(e))
-            alert('fetch lesson info error')
-        })
-    }, [])
+    //             setData(d)
+    //         }
+    //         else {
+    //             alert('fetch lesson info fail')
+    //         }
+    //     }).catch(e => {
+    //         console.log(JSON.stringify(e))
+    //         alert('fetch lesson info error')
+    //     })
+    // }, [])
 
+    if (loading) {
+        return <CircularProgress />
+    }
 
+    if (error || initialData?.query_lesson_detail_with_lessonid?.success === false) {
+        return <span>에러</span>
+    }
 
     if (viewMode === 'base') {
-        
+
         return <BaseView instructor={props.instructor}
             clientsAndTickets={clientsAndTickets}
             activity_type={activityType}
@@ -135,7 +183,7 @@ export default function NormalLessonDetailEditView(props) {
     if (viewMode === 'add_client') {
         return <AddClientView onCancel={() => setViewMode('base')} onDone={d => {
             const _d = d
-            _d.tickets=[]
+            _d.tickets = []
             const new_clientsAndTickets = [...clientsAndTickets, _d]
 
             setClientsAndTickets(new_clientsAndTickets)
