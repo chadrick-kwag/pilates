@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { DialogContent, DialogActions, Button, CircularProgress, List, ListItem } from '@material-ui/core'
 
-import client from '../../../apolloclient'
-import { FETCH_TICKET_AVAILABLE_PLAN_FOR_CLIENTID_AND_LESSONTYPES } from '../../../common/gql_defs'
+import client from '../../../../apolloclient'
+import { FETCH_TICKET_AVAILABLE_PLAN_FOR_CLIENTID_AND_LESSONTYPES } from '../../../../common/gql_defs'
 
 import { DateTime } from 'luxon'
 

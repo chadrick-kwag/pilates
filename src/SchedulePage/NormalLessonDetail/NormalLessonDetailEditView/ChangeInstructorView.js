@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button, Menu, MenuItem, Table, TableRow, TableCell, Dialog, Chip, DialogActions, DialogContent, Select, Box } from '@material-ui/core'
 
-import InstructorSearchComponent3 from '../../components/InstructorSearchComponent3'
+import InstructorSearchComponent3 from '../../../components/InstructorSearchComponent3'
 
 export default function ChangeInstructorView(props) {
 

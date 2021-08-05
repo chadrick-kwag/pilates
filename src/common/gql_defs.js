@@ -1398,6 +1398,43 @@ export const QUERY_INSTRUCTORS_ALLOWED_TO_TEACH_APPRENTICE_WITH_NAME = gql`
 `
 
 
+// query_attendance_info_of_lessonid
+export const QUERY_ATTENDANCE_INFO_OF_LESSONID = gql`
+query($lessonid:Int!){
+    query_attendance_info_of_lessonid(lessonid: $lessonid){
+        success
+        msg
+        attendance_info {
+            attendance_id
+            clientid
+            clientname
+            clientphonenumber
+            checkin_time
+        }
+    }
+}
+`
+
+// create_normal_lesson_attendance'
+export const CREATE_NORMAL_LESSON_ATTENDANCE = gql`
+    mutation($lessonid:Int!, $clientid: Int!){
+        create_normal_lesson_attendance(lessonid: $lessonid, clientid: $clientid){
+            success
+            msg
+        }
+    }
+`
+
+
+export const REMOVE_NORMAL_LESSON_ATTENDANCE = gql`
+    mutation($lessonid: Int!, $clientid: Int!){
+        remove_normal_lesson_attendance(lessonid: $lessonid, clientid: $clientid){
+            success
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

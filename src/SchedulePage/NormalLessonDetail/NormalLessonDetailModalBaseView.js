@@ -2,11 +2,11 @@ import React, { useState, createRef } from 'react'
 import { makeStyles } from '@material-ui/core/styles';
 import { Button, Menu, MenuItem, Table, TableRow, TableCell, Chip, Dialog, DialogActions, DialogContent, CircularProgress } from '@material-ui/core'
 
-import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
+import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
 import { DateTime } from 'luxon'
 
-import client from '../apolloclient'
-import { DELETE_LESSON_WITH_REQUEST_TYPE_GQL, QUERY_LESSON_DETAIL_WITH_LESSONID } from '../common/gql_defs'
+import client from '../../apolloclient'
+import { DELETE_LESSON_WITH_REQUEST_TYPE_GQL, QUERY_LESSON_DETAIL_WITH_LESSONID } from '../../common/gql_defs'
 
 import { useQuery } from '@apollo/client'
 
@@ -180,7 +180,7 @@ export default function NormalLessonDetailModalBaseView(props) {
 
             </DialogContent>
             <DialogActions>
-
+                <Button variant='outlined' onClick={e => props?.onChangeAttendance?.()}>출석변경</Button>
                 <Button variant='outlined' onClick={e => props.onEdit?.()}>수업변경</Button>
                 <Button variant='outlined' onClick={e => {
                     setCancelBtnRef(e.currentTarget)

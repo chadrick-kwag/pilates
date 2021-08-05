@@ -8,8 +8,8 @@ import ChangeInstructorView from './ChangeInstructorView'
 
 import { CircularProgress } from '@material-ui/core'
 
-import client from '../../apolloclient'
-import { QUERY_LESSON_DETAIL_WITH_LESSONID, CHANGE_NORMAL_LESSON_OVERALL } from '../../common/gql_defs'
+import client from '../../../apolloclient'
+import { QUERY_LESSON_DETAIL_WITH_LESSONID, CHANGE_NORMAL_LESSON_OVERALL } from '../../../common/gql_defs'
 import ClientTicketMangePage from './ClientTicketManagePage/Container'
 
 import { useQuery } from '@apollo/client'

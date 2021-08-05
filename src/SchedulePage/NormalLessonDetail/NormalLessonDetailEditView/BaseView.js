@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 
 import { DateTime } from 'luxon'
 import { Button, Menu, MenuItem, Table, TableRow, TableCell, Dialog, DialogActions, Chip, DialogContent, Select, Box, CircularProgress } from '@material-ui/core'
-import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
+import { activity_type_to_kor, grouping_type_to_kor } from '../../../common/consts'
 
 
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
@@ -117,7 +117,7 @@ export default function BaseView(props) {
                         <TableRow>
                             <TableCell>
                                 수업종류
-                    </TableCell>
+                            </TableCell>
                             <TableCell>
                                 <span>{activity_type_to_kor[props.activity_type]}/{grouping_type_to_kor[props.grouping_type]}</span>
                             </TableCell>

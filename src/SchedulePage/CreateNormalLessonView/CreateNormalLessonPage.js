@@ -11,7 +11,7 @@ import DateFnsUtils from "@date-io/date-fns";
 
 import InstructorSearchComponent from '../../components/InstructorSearchComponent4'
 
-import ClientTicketChip from '../NormalLessonDetailEditView/ClientTicketChip'
+import ClientTicketChip from '../NormalLessonDetail/NormalLessonDetailEditView/ClientTicketChip'
 
 import AddClientDialog from './AddClientDialog'
 import SelectPlanAndTicketDialog from './SelectPlanAndTicketsDialog'

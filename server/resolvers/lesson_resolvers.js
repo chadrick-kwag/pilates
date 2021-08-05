@@ -10,6 +10,44 @@ const ERRCODES = require('../../src/common/errcode')
 module.exports = {
 
     Query: {
+        query_attendance_info_of_lessonid: async (parent, args, context) => {
+
+            console.log('query_attendance_info_of_lessonid')
+            console.log(args)
+
+            try {
+
+                // gather clients registered to lesson
+
+                let result = await pgclient.query(`with A as (select distinct on(ticketid) * from assign_ticket where lessonid = $1 order by ticketid, created desc )
+
+
+                select distinct on(client.id) normal_lesson_attendance.id as attendance_id, client.id as clientid,  person.name as clientname, person.phonenumber as clientphonenumber ,
+                normal_lesson_attendance.checkin_time
+                from A
+                left join ticket on ticket.id = A.ticketid
+                left join plan on ticket.creator_plan_id = plan.id
+                left join client on plan.clientid = client.id
+                left join person on person.id = client.personid
+                left join normal_lesson_attendance on normal_lesson_attendance.clientid = client.id and normal_lesson_attendance.lessonid = $1
+                where A.canceled_time is null
+                order by client.id`, [args.lessonid])
+
+
+                return {
+                    success: true,
+                    attendance_info: result.rows
+                }
+
+
+
+            }
+            catch (e) {
+                return {
+                    success: false
+                }
+            }
+        },
         query_lessons_with_daterange_sensitive_info_removed: async (parent, args) => {
 
 
@@ -178,7 +216,7 @@ module.exports = {
                 group by A.clientid, A.clientname, A.clientphonenumber, normal_lesson_attendance.checkin_time
                 `, [lessonid])
 
-               
+
                 const detail = {
                     ...lesson_basic_info,
                     client_info_arr: result.rows
@@ -641,6 +679,108 @@ module.exports = {
         }
     },
     Mutation: {
+
+        remove_normal_lesson_attendance: async (parent, args, context) => {
+            try {
+
+                await pgclient.query('begin')
+
+                await pgclient.query(`delete from normal_lesson_attendance where lessonid=$1 and clientid=$2`, [args.lessonid, args.clientid])
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
+
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+
+            }
+        },
+
+        create_normal_lesson_attendance: async (parent, args, context) => {
+
+            console.log('create_normal_lesson_attendance')
+            console.log(args)
+
+            try {
+
+                await pgclient.query('begin')
+
+                // check if client is registered to lesson
+                // do this by checking if assigned ticket exists
+                let result = await pgclient.query(`with A as (select distinct on (ticketid) * from assign_ticket  where lessonid=$1 order by ticketid, created desc )
+
+                select * from A
+                left join ticket on ticket.id = A.ticketid
+                left join plan on plan.id = ticket.creator_plan_id
+                where A.lessonid = $1 and plan.clientid=$2 and A.canceled_time is null
+                `, [args.lessonid, args.clientid])
+
+                if (result.rowCount === 0) {
+                    throw {
+                        detail: 'client not registered to lesson'
+                    }
+                }
+
+                // check if already checked in
+                result = await pgclient.query(`select * from normal_lesson_attendance where lessonid=$1 and clientid=$2`, [args.lessonid, args.clientid])
+
+                if (result.rowCount > 0) {
+                    throw {
+                        detail: 'already checked in'
+                    }
+                }
+
+                // create attendacne
+                await pgclient.query(`insert into normal_lesson_attendance (lessonid, clientid, checkin_time) values ($1, $2, now()) `, [args.lessonid, args.clientid])
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+
+                console.log(e)
+
+
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: `failed to rollback. original error msg: ${e.detail}`
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
         update_lesson_instructor_or_time: async (parent, args) => {
             console.log('inside update lesson instructor or time')
             console.log(args)

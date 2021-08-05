@@ -10,9 +10,26 @@ type Query{
     query_lesson_data_of_instructorid(instructorid: Int!, search_starttime:String!, search_endtime: String!): query_stat_lesson_return
     query_lesson_detail_with_lessonid(lessonid:Int!): query_lesson_detail_return
 
+
+    query_attendance_info_of_lessonid(lessonid: Int!): query_attendance_info_of_lessonid_resp
+
     
 }
 
+
+type AttendanceInfo {
+    attendance_id: Int
+    clientid: Int!
+    clientname: String
+    clientphonenumber: String
+    checkin_time: String
+}
+
+type query_attendance_info_of_lessonid_resp{
+    success: Boolean
+    msg: String
+    attendance_info: [AttendanceInfo]
+}
 
 type TicketInfo {
     ticketid: Int
@@ -113,6 +130,10 @@ type Mutation{
     change_clients_of_lesson(ticketid_arr: [Int], lessonid: Int!): SuccessResult
 
     change_lesson_overall(lessonid: Int!, client_tickets: [clientTickets!], instructorid: Int!, starttime: String!, endtime: String!): SuccessResult
+
+    create_normal_lesson_attendance(lessonid: Int!, clientid: Int!): SuccessResult
+    remove_normal_lesson_attendance(lessonid: Int!, clientid: Int!): SuccessResult
+
     
 }
 
