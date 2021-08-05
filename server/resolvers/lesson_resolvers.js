@@ -15,6 +15,14 @@ module.exports = {
             console.log('query_attendance_info_of_lessonid')
             console.log(args)
 
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'not admin'
+                }
+            }
+
             try {
 
                 // gather clients registered to lesson
@@ -681,6 +689,15 @@ module.exports = {
     Mutation: {
 
         remove_normal_lesson_attendance: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'not admin'
+                }
+            }
+
             try {
 
                 await pgclient.query('begin')
@@ -719,8 +736,14 @@ module.exports = {
 
         create_normal_lesson_attendance: async (parent, args, context) => {
 
-            console.log('create_normal_lesson_attendance')
-            console.log(args)
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'not admin'
+                }
+            }
 
             try {
 

@@ -131,7 +131,7 @@ function EditAttendance({ onSuccess, onCancel, lessonid }) {
         </DialogContent>
         <DialogActions>
             <Button variant='outlined' onClick={() => onCancel()}>이전</Button>
-            <Button variant='outlined'>완료</Button>
+            <Button variant='outlined' onClick={() => onSuccess()}>완료</Button>
         </DialogActions>
     </>
 }

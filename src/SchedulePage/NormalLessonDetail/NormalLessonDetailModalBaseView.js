@@ -11,6 +11,7 @@ import { DELETE_LESSON_WITH_REQUEST_TYPE_GQL, QUERY_LESSON_DETAIL_WITH_LESSONID 
 import { useQuery } from '@apollo/client'
 
 
+
 const useStyles = makeStyles(theme => {
     return {
         attendance_chip_false: {
@@ -180,7 +181,9 @@ export default function NormalLessonDetailModalBaseView(props) {
 
             </DialogContent>
             <DialogActions>
+
                 <Button variant='outlined' onClick={e => props?.onChangeAttendance?.()}>출석변경</Button>
+
                 <Button variant='outlined' onClick={e => props.onEdit?.()}>수업변경</Button>
                 <Button variant='outlined' onClick={e => {
                     setCancelBtnRef(e.currentTarget)
