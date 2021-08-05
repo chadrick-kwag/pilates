@@ -18,7 +18,7 @@ import {
 
 import { get_week_range_of_date } from '../../common/date_fns'
 
-import NormalLessonDetailModal from '../NormalLessonDetail/NormalLessonDetailModal'
+import NormalLessonDetailModal from '../NormalLessonDetail/main'
 
 import client from '../../apolloclient'
 import { get_bg_fontcolor_for_activity_type, get_border_color_for_grouping_type, get_bg_fontcolor_for_grouping_type, get_border_color_for_activity_type } from '../common'

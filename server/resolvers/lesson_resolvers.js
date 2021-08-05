@@ -1568,7 +1568,7 @@ module.exports = {
                 }
 
             } catch (e) {
-                console.trace(e)
+                // console.trace(e)
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')

@@ -123,43 +123,6 @@ export default function NormalLessonDetailEditView(props) {
         })
     }
 
-    // useEffect(() => {
-    //     client.query({
-    //         query: QUERY_LESSON_DETAIL_WITH_LESSONID,
-    //         variables: {
-    //             lessonid: props.data.indomain_id
-    //         },
-    //         fetchPolicy: 'no-cache'
-    //     }).then(res => {
-    //         console.log(res)
-    //         if (res.data.query_lesson_detail_with_lessonid.success) {
-    //             const d = res.data.query_lesson_detail_with_lessonid.detail
-
-    //             // distribute data to each states
-    //             setActivityType(d.activity_type)
-    //             setGroupingType(d.grouping_type)
-
-    //             setStartTime(DateTime.fromMillis(parseInt(d.starttime)).setZone('UTC+9'))
-
-    //             const _st = DateTime.fromMillis(parseInt(d.starttime))
-    //             const et = DateTime.fromMillis(parseInt(d.endtime))
-
-    //             const duration = et.diff(_st)
-    //             const hours = duration.as('hours')
-
-    //             setDurationHours(hours)
-    //             setClientsAndTickets(d.client_tickets)
-
-    //             setData(d)
-    //         }
-    //         else {
-    //             alert('fetch lesson info fail')
-    //         }
-    //     }).catch(e => {
-    //         console.log(JSON.stringify(e))
-    //         alert('fetch lesson info error')
-    //     })
-    // }, [])
 
     if (loading) {
         return <CircularProgress />
@@ -206,7 +169,7 @@ export default function NormalLessonDetailEditView(props) {
             grouping_type={groupingType}
             onEditDone={ticket_id_arr => {
                 const _clientsAndTickets = [...clientsAndTickets]
-                _clientsAndTickets[clientTicketsIndexToEdit].tickets = ticket_id_arr
+                _clientsAndTickets[clientTicketsIndexToEdit].ticketid_arr = ticket_id_arr
 
                 setClientsAndTickets(_clientsAndTickets)
                 setClientTicketsIndexToEdit(null)

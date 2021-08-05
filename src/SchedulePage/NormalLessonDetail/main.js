@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Button, Menu, MenuItem, Table, TableRow, TableCell, Dialog, DialogActions, DialogContent } from '@material-ui/core'
 
 import NormalLessonDetailModalBaseView from './NormalLessonDetailModalBaseView'
-import NormalLessonDetailEditView from './NormalLessonDetailEditView/NormalLessonDetailEditView'
+import NormalLessonDetailEditView from './NormalLessonDetailEditView/main'
 import EditAttendance from './EditAttendance'
 
 

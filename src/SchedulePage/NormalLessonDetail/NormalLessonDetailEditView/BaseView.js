@@ -20,7 +20,7 @@ export default function BaseView(props) {
     const check_request_possible = () => {
 
 
-        if (props.clientsAndTickets === null) {
+        if (props.clientsAndTickets === null || props.clientsAndTickets === undefined) {
             return false
         }
 
