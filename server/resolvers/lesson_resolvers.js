@@ -805,6 +805,8 @@ module.exports = {
             }
         },
         update_lesson_instructor_or_time: async (parent, args) => {
+            
+            
             console.log('inside update lesson instructor or time')
             console.log(args)
 
@@ -1535,6 +1537,7 @@ module.exports = {
 
                 console.log(`unassign_ticket_id_arr: ${unassign_ticket_id_arr}`)
                 console.log(`assign_ticket_id_arr: ${assign_ticket_id_arr}`)
+                console.log(assign_ticket_id_arr.length)
 
 
                 // execute unassignments
@@ -1565,6 +1568,7 @@ module.exports = {
                 }
 
             } catch (e) {
+                console.trace(e)
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')

@@ -8,6 +8,7 @@ import NormalLessonDetailEditView from './NormalLessonDetailEditView/NormalLesso
 import EditAttendance from './EditAttendance'
 
 
+
 export default function NormalLessonDetailModal(props) {
 
     console.log('props')

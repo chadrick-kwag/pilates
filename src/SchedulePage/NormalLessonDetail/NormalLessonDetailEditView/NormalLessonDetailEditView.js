@@ -84,10 +84,14 @@ export default function NormalLessonDetailEditView(props) {
         const duration = Duration.fromMillis(0).set({ hours: durationHours })
         let endtime = startTime.plus(duration)
 
+        console.log(clientsAndTickets)
+
+
         const _cts = clientsAndTickets.map(d => {
+            console.log(d)
             return {
                 clientid: d.clientid,
-                tickets: d.tickets
+                tickets: d.ticketid_arr
             }
         })
 
@@ -98,6 +102,9 @@ export default function NormalLessonDetailEditView(props) {
             starttime: startTime.toSQL(),
             endtime: endtime.toSQL()
         }
+
+        console.log('_var')
+        console.log(_var)
 
         client.mutate({
             mutation: CHANGE_NORMAL_LESSON_OVERALL,
