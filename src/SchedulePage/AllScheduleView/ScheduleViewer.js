@@ -98,6 +98,8 @@ const format_schedules = (_schedules, filter) => {
 
         // check grouping type and visibility
         let grouping_type = d.grouping_type
+        const activity_type = d.activity_type
+        const lesson_domain = d.lesson_domain
 
         console.log('grouping_type')
         console.log(grouping_type)
@@ -113,6 +115,31 @@ const format_schedules = (_schedules, filter) => {
         if (grouping_type === 'GROUP' && !filter.show_group_lesson) {
             return
         }
+
+        if (activity_type === 'PILATES' && !filter.show_pilates_lesson) {
+            return
+        }
+
+        if (activity_type === 'BALLET' && !filter.show_ballet_lesson) {
+            return
+        }
+
+        if (activity_type === 'GYROTONIC' && !filter.show_gyrotonic_lesson) {
+            return
+        }
+
+        if (activity_type === 'GYROKINESIS' && !filter.show_gyrokinesis_lesson) {
+            return
+        }
+
+        if (lesson_domain === 'normal_lesson' && !filter.show_normal_lesson) {
+            return
+        }
+
+        if (lesson_domain === 'apprentice_lesson' && !filter.show_apprentice_lesson) {
+            return
+        }
+
 
         let starttime = d.starttime
         let endtime = d.endtime
@@ -248,7 +275,13 @@ function ScheduleViewer({ props }) {
     const [filter, setFilter] = useState({
         show_individual_lesson: true,
         show_semi_lesson: true,
-        show_group_lesson: true
+        show_group_lesson: true,
+        show_pilates_lesson: true,
+        show_gyrotonic_lesson: true,
+        show_ballet_lesson: true,
+        show_gyrokinesis_lesson: true,
+        show_normal_lesson: true,
+        show_apprentice_lesson: true
     })
 
     const calendarRef = useRef(null)
@@ -304,9 +337,9 @@ function ScheduleViewer({ props }) {
             setLessonDetailModal(<ApprenticeLessonDetailModal lessonid={indomain_id} onCancel={() => setLessonDetailModal(null)} onCloseAndRefresh={() => {
                 setLessonDetailModal(null)
                 fetchdata()
-            }} 
-            
-            
+            }}
+
+
             />)
         }
 

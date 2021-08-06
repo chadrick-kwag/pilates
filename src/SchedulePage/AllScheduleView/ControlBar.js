@@ -1,55 +1,115 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { DateTime } from 'luxon'
 import LessonColorToolTip from './LessonColorTooltip'
 import PT from 'prop-types'
-import { Button, Checkbox, FormControlLabel } from '@material-ui/core'
+import { Button, Checkbox, FormControlLabel, Popover, Grid } from '@material-ui/core'
 import { DatePicker } from '@material-ui/pickers'
+import TuneIcon from '@material-ui/icons/Tune';
 
 function ControlBar({ updateFilter, viewDate, setViewDate, filter }) {
 
+    const filterRef = useRef(null)
+    const [showFilter, setShowFilter] = useState(false)
 
     return <div className="row-gravity-between">
 
-        <div className='className="row-gravity-center"'>
+        <Button ref={filterRef} variant='outlined' onClick={() => setShowFilter(true)}>
+            <TuneIcon />
+            <span style={{ wordBreak: 'keep-all' }}>필터</span>
+        </Button>
+        <Popover open={showFilter} anchorEl={filterRef?.current} onClose={() => setShowFilter(false)}>
 
-            <FormControlLabel control={<Checkbox checked={filter?.show_individual_lesson ?? false} onChange={d => {
+            <Grid container style={{ padding: '0.3rem' }}>
+                <Grid item xs={4}>
 
 
-                const new_filter = { ...filter, show_individual_lesson: d.target.checked }
+                    <FormControlLabel control={<Checkbox checked={filter?.show_individual_lesson ?? false} onChange={d => {
 
-                updateFilter?.(new_filter)
+                        const new_filter = { ...filter, show_individual_lesson: d.target.checked }
 
-            }} />} label='개별레슨' />
-            <FormControlLabel control={<Checkbox checked={filter?.show_semi_lesson ?? false} onChange={d => {
-                const new_filter = { ...filter, show_semi_lesson: d.target.checked }
+                        updateFilter?.(new_filter)
 
-                updateFilter?.(new_filter)
+                    }} />} label='개별레슨' />
 
-            }} />} label='세미레슨' />
-            <FormControlLabel control={<Checkbox checked={filter?.show_group_lesson ?? false} onChange={d => {
-                const new_filter = { ...filter, show_group_lesson: d.target.checked }
+                </Grid>
+                <Grid item xs={4}>
+                    <FormControlLabel control={<Checkbox checked={filter?.show_semi_lesson ?? false} onChange={d => {
+                        const new_filter = { ...filter, show_semi_lesson: d.target.checked }
 
-                updateFilter?.(new_filter)
+                        updateFilter?.(new_filter)
 
-            }} />} label='그룹레슨' />
+                    }} />} label='세미레슨' />
 
-        </div>
+                </Grid>
+                <Grid item xs={4}>
+                    <FormControlLabel control={<Checkbox checked={filter?.show_group_lesson ?? false} onChange={d => {
+                        const new_filter = { ...filter, show_group_lesson: d.target.checked }
+
+                        updateFilter?.(new_filter)
+
+                    }} />} label='그룹레슨' />
+                </Grid>
+                <Grid item xs={4}>
+                    <FormControlLabel control={<Checkbox checked={filter?.show_pilates_lesson ?? false} onChange={d => {
+                        const new_filter = { ...filter, show_pilates_lesson: d.target.checked }
+                        updateFilter?.(new_filter)
+                    }} />} label='필라테스' />
+                </Grid>
+
+                <Grid item xs={4}>
+
+                    <FormControlLabel control={<Checkbox checked={filter?.show_gyrotonic_lesson ?? false} onChange={d => {
+                        const new_filter = { ...filter, show_gyrotonic_lesson: d.target.checked }
+                        updateFilter?.(new_filter)
+                    }} />} label='자이로토닉' />
+
+                </Grid>
+                <Grid item xs={4}>
+                    <FormControlLabel control={<Checkbox checked={filter?.show_ballet_lesson ?? false} onChange={d => {
+                        const new_filter = { ...filter, show_ballet_lesson: d.target.checked }
+                        updateFilter?.(new_filter)
+                    }} />} label='발레' />
+
+                </Grid>
+
+                <Grid item xs={4}>
+
+                    <FormControlLabel control={<Checkbox checked={filter?.show_gyrokinesis_lesson ?? false} onChange={d => {
+                        const new_filter = { ...filter, show_gyrokinesis_lesson: d.target.checked }
+                        updateFilter?.(new_filter)
+                    }} />} label='자이로키네시스' />
+                </Grid>
+
+
+                <Grid item xs={4}>
+
+                    <FormControlLabel control={<Checkbox checked={filter?.show_normal_lesson ?? false} onChange={d => {
+                        const new_filter = { ...filter, show_normal_lesson: d.target.checked }
+                        updateFilter?.(new_filter)
+                    }} />} label='일반수업' />
+                </Grid>
+
+                <Grid item xs={4}>
+
+                    <FormControlLabel control={<Checkbox checked={filter?.show_apprentice_lesson ?? false} onChange={d => {
+                        const new_filter = { ...filter, show_apprentice_lesson: d.target.checked }
+                        updateFilter?.(new_filter)
+                    }} />} label='견습강사 주도수업' />
+                </Grid>
+            </Grid>
+
+
+
+        </Popover>
+
+
         <div className="row-gravity-center">
             <Button variant='outlined' onClick={e => {
                 const new_date = DateTime.fromJSDate(viewDate).minus({ days: 7 })
 
 
                 setViewDate(new_date.toJSDate())
-                // this.calendar.calendarInst.prev()
-                // // update current view date
-                // let new_date = new Date(this.state.view_date)
-                // new_date.setDate(this.state.view_date.getDate() - 7)
-                // this.setState({
-                //     view_date: new_date,
-                //     data: null
-                // }, () => {
-                //     this.fetchdata()
-                // })
+
 
             }}>이전 주</Button>
 
@@ -64,14 +124,7 @@ function ControlBar({ updateFilter, viewDate, setViewDate, filter }) {
                 value={viewDate}
                 onChange={(d) => {
                     setViewDate(d)
-                    // this.calendar.calendarInst.setDate(d)
-                    // this.setState({
-                    //     view_date: d,
-                    //     show_date_picker: false,
-                    //     data: null
-                    // }, () => {
-                    //     this.fetchdata()
-                    // })
+
                 }}
 
             />
@@ -80,16 +133,7 @@ function ControlBar({ updateFilter, viewDate, setViewDate, filter }) {
 
 
                 setViewDate(new_date.toJSDate())
-                // this.calendar.calendarInst.next()
-                // // update current view date
-                // let new_date = new Date(this.state.view_date)
-                // new_date.setDate(this.state.view_date.getDate() + 7)
-                // this.setState({
-                //     view_date: new_date,
-                //     data: null
-                // }, () => {
-                //     this.fetchdata()
-                // })
+
             }}>다음 주</Button>
         </div>
 
@@ -102,7 +146,7 @@ function ControlBar({ updateFilter, viewDate, setViewDate, filter }) {
 
 
 
-    </div>
+    </div >
 }
 
 ControlBar.propTypes = {
