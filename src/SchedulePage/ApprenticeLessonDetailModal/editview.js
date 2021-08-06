@@ -94,6 +94,17 @@ function EditView({ lessonid, onCancel, onSuccess }) {
         }
     })
 
+    const is_submit_disabled = () => {
+        if (duration === null || startTime === null || instructor === null || ticketIdArr === null) {
+            return true
+        }
+
+        if (duration !== ticketIdArr.length) {
+            return true
+        }
+
+        return false
+    }
 
     if (initloading) {
         return <DialogContent>
@@ -197,17 +208,19 @@ function EditView({ lessonid, onCancel, onSuccess }) {
         </DialogContent>
         <DialogActions>
             <Button variant='outlined' onClick={() => onCancel?.()}>취소</Button>
-            <Button variant='outlined' onClick={() => {
-                console.log(startTime)
-                updateLesson({
-                    variables: {
-                        lessonid,
-                        starttime: startTime.toHTTP(),
-                        duration: duration,
-                        ticket_id_arr: ticketIdArr
-                    }
-                })
-            }}>완료</Button>
+            <Button variant='outlined'
+                disabled={is_submit_disabled()}
+                onClick={() => {
+                    console.log(startTime)
+                    updateLesson({
+                        variables: {
+                            lessonid,
+                            starttime: startTime.toHTTP(),
+                            duration: duration,
+                            ticket_id_arr: ticketIdArr
+                        }
+                    })
+                }}>완료</Button>
         </DialogActions>
         {selectTicketModal}
     </>

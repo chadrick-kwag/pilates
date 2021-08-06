@@ -304,7 +304,10 @@ function ScheduleViewer({ props }) {
             setLessonDetailModal(<ApprenticeLessonDetailModal lessonid={indomain_id} onCancel={() => setLessonDetailModal(null)} onCloseAndRefresh={() => {
                 setLessonDetailModal(null)
                 fetchdata()
-            }} />)
+            }} 
+            
+            
+            />)
         }
 
 

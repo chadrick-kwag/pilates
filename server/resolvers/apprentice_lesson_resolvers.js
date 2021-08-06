@@ -119,6 +119,7 @@ module.exports = {
                 
                 select A.id, A.apprentice_ticket_id from A where canceled_time is null`, [args.lessonid])
 
+                const existing_assign_info_arr = result.rows
                 const existing_ticket_id_arr = result.rows.map(d => d.apprentice_ticket_id)
                 const existing_ticket_id_set = new Set(existing_ticket_id_arr)
 
@@ -137,13 +138,20 @@ module.exports = {
                     }
                 }
 
+                console.log('unassign_ticket_id_set')
+                console.log(unassign_ticket_id_set)
+
+                console.log('existing_ticket_id_arr')
+                console.log(existing_ticket_id_arr)
+
                 // execute unassigning
                 for (let tid of unassign_ticket_id_set) {
                     // get assign id
                     let aid = null
-                    for (let a of existing_ticket_id_arr) {
+                    for (let a of existing_assign_info_arr) {
                         if (a.apprentice_ticket_id === tid) {
                             aid = a.id
+                            break
                         }
                     }
 
@@ -152,7 +160,7 @@ module.exports = {
                             detail: `failed to get assign id of ticket id: ${tid}`
                         }
                     }
-                    await pgclient.query(`update assign_apprentice_ticket set canceled_time = now(), cancel_type = 'ADMIN where id=$1`, [aid])
+                    await pgclient.query(`update assign_apprentice_ticket set canceled_time = now(), cancel_type = 'ADMIN' where id=$1`, [aid])
                 }
 
 
