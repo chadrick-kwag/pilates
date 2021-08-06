@@ -28,5 +28,6 @@ type Mutation{
     create_apprentice_lesson(plan_id: Int!, starttime: String, hours:Int, apprentice_instructor_id:Int!, activity_type: String, grouping_type: String!): SuccessResult
     change_apprentice_lesson_starttime(lessonid:Int!, starttime: String): SuccessResult
     cancel_apprentice_lesson(lessonid:Int!): SuccessResult
+    update_apprentice_lesson_overall(lessonid: Int!, ticket_id_arr: [Int!], starttime: String!, duration: Int!): SuccessResult
 }
 `

@@ -57,6 +57,8 @@ function TicketManageModal({ current_ticket_id_arr, planAndTickets, slotsize, on
 
 
     const processed_plan_and_tickets = process_data(current_ticket_id_arr, planAndTickets)
+    console.log('processed_plan_and_tickets')
+    console.log(processed_plan_and_tickets)
 
     return <Dialog open={true} onClose={onCancel}>
 
@@ -65,7 +67,7 @@ function TicketManageModal({ current_ticket_id_arr, planAndTickets, slotsize, on
 
             <Select value={selectedIndex} onChange={e => setSelectedIndex(e.target.value)}>
                 {processed_plan_and_tickets.map((d, i) => {
-                    return <MenuItem value={i}>{`플랜:${d.planid}/가장빠른유효기간:${DateTime.fromMillis(parseInt(d.avail_tickets[0].expire_time)).setZone('utc+9').toFormat('y-LL-dd HH:mm')}`}</MenuItem>
+                    return <MenuItem value={i}>{`플랜:${d.planid}(${d.avail_tickets.length}/${d.total_rounds})/가장빠른유효기간:${DateTime.fromMillis(parseInt(d.avail_tickets[0].expire_time)).setZone('utc+9').toFormat('y-LL-dd HH:mm')}`}</MenuItem>
                 })}
             </Select>
 

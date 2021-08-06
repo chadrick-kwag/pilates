@@ -16,7 +16,7 @@ module.exports = {
 
                 // gather available plans for apprentice instructor for given at, gt
                 let result = await pgclient.query(`select apprentice_instructor_plan.id as planid, count(apprentice_ticket.id) as total_rounds from apprentice_instructor_plan
-                left join apprentice_ticket on apprentice_ticket.id = apprentice_instructor_plan.id
+                left join apprentice_ticket on apprentice_ticket.creator_plan_id = apprentice_instructor_plan.id
                 where apprentice_instructor_plan.apprentice_instructor_id = $1 and apprentice_instructor_plan.activity_type = $2 and apprentice_instructor_plan.grouping_type = $3
                 group by apprentice_instructor_plan.id
                 

@@ -1472,6 +1472,17 @@ export const FETCH_TICKET_AVAIL_PLAN_AND_TICKETID_ARR_OF_APPRENTICE_INSTRUCTOR_A
         }
     }
 `
+
+
+export const UPDATE_APPRENTICE_LESSON_OVERALL = gql`
+    mutation($lessonid: Int!, $ticket_id_arr: [Int!], $starttime: String!, $duration: Int!){
+        update_apprentice_lesson_overall(lessonid: $lessonid, ticket_id_arr: $ticket_id_arr, starttime: $starttime, duration: $duration){
+            success
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

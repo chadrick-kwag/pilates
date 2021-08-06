@@ -16,7 +16,7 @@ import PT from 'prop-types'
 import BaseView from './baseview'
 import EditView from './editview'
 
-function ApprenticeLessonDetailModal({ lessonid, onCancel }) {
+function ApprenticeLessonDetailModal({ lessonid, onCancel, onCloseAndRefresh }) {
 
 
     const [viewMode, setViewMode] = useState('base')
@@ -32,7 +32,7 @@ function ApprenticeLessonDetailModal({ lessonid, onCancel }) {
                 return <EditView {...{
                     lessonid,
                     onCancel: () => setViewMode('base'),
-                    onSuccess: () => setViewMode('base')
+                    onSuccess: () => onCloseAndRefresh?.()
                 }} />
             }
 
@@ -46,8 +46,8 @@ function ApprenticeLessonDetailModal({ lessonid, onCancel }) {
 ApprenticeLessonDetailModal.propTypes = {
 
     lessonid: PT.number.isRequired,
-    onCancel: PT.func.isRequired
-
+    onCancel: PT.func.isRequired,
+    onCloseAndRefresh: PT.func
 }
 
 export default ApprenticeLessonDetailModal

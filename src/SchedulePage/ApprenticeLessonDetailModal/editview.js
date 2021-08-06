@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { List, ListItem, Table, TableRow, TableCell, DialogContent, Button, DialogActions, CircularProgress, Chip, Select, MenuItem, Grid } from '@material-ui/core'
 import client from '../../apolloclient'
-import { FETCH_APPRENTICE_LESSON_BY_LESSONID, FETCH_TICKET_AVAIL_PLAN_AND_TICKETID_ARR_OF_APPRENTICE_INSTRUCTOR_AND_LESSON_TYPE } from '../../common/gql_defs'
+import { FETCH_APPRENTICE_LESSON_BY_LESSONID, FETCH_TICKET_AVAIL_PLAN_AND_TICKETID_ARR_OF_APPRENTICE_INSTRUCTOR_AND_LESSON_TYPE, UPDATE_APPRENTICE_LESSON_OVERALL } from '../../common/gql_defs'
 import PT from 'prop-types'
 import { DateTime } from 'luxon'
 
@@ -12,7 +12,7 @@ import DateFnsUtils from "@date-io/date-fns";
 import TicketManageModal from './ticketmanage'
 
 import DeleteIcon from '@material-ui/icons/Delete';
-import { useQuery, useLazyQuery } from '@apollo/client'
+import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
 
 const duration_options = [1, 2, 3, 4, 5, 6, 7]
 
@@ -25,6 +25,17 @@ function EditView({ lessonid, onCancel, onSuccess }) {
     const [ticketIdArr, setTicketIdArr] = useState(null)
     const [selectTicketModal, setSelectTicketModal] = useState(null)
 
+    const [updateLesson, { loading, data, error }] = useMutation(UPDATE_APPRENTICE_LESSON_OVERALL, {
+        client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            console.log(d)
+            if (d.update_apprentice_lesson_overall.success) {
+                onSuccess?.()
+            }
+        },
+        onError: e => console.log(JSON.stringify(e))
+    })
 
 
     const [fetchAvailablePlanTickets, { loading: ticket_loading, data: fetchedPlanTicketData, error: ticket_error }] = useLazyQuery(FETCH_TICKET_AVAIL_PLAN_AND_TICKETID_ARR_OF_APPRENTICE_INSTRUCTOR_AND_LESSON_TYPE, {
@@ -33,6 +44,7 @@ function EditView({ lessonid, onCancel, onSuccess }) {
         onCompleted: d => {
             console.log('fetched plan ticket data')
             console.log(d)
+
         },
         onError: e => console.log(JSON.stringify(e))
     })
@@ -185,7 +197,17 @@ function EditView({ lessonid, onCancel, onSuccess }) {
         </DialogContent>
         <DialogActions>
             <Button variant='outlined' onClick={() => onCancel?.()}>취소</Button>
-            <Button variant='outlined' >완료</Button>
+            <Button variant='outlined' onClick={() => {
+                console.log(startTime)
+                updateLesson({
+                    variables: {
+                        lessonid,
+                        starttime: startTime.toHTTP(),
+                        duration: duration,
+                        ticket_id_arr: ticketIdArr
+                    }
+                })
+            }}>완료</Button>
         </DialogActions>
         {selectTicketModal}
     </>

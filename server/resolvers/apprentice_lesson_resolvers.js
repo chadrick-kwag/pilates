@@ -1,4 +1,4 @@
-
+const { DateTime } = require('luxon')
 const pgclient = require('../pgclient')
 
 
@@ -65,6 +65,128 @@ module.exports = {
 
     },
     Mutation: {
+        update_apprentice_lesson_overall: async (parent, args, context) => {
+
+            console.log('update_apprentice_lesson_overall:')
+            console.log(args)
+
+            try {
+                await pgclient.query('begin')
+
+                // check if new time slot is available
+
+                const starttime = DateTime.fromHTTP(args.starttime)
+                const endtime = starttime.plus({ hours: args.duration })
+
+                console.log('starttime')
+                console.log(starttime)
+
+                console.log('endtime')
+                console.log(endtime)
+
+                const incoming_ticket_id_set = new Set(args.ticket_id_arr)
+
+                console.log(incoming_ticket_id_set)
+
+                // check overlapping apprentice lessons
+                let result = await pgclient.query(`select * from apprentice_lesson where (tstzrange(apprentice_lesson.starttime, apprentice_lesson.endtime) && tstzrange($1, $2) ) and apprentice_lesson.id != $3 and apprentice_lesson.canceled_time is null`, [starttime, endtime, args.lessonid])
+
+                if (result.rowCount > 0) {
+                    throw {
+                        detail: 'overlapping apprentice lesson exist'
+                    }
+                }
+
+                // check tickets match duration
+                if (args.duration !== incoming_ticket_id_set.size) {
+                    throw {
+                        detail: 'tickets count notmatch duration'
+                    }
+                }
+
+                // update lesson time
+                await pgclient.query(`update apprentice_lesson set starttime = $1, endtime = $2 where id=$3`, [starttime, endtime, args.lessonid])
+
+
+                // ticket id reassigning stage.
+                // get tickets to unassign, and tickets to newly assign
+
+
+                // first get existing ticket id arr
+                result = await pgclient.query(`with A as (select distinct on (apprentice_ticket_id) * from assign_apprentice_ticket where apprentice_lesson_id = $1 
+                order by apprentice_ticket_id, created desc)
+                
+                
+                select A.id, A.apprentice_ticket_id from A where canceled_time is null`, [args.lessonid])
+
+                const existing_ticket_id_arr = result.rows.map(d => d.apprentice_ticket_id)
+                const existing_ticket_id_set = new Set(existing_ticket_id_arr)
+
+                const unassign_ticket_id_set = new Set()
+                const new_assign_ticket_id_set = new Set()
+
+                for (let elem of incoming_ticket_id_set) {
+                    if (!existing_ticket_id_set.has(elem)) {
+                        new_assign_ticket_id_set.add(elem)
+                    }
+                }
+
+                for (let elem of existing_ticket_id_set) {
+                    if (!incoming_ticket_id_set.has(elem)) {
+                        unassign_ticket_id_set.add(elem)
+                    }
+                }
+
+                // execute unassigning
+                for (let tid of unassign_ticket_id_set) {
+                    // get assign id
+                    let aid = null
+                    for (let a of existing_ticket_id_arr) {
+                        if (a.apprentice_ticket_id === tid) {
+                            aid = a.id
+                        }
+                    }
+
+                    if (aid === null) {
+                        throw {
+                            detail: `failed to get assign id of ticket id: ${tid}`
+                        }
+                    }
+                    await pgclient.query(`update assign_apprentice_ticket set canceled_time = now(), cancel_type = 'ADMIN where id=$1`, [aid])
+                }
+
+
+                // execute create assignments
+                for (let tid of new_assign_ticket_id_set) {
+                    await pgclient.query(`insert into assign_apprentice_ticket (apprentice_ticket_id, apprentice_lesson_id, created) values ($1, $2, now())`, [tid, args.lessonid])
+                }
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+
+                }
+            }
+            catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
         create_apprentice_lesson: async (parent, args) => {
             try {
 
