@@ -1435,6 +1435,43 @@ export const REMOVE_NORMAL_LESSON_ATTENDANCE = gql`
     }
 `
 
+export const FETCH_APPRENTICE_LESSON_BY_LESSONID = gql`
+    query($lessonid: Int!){
+        fetch_apprentice_lesson_by_lessonid(lessonid: $lessonid){
+            success
+            msg
+            lesson {
+                id
+                starttime
+                endtime
+                apprentice_instructor_id
+                apprentice_instructor_name
+                apprentice_instructor_phonenumber
+                activity_type
+                grouping_type
+                ticket_id_arr
+            }
+        }
+    }
+`
+
+
+export const FETCH_TICKET_AVAIL_PLAN_AND_TICKETID_ARR_OF_APPRENTICE_INSTRUCTOR_AND_LESSON_TYPE = gql`
+    query($apprentice_instructor_id: Int!, $activity_type: String!, $grouping_type: String!){
+        fetch_ticket_avail_plan_and_ticketid_arr_of_apprentice_instructor_and_lesson_type(apprentice_instructor_id: $apprentice_instructor_id, activity_type: $activity_type, grouping_type: $grouping_type){
+            success
+            msg
+            plan_and_tickets {
+                planid
+                total_rounds
+                avail_tickets {
+                    id
+                    expire_time
+                }
+            }
+        }
+    }
+`
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

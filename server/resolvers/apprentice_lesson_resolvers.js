@@ -1,10 +1,68 @@
-const { FlareSharp } = require('@material-ui/icons')
+
 const pgclient = require('../pgclient')
 
 
 module.exports = {
 
     Query: {
+        fetch_apprentice_lesson_by_lessonid: async (parent, args, context) => {
+
+            try {
+
+                await pgclient.query('begin')
+                let result = await pgclient.query(`select apprentice_lesson.id, apprentice_lesson.starttime, apprentice_lesson.endtime, 
+                apprentice_instructor.id as apprentice_instructor_id,
+                person.name as apprentice_instructor_name,
+                person.phonenumber as apprentice_instructor_phonenumber,
+                apprentice_lesson.activity_type,
+                apprentice_lesson.grouping_type
+                from apprentice_lesson
+                left join apprentice_instructor on apprentice_instructor.id = apprentice_lesson.apprentice_instructor_id
+                left join person on person.id = apprentice_instructor.personid
+                where apprentice_lesson.id = $1
+                `, [args.lessonid])
+
+
+                const lesson_info = result.rows[0]
+
+
+
+                // fetch tickets
+                result = await pgclient.query(`with A as (select distinct on(apprentice_ticket_id) * from assign_apprentice_ticket where
+                apprentice_lesson_id = $1
+                order by apprentice_ticket_id, created desc)
+                
+                select array_agg(A.apprentice_ticket_id) as ticket_id_arr from A
+                where canceled_time is null
+                `, [args.lessonid])
+
+
+                const ticket_id_arr = result.rows[0].ticket_id_arr
+
+
+                lesson_info.ticket_id_arr = ticket_id_arr
+
+
+
+                await pgclient.query('commit')
+
+                console.log(lesson_info)
+
+                return {
+                    success: true,
+                    lesson: lesson_info
+                }
+            }
+            catch (e) {
+                console.log(e)
+                return {
+                    msg: e.detail,
+                    success: false,
+                }
+            }
+
+        }
+
     },
     Mutation: {
         create_apprentice_lesson: async (parent, args) => {
@@ -15,7 +73,7 @@ module.exports = {
 
                 // construct endtime
                 const endtime = new Date(args.starttime)
-                endtime.setTime(endtime.getTime() + 1000*60*60*args.hours)
+                endtime.setTime(endtime.getTime() + 1000 * 60 * 60 * args.hours)
 
                 console.log('endtime')
                 console.log(endtime)
@@ -23,7 +81,7 @@ module.exports = {
 
                 let res = await pgclient.query('BEGIN')
 
-                
+
 
 
 
@@ -31,9 +89,9 @@ module.exports = {
 
                 res = await pgclient.query(`select * from apprentice_lesson where apprentice_instructor_id=$1 AND 
                 (tstzrange(starttime, endtime) && tstzrange($2, $3))
-                AND canceled_time is null`,[args.apprentice_instructor_id, args.starttime, endtime])
+                AND canceled_time is null`, [args.apprentice_instructor_id, args.starttime, endtime])
 
-                if(res.rows.length>0){
+                if (res.rows.length > 0) {
                     throw {
                         detail: 'overlapping lesson'
                     }

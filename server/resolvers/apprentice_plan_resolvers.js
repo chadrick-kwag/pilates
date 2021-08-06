@@ -5,6 +5,80 @@ const { ensure_admin_account_id_in_context } = require('./common')
 module.exports = {
 
     Query: {
+        fetch_ticket_avail_plan_and_ticketid_arr_of_apprentice_instructor_and_lesson_type: async (parent, args, context) => {
+
+            console.log('fetch_ticket_avail_plan_and_ticketid_arr_of_apprentice_instructor_and_lesson_type')
+
+            try {
+
+
+                await pgclient.query('begin')
+
+                // gather available plans for apprentice instructor for given at, gt
+                let result = await pgclient.query(`select apprentice_instructor_plan.id as planid, count(apprentice_ticket.id) as total_rounds from apprentice_instructor_plan
+                left join apprentice_ticket on apprentice_ticket.id = apprentice_instructor_plan.id
+                where apprentice_instructor_plan.apprentice_instructor_id = $1 and apprentice_instructor_plan.activity_type = $2 and apprentice_instructor_plan.grouping_type = $3
+                group by apprentice_instructor_plan.id
+                
+                `, [args.apprentice_instructor_id, args.activity_type, args.grouping_type])
+
+
+                // gather avail tickets for each plan
+
+                const output = []
+                for (let i = 0; i < result.rows.length; i++) {
+                    const planid = result.rows[i].planid
+
+                    let res = await pgclient.query(`with A as (select distinct on(apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc)
+
+
+                    select apprentice_ticket.id as id, apprentice_ticket.expire_time from apprentice_ticket
+                    left join A on A.apprentice_ticket_id = apprentice_ticket.id
+                    where apprentice_ticket.creator_plan_id = $1
+                    and A.canceled_time is null`, [planid])
+
+                    if (res.rowCount === 0) {
+                        continue
+                    }
+
+                    result.rows[i].avail_tickets = res.rows
+                    output.push(result.rows[i])
+                }
+
+
+
+                console.log(output)
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true,
+                    plan_and_tickets: output
+                }
+
+            }
+            catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+
+
+                }
+                catch (e2) {
+
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
 
         fetch_apprentice_instructor_plans: async (parent, args, context) => {
 
@@ -309,9 +383,9 @@ module.exports = {
 
     },
     Mutation: {
-        update_totalcost_of_plan: async (parent, args, context) =>{
+        update_totalcost_of_plan: async (parent, args, context) => {
 
-            
+
             if (!ensure_admin_account_id_in_context(context)) {
 
                 return {
@@ -320,7 +394,7 @@ module.exports = {
                 }
             }
 
-            try{
+            try {
                 await pgclient.query('begin')
 
                 let result = await pgclient.query(`update apprentice_instructor_plan set totalcost=$1 where id=$2`, [args.totalcost, args.id])
@@ -331,15 +405,15 @@ module.exports = {
                     success: true
                 }
             }
-            catch(e){
+            catch (e) {
                 console.log(e)
 
-                try{
+                try {
                     await pgclient.query('rollback')
 
 
                 }
-                catch(e2){
+                catch (e2) {
                     return {
                         success: false,
                         msg: e.detail

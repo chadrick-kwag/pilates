@@ -23,7 +23,7 @@ import { get_bg_fontcolor_for_activity_type, get_border_color_for_grouping_type,
 import PartialOverlaySpinner from '../PartialOverlaySpinner'
 
 
-import ApprenticeLessonDetailModal from '../ApprenticeLessonDetailModal'
+import ApprenticeLessonDetailModal from '../ApprenticeLessonDetailModal/main'
 
 
 import SpecialSchedulDetailModal from '../SpecialScheduleDetailModal/container'
@@ -267,28 +267,6 @@ function ScheduleViewer({ props }) {
         }
     })
 
-    // constructor(props) {
-    //     super(props)
-
-    //     this.state = {
-    //         data: null,
-    //         show_create_modal: false,
-
-    //         show_view_modal: false,
-    //         view_selected_lesson: null,
-    //         view_date: new Date(),
-    //         show_date_picker: false,
-    //         show_individual_lessons: true,
-    //         show_semi_lessons: true,
-    //         show_group_lessons: true
-
-    //     }
-
-    //     // this.createlesson = this.createlesson.bind(this)
-    //     this.fetchdata = this.fetchdata.bind(this)
-
-    // }
-
 
 
     const fetchdata = () => {
@@ -322,183 +300,16 @@ function ScheduleViewer({ props }) {
             }} />)
         }
 
+        if (lesson_domain === 'apprentice_lesson') {
+            setLessonDetailModal(<ApprenticeLessonDetailModal lessonid={indomain_id} onCancel={() => setLessonDetailModal(null)} onCloseAndRefresh={() => {
+                setLessonDetailModal(null)
+                fetchdata()
+            }} />)
+        }
+
 
     }
 
-
-    //     client.query({
-    //         query: QUERY_LESSON_WITH_DATERANGE_GQL,
-    //         variables: {
-    //             start_time: start_time.toUTCString(),
-    //             end_time: end_time.toUTCString()
-    //         },
-    //         fetchPolicy: 'no-cache'
-
-
-    //     }).then(d => {
-    //         console.log('fetched lesson data')
-    //         console.log(d)
-
-    //         if (d.data.query_lessons_with_daterange.success) {
-
-    //             SetScheduleData(d.data.query_lessons_with_daterange.lessons)
-    //         }
-
-    //         else {
-    //             alert('failed to fetch schedule data')
-    //         }
-    //     }).catch(e => {
-
-    //         console.log(JSON.stringify(e))
-    //         console.log(e)
-    //         alert('error fetching schedule data')
-    //     })
-    // }
-
-    // componentDidMount() {
-    //     this.fetchdata()
-    // }
-
-
-    // render() {
-
-    //     let schedule_formatted_data = []
-
-    //     if (this.state.data !== null) {
-    //         this.state.data.forEach((d, i) => {
-
-    //             // check grouping type and visibility
-    //             let grouping_type = d.grouping_type
-
-    //             console.log('grouping_type')
-    //             console.log(grouping_type)
-
-    //             if (grouping_type === 'INDIVIDUAL' && !this.state.show_individual_lessons) {
-    //                 return
-    //             }
-
-    //             if (grouping_type === 'SEMI' && !this.state.show_semi_lessons) {
-    //                 return
-    //             }
-
-    //             if (grouping_type === 'GROUP' && !this.state.show_group_lessons) {
-    //                 return
-    //             }
-
-    //             let starttime = d.starttime
-    //             let endtime = d.endtime
-
-
-    //             starttime = new Date(parseInt(starttime))
-    //             endtime = new Date(parseInt(endtime))
-
-    //             console.log(starttime)
-    //             console.log(endtime)
-
-    //             if (d.lesson_domain === 'apprentice_lesson') {
-    //                 let title = d.instructorname + ' 강사님'
-    //                 let bgcolor = 'black'
-    //                 let fontcolor = 'white'
-
-    //                 schedule_formatted_data.push({
-    //                     id: parseInt(i),
-    //                     calendarId: '0',
-    //                     title: title,
-    //                     category: 'time',
-    //                     dueDateClass: '',
-    //                     start: starttime,
-    //                     end: endtime,
-    //                     bgColor: bgcolor,
-    //                     color: fontcolor,
-
-
-    //                 })
-
-    //             }
-    //             else if (d.lesson_domain === 'normal_lesson') {
-
-    //                 let clients_str = ""
-    //                 // get unique client names from client info arr
-    //                 const unique_client_names = []
-    //                 const unique_client_ids = []
-
-
-    //                 for (let i = 0; i < d.client_info_arr.length; i++) {
-    //                     const c = d.client_info_arr[i]
-    //                     if (!unique_client_ids.includes(c.clientid)) {
-    //                         unique_client_names.push(c.clientname)
-    //                         unique_client_ids.push(c.clientid)
-    //                     }
-    //                 }
-
-
-    //                 // d.client_info_arr.forEach(a => clients_str += a.clientname + ' ')
-
-    //                 for (let i = 0; i < unique_client_names.length; i++) {
-    //                     clients_str += unique_client_names[i] + ' '
-    //                 }
-
-
-    //                 let title = clients_str + "회원님 / " + d.instructorname + " 강사님"
-
-    //                 let [bgcolor, fontcolor] = get_bg_fontcolor_for_grouping_type(d.grouping_type)
-
-    //                 schedule_formatted_data.push({
-    //                     id: parseInt(i),
-    //                     calendarId: '0',
-    //                     title: title,
-    //                     category: 'time',
-    //                     dueDateClass: '',
-    //                     start: starttime,
-    //                     end: endtime,
-    //                     bgColor: bgcolor,
-    //                     color: fontcolor,
-    //                     borderColor: get_border_color_for_activity_type(d.activity_type)
-    //                 })
-    //             }
-    //             else if (d.lesson_domain === 'special_schedule') {
-
-    //                 console.log(d)
-
-    //                 let split_range_arr = split_time_range_by_day(starttime, endtime)
-
-    //                 console.log('split_range_arr')
-    //                 console.log(split_range_arr)
-
-    //                 for (let j = 0; j < split_range_arr.length; j++) {
-
-    //                     const st = split_range_arr[j][0]
-    //                     const et = split_range_arr[j][1]
-
-    //                     schedule_formatted_data.push({
-    //                         id: parseInt(i),
-    //                         calendarId: '0',
-    //                         title: d.title,
-    //                         category: 'time',
-    //                         dueDateClass: '',
-    //                         start: st,
-    //                         end: et,
-    //                         bgColor: 'red',
-    //                         color: 'black',
-    //                         borderColor: 'red'
-    //                     })
-    //                 }
-
-
-    //             }
-
-
-    //         })
-    //     }
-
-    //     console.log('schedule_formatted_data')
-    //     console.log(schedule_formatted_data)
-
-
-
-    // let schedule_formatted_data = format_schedules(fetchedSchedules?.query_lesson_with_daterange?.lessons)
-    // console.log('schedule_formatted_data')
-    // console.log(schedule_formatted_data)
     return <div>
         {/* {(() => {
 
