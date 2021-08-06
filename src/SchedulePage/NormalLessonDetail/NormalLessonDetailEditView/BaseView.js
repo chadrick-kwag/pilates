@@ -119,7 +119,7 @@ export default function BaseView(props) {
                                 수업종류
                             </TableCell>
                             <TableCell>
-                                <span>{activity_type_to_kor[props.activity_type]}/{grouping_type_to_kor[props.grouping_type]}</span>
+                                <span style={{color: 'gray'}}>{activity_type_to_kor[props.activity_type]}/{grouping_type_to_kor[props.grouping_type]}</span>
                             </TableCell>
                         </TableRow>
                         <TableRow>

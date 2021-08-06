@@ -6,34 +6,35 @@ import { Button, Menu, MenuItem, Table, TableRow, TableCell, Dialog, DialogActio
 import NormalLessonDetailModalBaseView from './NormalLessonDetailModalBaseView'
 import NormalLessonDetailEditView from './NormalLessonDetailEditView/main'
 import EditAttendance from './EditAttendance'
+import PT from 'prop-types'
 
 
 
-export default function NormalLessonDetailModal(props) {
-
-    console.log('props')
-    console.log(props)
-
-    console.log('props.data.indomin_id')
-    console.log(props.data.indomain_id)
+function NormalLessonDetailModal({ indomain_id, onClose, onCloseAndRefresh }) {
 
     const [viewMode, setViewMode] = useState('base')
 
+
     return (
 
-        <Dialog open={props.open} onClose={props.onClose}>
+        <Dialog open={true} onClose={onClose}>
             {(() => {
                 if (viewMode === 'base') {
-                    return <NormalLessonDetailModalBaseView {...props} onEdit={() => setViewMode('edit')} onChangeAttendance={() => {
-                        console.log('debug')
-                        setViewMode('edit-attendance')
-                    }} />
+                    return <NormalLessonDetailModalBaseView indomain_id={indomain_id}
+                        onClose={onClose} onCloseAndRefresh={onCloseAndRefresh}
+                        onEdit={() => setViewMode('edit')}
+                        onChangeAttendance={() => {
+                            console.log('debug')
+                            setViewMode('edit-attendance')
+                        }}
+
+                    />
                 }
                 if (viewMode === 'edit') {
-                    return <NormalLessonDetailEditView {...props} onCancel={() => setViewMode('base')} onEditDone={() => props.onCloseAndRefresh?.()} />
+                    return <NormalLessonDetailEditView lessonid={indomain_id} onCancel={() => setViewMode('base')} onEditDone={() => onCloseAndRefresh?.()} />
                 }
                 if (viewMode === 'edit-attendance') {
-                    return <EditAttendance onCancel={() => setViewMode('base')} onSuccess={() => setViewMode('base')} lessonid={props.data.indomain_id} />
+                    return <EditAttendance onCancel={() => setViewMode('base')} onSuccess={() => setViewMode('base')} lessonid={indomain_id} />
                 }
 
             })()}
@@ -41,3 +42,11 @@ export default function NormalLessonDetailModal(props) {
         </Dialog>
     )
 }
+
+NormalLessonDetailModal.propTypes = {
+    indomain_id: PT.number.isRequired,
+    onClose: PT.func.isRequired,
+    onCloseAndRefresh: PT.func.isRequired
+}
+
+export default NormalLessonDetailModal

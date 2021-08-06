@@ -9,6 +9,7 @@ import client from '../../apolloclient'
 import { DELETE_LESSON_WITH_REQUEST_TYPE_GQL, QUERY_LESSON_DETAIL_WITH_LESSONID } from '../../common/gql_defs'
 
 import { useQuery } from '@apollo/client'
+import PT from 'prop-types'
 
 
 
@@ -29,9 +30,8 @@ const useStyles = makeStyles(theme => {
     }
 })
 
-export default function NormalLessonDetailModalBaseView(props) {
+function NormalLessonDetailModalBaseView({ indomain_id, onCloseAndRefresh, onChangeAttendance, onEdit, onClose, onInfoReceived }) {
 
-    console.log(props)
 
     const [showCancelMenu, setShowCancelMenu] = useState(false)
     const [cancelBtnRef, setCancelBtnRef] = useState(null)
@@ -40,11 +40,12 @@ export default function NormalLessonDetailModalBaseView(props) {
         client: client,
         fetchPolicy: 'no-cache',
         variables: {
-            lessonid: props.data.indomain_id
+            lessonid: indomain_id
         },
         onCompleted: d => {
             console.log('onCompleted')
             console.log(d)
+            onInfoReceived?.(d?.query_lesson_detail_with_lessonid?.detail)
         },
         onError: e => {
             console.log(JSON.stringify(e))
@@ -59,13 +60,11 @@ export default function NormalLessonDetailModalBaseView(props) {
 
         // if lesson is individual grouping type, then use CANCEL_INDIVIDUAL_LESSON
 
-        console.log(props.view_selected_lesson)
-
 
         // for non individual types
 
         const _var = {
-            lessonid: props.data.indomain_id,
+            lessonid: indomain_id,
             ignore_warning: ignore_warning,
             request_type: request_type
         }
@@ -93,7 +92,7 @@ export default function NormalLessonDetailModalBaseView(props) {
 
             if (d.data.delete_lesson_with_request_type.success) {
 
-                props.onCloseAndRefresh?.()
+                onCloseAndRefresh?.()
             }
             else {
                 alert('failed to delete lesson.' + d.data.delete_lesson_with_request_type.msg)
@@ -106,8 +105,6 @@ export default function NormalLessonDetailModalBaseView(props) {
 
     }
 
-    let unique_client_arr = props.data.client_info_arr
-
     if (loading) {
         return <>
             <DialogContent>
@@ -115,10 +112,6 @@ export default function NormalLessonDetailModalBaseView(props) {
             </DialogContent>
         </>
     }
-
-    console.log(error)
-    console.log(data)
-    console.log(data?.query_lesson_detail_with_lessonid?.success)
 
     if (error || data?.query_lesson_detail_with_lessonid?.success === false) {
         return <>
@@ -182,9 +175,9 @@ export default function NormalLessonDetailModalBaseView(props) {
             </DialogContent>
             <DialogActions>
 
-                <Button variant='outlined' onClick={e => props?.onChangeAttendance?.()}>출석변경</Button>
+                <Button variant='outlined' onClick={e => onChangeAttendance?.()}>출석변경</Button>
 
-                <Button variant='outlined' onClick={e => props.onEdit?.()}>수업변경</Button>
+                <Button variant='outlined' onClick={e => onEdit?.()}>수업변경</Button>
                 <Button variant='outlined' onClick={e => {
                     setCancelBtnRef(e.currentTarget)
                     setShowCancelMenu(true)
@@ -193,9 +186,20 @@ export default function NormalLessonDetailModalBaseView(props) {
                     <MenuItem onClick={() => delete_lesson_with_request_type('admin_req')}>관리자권한</MenuItem>
                     <MenuItem onClick={() => delete_lesson_with_request_type('instructor_req')}>강사요청</MenuItem>
                 </Menu>
-                <Button variant='outlined' color='secondary' onClick={e => props.onClose?.()}>닫기</Button>
+                <Button variant='outlined' color='secondary' onClick={e => onClose?.()}>닫기</Button>
 
             </DialogActions>
         </>
     )
 }
+
+NormalLessonDetailModalBaseView.propTypes = {
+    indomain_id: PT.number,
+    onCloseAndRefresh: PT.func,
+    onChangeAttendance: PT.func,
+    onEdit: PT.func,
+    onClose: PT.func,
+    onInfoReceived: PT.func
+}
+
+export default NormalLessonDetailModalBaseView

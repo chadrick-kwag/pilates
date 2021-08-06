@@ -6,25 +6,22 @@ import BaseView from './BaseView'
 import AddClientView from './AddClientView'
 import ChangeInstructorView from './ChangeInstructorView'
 
-import { CircularProgress } from '@material-ui/core'
+import { CircularProgress, DialogContent } from '@material-ui/core'
 
 import client from '../../../apolloclient'
 import { QUERY_LESSON_DETAIL_WITH_LESSONID, CHANGE_NORMAL_LESSON_OVERALL } from '../../../common/gql_defs'
 import ClientTicketMangePage from './ClientTicketManagePage/Container'
 
 import { useQuery } from '@apollo/client'
+import PT from 'prop-types'
 
-export default function NormalLessonDetailEditView(props) {
+function NormalLessonDetailEditView({ lessonid, onEditDone, onCancel }) {
 
-    const [instructor, setInstructor] = useState({
-        name: props.data.instructorname,
-        phonenumber: props.data.instructorphonenumber,
-        id: props.data.instructorid
-    })
+    const [instructor, setInstructor] = useState(null)
 
     const [startTime, setStartTime] = useState(null)
     const [durationHours, setDurationHours] = useState(null)
-    const [clients, setClients] = useState(props.data.client_info_arr)
+    const [clients, setClients] = useState([])
     const [clientsAndTickets, setClientsAndTickets] = useState(null)
 
     const [viewMode, setViewMode] = useState('base')
@@ -39,7 +36,7 @@ export default function NormalLessonDetailEditView(props) {
         client: client,
         fetchPolicy: 'no-cache',
         variables: {
-            lessonid: props.data.indomain_id
+            lessonid: lessonid
         },
         onCompleted: res => {
             console.log(res)
@@ -53,6 +50,11 @@ export default function NormalLessonDetailEditView(props) {
             // distribute data to each states
             setActivityType(d.activity_type)
             setGroupingType(d.grouping_type)
+            setInstructor({
+                id: d.instructorid,
+                phonenumber: d.instructorphonenumber,
+                name: d.instructorname
+            })
 
             setStartTime(DateTime.fromMillis(parseInt(d.starttime)).setZone('UTC+9'))
 
@@ -96,8 +98,8 @@ export default function NormalLessonDetailEditView(props) {
         })
 
         const _var = {
-            lessonid: props.data.indomain_id,
-            instructorid: parseInt(instructor.id),
+            lessonid: lessonid,
+            instructorid: instructor.id,
             client_tickets: _cts,
             starttime: startTime.toSQL(),
             endtime: endtime.toSQL()
@@ -112,7 +114,7 @@ export default function NormalLessonDetailEditView(props) {
             fetchPolicy: 'no-cache'
         }).then(res => {
             if (res.data.change_lesson_overall.success) {
-                props.onEditDone?.()
+                onEditDone?.()
             }
             else {
                 alert('submit change fail')
@@ -125,23 +127,26 @@ export default function NormalLessonDetailEditView(props) {
 
 
     if (loading) {
-        return <CircularProgress />
+        return <DialogContent style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}><CircularProgress /></DialogContent>
     }
 
     if (error || initialData?.query_lesson_detail_with_lessonid?.success === false) {
-        return <span>에러</span>
+        return <DialogContent style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <span style={{ padding: '2rem' }}>에러</span>
+        </DialogContent>
     }
 
     if (viewMode === 'base') {
 
-        return <BaseView instructor={props.instructor}
+        return <BaseView
             clientsAndTickets={clientsAndTickets}
             activity_type={activityType}
             grouping_type={groupingType}
             onAddClient={() => setViewMode('add_client')} setClients={setClients} setStartTime={setStartTime} setDurationHours={setDurationHours} clients={clients} durationHours={durationHours} startTime={startTime}
             setClientsAndTickets={setClientsAndTickets}
-            onChangeInstructor={() => setViewMode('change_instructor')} instructor={instructor}
-            onCancel={props.onCancel}
+            onChangeInstructor={() => setViewMode('change_instructor')}
+            instructor={instructor}
+            onCancel={onCancel}
             switchToClientTicketEditMode={index => {
                 setClientTicketsIndexToEdit(index)
                 setViewMode('client_ticket_manage')
@@ -191,3 +196,12 @@ export default function NormalLessonDetailEditView(props) {
     }
 
 }
+
+
+NormalLessonDetailEditView.propTypes = {
+    lessonid: PT.func.isRequired,
+    onEditDone: PT.func.isRequired,
+    onCancel: PT.func.isRequired
+}
+
+export default NormalLessonDetailEditView

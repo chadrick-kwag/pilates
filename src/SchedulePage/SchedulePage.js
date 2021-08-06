@@ -59,7 +59,7 @@ function MainPage({ history, match }) {
                     </Menu>
                 </div>
                 <div>
-                    <ScheduleViewer apolloclient={client} />
+                    <ScheduleViewer  />
                 </div>
             </Route>
         </Switch>
