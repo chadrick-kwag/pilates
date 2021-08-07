@@ -306,6 +306,7 @@ function ScheduleViewer({ props }) {
 
         // determine search date range based on view_date
 
+
         let [start_time, end_time] = get_week_range_of_date(viewDate)
 
         fetchSchedules({
@@ -318,7 +319,7 @@ function ScheduleViewer({ props }) {
 
     useEffect(() => {
         fetchdata()
-    }, [])
+    }, [viewDate])
 
 
     const handle_schedule_click = (e) => {
@@ -353,8 +354,6 @@ function ScheduleViewer({ props }) {
             <ControlBar updateFilter={f => setFilter(f)} viewDate={viewDate} setViewDate={d => {
 
                 setViewDate(d)
-                console.log('calendarref')
-                console.log(calendarRef)
                 calendarRef?.current?.calendarInst?.setDate(d)
 
             }}
