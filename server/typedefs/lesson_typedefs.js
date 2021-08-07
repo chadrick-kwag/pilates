@@ -124,10 +124,10 @@ type Mutation{
     cancel_individual_lesson(lessonid: Int!, clientid: Int!, reqtype:String! force_penalty: Boolean!): SuccessWarningMsgResult
     delete_lesson(lessonid:Int!): SuccessResult
     delete_lesson_with_request_type(lessonid:Int!, request_type: String!, ignore_warning: Boolean!): LessonDeleteResponse
-    attempt_update_lesson_time(lessonid:Int!, start_time: String!, end_time: String!): SuccessResult
-    update_lesson_instructor_or_time(lessonid: Int!, start_time: String!, end_time: String!, instructor_id: Int!): SuccessResult
+    
+    
     create_individual_lesson(clientid: Int!, instructorid: Int!, ticketid: Int!, starttime: String!, endtime: String!): SuccessResult
-    change_clients_of_lesson(ticketid_arr: [Int], lessonid: Int!): SuccessResult
+    
 
     change_lesson_overall(lessonid: Int!, client_tickets: [clientTickets!], instructorid: Int!, starttime: String!, endtime: String!): SuccessResult
 

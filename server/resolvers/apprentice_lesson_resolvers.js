@@ -1,11 +1,25 @@
 const { DateTime } = require('luxon')
-const pgclient = require('../pgclient')
+const { pool, _pgclient } = require('../pgclient')
 
 
 module.exports = {
 
     Query: {
         fetch_apprentice_lesson_by_lessonid: async (parent, args, context) => {
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
             try {
 
@@ -45,6 +59,7 @@ module.exports = {
 
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 console.log(lesson_info)
 
@@ -55,6 +70,7 @@ module.exports = {
             }
             catch (e) {
                 console.log(e)
+                pgclient.release()
                 return {
                     msg: e.detail,
                     success: false,
@@ -70,6 +86,20 @@ module.exports = {
             console.log('update_apprentice_lesson_overall:')
             console.log(args)
 
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 await pgclient.query('begin')
 
@@ -77,12 +107,6 @@ module.exports = {
 
                 const starttime = DateTime.fromHTTP(args.starttime)
                 const endtime = starttime.plus({ hours: args.duration })
-
-                console.log('starttime')
-                console.log(starttime)
-
-                console.log('endtime')
-                console.log(endtime)
 
                 const incoming_ticket_id_set = new Set(args.ticket_id_arr)
 
@@ -170,6 +194,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -181,6 +206,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {
@@ -196,6 +222,21 @@ module.exports = {
             }
         },
         create_apprentice_lesson: async (parent, args) => {
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 console.log('create_apprentice_lesson')
@@ -298,6 +339,7 @@ module.exports = {
                 }
 
                 await pgclient.query('COMMIT')
+                pgclient.release()
 
                 return {
                     success: true
@@ -308,6 +350,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: e.detail
@@ -322,6 +365,22 @@ module.exports = {
             }
         },
         change_apprentice_lesson_starttime: async (parent, args) => {
+
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 console.log(args)
 
@@ -365,7 +424,7 @@ module.exports = {
                 ])
 
                 await pgclient.query('COMMIT')
-
+                pgclient.release()
 
                 return {
                     success: true
@@ -375,6 +434,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: e.detail
@@ -389,6 +449,21 @@ module.exports = {
             }
         },
         cancel_apprentice_lesson: async (parent, args) => {
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 let res = await pgclient.query('BEGIN')
@@ -420,6 +495,7 @@ module.exports = {
 
 
                 await pgclient.query('COMMIT')
+                pgclient.release()
 
                 return {
                     success: true
@@ -429,6 +505,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: e.detail

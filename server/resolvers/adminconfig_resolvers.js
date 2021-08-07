@@ -1,4 +1,4 @@
-const pgclient = require('../pgclient')
+
 const { setting, save_setting, update_setting } = require('../adminappconfig')
 const { ensure_admin_account_id_in_context } = require('./common')
 

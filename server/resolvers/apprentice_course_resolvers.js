@@ -1,22 +1,37 @@
-const pgclient = require('../pgclient')
+const { pool, _pgclient } = require('../pgclient')
 
 
 
 module.exports = {
 
     Query: {
-        fetch_apprentice_courses: async (parent, args) =>{
+        fetch_apprentice_courses: async (parent, args) => {
             console.log('fetch_apprentice_courses')
 
-            try{
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+                return {
+                    success: false,
+                    msg: 'db connect fail'
+                }
+            }
+
+
+            try {
                 let result = await pgclient.query(`select id,name from apprentice_course`)
+
+                pgclient.release()
 
                 return {
                     success: true,
                     courses: result.rows
                 }
             }
-            catch(e){
+            catch (e) {
                 console.log(e)
 
                 return {
@@ -29,25 +44,41 @@ module.exports = {
     },
     Mutation: {
         create_apprentice_course: async (parent, args) => {
-            console.log('create_apprentice_course')
-            console.log(args)
 
-            try{
+            let pgclient
+
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
+
+            try {
                 await pgclient.query('begin')
 
                 let result = await pgclient.query(`insert into apprentice_course (name) values ($1)`, [args.name])
 
                 await pgclient.query('commit')
 
+                pgclient.release()
+
                 return {
                     success: true
                 }
             }
-            catch(e){
+            catch (e) {
                 console.log(e)
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {

@@ -1,4 +1,4 @@
-const pgclient = require('../pgclient')
+const { _pgclient, pool } = require('../pgclient')
 const {
     ensure_admin_account_id_in_context
 } = require('./common')
@@ -15,6 +15,19 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 let result = await pgclient.query(`select instructor.id as id,
                 person.name as name,
@@ -26,12 +39,15 @@ module.exports = {
                 and person.name = $1
                  `, [args.name])
 
+                pgclient.release()
+
                 return {
                     success: true,
                     instructors: result.rows
                 }
             } catch (e) {
                 console.log(e)
+                pgclient.release()
                 return {
                     success: false,
                     msg: e.detail
@@ -48,8 +64,23 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 let result = await pgclient.query(`select count(1) as totalcount from instructor`)
+
+                pgclient.release()
 
                 return {
                     success: true,
@@ -59,6 +90,8 @@ module.exports = {
                 }
             }
             catch (err) {
+                console.log(err)
+                pgclient.release()
                 return {
                     success: false,
                     msg: err.detail
@@ -76,6 +109,19 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 let result = await pgclient.query(`select instructor.id as id,
                 person.name as name,
@@ -85,6 +131,8 @@ module.exports = {
                 left join instructor_level on level=instructor_level.id
                 `)
 
+                pgclient.release()
+
                 return {
                     success: true,
                     instructors: result.rows
@@ -92,6 +140,7 @@ module.exports = {
             }
             catch (e) {
                 console.log(e)
+                pgclient.release()
 
                 return {
                     success: false
@@ -110,6 +159,19 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
 
             try {
                 let results = await pgclient.query(`select instructor.*,
@@ -121,11 +183,13 @@ module.exports = {
                  from instructor 
                 left join person on person.id = instructor.personid
                 where person.name=$1`, [args.name])
+                pgclient.release()
 
                 return results.rows
             }
             catch (e) {
                 console.log(e)
+                pgclient.release()
 
                 return []
             }
@@ -143,6 +207,18 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
 
             try {
@@ -152,6 +228,8 @@ module.exports = {
                 left join person on person.id = instructor.personid
                 where instructor.id=$1`, [args.id])
 
+                pgclient.release()
+
                 return {
                     success: true,
                     instructor: result.rows[0]
@@ -160,6 +238,7 @@ module.exports = {
             }
             catch (e) {
                 console.log(e)
+                pgclient.release()
 
                 return {
                     success: false,
@@ -178,8 +257,23 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 let result = await pgclient.query(`select id, rank, level_string, active, non_group_lesson_pay_percentage::float, group_lesson_perhour_payment, group_lesson_perhour_penalized_payment from instructor_level`)
+
+                pgclient.release()
 
                 return {
                     success: true,
@@ -188,6 +282,7 @@ module.exports = {
 
             }
             catch (err) {
+                pgclient.release()
                 return {
                     success: false,
                     msg: err.detail
@@ -203,6 +298,19 @@ module.exports = {
                 return {
                     success: false,
                     msg: 'not admin'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -237,6 +345,7 @@ module.exports = {
                 result = await pgclient.query(`insert into instructor(birthdate, address, job, validation_date, level, memo, personid) values ($1, $2, $3, $4, $5, $6, $7)`, [args.birthdate, args.address, args.job, args.validation_date, args.level, args.memo, personid])
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -247,6 +356,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {
@@ -272,9 +382,28 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
 
             try {
+
+                await pgclient.query('begin')
                 let result = await pgclient.query('delete from instructor where id=$1', [args.id])
+
+
+                await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -282,6 +411,12 @@ module.exports = {
             }
             catch (e) {
                 console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                    pgclient.release()
+                }
+                catch { }
 
                 return {
                     success: false,
@@ -301,6 +436,19 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 await pgclient.query('begin')
@@ -317,6 +465,7 @@ module.exports = {
 
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -329,6 +478,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
                 }
                 catch (e2) {
@@ -344,88 +494,119 @@ module.exports = {
                 }
             }
 
-            // let validation_date = args.validation_date
-            // if (validation_date !== null) {
-            //     validation_date = incoming_time_string_to_postgres_epoch_time(validation_date)
-            // }
 
-            // let birthdate = args.birthdate
-            // if (birthdate !== null) {
-            //     birthdate = incoming_time_string_to_postgres_epoch_time(birthdate)
-            // }
-
-            // let _args = [args.name, args.phonenumber, parse_incoming_gender_str(args.gender), args.email, args.level, args.address, validation_date, birthdate, args.memo, args.is_apprentice, args.job, args.allow_teach_apprentice, args.id]
-
-            // console.log(_args)
-
-            // let ret = await pgclient.query('update instructor set name=$1, phonenumber=$2, gender=$3, email=$4, level=$5, address=$6, validation_date=to_timestamp($7), birthdate=to_timestamp($8), memo=$9, is_apprentice=$10, job=$11, allow_teach_apprentice=$12 where id=$13', _args).then(res => {
-            //     if (res.rowCount > 0) {
-            //         return {
-            //             success: true
-            //         }
-            //     }
-            //     return {
-            //         success: false,
-            //         msg: 'no instructor updated'
-            //     }
-            // }).catch(e => {
-            //     console.log(e)
-            //     return {
-            //         success: true,
-            //         msg: 'error updating instructor'
-            //     }
-            // })
-
-
-            // return ret
         },
         disable_instructor_by_id: async (parent, args) => {
-            let result = await pgclient.query('update instructor set disabled=true where id=$1', [args.id]).then(res => {
-                if (res.rowCount == 1) {
-                    return {
-                        success: true
-                    }
-                }
-                else {
-                    return {
-                        success: false,
-                        msg: "row count not 1"
-                    }
-                }
-            }).catch(e => {
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
                 console.log(e)
+
                 return {
                     success: false,
-                    msg: "query error"
+                    msg: 'pg pool error'
                 }
-            })
+            }
 
-            return result
+            try {
+                let result = await pgclient.query('update instructor set disabled=true where id=$1', [args.id])
+
+                if (result.rowCount < 1) {
+                    throw {
+                        detail: 'no instructor'
+                    }
+                }
+
+                pgclient.release()
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('rollback')
+                    pgclient.release()
+                }
+                catch (e2) { }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+
+            }
+
         },
         able_instructor_by_id: async (parent, args) => {
-            let result = await pgclient.query('update instructor set disabled=false where id=$1', [args.id]).then(res => {
-                if (res.rowCount == 1) {
-                    return {
-                        success: true
-                    }
-                }
-                else {
-                    return {
-                        success: false,
-                        msg: "row count not 1"
-                    }
-                }
-            }).catch(e => {
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
                 console.log(e)
+
                 return {
                     success: false,
-                    msg: "query error"
+                    msg: 'pg pool error'
                 }
-            })
+            }
 
-            return result
+            try {
+                let result = await pgclient.query('update instructor set disabled=false where id=$1', [args.id])
+
+                if (result.rowCount < 1) {
+                    throw {
+                        detail: 'no instructor found'
+                    }
+                }
+
+                pgclient.release()
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                console.log(e)
+                try {
+                    await pgclient.query('rollback')
+                    pgclient.release()
+                }
+                catch (e2) {
+                    console.log(e2)
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
         },
         update_instructor_level: async (parent, args) => {
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
             try {
                 console.log('update_instructor_level')
                 console.log(args)
@@ -460,6 +641,7 @@ module.exports = {
                   where id=$1`, [args.id, args.level_string, args.active, args.non_group_lesson_pay_percentage, args.group_lesson_perhour_payment, args.group_lesson_perhour_penalized_payment, args.rank])
 
                 await pgclient.query(`commit`)
+                pgclient.release()
 
                 return {
                     success: true
@@ -468,6 +650,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                 }
                 catch (err) {
                     console.log(err)
@@ -485,6 +668,8 @@ module.exports = {
 
         },
         add_instructor_level: async (parent, args) => {
+
+
 
             // check args
 
@@ -509,6 +694,21 @@ module.exports = {
                 }
             }
 
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
             try {
 
                 await pgclient.query('begin')
@@ -522,6 +722,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -530,6 +731,7 @@ module.exports = {
             } catch (e) {
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                 }
                 catch (err) {
                     return {
@@ -546,7 +748,23 @@ module.exports = {
         },
         delete_instructor_level: async (parent, args) => {
 
+            let pgclient
             try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
+            try {
+
+
 
                 await pgclient.query('begin')
 
@@ -559,6 +777,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -568,6 +787,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                 }
                 catch (err) {
                     return {

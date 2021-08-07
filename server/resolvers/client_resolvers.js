@@ -1,17 +1,28 @@
-const pgclient = require('../pgclient')
-
-const {
-    incoming_time_string_to_postgres_epoch_time
-} = require('./common')
-
+const { pool } = require('../pgclient')
 
 module.exports = {
 
     Query: {
 
         fetch_client_stat: async (parent, args) => {
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 let result = await pgclient.query(`select count(1) as totalcount from client`)
+
+                pgclient.release()
 
                 return {
                     success: true,
@@ -21,6 +32,7 @@ module.exports = {
                 }
             }
             catch (err) {
+                pgclient.release()
                 return {
                     success: false,
                     msg: err.detail
@@ -29,22 +41,45 @@ module.exports = {
         },
 
         fetch_clients: async (parent, args) => {
-            let results = await pgclient.query(`select client.id as id, person.name as name, person.phonenumber, person.created, job, email, birthdate, address, person.gender, memo, disabled from client
-            left join person on person.id = client.personid
-            `).then(res => {
+
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+                let results = await pgclient.query(`select client.id as id, person.name as name, person.phonenumber, person.created, job, email, birthdate, address, person.gender, memo, disabled from client
+                left join person on person.id = client.personid
+                `)
+
+                pgclient.release()
 
                 return {
                     success: true,
-                    clients: res.rows
+                    clients: results.rows
                 }
-            }).catch(e => {
+            }
+            catch (e) {
+
+                console.log(e)
+                pgclient.release()
+
                 return {
                     success: false,
-                    msg: "query error"
+                    msg: e.detail
                 }
-            })
+            }
 
-            return results
         },
         search_client_with_name: async (parent, args, context, info) => {
 
@@ -52,20 +87,48 @@ module.exports = {
                 return []
             }
 
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return []
+            }
+
             let pattern = '%' + args.name + '%'
 
             try {
                 let results = await pgclient.query("select * from client left join person on person.id = client.personid where name like $1", [pattern])
-
+                pgclient.release()
                 return results.rows
             }
             catch (e) {
                 console.log(e)
+                pgclient.release()
                 return []
             }
 
         },
         query_clients_by_name: async (parent, args) => {
+
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
             try {
                 let result = await pgclient.query(`select client.id,
@@ -83,6 +146,8 @@ module.exports = {
                 left join person on person.id = client.personid
                 where person.name=$1`, [args.name])
 
+                pgclient.release()
+
                 return {
                     success: true,
                     clients: result.rows
@@ -90,6 +155,7 @@ module.exports = {
             }
             catch (e) {
                 console.log(e)
+                pgclient.release()
 
                 return {
                     success: false,
@@ -100,6 +166,21 @@ module.exports = {
 
         },
         query_clientinfo_by_clientid: async (parent, args) => {
+
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
 
             try {
@@ -118,11 +199,15 @@ module.exports = {
                 left join person on person.id = client.personid
                 where client.id=$1`, [args.clientid])
 
+
                 if (result.rowCount !== 1) {
                     throw {
                         detail: 'not one client found'
                     }
                 }
+
+                pgclient.release()
+
 
                 return {
                     success: true,
@@ -130,6 +215,7 @@ module.exports = {
                 }
             } catch (e) {
                 console.log(e)
+                pgclient.release()
                 return {
                     success: false,
                     msg: e.detail
@@ -145,7 +231,6 @@ module.exports = {
             console.log('createclient')
             console.log(args)
 
-
             let gender = null
             if (args.gender !== null) {
                 if (args.gender.toLowerCase() === "male") {
@@ -153,6 +238,21 @@ module.exports = {
                 }
                 else if (args.gender.toLowerCase() === "female") {
                     gender = 'FEMALE'
+                }
+            }
+
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -183,6 +283,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -193,6 +294,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
                     return {
                         success: false,
@@ -211,6 +313,21 @@ module.exports = {
 
         disable_client_by_clientid: async (parent, args) => {
 
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 await pgclient.query('begin')
 
@@ -223,6 +340,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -233,6 +351,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
                     return {
                         success: false,
@@ -251,6 +370,21 @@ module.exports = {
 
         able_client_by_clientid: async (parent, args) => {
 
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 await pgclient.query('begin')
@@ -264,6 +398,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -275,6 +410,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
                     return {
                         success: false,
@@ -293,6 +429,21 @@ module.exports = {
         deleteclient: async (parent, args) => {
 
 
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
             try {
                 await pgclient.query('begin')
 
@@ -305,6 +456,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -313,6 +465,7 @@ module.exports = {
             catch (e) {
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
                 }
                 catch (e2) {
@@ -331,6 +484,21 @@ module.exports = {
         },
 
         update_client: async (parent, args) => {
+
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
             let gender = null
             if (args.gender != null) {
@@ -366,6 +534,7 @@ module.exports = {
                     }
                 }
                 await pgclient.query('commit')
+                pgclient.release()
 
 
                 return {
@@ -375,6 +544,7 @@ module.exports = {
             catch (e) {
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
                 }
                 catch (e2) {

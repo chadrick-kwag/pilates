@@ -1,8 +1,21 @@
-const pgclient = require('../pgclient')
+const { pool } = require('../pgclient')
 
 module.exports = {
     Query: {
         fetch_master_instructors: async (parent, args, context) => {
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
 
             try {
@@ -10,7 +23,7 @@ module.exports = {
                 master_instructor.created from master_instructor
                 left join person on person.id = master_instructor.personid
                 `)
-
+                pgclient.release()
                 return {
                     success: true,
                     instructors: result.rows
@@ -18,6 +31,7 @@ module.exports = {
             }
             catch (e) {
                 console.log(e)
+                pgclient.release()
                 return {
                     success: false,
                     msg: e.detail
