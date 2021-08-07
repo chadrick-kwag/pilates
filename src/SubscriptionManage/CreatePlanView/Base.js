@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 
 import { InputAdornment, Input, TextField, Radio, Grid, Table, TableRow, TableCell, Checkbox, Button, FormControlLabel, DialogActions } from '@material-ui/core'
 
-import ClientSearchComponent2 from '../../components/ClientSearchComponent2'
+import ClientSearchComponent from '../../components/ClientSearchComponent4'
 import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import koLocale from "date-fns/locale/ko";
 import DateFnsUtils from "@date-io/date-fns";
@@ -14,9 +14,10 @@ import numeral from 'numeral'
 
 import { CREATE_SUBSCRIPTION_GQL } from '../../common/gql_defs'
 import apooloclient from '../../apolloclient'
+import PT from 'prop-types'
+import { withRouter } from 'react-router-dom'
 
-
-export default function Base(props) {
+function Base({ onSuccess, onCancel, history }) {
 
     const [selectedActivityTypes, setSelectedActivityTypes] = useState({})
     const [selectedGroupingType, setSelectedGroupingType] = useState(null)
@@ -57,7 +58,7 @@ export default function Base(props) {
             console.log(res)
 
             if (res.data.create_subscription.success) {
-                props.onSuccess?.()
+                onSuccess?.()
             }
             else {
                 alert(`create plan failed. msg: ${res.data.create_subscription.msg}`)
@@ -131,7 +132,7 @@ export default function Base(props) {
                         <TableRow>
                             <TableCell>
                                 수업 액티비티 종류
-                    </TableCell>
+                            </TableCell>
                             <TableCell>
                                 <FormControlLabel control={<Checkbox checked={selectedActivityTypes['PILATES']} onChange={e => {
 
@@ -184,7 +185,7 @@ export default function Base(props) {
                         <TableRow>
                             <TableCell>
                                 수업 그룹 종류
-                    </TableCell>
+                            </TableCell>
                             <TableCell>
                                 <FormControlLabel control={<Radio value='INDIVIDUAL' checked={selectedGroupingType === 'INDIVIDUAL'} onChange={e => setSelectedGroupingType(e.target.value)} />} label='개별' />
                                 <FormControlLabel control={<Radio value='SEMI' checked={selectedGroupingType === 'SEMI'} onChange={e => setSelectedGroupingType(e.target.value)} />} label='세미' />
@@ -195,7 +196,7 @@ export default function Base(props) {
                         <TableRow>
                             <TableCell>
                                 가격 가이드라인
-                    </TableCell>
+                            </TableCell>
                             <TableCell>
                                 {check_show_guideline_possible() ? <GuideLineTable activity_type_arr={selectedActivityTypes} grouping_type={selectedGroupingType}
                                     onGuideLineSelected={g => {
@@ -214,7 +215,7 @@ export default function Base(props) {
                         <TableRow>
                             <TableCell>
                                 총가격
-                    </TableCell>
+                            </TableCell>
                             <TableCell>
                                 <Input value={totalCost} onChange={e => setTotalCost(parseInt(e.target.value))} endAdornment={<InputAdornment position="end">원</InputAdornment>} />
                             </TableCell>
@@ -238,8 +239,8 @@ export default function Base(props) {
                         <TableRow>
                             <TableCell>
                                 만료기한
-                    </TableCell>
-                            <TableCell>
+                            </TableCell>
+                            <TableCell style={{ alignItems: 'center' }}>
                                 <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
 
                                     <DatePicker
@@ -255,26 +256,31 @@ export default function Base(props) {
                         <TableRow>
                             <TableCell>
                                 회원
-                    </TableCell>
-                            <TableCell>
-                                <ClientSearchComponent2
-                                    clientSelectedCallback={d => setClient(d)}
-                                />
+                            </TableCell>
+                            <TableCell style={{ display: 'flex', flexDirection: 'row' }}>
+                                <ClientSearchComponent onClientSelected={c => setClient(c)} />
                             </TableCell>
                         </TableRow>
                     </Table>
                 </Grid>
                 <Grid item xs={12}>
                     <DialogActions>
-                        <Button onClick={() => props.onCancel?.()}>취소</Button>
+                        <Button onClick={() => history.goBack()}>취소</Button>
                         <Button disabled={!check_submit_possible()} onClick={() => request_create_plan()}>생성</Button>
                     </DialogActions>
                 </Grid>
             </Grid>
 
-
-
         </>
     )
 
 }
+
+
+Base.propTypes = {
+    onCancel: PT.func,
+    onSuccess: PT.func
+
+}
+
+export default withRouter(Base)

@@ -6,8 +6,14 @@ import { Dialog } from '@material-ui/core'
 import ReadOnlyView from './ReadOnlyView'
 import BasicEditView from './BasicInfoEditView/container'
 import TicketEditView from './TicketEditView/container'
+import { withRouter } from 'react-router-dom'
+import client from '../../apolloclient'
+import PT from 'prop-types'
 
-export default function Container(props) {
+
+function Container({ history, match }) {
+
+    console.log(match)
 
     const [mode, setMode] = useState('readonlyview')
     const [editData, setEditData] = useState(null)
@@ -23,26 +29,33 @@ export default function Container(props) {
     }
 
     return (
-        <Dialog onClose={() => refresh_safe_cancel()} open={true}>
+        <div >
             {(() => {
                 if (mode === 'readonlyview') {
-                    return <ReadOnlyView planid={props.planid} onCancel={() => refresh_safe_cancel()} onBasicEdit={() => setMode('basic_edit')} onTicketEdit={() => setMode('ticket_edit')} setEditData={setEditData} onDeleteSuccess={() => props.onRefreshClose?.()} />
+                    return <ReadOnlyView planid={parseInt(match.params.id)} onCancel={() => refresh_safe_cancel()} onBasicEdit={() => setMode('basic_edit')} onTicketEdit={() => setMode('ticket_edit')} setEditData={setEditData} onDeleteSuccess={() => props.onRefreshClose?.()} />
                 }
                 else if (mode === 'basic_edit') {
-                    return <BasicEditView onCancel={() => setMode('readonlyview')} planid={props.planid} editData={editData} onEditSuccess={() => {
+                    return <BasicEditView onCancel={() => setMode('readonlyview')} planid={parseInt(match.params.id)} editData={editData} onEditSuccess={() => {
                         setEditOccured(true)
                         setMode('readonlyview')
                         setEditData(null)
                     }} />
                 }
                 else if (mode === 'ticket_edit') {
-                    return <TicketEditView planid={props.planid} onCancel={() => setMode('readonlyview')} onEditSuccess={() => setEditOccured(true)} />
+                    return <TicketEditView planid={parseInt(match.params.id)} onCancel={() => setMode('readonlyview')} onEditSuccess={() => setEditOccured(true)} />
                 }
                 else {
                     return <div>unimplemented</div>
                 }
             })()}
 
-        </Dialog>
+        </div>
     )
 }
+
+// Container.propTypes = {
+
+// }
+
+
+export default withRouter(Container)

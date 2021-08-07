@@ -4,9 +4,10 @@
 import React, { useState, useRef } from 'react'
 import { TextField, Button, Chip, MenuItem, Popover, CircularProgress } from '@material-ui/core'
 import client from '../apolloclient'
-import { SEARCH_CLIENT_WITH_NAME } from '../common/gql_defs'
+import { SEARCH_CLIENT_WITH_NAME, QUERY_CLIENTS_BY_NAME } from '../common/gql_defs'
+import PT from 'prop-types'
 
-export default function ClientSearchComponent(props) {
+function ClientSearchComponent(props) {
 
     const [viewMode, setViewMode] = useState((props.client !== null && props.client !== undefined) ? 'selected' : 'search')
 
@@ -26,30 +27,38 @@ export default function ClientSearchComponent(props) {
         setSearchResult(null)
 
         client.query({
-            query: SEARCH_CLIENT_WITH_NAME,
+            query: QUERY_CLIENTS_BY_NAME,
             variables: {
                 name: searchName
             },
             fetchPolicy: 'no-cache'
         }).then(res => {
             console.log(res)
-            const data = res.data.search_client_with_name.filter(x => x.disabled === false).map(a => {
-                return {
-                    id: a.id,
-                    clientname: a.name,
-                    clientphonenumber: a.phonenumber
+            if (res.data.query_clients_by_name.success) {
+                const data = res.data.query_clients_by_name.clients.filter(x => x.disabled === false).map(a => {
+                    return {
+                        id: a.id,
+                        clientname: a.name,
+                        clientphonenumber: a.phonenumber
+                    }
+                })
+                console.log(data)
+                setSearchIsLoading(false)
+
+                if (data.length === 1) {
+                    setSelectedClient(data[0])
+                    props.onClientSelected?.(data[0])
+                    setViewMode('selected')
                 }
-            })
-            console.log(data)
-            setSearchIsLoading(false)
-            if (data.length === 1) {
-                setSelectedClient(data[0])
-                props.onClientSelected?.(data[0])
-                setViewMode('selected')
+                else {
+                    setSearchResult(data)
+                }
             }
             else {
-                setSearchResult(data)
+                setSearchIsLoading(false)
+                alert('조회 실패')
             }
+
 
         }).catch(e => {
             console.log(JSON.stringify(e))
@@ -65,13 +74,15 @@ export default function ClientSearchComponent(props) {
 
     if (viewMode === 'search') {
         return (
-            <div>
-                <span>이름:</span>
-                <TextField ref={textinput} value={searchName} onChange={e => setSearchName(e.target.value)} onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                        button_click_handler()
-                    }
-                }} />
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}>
+                <span>이름</span>
+                <TextField ref={textinput} value={searchName}
+                    style={{ width: '10rem' }}
+                    onChange={e => setSearchName(e.target.value)} onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                            button_click_handler()
+                        }
+                    }} />
                 <Popover
                     anchorEl={anchorEl}
                     anchorOrigin={{
@@ -93,8 +104,8 @@ export default function ClientSearchComponent(props) {
 
                 </Popover>
 
-                <Button disabled={searchName === null || searchName === "" ? true : false} onClick={e => button_click_handler()}>검색</Button>
-                {selectedClient !== null ? <Button onClick={() => {
+                <Button variant='outlined' disabled={searchName === null || searchName === "" ? true : false} onClick={e => button_click_handler()}>검색</Button>
+                {selectedClient !== null ? <Button variant='outlined' onClick={() => {
                     setSearchName(null)
                     setViewMode('selected')
                     setSearchResult(null)
@@ -106,18 +117,27 @@ export default function ClientSearchComponent(props) {
     }
     else if (viewMode === 'selected') {
         return (
-            <div>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}>
                 <Chip label={`${selectedClient.clientname}(${selectedClient.clientphonenumber})`} />
-                <Button onClick={() => {
-                    setSearchName(null)
-                    setSearchResult(null)
-                    setSearchIsLoading(false)
-                    setViewMode('search')
-                    setAnchorEl(null)
+                <Button
+                    variant='outlined'
+                    onClick={() => {
+                        setSearchName(null)
+                        setSearchResult(null)
+                        setSearchIsLoading(false)
+                        setViewMode('search')
+                        setAnchorEl(null)
 
-                }}>변경</Button>
+                    }}>변경</Button>
             </div>
         )
     }
 }
 
+ClientSearchComponent.propTypes = {
+    client: PT.object,
+    onClientSelected: PT.func
+}
+
+
+export default ClientSearchComponent

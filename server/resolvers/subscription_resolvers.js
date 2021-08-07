@@ -470,6 +470,9 @@ module.exports = {
         },
         query_subscriptions_by_clientid: async (parent, args, context) => {
 
+            console.log('query_subscriptions_by_clientid')
+            console.log(args)
+
 
             if (!ensure_admin_account_id_in_context(context)) {
                 return {
@@ -500,6 +503,8 @@ module.exports = {
                 left join (select count(1) as rounds, sum(cost) as totalcost, creator_plan_id from ticket group by creator_plan_id) as B on B.creator_plan_id = plan.id
                 where client.id = $1
                 `, [args.clientid])
+
+                console.log(result)
 
                 pgclient.release()
 

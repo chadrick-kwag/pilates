@@ -1,300 +1,124 @@
-import React from 'react'
-import { Button, Table, Form } from 'react-bootstrap'
-import moment from 'moment'
+import React, { useState, useEffect } from 'react'
+import { Button, Table, TableRow, TableCell, CircularProgress } from '@material-ui/core'
 
-import { QUERY_SUBSCRIPTIONS_BY_CLIENTID, SEARCH_CLIENT_WITH_NAME, DELETE_SUBSCRITION_GQL } from '../common/gql_defs'
+
+import { QUERY_SUBSCRIPTIONS_BY_CLIENTID, QUERY_CLIENTS_BY_NAME, DELETE_SUBSCRITION_GQL } from '../common/gql_defs'
 
 import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
 import numeral from 'numeral'
 
 import DetailModal from './PlanDetailView/container'
+import client from '../apolloclient'
+import { useLazyQuery } from '@apollo/client'
+import ClientSearchComponent from '../components/ClientSearchComponent4'
+
+import { DateTime } from 'luxon'
+import { withRouter } from 'react-router-dom'
+import './listview.css'
+import CoreAdminUserCheck from '../components/CoreAdminUserCheck'
+
+function ClientPlanListView({ history, match }) {
+
+    const [searchClient, setSearchClient] = useState(null)
+    const [fetchPlans, { loading, data: fetchedPlans, error }] = useLazyQuery(QUERY_SUBSCRIPTIONS_BY_CLIENTID, {
+        client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => console.log(d),
+        onError: e => console.log(JSON.stringify(e))
+    })
 
 
-class SubscriptionListView extends React.Component {
-
-    constructor(props) {
-        super(props)
-
-        this.state = {
-
-            data: null,
-            delete_target_subscription: null,
-            view_selected_subscription: null,
-            search_client_name: "",
-            search_client_id: null,
-            client_candidates: []
-
-
+    useEffect(() => {
+        if (searchClient === null) {
+            return
         }
 
-        this.fetchdata = this.fetchdata.bind(this)
-        this.check_search_input = this.check_search_input.bind(this)
-        this.fetchclient = this.fetchclient.bind(this)
-        this.search_btn_click_handler = this.search_btn_click_handler.bind(this)
-    }
-
-
-    fetchclient() {
-        // fetch client info based on client search name.
-        // if there is only one, then proceed to calling fetchdata.
-        // if there are mulltiple clients with that name, then update `client_candidates` and do NOT proceed to `fetchdata()`
-
-        this.props.apolloclient.query({
-            query: SEARCH_CLIENT_WITH_NAME,
+        fetchPlans({
             variables: {
-                name: this.state.search_client_name
-            },
-            fetchPolicy: 'no-cache'
-        }).then(res => {
-
-            console.log(res)
-
-            let client_infos = res.data.search_client_with_name
-
-            if (client_infos.length == 0) {
-                alert('no client found by that name')
+                clientid: searchClient.id
             }
-            else if (client_infos.length == 1) {
-                let client_id = client_infos[0].id
-                console.log('need to proceed!')
-                this.setState({
-                    search_client_id: client_id
-                })
-                this.fetchdata(parseInt(client_id))
-            }
-            else {
-                // multiple clients found
-                this.setState({
-                    client_candidates: client_infos,
-                    data: null
-                })
-            }
-        }).catch(e => {
-            console.log(e)
-            console.log(JSON.stringify(e))
-
-            alert('search client error')
         })
-    }
+    }, [searchClient])
 
-    fetchdata(_clientid) {
+    return <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
 
-        let v = {
-            clientid: _clientid
-        }
-
-        console.log(v)
-
-        this.props.apolloclient.query({
-            query: QUERY_SUBSCRIPTIONS_BY_CLIENTID,
-            variables: v,
-            fetchPolicy: 'no-cache'
-        }).then(res => {
-            console.log(res)
-
-            if (res.data.query_subscriptions_by_clientid.success) {
-                this.setState({
-                    client_candidates: [],
-                    data: res.data.query_subscriptions_by_clientid.subscriptions.sort(a => -parseInt(a.created))
-                })
-            }
-            else {
-                alert('query fail')
-                this.setState({
-                    client_candidates: []
-                })
-            }
-
-        }).catch(e => {
-            console.log(JSON.stringify(e))
-            alert('query error')
-        })
-
-    }
-
-
-    check_search_input() {
-
-        if (this.state.search_client_name === undefined) {
-            return false
-        }
-        if (this.state.search_client_name.trim() === "") {
-            return false
-        }
-
-        return true
-    }
-
-    search_btn_click_handler() {
-        let check = this.check_search_input()
-        if (check) {
-
-            this.setState({
-                client_candidates: [],
-                data: null,
-                search_client_id: null
-            }, () => {
-                this.fetchclient()
-            })
-
-        }
-    }
-
-
-    render() {
-
-        return <div>
-            {this.state.view_selected_subscription !== null ? <DetailModal onCancel={() => this.setState({
-                view_selected_subscription: null
-            })} planid={this.state.view_selected_subscription.id}
-                onRefreshClose={() => {
-                    this.fetchdata(this.state.search_client_id)
-                    this.setState({
-                        view_selected_subscription: null
-                    })
-                }}
-            /> : null}
-
-            <div className='row-gravity-center'>
-                <span>회원이름</span>
-                <Form.Control value={this.state.search_client_name} onChange={e => {
-                    console.log(e)
-                    this.setState({ search_client_name: e.target.value })
-                }
-                }
-                    onKeyDown={e => {
-                        console.log(e)
-                        if (e.nativeEvent.key === 'Enter') {
-                            this.search_btn_click_handler()
-                        }
-                    }}
-                />
-                <Button onClick={_ => {
-                    let check = this.check_search_input()
-                    if (check) {
-
-                        this.setState({
-                            client_candidates: [],
-                            data: null,
-                            search_client_id: null
-                        }, () => {
-                            this.fetchclient()
-                        })
-
-                    }
-                }}>검색</Button>
+        <CoreAdminUserCheck>
+            <div>
+                <Button variant='contained' onClick={() => {
+                    history.push(`${match.url}/create`)
+                }}>플랜생성</Button>
             </div>
+        </CoreAdminUserCheck>
 
-            {this.state.client_candidates.length == 0 ? (this.state.data === null ? <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-                <span>결과 없음</span>
-            </div> :
-
-                <div>
-                    <Table className="row-clickable-table">
-                        <thead>
-                            <th>
-                                id
-                            </th>
-                            <th>client id</th>
-                            <th>client name</th>
-                            <th>type</th>
-
-                            <th>rounds</th>
-                            <th>total cost</th>
-                            <th>created</th>
-                            <th>action</th>
-                        </thead>
-                        <tbody>
-                            {this.state.data.map((d, i) => {
-
-                                return <tr onClick={e => {
-                                    this.setState({
-                                        view_selected_subscription: d
-                                    })
-                                }}>
-                                    <td>{d.id}</td>
-                                    <td>{d.clientid}</td>
-                                    <td>{d.clientname}</td>
-                                    <td>{(() => {
-                                        let out = ""
-
-                                        d.types.forEach(a => {
-                                            out = out + activity_type_to_kor[a.activity_type] + '/' + grouping_type_to_kor[a.grouping_type] + ','
-                                        })
-
-                                        out = out.slice(0, -1)
-                                        return out
-                                    })()}</td>
-                                    <td>{d.rounds}</td>
-                                    <td>{numeral(d.totalcost).format('0,0')}원</td>
-                                    <td>{moment(new Date(parseInt(d.created))).format('YYYY-MM-DD HH:mm')}</td>
-                                    <td><div>
-                                        <Button
-                                            variant='danger'
-                                            onClick={e => {
-                                                let result = confirm("플랜을 삭제하시겠습니까?")
-                                                if (result) {
-                                                    this.props.apolloclient.mutate({
-                                                        mutation: DELETE_SUBSCRITION_GQL,
-                                                        variables: {
-                                                            id: parseInt(d.id)
-                                                        }
-                                                    }).then(d => {
-                                                        console.log(d)
-
-                                                        if (d.data.delete_subscription.success) {
-                                                            this.fetchdata(parseInt(this.state.search_client_id))
-                                                        }
-                                                        else {
-                                                            let msg = d.data.delete_subscription.msg
-                                                            alert(`failed to delete. ${msg}`)
-                                                        }
-                                                    }).catch(e => {
-                                                        console.log(e)
-                                                        alert('error while deleting')
-                                                    })
-                                                }
-
-                                                e.stopPropagation()
-                                            }}>삭제</Button>
-                                    </div></td>
-                                </tr>
-                            })}
-                        </tbody>
-                    </Table>
-                </div>
-            )
-                :
-                <div>
-                    <div className="row-gravity-center">
-                        <p><b>please select client</b></p>
-                    </div>
-
-
-                    <Table className="row-clickable-table">
-                        <thead>
-                            <th>id</th>
-                            <th>name</th>
-                            <th>phone number</th>
-                        </thead>
-                        <tbody>
-                            {this.state.client_candidates.map(d => {
-                                return <tr onClick={() => {
-                                    this.setState({
-                                        search_client_id: d.id
-                                    })
-                                    this.fetchdata(parseInt(d.id))
-                                }}>
-                                    <td>{d.id}</td>
-                                    <td>{d.name}</td>
-                                    <td>{d.phonenumber}</td>
-                                </tr>
-                            })}
-                        </tbody>
-                    </Table>
-                </div>}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0.5rem' }}>
+            <ClientSearchComponent onClientSelected={d => {
+                console.log(d)
+                setSearchClient(d)
+            }} />
         </div>
-    }
+        <div style={{ flexGrow: 1 }}>
+            {(() => {
+
+                if (searchClient === null) {
+                    return null
+                }
+                if (loading) {
+                    return <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <CircularProgress />
+                    </div>
+                }
+
+                if (error || fetchedPlans?.query_subscriptions_by_clientid?.success === false) {
+                    return <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <span>에러</span>
+                    </div>
+                }
+
+
+                return <Table>
+                    <TableRow style={{ fontWeight: 'bold' }}>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
+                            회원
+                        </TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
+                            총횟수
+                        </TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
+                            생성일
+                        </TableCell>
+                        <TableCell>
+
+                        </TableCell>
+                    </TableRow>
+
+                    {fetchedPlans?.query_subscriptions_by_clientid?.subscriptions?.map(d => <TableRow className='hover-colored' onClick={() => history.push(`/clientplanmanage/plan/${d.id}`)}>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
+                            {d.clientname}
+                        </TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
+                            {d.rounds}
+                        </TableCell>
+                        <TableCell style={{ wordBreak: 'keep-all' }}>
+                            {DateTime.fromMillis(parseInt(d.created)).setZone('utc+9').toFormat('y-LL-dd HH:mm')}
+                        </TableCell>
+                        <TableCell>
+                            <Button variant='outlined' style={{ wordBreak: 'keep-all' }}>삭제</Button>
+                        </TableCell>
+                    </TableRow>)}
+
+                </Table>
+
+
+
+            })()}
+        </div>
+
+
+
+    </div>
+
+
 }
 
-export default SubscriptionListView
+
+export default withRouter(ClientPlanListView)

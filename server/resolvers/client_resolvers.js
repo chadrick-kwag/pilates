@@ -81,39 +81,8 @@ module.exports = {
             }
 
         },
-        search_client_with_name: async (parent, args, context, info) => {
 
-            if (args.name.trim() === "") {
-                return []
-            }
-
-
-
-            let pgclient
-            try {
-                pgclient = await pool.connect()
-            }
-            catch (e) {
-                console.log(e)
-
-                return []
-            }
-
-            let pattern = '%' + args.name + '%'
-
-            try {
-                let results = await pgclient.query("select * from client left join person on person.id = client.personid where name like $1", [pattern])
-                pgclient.release()
-                return results.rows
-            }
-            catch (e) {
-                console.log(e)
-                pgclient.release()
-                return []
-            }
-
-        },
-        query_clients_by_name: async (parent, args) => {
+        query_clients_by_name: async (parent, args, context) => {
 
 
 

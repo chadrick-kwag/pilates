@@ -1,51 +1,42 @@
 import React from 'react'
 
 
-import { Button } from 'react-bootstrap'
+import { Button } from '@material-ui/core'
 
 import SubscriptionListView from './SubscriptionListView'
 
 import CreatePlanView from './CreatePlanView/Base'
-import CoreAdminUserCheck from '../components/CoreAdminUserCheck'
+
+import { withRouter, Switch, Route } from 'react-router-dom'
+
+
+import PlanDetailView from './PlanDetailView/InfoView'
+import PlanEditView from './PlanEditView/editview'
+
+
+function ClientPlanPage({ history, match }) {
+
+
+    return <div style={{ width: '100%', height: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'column' }}>
 
 
 
-class SubscriptionManagePage extends React.Component {
+        <Switch>
+            <Route path={`${match.url}/create`}>
+                <CreatePlanView onSuccess={() => history.push(match.url)} />
+            </Route>
+            <Route path={`${match.url}/plan/:id`}>
+                <PlanDetailView />
+            </Route>
+            <Route path={`${match.url}/edit/:id`}>
+                <PlanEditView />
+            </Route>
+            <Route path={`${match.url}`}>
+                <SubscriptionListView />
+            </Route>
+        </Switch>
 
-    constructor(props) {
-        super(props)
-
-        this.state = {
-            viewmode: 'list'
-        }
-    }
-
-
-    render() {
-        let mainview
-        if (this.state.viewmode == 'list') {
-            mainview = <SubscriptionListView apolloclient={this.props.apolloclient} />
-        }
-        else if (this.state.viewmode == 'create') {
-
-
-            mainview = <CreatePlanView onCancel={() => this.setState({ viewmode: 'list' })} onSuccess={() => this.setState({ viewmode: 'list' })} />
-        }
-
-
-        return <div>
-            <CoreAdminUserCheck>
-                <div>
-                    <Button onClick={e => this.setState({
-                        viewmode: 'create'
-                    })}>플랜생성</Button>
-                </div>
-            </CoreAdminUserCheck>
-
-            {mainview}
-        </div>
-
-    }
+    </div>
 }
 
-export default SubscriptionManagePage
+export default withRouter(ClientPlanPage)
