@@ -10,7 +10,7 @@ import CreateApprenticeLesson from './CreateApprenticeLesson'
 import CreateSpecialSchedule from './CreateSpecialScheduleView/container'
 import CoreAdminUserCheck from '../components/CoreAdminUserCheck'
 import { withRouter, Switch, Route } from 'react-router-dom'
-import client from '../apolloclient'
+
 
 import CreateOtherSchedule from './CreateSpecialScheduleView/container'
 import CreateMasterInstructorClass from './CreateMasterInstructorClass/main'
@@ -59,7 +59,7 @@ function MainPage({ history, match }) {
                     </Menu>
                 </div>
                 <div>
-                    <ScheduleViewer apolloclient={client} />
+                    <ScheduleViewer  />
                 </div>
             </Route>
         </Switch>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button, Menu, MenuItem, Table, TableRow, TableCell, Dialog, Chip, DialogActions, DialogContent, Select, Box } from '@material-ui/core'
 
-import ClientSearchComponent3 from '../../components/ClientSearchComponent3'
+import ClientSearchComponent3 from '../../../components/ClientSearchComponent3'
 
 export default function AddClientView(props) {
 

@@ -1,7 +1,7 @@
 const pgclient = require('../pgclient')
 const {
     parse_incoming_date_utc_string,
-    
+    ensure_admin_account_id_in_context,
     incoming_time_string_to_postgres_epoch_time
 } = require('./common')
 
@@ -10,6 +10,52 @@ const ERRCODES = require('../../src/common/errcode')
 module.exports = {
 
     Query: {
+        query_attendance_info_of_lessonid: async (parent, args, context) => {
+
+            console.log('query_attendance_info_of_lessonid')
+            console.log(args)
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'not admin'
+                }
+            }
+
+            try {
+
+                // gather clients registered to lesson
+
+                let result = await pgclient.query(`with A as (select distinct on(ticketid) * from assign_ticket where lessonid = $1 order by ticketid, created desc )
+
+
+                select distinct on(client.id) normal_lesson_attendance.id as attendance_id, client.id as clientid,  person.name as clientname, person.phonenumber as clientphonenumber ,
+                normal_lesson_attendance.checkin_time
+                from A
+                left join ticket on ticket.id = A.ticketid
+                left join plan on ticket.creator_plan_id = plan.id
+                left join client on plan.clientid = client.id
+                left join person on person.id = client.personid
+                left join normal_lesson_attendance on normal_lesson_attendance.clientid = client.id and normal_lesson_attendance.lessonid = $1
+                where A.canceled_time is null
+                order by client.id`, [args.lessonid])
+
+
+                return {
+                    success: true,
+                    attendance_info: result.rows
+                }
+
+
+
+            }
+            catch (e) {
+                return {
+                    success: false
+                }
+            }
+        },
         query_lessons_with_daterange_sensitive_info_removed: async (parent, args) => {
 
 
@@ -140,13 +186,16 @@ module.exports = {
         query_lesson_detail_with_lessonid: async (parent, args) => {
             try {
 
-
+                console.log(args)
                 await pgclient.query('begin')
 
                 const lessonid = args.lessonid
 
-                let result = await pgclient.query(`select lesson.id as id, instructor.name as instructor_name, instructor.phonenumber as instructor_phonenumber, instructor.id as instructor_id, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type from lesson
-                left join instructor on instructor.id = lesson.instructorid where lesson.id= $1 `, [lessonid])
+                // fetch instructor and lesson basic info
+                let result = await pgclient.query(`select lesson.id as id, person.name as instructorname, person.phonenumber as instructorphonenumber, instructor.id as instructorid, lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type from lesson
+                left join instructor on instructor.id = lesson.instructorid 
+                left join person on person.id = instructor.personid
+                where lesson.id= $1 `, [lessonid])
 
                 if (result.rows.length !== 1) {
                     throw {
@@ -159,73 +208,26 @@ module.exports = {
                 console.log('lesson_basic_info')
                 console.log(lesson_basic_info)
 
-                result = await pgclient.query(`select distinct on(ticketid) ticketid, client.id as clientid, client.name as client_name, client.phonenumber as client_phonenumber, plan.id as planid  from assign_ticket
+                // fetch client and ticket info
+                result = await pgclient.query(`WITH A as (select distinct on(ticketid) ticketid, client.id as clientid, person.name as clientname, person.phonenumber as clientphonenumber, plan.id as planid, assign_ticket.canceled_time
+                from assign_ticket
                 left join ticket on ticket.id = assign_ticket.ticketid
                 left join plan on ticket.creator_plan_id = plan.id
                 left join client on client.id = plan.clientid
-                where canceled_time is null
-                and lessonid = $1
-                order by ticketid, assign_ticket.created desc  `, [lessonid])
+                left join person on person.id = client.personid
+                where assign_ticket.lessonid = $1
+                order by ticketid, assign_ticket.created desc)
 
-                // convert to client-ticketid arr format
-                let client_to_ticket_id_arr_map = {}
-                let clientid_to_clientinfo_map = {}
+                select A.clientid, A.clientname, array_agg(A.ticketid) as ticketid_arr, A.clientphonenumber, normal_lesson_attendance.checkin_time from A
+                left join normal_lesson_attendance on normal_lesson_attendance.clientid = A.clientid and normal_lesson_attendance.lessonid = $1
+                where A.canceled_time is null
+                group by A.clientid, A.clientname, A.clientphonenumber, normal_lesson_attendance.checkin_time
+                `, [lessonid])
 
-                for (let i = 0; i < result.rows.length; i++) {
-                    const item = result.rows[i]
-
-                    const ticketid = item.ticketid
-                    const clientid = item.clientid
-
-                    let arr = client_to_ticket_id_arr_map[clientid]
-                    if (arr === undefined || arr === null) {
-                        client_to_ticket_id_arr_map[clientid] = [{
-                            ticketid: ticketid
-                        }]
-                    }
-                    else {
-                        arr.push({
-                            ticketid: ticketid
-                        })
-                    }
-
-
-                    const a = clientid_to_clientinfo_map[clientid]
-                    if (a === undefined) {
-                        clientid_to_clientinfo_map[clientid] = {
-                            clientid: clientid,
-                            clientname: item.client_name,
-                            clientphonenumber: item.client_phonenumber
-                        }
-                    }
-
-
-                }
-
-                console.log('client_to_ticket_id_arr_map')
-                console.log(client_to_ticket_id_arr_map)
-
-                const client_tickets = []
-
-                for (let p in client_to_ticket_id_arr_map) {
-                    let out = {}
-
-                    out = { ...clientid_to_clientinfo_map[p] }
-
-                    out.tickets = client_to_ticket_id_arr_map[p]
-
-                    console.log('single client tickets item')
-                    console.log(out)
-
-                    client_tickets.push(out)
-                }
-
-                console.log('client_tickets')
-                console.log(client_tickets)
 
                 const detail = {
                     ...lesson_basic_info,
-                    client_tickets: client_tickets
+                    client_info_arr: result.rows
                 }
 
                 console.log('detail')
@@ -258,7 +260,7 @@ module.exports = {
                 }
             }
         },
-       
+
 
         query_lessons_with_daterange: async (parent, args) => {
 
@@ -685,7 +687,126 @@ module.exports = {
         }
     },
     Mutation: {
+
+        remove_normal_lesson_attendance: async (parent, args, context) => {
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'not admin'
+                }
+            }
+
+            try {
+
+                await pgclient.query('begin')
+
+                await pgclient.query(`delete from normal_lesson_attendance where lessonid=$1 and clientid=$2`, [args.lessonid, args.clientid])
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
+
+                    return {
+                        success: false,
+                        msg: e.detail
+                    }
+
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+
+            }
+        },
+
+        create_normal_lesson_attendance: async (parent, args, context) => {
+
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'not admin'
+                }
+            }
+
+            try {
+
+                await pgclient.query('begin')
+
+                // check if client is registered to lesson
+                // do this by checking if assigned ticket exists
+                let result = await pgclient.query(`with A as (select distinct on (ticketid) * from assign_ticket  where lessonid=$1 order by ticketid, created desc )
+
+                select * from A
+                left join ticket on ticket.id = A.ticketid
+                left join plan on plan.id = ticket.creator_plan_id
+                where A.lessonid = $1 and plan.clientid=$2 and A.canceled_time is null
+                `, [args.lessonid, args.clientid])
+
+                if (result.rowCount === 0) {
+                    throw {
+                        detail: 'client not registered to lesson'
+                    }
+                }
+
+                // check if already checked in
+                result = await pgclient.query(`select * from normal_lesson_attendance where lessonid=$1 and clientid=$2`, [args.lessonid, args.clientid])
+
+                if (result.rowCount > 0) {
+                    throw {
+                        detail: 'already checked in'
+                    }
+                }
+
+                // create attendacne
+                await pgclient.query(`insert into normal_lesson_attendance (lessonid, clientid, checkin_time) values ($1, $2, now()) `, [args.lessonid, args.clientid])
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+
+                console.log(e)
+
+
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch (e2) {
+                    return {
+                        success: false,
+                        msg: `failed to rollback. original error msg: ${e.detail}`
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+        },
         update_lesson_instructor_or_time: async (parent, args) => {
+            
+            
             console.log('inside update lesson instructor or time')
             console.log(args)
 
@@ -733,10 +854,16 @@ module.exports = {
             return result
         },
 
-        create_lesson: async (parent, args) => {
+        create_lesson: async (parent, args, context) => {
             console.log('inside create_lesson')
             console.log(args)
 
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'not admin'
+                }
+            }
 
 
             try {
@@ -781,7 +908,7 @@ module.exports = {
 
                 // check if overlapping lesson exist for instructor
 
-                result = await pgclient.query(`select lesson.id from lesson where ( tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1,$2) ) and instructorid=$3`, [args.starttime, args.endtime, args.instructorid])
+                result = await pgclient.query(`select lesson.id from lesson where ( tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1,$2) ) and instructorid=$3 and canceled_time is null`, [args.starttime, args.endtime, args.instructorid])
 
                 if (result.rowCount > 0) {
                     throw {
@@ -820,8 +947,6 @@ module.exports = {
 
                     result = await pgclient.query(`insert into assign_ticket (ticketid, lessonid, created) values ($1, $2, now())`, [args.ticketids[i], created_lesson_id])
                 }
-
-
 
 
                 await pgclient.query('commit')
@@ -1013,6 +1138,9 @@ module.exports = {
                     // remove assign tickets
                     await pgclient.query(`delete from assign_ticket where lessonid=$1`, [args.lessonid])
 
+                    // remove related attendances
+                    await pgclient.query(`delete from normal_lesson_attendance where lessonid=$1`, [args.lessonid])
+
                     // remove lesson
                     await pgclient.query(`delete from lesson where id=$1`, [args.lessonid])
 
@@ -1022,8 +1150,17 @@ module.exports = {
                     }
                 }
                 else if (args.request_type === 'instructor_req') {
-                    // remove assign tickets which are alive
 
+                    // if attended client exist, then abort
+                    let result = await pgclient.query(`select id from normal_lesson_attendance where lessonid=$1`, [args.lessonid])
+
+                    if (result.rowCount > 0) {
+                        throw {
+                            detail: "attended client exist"
+                        }
+                    }
+
+                    // remove assign tickets which are alive
                     await pgclient.query(`delete from assign_ticket where lessonid=$1 and canceled_time is null`, [args.lessonid])
 
                     // do not remove lesson but populate cancel time wth cancel type
@@ -1039,9 +1176,6 @@ module.exports = {
                         detail: "invalid request type"
                     }
                 }
-
-
-
 
             } catch (e) {
                 console.log(e)
@@ -1062,33 +1196,8 @@ module.exports = {
                 }
             }
 
-            let result = await pgclient.query(`select * from cancel_lesson_with_reqtype($1, $2) as (success bool, msg text)`, [args.lessonid, args.request_type.toLowerCase()]).then(res => {
-                console.log(res)
-
-                if (res.rowCount !== 1) {
-                    return {
-                        success: false,
-                        msg: 'rowcount not 1'
-                    }
-                }
-                else {
-                    return res.rows[0]
-                }
-            }).catch(e => {
-                console.log(e)
-                return {
-                    success: false,
-                    msg: 'query error'
-                }
-            })
-
-            return result
-
-
         },
         create_individual_lesson: async (parent, args) => {
-            console.log('inside create individual lesson')
-            console.log(args)
 
             // check that ticket's owner matches given client id
 
@@ -1428,6 +1537,7 @@ module.exports = {
 
                 console.log(`unassign_ticket_id_arr: ${unassign_ticket_id_arr}`)
                 console.log(`assign_ticket_id_arr: ${assign_ticket_id_arr}`)
+                console.log(assign_ticket_id_arr.length)
 
 
                 // execute unassignments
@@ -1458,6 +1568,7 @@ module.exports = {
                 }
 
             } catch (e) {
+                // console.trace(e)
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')

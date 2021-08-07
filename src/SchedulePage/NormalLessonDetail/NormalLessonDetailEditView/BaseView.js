@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 
 import { DateTime } from 'luxon'
 import { Button, Menu, MenuItem, Table, TableRow, TableCell, Dialog, DialogActions, Chip, DialogContent, Select, Box, CircularProgress } from '@material-ui/core'
-import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
+import { activity_type_to_kor, grouping_type_to_kor } from '../../../common/consts'
 
 
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
@@ -20,7 +20,7 @@ export default function BaseView(props) {
     const check_request_possible = () => {
 
 
-        if (props.clientsAndTickets === null) {
+        if (props.clientsAndTickets === null || props.clientsAndTickets === undefined) {
             return false
         }
 
@@ -39,8 +39,8 @@ export default function BaseView(props) {
         for (let i = 0; i < props.clientsAndTickets.length; i++) {
             const ct = props.clientsAndTickets[i]
 
-            if (ct.tickets.length !== durationHours) {
-                console.log(`duration: ${durationHours}, tickets length: ${ct.tickets.length}`)
+            if (ct.ticketid_arr.length !== durationHours) {
+                console.log(`duration: ${durationHours}, tickets length: ${ct.ticketid_arr.length}`)
                 return false
             }
 
@@ -81,7 +81,7 @@ export default function BaseView(props) {
                                 <Box>
                                     {props.clientsAndTickets.map((d, i) => <ClientTicketChip name={d.clientname} slotTotal={props.durationHours}
                                         phonenumber={d.clientphonenumber}
-                                        tickets={d.tickets}
+                                        tickets={d.ticketid_arr}
                                         onEditClientTickets={() => {
                                             props.switchToClientTicketEditMode(i)
                                         }}
@@ -117,9 +117,9 @@ export default function BaseView(props) {
                         <TableRow>
                             <TableCell>
                                 수업종류
-                    </TableCell>
+                            </TableCell>
                             <TableCell>
-                                <span>{activity_type_to_kor[props.activity_type]}/{grouping_type_to_kor[props.grouping_type]}</span>
+                                <span style={{color: 'gray'}}>{activity_type_to_kor[props.activity_type]}/{grouping_type_to_kor[props.grouping_type]}</span>
                             </TableCell>
                         </TableRow>
                         <TableRow>

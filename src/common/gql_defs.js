@@ -977,17 +977,21 @@ export const QUERY_LESSON_DETAIL_WITH_LESSONID = gql`
             msg
             detail {
                 id
+                instructorid
+                instructorname
+                instructorphonenumber
                 starttime
                 endtime
                 activity_type
                 grouping_type
-                client_tickets{
+                memo
+                title
+                client_info_arr{
                     clientid
                     clientname
                     clientphonenumber
-                    tickets{
-                        ticketid
-                    }
+                    ticketid_arr,
+                    checkin_time
                 }
             }
         }
@@ -1393,6 +1397,91 @@ export const QUERY_INSTRUCTORS_ALLOWED_TO_TEACH_APPRENTICE_WITH_NAME = gql`
     }
 `
 
+
+// query_attendance_info_of_lessonid
+export const QUERY_ATTENDANCE_INFO_OF_LESSONID = gql`
+query($lessonid:Int!){
+    query_attendance_info_of_lessonid(lessonid: $lessonid){
+        success
+        msg
+        attendance_info {
+            attendance_id
+            clientid
+            clientname
+            clientphonenumber
+            checkin_time
+        }
+    }
+}
+`
+
+// create_normal_lesson_attendance'
+export const CREATE_NORMAL_LESSON_ATTENDANCE = gql`
+    mutation($lessonid:Int!, $clientid: Int!){
+        create_normal_lesson_attendance(lessonid: $lessonid, clientid: $clientid){
+            success
+            msg
+        }
+    }
+`
+
+
+export const REMOVE_NORMAL_LESSON_ATTENDANCE = gql`
+    mutation($lessonid: Int!, $clientid: Int!){
+        remove_normal_lesson_attendance(lessonid: $lessonid, clientid: $clientid){
+            success
+            msg
+        }
+    }
+`
+
+export const FETCH_APPRENTICE_LESSON_BY_LESSONID = gql`
+    query($lessonid: Int!){
+        fetch_apprentice_lesson_by_lessonid(lessonid: $lessonid){
+            success
+            msg
+            lesson {
+                id
+                starttime
+                endtime
+                apprentice_instructor_id
+                apprentice_instructor_name
+                apprentice_instructor_phonenumber
+                activity_type
+                grouping_type
+                ticket_id_arr
+            }
+        }
+    }
+`
+
+
+export const FETCH_TICKET_AVAIL_PLAN_AND_TICKETID_ARR_OF_APPRENTICE_INSTRUCTOR_AND_LESSON_TYPE = gql`
+    query($apprentice_instructor_id: Int!, $activity_type: String!, $grouping_type: String!){
+        fetch_ticket_avail_plan_and_ticketid_arr_of_apprentice_instructor_and_lesson_type(apprentice_instructor_id: $apprentice_instructor_id, activity_type: $activity_type, grouping_type: $grouping_type){
+            success
+            msg
+            plan_and_tickets {
+                planid
+                total_rounds
+                avail_tickets {
+                    id
+                    expire_time
+                }
+            }
+        }
+    }
+`
+
+
+export const UPDATE_APPRENTICE_LESSON_OVERALL = gql`
+    mutation($lessonid: Int!, $ticket_id_arr: [Int!], $starttime: String!, $duration: Int!){
+        update_apprentice_lesson_overall(lessonid: $lessonid, ticket_id_arr: $ticket_id_arr, starttime: $starttime, duration: $duration){
+            success
+            msg
+        }
+    }
+`
 
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,

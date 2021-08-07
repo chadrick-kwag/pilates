@@ -7,6 +7,7 @@ import './ClientTicketChip.css'
 
 export default function ClientTicketChip(props) {
 
+    console.log('ClientTicketChip')
     console.log(props)
 
     // calculate ticket circles
