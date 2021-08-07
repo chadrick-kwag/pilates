@@ -11,8 +11,13 @@ const get_sequence_schedules = (schedules) => {
 
 
     const sorted_schedules = schedules.sort((a, b) => {
-        return a.end < b.end
+        if (a.end < b.end) {
+            return -1
+        }
+
+        return 1
     })
+
 
     let end = null
 
@@ -28,6 +33,7 @@ const get_sequence_schedules = (schedules) => {
         else {
             if (curr.start >= end) {
                 selected_schedules.push(curr)
+                end = curr.end
 
             }
             else {
@@ -35,6 +41,7 @@ const get_sequence_schedules = (schedules) => {
             }
         }
     }
+
 
     return [selected_schedules, unselected_schedules]
 
@@ -74,6 +81,7 @@ const process_schedules = (schedules) => {
         unprocessed_schedules = unselected_schedules
 
     }
+
 
     return [processed_schedules, col_index]
 
@@ -233,7 +241,7 @@ function Container({ onSlotClicked, targetDate }) {
                                 let clientstring = ""
                                 let name_arr = s.client_info_arr?.map(a => a.clientname)
                                 console.log(name_arr)
-                                if (name_arr!==undefined) {
+                                if (name_arr !== undefined) {
                                     clientstring = name_arr.join(', ')
                                 }
 
