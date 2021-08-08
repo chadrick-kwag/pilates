@@ -81,7 +81,7 @@ function ClientDetailView({ history, match }) {
 
         <Table>
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     이름
                 </TableCell>
                 <TableCell>
@@ -90,7 +90,7 @@ function ClientDetailView({ history, match }) {
             </TableRow>
 
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     연락처
                 </TableCell>
                 <TableCell>
@@ -99,7 +99,7 @@ function ClientDetailView({ history, match }) {
             </TableRow>
 
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     성별
                 </TableCell>
                 <TableCell>
@@ -108,7 +108,7 @@ function ClientDetailView({ history, match }) {
             </TableRow>
 
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     생년월일
                 </TableCell>
                 <TableCell>
@@ -117,7 +117,7 @@ function ClientDetailView({ history, match }) {
             </TableRow>
 
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     주소
                 </TableCell>
                 <TableCell>
@@ -126,7 +126,7 @@ function ClientDetailView({ history, match }) {
             </TableRow>
 
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     이메일
                 </TableCell>
                 <TableCell>
@@ -135,7 +135,7 @@ function ClientDetailView({ history, match }) {
             </TableRow>
 
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     직업
                 </TableCell>
                 <TableCell>
@@ -143,7 +143,7 @@ function ClientDetailView({ history, match }) {
                 </TableCell>
             </TableRow>
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     등록일
                 </TableCell>
                 <TableCell>
@@ -151,7 +151,7 @@ function ClientDetailView({ history, match }) {
                 </TableCell>
             </TableRow>
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     메모
                 </TableCell>
                 <TableCell>
@@ -160,7 +160,7 @@ function ClientDetailView({ history, match }) {
             </TableRow>
 
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     플랜목록
                 </TableCell>
                 <TableCell>
@@ -183,16 +183,16 @@ function ClientDetailView({ history, match }) {
 
                         return <Table>
                             <TableRow>
-                                <TableCell>
+                                <TableCell style={{ wordBreak: 'keep-all' }}>
                                     플랜id
                                 </TableCell>
-                                <TableCell>
+                                <TableCell style={{ wordBreak: 'keep-all' }}>
                                     횟수
                                 </TableCell>
-                                <TableCell>
+                                <TableCell style={{ wordBreak: 'keep-all' }}>
                                     타입
                                 </TableCell>
-                                <TableCell>
+                                <TableCell style={{ wordBreak: 'keep-all' }}>
                                     생성일
                                 </TableCell>
                             </TableRow>
