@@ -7,7 +7,24 @@ export const activity_type_to_kor = {
     null: "!"
 }
 
-export const grouping_type_to_kor={
+
+export const gender_to_kor = (a) => {
+    if (a === null || a === undefined) {
+        return '-'
+    }
+
+    if (a.trim().toLowerCase() === 'female') {
+        return '여'
+    }
+
+    if (a.trim().toLowerCase() === 'male') {
+        return '남'
+    }
+
+    return '-'
+}
+
+export const grouping_type_to_kor = {
     'INDIVIDUAL': '개별',
     'SEMI': '세미',
     'GROUP': '그룹',
@@ -16,7 +33,7 @@ export const grouping_type_to_kor={
 }
 
 
-export const person_type_to_kor={
+export const person_type_to_kor = {
     'client': '회원',
     'instructor': '강사'
 }

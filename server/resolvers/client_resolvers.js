@@ -452,7 +452,7 @@ module.exports = {
 
         },
 
-        update_client: async (parent, args) => {
+        update_client: async (parent, args, context) => {
 
 
 
@@ -495,7 +495,7 @@ module.exports = {
 
                 const personid = result.rows[0].personid
 
-                result = await pgclient.query(`update person set name=$1, phonenumber=$2, gender=$3 where id=$4`, [args.name, args.phonenumber, gender, personid])
+                result = await pgclient.query(`update person set name=$1, phonenumber=$2, gender=$3, email=$4 where id=$5`, [args.name, args.phonenumber, gender, args.email, personid])
 
                 if (result.rowCount !== 1) {
                     throw {
@@ -511,6 +511,7 @@ module.exports = {
                 }
             }
             catch (e) {
+                console.log(e)
                 try {
                     await pgclient.query('rollback')
                     pgclient.release()

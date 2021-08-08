@@ -12,11 +12,14 @@ import { FETCH_CLIENTS_GQL, ABLE_CLIENT_BY_CLIENTID, DISABLE_CLIENT_BY_CLIENTID,
 
 
 import moment from 'moment'
-import ClientDetailModal from './ClientDetailModal'
+
 import client from '../apolloclient'
 
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import { withRouter } from 'react-router-dom'
+
+
 
 
 
@@ -42,7 +45,7 @@ const useStyles = makeStyles({
 })
 
 
-export default function ListClientPageV2(props) {
+function ListClientPageV2({ history, match }) {
 
     const [searchName, setSearchName] = useState("")
     const [data, setData] = useState(null)
@@ -220,7 +223,7 @@ export default function ListClientPageV2(props) {
                                         return null
                                     }
 
-                                    return <TableRow onClick={() => setShowDetailClientId(d.id)} className={classes.tablebodyrow}>
+                                    return <TableRow onClick={() => history.push(`/clientmanage/view/${d.id}`)} className={classes.tablebodyrow}>
 
                                         <TableCell>{d.name}</TableCell>
                                         <TableCell>{d.phonenumber}</TableCell>
@@ -254,19 +257,11 @@ export default function ListClientPageV2(props) {
                 </>
 
             </Grid>
-            {showDetailClientId !== null ? <ClientDetailModal
-                clientid={showDetailClientId}
-                onCancel={() => {
-                    setShowDetailClientId(null)
 
-                }}
-                onRefreshData={() => fetch_all_clients()}
-                onDelete={() => {
-                    setShowDetailClientId(null)
-                    fetch_all_clients()
-                }}
-            /> : null}
         </div>
     )
 
 }
+
+
+export default withRouter(ListClientPageV2)
