@@ -52,9 +52,13 @@ function ClientDetailView({ history, match }) {
             if (d?.deleteclient?.success) {
                 history.push('/clientmanage')
             }
+            else {
+                alert('삭제 실패')
+            }
         },
         onError: e => {
             console.log(JSON.stringify(e))
+            alert('삭제 에러')
         }
 
     })
@@ -227,7 +231,7 @@ function ClientDetailView({ history, match }) {
                 variables: {
                     id: clientid
                 }
-            })}>삭제</Button>
+            })}>{deleteLoading ? <CircularProgress size="20" /> : '삭제'}</Button>
 
         </div>
 
