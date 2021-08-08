@@ -792,27 +792,6 @@ const UPDATE_APPRENTICE_INSTRUCTOR = gql`
     }
 `
 
-
-const FETCH_APPRENTICE_PLAN_BY_ID = gql`
-    query($id:Int!){
-        fetch_apprentice_plan_by_id(id:$id){
-            success
-            msg
-            plans{
-                id
-                apprentice_instructor_name
-                apprentice_instructor_id
-                apprentice_instructor_phonenumber
-                activity_type
-                grouping_type
-                created
-                rounds
-                totalcost
-            }
-        }
-    }
-`
-
 const FETCH_APPRENTICE_TICKETS_OF_PLAN = gql`
     query($id:Int!){
         fetch_apprentice_tickets_of_plan(id:$id){
@@ -1514,6 +1493,32 @@ export const UPDATE_APPRENTICE_COURSE = gql`
     }
 `
 
+export const FETCH_APPRENTICE_PLAN_BY_ID = gql`
+    query($id: Int!){
+        fetch_apprentice_plan_by_id(id:$id){
+            success 
+            msg
+            plan {
+                id
+                apprentice_instructor_name
+                apprentice_instructor_id
+                apprentice_instructor_phonenumber
+                activity_type
+                grouping_type
+                created
+                totalcost
+                rounds
+                tickets{
+                    id
+                    expire_time
+                    consumed_time
+                }
+
+            }
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -1572,7 +1577,6 @@ export {
     CREATE_APPRENTICE_PLAN,
     FETCH_APPRENTICE_INSTRUCTOR_BY_ID,
     UPDATE_APPRENTICE_INSTRUCTOR,
-    FETCH_APPRENTICE_PLAN_BY_ID,
     FETCH_APPRENTICE_TICKETS_OF_PLAN,
     ADD_APPRENTICE_TICKET_TO_PLAN,
     CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS,

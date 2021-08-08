@@ -5,6 +5,75 @@ const { ensure_admin_account_id_in_context } = require('./common')
 module.exports = {
 
     Query: {
+        fetch_apprentice_plan_by_id: async (parent, args, context) => {
+            // fetch plan info and tickets info
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
+            try {
+
+                let result = await pgclient.query(`select apprentice_instructor_plan.id, apprentice_instructor_plan.apprentice_instructor_id, person.name as apprentice_instructor_name, person.phonenumber as apprentice_instructor_phonenumber, apprentice_instructor_plan.activity_type, apprentice_instructor_plan.grouping_type, apprentice_instructor_plan.totalcost
+                from apprentice_instructor_plan
+                left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id
+                left join person on person.id = apprentice_instructor.personid
+                where apprentice_instructor_plan.id = $1
+                `, [args.id])
+
+                const planinfo = result.rows[0]
+
+                // fetch tickets
+                result = await pgclient.query(`with A as (select distinct on(apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc)
+
+
+                select apprentice_ticket.id, apprentice_ticket.expire_time, apprentice_lesson.starttime as consumed_time from A
+                left join apprentice_lesson on apprentice_lesson.id = A.apprentice_lesson_id
+                left join apprentice_ticket on apprentice_ticket.id = A.apprentice_ticket_id
+                left join apprentice_instructor_plan on apprentice_instructor_plan.id = apprentice_ticket.creator_plan_id
+                where A.canceled_time is null
+                and apprentice_instructor_plan.id = $1
+                `, [args.id])
+
+                planinfo.rounds = result.rowCount
+
+                planinfo.tickets = result.rows
+
+                console.log('planinfo')
+                console.log(planinfo)
+
+                pgclient.release()
+
+                return {
+                    success: true,
+                    plan: planinfo
+                }
+
+
+            } catch (e) {
+                console.log(e)
+                pgclient.release()
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+
+
+            }
+
+        },
         fetch_ticket_avail_plan_and_ticketid_arr_of_apprentice_instructor_and_lesson_type: async (parent, args, context) => {
 
             console.log('fetch_ticket_avail_plan_and_ticketid_arr_of_apprentice_instructor_and_lesson_type')
@@ -155,64 +224,7 @@ module.exports = {
 
 
         },
-        fetch_apprentice_plan_by_id: async (parent, args, context) => {
-
-
-
-            if (!ensure_admin_account_id_in_context(context)) {
-
-                return {
-                    success: false,
-                    msg: 'invalid token'
-                }
-            }
-
-
-            let pgclient
-            try {
-                pgclient = await pool.connect()
-            }
-            catch (e) {
-                console.log(e)
-
-                return {
-                    success: false,
-                    msg: 'pg pool error'
-                }
-            }
-
-
-            try {
-
-                let res = await pgclient.query(`select apprentice_instructor_plan.id as id, person.name as apprentice_instructor_name, person.phonenumber as apprentice_instructor_phonenumber,
-                apprentice_instructor.id as apprentice_instructor_id,
-                activity_type,
-                grouping_type,
-                apprentice_instructor_plan.created,
-                totalcost,
-                rounds
-                from apprentice_instructor_plan
-                left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id
-                left join person on person.id = apprentice_instructor.personid
-                where apprentice_instructor_plan.id=$1
-                `, [args.id])
-
-
-                pgclient.release()
-                return {
-                    success: true,
-                    plans: res.rows
-                }
-            } catch (e) {
-                cosnole.log(e)
-
-                return {
-                    success: false,
-                    msg: e.detail
-                }
-            }
-
-        },
+     
         fetch_apprentice_tickets_of_plan: async (parent, args, context) => {
 
 

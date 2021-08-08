@@ -21,6 +21,10 @@ hr {
     height: 100%;
 }
 
+.nowb {
+    word-break: keep-all;
+}
+
 .flexrow{
     display: flex;
     flex-direction: row;
