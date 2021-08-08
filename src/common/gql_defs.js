@@ -1492,6 +1492,28 @@ export const UPDATE_NORMAL_PLAN_TYPES = gql`
     }
 `
 
+export const FETCH_APPRENTICE_COURSE_INFO = gql`
+    query($id: Int!){
+        fetch_apprentice_course_info(id:$id){
+            success 
+            msg
+            course {
+                id
+                name
+            }
+        }
+    }
+`
+
+export const UPDATE_APPRENTICE_COURSE = gql`
+    mutation($id: Int!, $name: String!){
+        update_apprentice_course(id:$id, name: $name){
+            success 
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

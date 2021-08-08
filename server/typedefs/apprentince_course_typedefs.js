@@ -2,6 +2,13 @@ module.exports = `
 
 type Query {
     fetch_apprentice_courses: SuccessAndApprenticeCourseResult
+    fetch_apprentice_course_info(id:Int!): SuccessAndCouseInfoResult
+}
+
+type SuccessAndCouseInfoResult {
+    success: Boolean
+    msg: String
+    course: ApprenticeCourse
 }
 
 type SuccessAndApprenticeCourseResult{
@@ -18,5 +25,6 @@ type ApprenticeCourse {
 
 type Mutation{
     create_apprentice_course(name:String!): SuccessResult
+    update_apprentice_course(name:String!, id: Int!): SuccessResult
 }
 `

@@ -13,9 +13,30 @@ import { DialogActions, Grid, GridItem } from '@material-ui/core'
 import client from '../../apolloclient'
 import { CREATE_APPRENTICE_COURSE } from '../../common/gql_defs'
 
-export default function CreateApprenticeComponent(props) {
+import { withRouter } from 'react-router-dom'
+import { useMutation } from '@apollo/client'
+
+function CreateApprenticeComponent({ history }) {
 
     const [name, setName] = useState(null)
+
+    const [createCourse, { loading, error }] = useMutation(CREATE_APPRENTICE_COURSE, {
+        client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            console.log(d)
+            if (d.create_apprentice_course.success) {
+                history.push('/apprenticecourse')
+            }
+            else {
+                alert('생성 실패')
+            }
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+            alert('생성 에러')
+        }
+    })
 
 
     const checkinput = () => {
@@ -34,61 +55,46 @@ export default function CreateApprenticeComponent(props) {
             return
         }
 
-
-        client.query({
-            query: CREATE_APPRENTICE_COURSE,
+        createCourse({
             variables: {
                 name: name
-            },
-            fetchPolicy: 'no-cache'
-
-        }).then(res => {
-            if (res.data.create_apprentice_course.success) {
-                props.onSuccess?.()
             }
-            else {
-                alert(`create failed. msg: ${res.data.create_apprentice_course.msg}`)
-            }
-        }).catch(e => {
-            console.log(JSON.stringify(e))
-            alert('create error')
         })
-
-
     }
 
     return (
-        <Grid container>
-            <Grid item xs={12}>
-                <h2>과정 생성</h2>
-            </Grid>
-            <Grid item xs={12}>
-                <Table>
-                    <TableBody>
-                        <TableRow>
-                            <TableCell>
-                                과정명
-                    </TableCell>
-                            <TableCell>
-                                <TextField variant='outlined' value={name} onChange={e => setName(e.target.value)} />
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
+        <div className="fwh flexcol">
+            <span style={{ fontSize: '2rem', fontWeight: 'bold' }}>과정 생성</span>
+            <Table>
+                <TableBody>
+                    <TableRow>
+                        <TableCell>
+                            과정명
+                        </TableCell>
+                        <TableCell>
+                            <TextField variant='outlined' value={name} onChange={e => setName(e.target.value)} />
+                        </TableCell>
+                    </TableRow>
+                </TableBody>
 
 
-                </Table>
-            </Grid>
-            <Grid item xs={12}>
-                <div className='row-gravity-center'>
+            </Table>
+            <div className='flexrow justify-center' style={{ gap: '0.5rem' }}>
 
-                    <DialogActions>
-                        <Button variant='outlined' color='secondary' onClick={_ => props.onCancel?.()}>취소</Button>
-                        <Button variant='outlined' onClick={e => submit()}>생성</Button>
-                    </DialogActions>
-                </div>
-            </Grid>
 
-        </Grid>
+                <Button variant='outlined' color='secondary' onClick={() => history.goBack()}>취소</Button>
+                <Button variant='outlined' disabled={(() => {
+                    if (name === null) return true
+                    if (name.trim() === "") return true
+
+                    return false
+                })()} onClick={e => submit()}>생성</Button>
+
+            </div>
+        </div>
 
     )
 }
+
+
+export default withRouter(CreateApprenticeComponent)
