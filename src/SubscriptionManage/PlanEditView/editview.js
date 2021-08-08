@@ -11,6 +11,9 @@ import AddTicketDialog from './AddTicketModal'
 import ChangeExpireTimeModal from './ChangeExpireTimeModal'
 import AskDeleteDialog from './AskDeleteDialog'
 import TransferTicketDialog from './TransferTicketDialog'
+import AddPlanTypeModal from './AddPlanTypeModal'
+
+import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
 
 function EditView({ history, match }) {
 
@@ -22,27 +25,6 @@ function EditView({ history, match }) {
 
     const [selectedTicketIndexArr, setSelectedTicketIndexArr] = useState([])
 
-    // const { loading, data: planData, error } = useQuery(FETCH_NORMAL_PLAN_DETAIL_INFO, {
-    //     client,
-    //     fetchPolicy: 'no-cache',
-    //     variables: {
-    //         planid: parseInt(match.params.id)
-    //     },
-    //     onCompleted: d => {
-    //         console.log(d)
-
-
-    //         if (d.fetch_normal_plan_detail_info.success) {
-    //             const data = d.fetch_normal_plan_detail_info.planinfo
-    //             setPlanTypes(data.types)
-    //             setTickets(data.tickets.sort((a, b) => {
-    //                 return a.id - b.id
-    //             }))
-    //             setTotalCost(data.totalcost)
-    //         }
-    //     },
-    //     onError: e => console.log(JSON.stringify(e))
-    // })
 
     const [fetchInfo, { loading, data: planData, error }] = useLazyQuery(FETCH_NORMAL_PLAN_DETAIL_INFO, {
         client,
@@ -109,11 +91,11 @@ function EditView({ history, match }) {
 
 
 
-    return <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+    return <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto', height: '100%', display: 'flex', flexDirection: 'column' }}>
 
         <Table>
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     생성일시
                 </TableCell>
                 <TableCell>
@@ -121,7 +103,7 @@ function EditView({ history, match }) {
                 </TableCell>
             </TableRow>
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     회원
                 </TableCell>
 
@@ -131,7 +113,7 @@ function EditView({ history, match }) {
             </TableRow>
 
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     총횟수
                 </TableCell>
 
@@ -142,7 +124,7 @@ function EditView({ history, match }) {
 
 
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     총가격
                 </TableCell>
 
@@ -154,24 +136,37 @@ function EditView({ history, match }) {
             </TableRow>
 
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     플랜타입
                 </TableCell>
 
                 <TableCell>
-                    {planTypes?.map((a, i) => <Chip label={<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                        <span>{a.activity_type}/{a.grouping_type}</span>
-                        <DeleteIcon onClick={() => {
-                            const new_plan_types = planTypes.filter((b, j) => j !== i)
-                            setPlanTypes(new_plan_types)
-                        }} />
-                    </div>} />)}
-                    <Chip label={<span>추가</span>} onClick={() => console.log('debug')} />
+                    {planTypes?.sort((a, b) => {
+                        if (a.activity_type === b.activity_type) {
+                            return a.grouping_type - b.grouping_type
+                        }
+
+                        return a.activity_type - b.activity_type
+                    }).map((a, i) => <Chip style={{ margin: '0.1rem' }}
+                        label={<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                            <span>{activity_type_to_kor[a.activity_type]}/{grouping_type_to_kor[a.grouping_type]}</span>
+                            <DeleteIcon onClick={() => {
+                                const new_plan_types = planTypes.filter((b, j) => j !== i)
+                                setPlanTypes(new_plan_types)
+                            }} />
+                        </div>} />)}
+                    <Chip style={{ margin: '0.1rem' }} label={<span>추가</span>} onClick={() => {
+                        setModal(<AddPlanTypeModal onClose={() => setModal(null)} onSelected={pt_arr => {
+                            // setPlanTypes([...planTypes, ...pt_arr])
+                            setPlanTypes(pt_arr)
+                            setModal(null)
+                        }} existingPlanTypes={planTypes} />)
+                    }} />
                 </TableCell>
             </TableRow>
 
             <TableRow>
-                <TableCell>
+                <TableCell style={{ wordBreak: 'keep-all' }}>
                     티켓
                 </TableCell>
                 <TableCell>
@@ -234,14 +229,13 @@ function EditView({ history, match }) {
                                 <TableCell>
 
                                 </TableCell>
-                                <TableCell>
-
+                                <TableCell style={{ wordBreak: 'keep-all' }}>
                                     티켓id
                                 </TableCell>
-                                <TableCell>
+                                <TableCell style={{ wordBreak: 'keep-all' }}>
                                     만료일
                                 </TableCell>
-                                <TableCell>
+                                <TableCell style={{ wordBreak: 'keep-all' }}>
                                     사용수업일시
                                 </TableCell>
 
