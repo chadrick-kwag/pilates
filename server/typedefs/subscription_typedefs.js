@@ -93,6 +93,7 @@ type Mutation{
     add_tickets(planid: Int!, addsize: Int!, expire_datetime: String!, per_ticket_cost: Int!): SuccessResult
     change_plan_totalcost(planid: Int!, totalcost: Int!): SuccessResult
     update_normal_plan_basicinfo(planid:Int!, totalcost: Int!, clientid: Int!, types:[IncomingPlanType]): SuccessResult
+    update_normal_plan_types(planid: Int!, types: [IncomingPlanType]): SuccessResult
     
 }
 `

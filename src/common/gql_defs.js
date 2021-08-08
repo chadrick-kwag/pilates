@@ -1483,6 +1483,15 @@ export const UPDATE_APPRENTICE_LESSON_OVERALL = gql`
     }
 `
 
+export const UPDATE_NORMAL_PLAN_TYPES = gql`
+    mutation($planid: Int!, $types:[IncomingPlanType]){
+        update_normal_plan_types(planid: $planid, types:$types){
+            success
+            msg
+        }
+    }
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,

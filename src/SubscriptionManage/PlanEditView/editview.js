@@ -3,7 +3,7 @@ import { useQuery, useMutation, useLazyQuery } from '@apollo/client'
 import client from '../../apolloclient'
 import { Chip, Button, Table, TableRow, TableCell, CircularProgress, Checkbox, TextField } from '@material-ui/core'
 import { withRouter } from 'react-router-dom'
-import { FETCH_NORMAL_PLAN_DETAIL_INFO } from '../../common/gql_defs'
+import { FETCH_NORMAL_PLAN_DETAIL_INFO, UPDATE_NORMAL_PLAN_TYPES } from '../../common/gql_defs'
 import { DateTime } from 'luxon'
 import DeleteIcon from '@material-ui/icons/Delete';
 
@@ -24,6 +24,20 @@ function EditView({ history, match }) {
     const [modal, setModal] = useState(null)
 
     const [selectedTicketIndexArr, setSelectedTicketIndexArr] = useState([])
+
+    const [updatePlanTypes, { loading: updatept_loading, error: updatept_error }] = useMutation(UPDATE_NORMAL_PLAN_TYPES, {
+        client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            console.log(d)
+            if (d.update_normal_plan_types.success) {
+                history.push(`/clientplanmanage/plan/${parseInt(match.params.id)}`)
+            }
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+        }
+    })
 
 
     const [fetchInfo, { loading, data: planData, error }] = useLazyQuery(FETCH_NORMAL_PLAN_DETAIL_INFO, {
@@ -129,9 +143,8 @@ function EditView({ history, match }) {
                 </TableCell>
 
                 <TableCell style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <TextField variant='outlined' value={totalCost} onChange={e => setTotalCost(e.target.value)}
-                    />
-                    <span>원</span>
+                    <span>{totalCost}원</span>
+
                 </TableCell>
             </TableRow>
 
@@ -275,7 +288,18 @@ function EditView({ history, match }) {
 
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
             <Button variant='outlined' onClick={() => history.goBack()}>이전</Button>
-            <Button disabled={is_submit_disabled()} variant='outlined'>완료</Button>
+            <Button disabled={is_submit_disabled()} variant='outlined' onClick={() => {
+                const _var = {
+                    planid: parseInt(match.params.id),
+                    types: planTypes.map(a => { return { activity_type: a.activity_type, grouping_type: a.grouping_type } })
+                }
+
+                console.log('_var')
+                console.log(_var)
+                updatePlanTypes({
+                    variables: _var
+                })
+            }}>완료</Button>
         </div>
         {modal}
     </div>

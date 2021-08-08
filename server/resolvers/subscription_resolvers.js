@@ -922,6 +922,136 @@ module.exports = {
                 }
             }
         },
+        update_normal_plan_types: async (parent, args, context) => {
+
+            console.log('update_normal_plan_types')
+            console.log(args)
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+
+
+                // update types
+
+                // first fetch existing types
+                result = await pgclient.query(`select id, activity_type, grouping_type from plan_type where planid=$1`, [args.planid])
+
+                // split to exiting id that needs to be removed
+                // and new types to be added
+
+
+                const existing_types = result.rows
+
+                const to_remove_id_arr = []
+                const to_add_types = []
+
+                // gather types to add
+                for (let i = 0; i < args.types.length; i++) {
+                    const p = args.types[i]
+
+                    let match_with_exist = false
+
+                    for (let j = 0; j < existing_types.length; j++) {
+                        const a = existing_types[j]
+
+                        if (p.activity_type === a.activity_type && p.grouping_type === a.grouping_type) {
+                            match_with_exist = true
+                            break
+
+                        }
+                    }
+
+                    if (!match_with_exist) {
+                        to_add_types.push(p)
+                    }
+
+
+                }
+
+                // gather from existing to remove
+                for (let i = 0; i < existing_types.length; i++) {
+                    const p = existing_types[i]
+
+                    let match_found = false
+
+                    for (let j = 0; j < args.types.length; j++) {
+                        const a = args.types[j]
+
+                        if (p.activity_type === a.activity_type && p.grouping_type === a.grouping_type) {
+                            match_found = true
+                            break
+                        }
+
+                    }
+
+                    if (!match_found) {
+                        to_remove_id_arr.push(p.id)
+                    }
+                }
+
+
+                // execute removal
+                for (let i = 0; i < to_remove_id_arr.length; i++) {
+                    await pgclient.query(`delete from plan_type where id=$1`, [to_remove_id_arr[i]])
+                }
+
+                // execute adding
+                for (let i = 0; i < to_add_types.length; i++) {
+                    const a = to_add_types[i]
+
+                    await pgclient.query(`insert into plan_type (planid, activity_type, grouping_type) values ($1,$2,$3)`, [args.planid, a.activity_type, a.grouping_type])
+                }
+
+
+                await pgclient.query(`commit`)
+                pgclient.release()
+
+                return {
+                    success: true
+                }
+
+
+            } catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                    pgclient.release()
+
+                }
+                catch { }
+
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+
+            }
+
+
+
+        },
         create_subscription: async (parent, args, context) => {
 
             console.log('create_subscription')
