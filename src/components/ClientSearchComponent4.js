@@ -75,7 +75,7 @@ function ClientSearchComponent(props) {
     if (viewMode === 'search') {
         return (
             <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}>
-                <span>이름</span>
+                <span style={{ wordBreak: 'keep-all' }}>이름</span>
                 <TextField ref={textinput} value={searchName}
                     style={{ width: '10rem' }}
                     onChange={e => setSearchName(e.target.value)} onKeyDown={e => {

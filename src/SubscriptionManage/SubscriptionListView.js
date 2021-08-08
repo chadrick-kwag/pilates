@@ -4,10 +4,6 @@ import { Button, Table, TableRow, TableCell, CircularProgress } from '@material-
 
 import { QUERY_SUBSCRIPTIONS_BY_CLIENTID, QUERY_CLIENTS_BY_NAME, DELETE_SUBSCRITION_GQL } from '../common/gql_defs'
 
-import { activity_type_to_kor, grouping_type_to_kor } from '../common/consts'
-import numeral from 'numeral'
-
-import DetailModal from './PlanDetailView/container'
 import client from '../apolloclient'
 import { useLazyQuery } from '@apollo/client'
 import ClientSearchComponent from '../components/ClientSearchComponent4'

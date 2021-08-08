@@ -17,7 +17,7 @@ import ClientManagePage from './ClientManage/ClientManagePage'
 
 // import InstructorManagePage from './InstructorManage/InstructorManagePage'
 import InstructorManagePage from './InstructorManage/main'
-import SubscriptionManagePage from './SubscriptionManage/SubscriptionManagePage'
+import SubscriptionManagePage from './SubscriptionManage/main'
 
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 
