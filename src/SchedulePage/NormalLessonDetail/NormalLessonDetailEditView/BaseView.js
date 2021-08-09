@@ -19,6 +19,9 @@ export default function BaseView(props) {
 
     const check_request_possible = () => {
 
+        console.log('props.clientsAndTickets')
+        console.log(props.clientsAndTickets)
+
 
         if (props.clientsAndTickets === null || props.clientsAndTickets === undefined) {
             return false
@@ -39,7 +42,9 @@ export default function BaseView(props) {
         for (let i = 0; i < props.clientsAndTickets.length; i++) {
             const ct = props.clientsAndTickets[i]
 
-            if (ct.ticketid_arr.length !== durationHours) {
+            console.log(ct)
+
+            if (ct.ticketid_arr?.length !== durationHours) {
                 console.log(`duration: ${durationHours}, tickets length: ${ct.ticketid_arr.length}`)
                 return false
             }
@@ -99,15 +104,15 @@ export default function BaseView(props) {
 
                                     {(() => {
                                         if (props.grouping_type === 'INDIVIDUAL' && props.clientsAndTickets.length < 1) {
-                                            return <Chip label='add' onClick={e => props.onAddClient?.()} />
+                                            return <Chip label='추가' onClick={e => props.onAddClient?.()} />
                                         }
 
                                         if (props.grouping_type === 'SEMI' && props.clientsAndTickets.length < 2) {
-                                            return <Chip label='add' onClick={e => props.onAddClient?.()} />
+                                            return <Chip label='추가' onClick={e => props.onAddClient?.()} />
                                         }
 
                                         if (props.grouping_type === 'GROUP') {
-                                            return <Chip label='add' onClick={e => props.onAddClient?.()} />
+                                            return <Chip label='추가' onClick={e => props.onAddClient?.()} />
                                         }
                                     })()}
 
@@ -119,7 +124,7 @@ export default function BaseView(props) {
                                 수업종류
                             </TableCell>
                             <TableCell>
-                                <span style={{color: 'gray'}}>{activity_type_to_kor[props.activity_type]}/{grouping_type_to_kor[props.grouping_type]}</span>
+                                <span style={{ color: 'gray' }}>{activity_type_to_kor[props.activity_type]}/{grouping_type_to_kor[props.grouping_type]}</span>
                             </TableCell>
                         </TableRow>
                         <TableRow>

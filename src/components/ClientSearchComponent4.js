@@ -4,7 +4,7 @@
 import React, { useState, useRef } from 'react'
 import { TextField, Button, Chip, MenuItem, Popover, CircularProgress } from '@material-ui/core'
 import client from '../apolloclient'
-import { SEARCH_CLIENT_WITH_NAME, QUERY_CLIENTS_BY_NAME } from '../common/gql_defs'
+import { QUERY_CLIENTS_BY_NAME } from '../common/gql_defs'
 import PT from 'prop-types'
 
 function ClientSearchComponent(props) {
