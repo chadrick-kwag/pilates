@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import ListPlanComponent from './ListPlanComponent'
-import CreateApprenticeComponent from './CreateApprenticePlanComponent'
+import CreatView from './CreateView/CreatView'
 import DetailView from './DetailView'
 import EditView from './EditView/EditView'
 import { withRouter, Switch, Route } from 'react-router-dom'
@@ -10,7 +10,7 @@ function ApprenticePlanPage({ history, match }) {
 
     return <Switch>
         <Route path={`${match.url}/create`}>
-            <CreateApprenticeComponent />
+            <CreatView />
         </Route>
         <Route path={`${match.url}/view/:id`}>
             <DetailView />

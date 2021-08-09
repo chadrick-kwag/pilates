@@ -39,6 +39,10 @@ hr {
     justify-content: center;
 }
 
+.gap{
+    gap: 0.5rem;
+}
+
 .align-center{
     align-items: center;
 }
