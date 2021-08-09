@@ -175,6 +175,7 @@ module.exports = {
 
             try {
                 let results = await pgclient.query(`select instructor.*,
+                person.id as personid,
                 person.name,
                 person.phonenumber,
                 person.gender,
@@ -183,6 +184,9 @@ module.exports = {
                  from instructor 
                 left join person on person.id = instructor.personid
                 where person.name=$1`, [args.name])
+
+                console.log(results)
+
                 pgclient.release()
 
                 return results.rows

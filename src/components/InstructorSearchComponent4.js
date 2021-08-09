@@ -18,6 +18,9 @@ export default function InstructorSearchComponent(props) {
 
     const textinput = useRef(null)
 
+    console.log('selectedInstructor')
+    console.log(selectedInstructor)
+
 
 
     const request_search = () => {
@@ -33,13 +36,7 @@ export default function InstructorSearchComponent(props) {
             fetchPolicy: 'no-cache'
         }).then(res => {
             console.log(res)
-            const data = res.data.search_instructor_with_name.filter(x => x.disabled === false).map(a => {
-                return {
-                    id: a.id,
-                    name: a.name,
-                    phonenumber: a.phonenumber
-                }
-            })
+            const data = res.data.search_instructor_with_name.filter(x => x.disabled === false)
 
             console.log(data)
 
@@ -68,12 +65,12 @@ export default function InstructorSearchComponent(props) {
     if (viewMode === 'search') {
         return (
             <div>
-                <span>이름:</span>
+                <span style={{ marginRight: '0.3rem' }}>이름</span>
                 <TextField ref={textinput} value={searchName} onChange={e => setSearchName(e.target.value)} onKeyDown={e => {
                     if (e.key === 'Enter') {
                         button_click_handler()
                     }
-                }} />
+                }} style={{ width: '10rem' }} />
                 <Popover
                     anchorEl={anchorEl}
                     anchorOrigin={{
@@ -96,7 +93,7 @@ export default function InstructorSearchComponent(props) {
                 </Popover>
 
                 <Button disabled={searchName === null || searchName === "" ? true : false} onClick={e => button_click_handler()}>검색</Button>
-                {selectedInstructor !== null ? <Button onClick={() => {
+                {(selectedInstructor ?? null) !== null ? <Button onClick={() => {
                     setSearchName(null)
                     setViewMode('selected')
                     setSearchResult(null)

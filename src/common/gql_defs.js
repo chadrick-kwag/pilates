@@ -322,6 +322,8 @@ export const SEARCH_INSTRUCTOR_WITH_NAME = gql`query search_instructor_with_name
         name
         phonenumber
         disabled
+        personid
+        
     }
 }`
 
@@ -1434,4 +1436,30 @@ mutation delete_apprentice_plan($id: Int!){
         msg
     }
 }
+`
+export const QUERY_TEACH_HISTORY_OF_INSTRUCTOR_IN_TIMERANGE = gql`
+    query query_teach_history_of_instructor_in_timerange($personid: Int!, $search_starttime:String!, $search_endtime: String!){
+        query_teach_history_of_instructor_in_timerange(personid: $personid, search_starttime: $search_starttime, search_endtime: $search_endtime){
+            success
+            msg
+            teach_history_arr {
+                id
+                domain
+                indomain_id
+                starttime
+                endtime
+                activity_type
+                grouping_type
+                canceled_time
+                cancel_type
+                tickets {
+                    id
+                    studentpersonid
+                    studentname
+                    studentphonenumber
+                    cost
+                }
+            }
+        }
+    }
 `
