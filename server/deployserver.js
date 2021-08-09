@@ -4,7 +4,7 @@ const {MAIN_SERVE_PORT, GRAPHQL_SUBPATH}= require('../config')
 const app = express();
 
 // const { ApolloServer } = require('apollo-server-express');
-const pgclient  = require('./pgclient')
+// const pgclient  = require('./pgclient')
 // const {typeDefs, resolvers} = require('./merged_gql')
 const graphql_server = require('./apolloserver')
 
@@ -41,26 +41,6 @@ app.get('/', (req, res) => {
     res.sendFile(HTML_FILE);
 });
 
-
-
-
-
-
-
-
-
-pgclient.connect(err => {
-    if (err) {
-        console.log("pgclient connect err")
-        console.log(err)
-        process.exit()
-    }
-
-    else {
-        console.log("pgclient connect success")
-        
-    }
-})
 
 // const server = new ApolloServer({ typeDefs, resolvers });
 
