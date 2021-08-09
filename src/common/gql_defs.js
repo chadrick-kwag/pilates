@@ -218,25 +218,6 @@ export const UPDATE_INSTRUCTOR_INFO_GQL = gql`mutation updateinstructor($id: Int
 }`
 
 
-export const QUERY_SUBSCRIPTIONS_GQL = gql`query query_subscriptions{
-
-    query_subscriptions{
-        success
-        subscriptions {
-            id
-            clientid
-            clientname
-            rounds
-            totalcost
-            created
-            activity_type
-            grouping_type
-            coupon_backed
-        }
-    }
-
-}`
-
 
 export const QUERY_SUBSCRIPTIONS_BY_CLIENTID = gql`
     query query_subscriptions_by_clientid($clientid: Int!){
@@ -259,24 +240,6 @@ export const QUERY_SUBSCRIPTIONS_BY_CLIENTID = gql`
     }
 `
 
-export const QUERY_SUBSCRIPTION_OF_CLIENTNAME = gql`
-    query query_subscriptions_of_clientname($clientname:String){
-        query_subscriptions_of_clientname(clientname:$clientname){
-            success
-            subscriptions {
-                id
-                clientid
-                clientname
-                rounds
-                totalcost
-                created
-                activity_type
-                grouping_type
-                coupon_backed
-            }
-        }
-    }
-`
 
 
 export const CREATE_SUBSCRIPTION_GQL = gql`mutation create_subscription($clientid: Int!, $rounds: Int!, $totalcost: Int!, $activity_type_arr: [String!], $grouping_type: String!, $coupon_backed: String, $expiredate: String!){
