@@ -273,12 +273,14 @@ module.exports = {
                 apprentice_instructor_plan.activity_type as activity_type,
                 apprentice_instructor_plan.grouping_type as grouping_type,
                 apprentice_instructor_plan.created as created,
-                apprentice_instructor_plan.totalcost as totalcost
+                count(apprentice_ticket.id) as rounds
                 from apprentice_instructor_plan
                 left join apprentice_instructor on apprentice_instructor_plan.apprentice_instructor_id = apprentice_instructor.id
                 left join person on person.id = apprentice_instructor.personid
+                left join apprentice_ticket on apprentice_ticket.creator_plan_id = apprentice_instructor_plan.id
                 where apprentice_instructor_id=$1
                 and activity_type=$2 and grouping_type=$3
+                group by apprentice_instructor_plan.id, person.name, apprentice_instructor.id, person.phonenumber
                 `, [instid, args.activity_type, args.grouping_type])
 
                 // for each plan, get remain rounds
@@ -287,25 +289,26 @@ module.exports = {
                 for (let i = 0; i < fetched_plans.length; i++) {
                     const p = fetched_plans[i]
 
-                    res = await pgclient.query(`select 
-
-                    count(1) as totalrows,
-                    sum( CASE
-                        WHEN apprentice_ticket.expire_time < now() THEN 0
-                    WHEN A.created is null THEN 1
-                    WHEN A.created is not null AND A.canceled_time is not null THEN 1
+                    res = await pgclient.query(`with A as (select distinct on (apprentice_ticket_id) assign_apprentice_ticket.*, 
+                    apprentice_lesson.canceled_time as lesson_canceled_time 
+                    from assign_apprentice_ticket 
+                    left join apprentice_lesson on apprentice_lesson.id = assign_apprentice_ticket.apprentice_lesson_id
+                    order by apprentice_ticket_id, created desc)
+         
                     
-                    ELSE 0 END) as is_not_consumed
-                    
+                    select *
                     from apprentice_ticket
-                    left join (select DISTINCT ON(apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc) as A
-                    on A.apprentice_ticket_id = apprentice_ticket.id
-                    where apprentice_ticket.creator_plan_id = $1`, [p.id])
+                    left join A on A.apprentice_ticket_id = apprentice_ticket.id
+                    where apprentice_ticket.creator_plan_id = $1
+                    and apprentice_ticket.expire_time > now()
+                    and (case when A.id is null then false when A.canceled_time is not null then false when A.lesson_canceled_time is not null then false
+                    else true end) is false
+                    `, [p.id])
 
-                    const remainrounds = res.rows[0].is_not_consumed
-                    const totalrounds = res.rows[0].totalrows
+                    const remainrounds = res.rowCount
+
                     fetched_plans[i]['remainrounds'] = remainrounds
-                    fetched_plans[i]['rounds'] = totalrounds
+
                 }
 
 
