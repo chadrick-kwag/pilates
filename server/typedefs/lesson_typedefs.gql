@@ -1,4 +1,3 @@
-module.exports = `
 type Query{
 
  
@@ -141,5 +140,3 @@ input clientTickets{
     clientid: Int!
     tickets: [Int!]
 }
-`
-

@@ -1,4 +1,3 @@
-module.exports = `
 
 type Query {
     fetch_clients: SuccessAndClients
@@ -33,4 +32,3 @@ type Mutation{
     disable_client_by_clientid(clientid:Int!): SuccessResult
     able_client_by_clientid(clientid:Int!): SuccessResult
 }
-`

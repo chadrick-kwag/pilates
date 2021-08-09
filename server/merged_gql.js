@@ -1,24 +1,39 @@
 const { mergeTypeDefs, mergeResolvers } = require('@graphql-tools/merge');
-const { importSchema } = require('graphql-import');
+// const { importSchema } = require('graphql-import');
 const { readFileSync } = require('fs')
 
-const lesson_typedefs = require('./typedefs/lesson_typedefs')
-const client_typedefs = require('./typedefs/client_typedefs')
-const subscription_typedefs = require('./typedefs/subscription_typedefs')
-const instructor_typedefs = require('./typedefs/instructor_typedefs')
-const common_typedefs = require('./typedefs/common_typedefs')
-const apprentice_course_typedefs = require('./typedefs/apprentince_course_typedefs')
-const apprentice_instructor_typedefs = require('./typedefs/apprentice_instructor_typedefs')
-const apprentice_plan_typedefs = require('./typedefs/apprentice_plan_typedefs')
-const apprentice_lesson_typedefs = require('./typedefs/apprentice_lesson_typedefs')
-const special_schedule_typedefs = require('./typedefs/special_schedule_typedefs')
-const normal_checkin_typedefs = require('./typedefs/normal_lesson_checkin_typedefs')
+// const lesson_typedefs = require('./typedefs/lesson_typedefs')
+// const client_typedefs = require('./typedefs/client_typedefs')
+// const subscription_typedefs = require('./typedefs/subscription_typedefs')
+// const instructor_typedefs = require('./typedefs/instructor_typedefs')
+// const common_typedefs = require('./typedefs/common_typedefs')
+// const apprentice_course_typedefs = require('./typedefs/apprentince_course_typedefs')
+// const apprentice_instructor_typedefs = require('./typedefs/apprentice_instructor_typedefs')
+// const apprentice_plan_typedefs = require('./typedefs/apprentice_plan_typedefs')
+// const apprentice_lesson_typedefs = require('./typedefs/apprentice_lesson_typedefs')
+// const special_schedule_typedefs = require('./typedefs/special_schedule_typedefs')
+// const normal_checkin_typedefs = require('./typedefs/normal_lesson_checkin_typedefs')
 
 
 const login_typedefs = readFileSync('server/typedefs/login.gql').toString('utf-8')
 const adminconfig_typedefs = readFileSync('server/typedefs/adminconfig.gql').toString('utf-8')
 const master_instructor_typedefs = readFileSync('server/typedefs/masterinstructor.gql').toString('utf-8')
 const person_typedefs = readFileSync('server/typedefs/person.gql').toString('utf-8')
+const apprentice_plan_typedefs = readFileSync('server/typedefs/apprentice_plan_typedefs.gql').toString('utf-8')
+const normal_checkin_typedefs = readFileSync('server/typedefs/normal_lesson_checkin_typedefs.gql').toString('utf-8')
+const lesson_typedefs = readFileSync('server/typedefs/lesson_typedefs.gql').toString('utf-8')
+const common_typedefs  = readFileSync('server/typedefs/common_typedefs.gql').toString('utf-8')
+const apprentice_lesson_typedefs = readFileSync('server/typedefs/apprentice_lesson_typedefs.gql').toString('utf-8')
+const subscription_typedefs  = readFileSync('server/typedefs/subscription_typedefs.gql').toString('utf-8')
+const special_schedule_typedefs  = readFileSync('server/typedefs/special_schedule_typedefs.gql').toString('utf-8')
+const instructor_typedefs = readFileSync('server/typedefs/instructor_typedefs.gql').toString('utf-8')
+const client_typedefs = readFileSync('server/typedefs/client_typedefs.gql').toString('utf-8')
+const apprentice_course_typedefs  = readFileSync('server/typedefs/apprentice_course_typedefs.gql').toString('utf-8')
+const apprentice_instructor_typedefs = readFileSync('server/typedefs/apprentice_instructor_typedefs.gql').toString('utf-8')
+
+
+
+
 
 const lesson_resolver = require('./resolvers/lesson_resolvers')
 const client_resolver = require('./resolvers/client_resolvers')

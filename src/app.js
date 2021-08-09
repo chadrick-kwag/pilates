@@ -88,11 +88,9 @@ class App extends React.Component {
 
 
         return (
-            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', maxHeight: '100%' }}>
 
-
-
-                <div style={{ flex: '0 min-content', backgroundColor: 'black' }}>
+                <div style={{ backgroundColor: 'black' }}>
                     <Grid container>
                         <Grid item xs={4} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
                             <MenuOpenIcon onClick={e => this.setState({
@@ -149,7 +147,7 @@ class App extends React.Component {
                     </Grid>
                 </div>
 
-                <div style={{ flex: '1 0 auto' }}>
+                <div style={{ flexGrow: 1 }}>
                     <Switch>
                         <Route path='/dashboard'>
                             <DashBoardContainer />

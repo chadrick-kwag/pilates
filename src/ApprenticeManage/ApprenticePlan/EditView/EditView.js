@@ -5,10 +5,14 @@ import client from '../../../apolloclient'
 import { FETCH_APPRENTICE_PLAN_BY_ID, FETCH_APPRENTICE_TICKETS_OF_PLAN } from '../../../common/gql_defs'
 import { DateTime } from 'luxon'
 
-import { useQuery } from '@apollo/client'
+import { useQuery, useLazyQuery } from '@apollo/client'
 import { withRouter } from 'react-router-dom'
 import AddPlanTypeModal from '../../../components/AddPlanTypeModal'
 import { activity_type_to_kor, grouping_type_to_kor } from '../../../common/consts'
+
+import AskDeleteDialog from './AskDeleteDialog'
+import AddTicketModal from './AddTicketModal'
+import ChangeExpireTimeModal from './ChangeExpireTimeModal'
 
 function EditView({ history, match }) {
 
@@ -27,12 +31,9 @@ function EditView({ history, match }) {
     const [modal, setmodal] = useState(null);
 
 
-    const { loading, data, error } = useQuery(FETCH_APPRENTICE_PLAN_BY_ID, {
+    const [fetchPlanInfo, { loading, data, error }] = useLazyQuery(FETCH_APPRENTICE_PLAN_BY_ID, {
         client,
         fetchPolicy: 'no-cache',
-        variables: {
-            id: planid
-        },
         onCompleted: d => {
             console.log(d)
 
@@ -60,6 +61,15 @@ function EditView({ history, match }) {
         }
     })
 
+
+    useEffect(() => {
+        fetchPlanInfo({
+            variables: {
+                id: planid
+            }
+        })
+    }, [])
+
     if (loading) {
         return <div className="fwh justify-center align-center">
             <CircularProgress />
@@ -75,7 +85,7 @@ function EditView({ history, match }) {
 
 
     return <div className="fwh flexcol">
-        <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto', flexGrow: 1 }}>
+        <div style={{ flex: '1 0 0', overflow: 'auto' }}>
             <Table>
                 <TableRow>
                     <TableCell className="nowb">견습강사</TableCell>
@@ -106,9 +116,39 @@ function EditView({ history, match }) {
 
                         <div className="flexcol">
                             <div className="flexrow" style={{ gap: '0.5rem' }}>
-                                <Button variant='outlined'>추가</Button>
-                                <Button variant='outlined' className="nowb">만료일 변경</Button>
-                                <Button variant='outlined'>삭제</Button>
+                                <Button variant='outlined' onClick={() => setmodal(<AddTicketModal planid={planid} onClose={() => setmodal(null)} onSuccess={() => {
+                                    setmodal(null)
+                                    setSelectedTicketIndexArr([])
+                                    fetchPlanInfo({
+                                        variables: {
+                                            id: planid
+                                        }
+
+                                    })
+                                }} />)}>추가</Button>
+                                <Button variant='outlined' className="nowb" onClick={() => setmodal(<ChangeExpireTimeModal onClose={() => setmodal(null)}
+                                    onSuccess={() => {
+                                        setmodal(null)
+                                        setSelectedTicketIndexArr([])
+                                        fetchPlanInfo({
+                                            variables: {
+                                                id: planid
+                                            }
+                                        })
+                                    }}
+                                    ticketIds={SelectedTicketIndexArr.map(a => tickets[a].id)}
+                                />)}>만료일 변경</Button>
+                                <Button variant='outlined' className="nowb" onClick={() => {
+                                    setmodal(<AskDeleteDialog onClose={() => setmodal(null)} ticketIds={SelectedTicketIndexArr.map(a => tickets[a].id)} onSuccess={() => {
+                                        setmodal(null)
+                                        setSelectedTicketIndexArr([])
+                                        fetchPlanInfo({
+                                            variables: {
+                                                id: planid
+                                            }
+                                        })
+                                    }} />)
+                                }}>삭제</Button>
                             </div>
                             <Table>
                                 <TableRow>
@@ -160,10 +200,10 @@ function EditView({ history, match }) {
 
 
         <div className="flexrow justify-center align-center" style={{ gap: '0.5rem' }}>
-            <Button onClick={() => history.goBack()}>이전</Button>
-            <Button>수정</Button>
-            <Button>삭제</Button>
+            <Button variant='outlined' onClick={() => history.goBack()}>이전</Button>
         </div>
+
+        {modal}
 
     </div>
 }

@@ -808,16 +808,16 @@ const FETCH_APPRENTICE_TICKETS_OF_PLAN = gql`
 
 
 const ADD_APPRENTICE_TICKET_TO_PLAN = gql`
-    mutation($id:Int!, $amount:Int!){
-        add_apprentice_tickets_to_plan(id:$id, amount:$amount){
+    mutation($id:Int!, $addsize:Int!, $expire_datetime:String!, $percost: Int!){
+        add_apprentice_tickets_to_plan(id:$id, addsize:$addsize, expire_datetime: $expire_datetime, percost: $percost){
             success 
             msg
         }
     }
 `
 
-const CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS = gql`
-    mutation($id_arr:[Int!], $new_expire_time: String!){
+export const CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS = gql`
+    mutation change_expire_time_of_apprentice_tickets($id_arr:[Int!], $new_expire_time: String!){
         change_expire_time_of_apprentice_tickets(id_arr:$id_arr, new_expire_time: $new_expire_time){
             success 
             msg
@@ -1519,6 +1519,15 @@ export const FETCH_APPRENTICE_PLAN_BY_ID = gql`
     }
 `
 
+export const DELETE_APPRENTICE_PLAN = gql`
+mutation delete_apprentice_plan($id: Int!){
+    delete_apprentice_plan(id:$id){
+        success 
+        msg
+    }
+}
+`
+
 export {
     ATTEMPT_UPDATE_SCHEDULE_TIME_GQL,
     QUERY_LESSON_WITH_DATERANGE_GQL,
@@ -1579,7 +1588,6 @@ export {
     UPDATE_APPRENTICE_INSTRUCTOR,
     FETCH_APPRENTICE_TICKETS_OF_PLAN,
     ADD_APPRENTICE_TICKET_TO_PLAN,
-    CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS,
     TRANSFER_APPRENTICE_TICKETS_TO_APPRENTICE,
     FETCH_APPRENTICE_PLANS_OF_APPRENTICE_INSTRUCTOR_AND_AGTYPE,
     CREATE_APPRENTICE_LESSON

@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { Table, TableRow, TableCell, Dialog, DialogContent, DialogActions, Button, TextField, OutlinedInput, Input, InputAdornment, CircularProgress } from '@material-ui/core'
-import client from '../../apolloclient'
+import client from '../../../apolloclient'
 import { useMutation } from '@apollo/client'
-import { ADD_TICKETS } from '../../common/gql_defs'
+import { ADD_APPRENTICE_TICKET_TO_PLAN } from '../../../common/gql_defs'
 import { DateTime } from 'luxon'
 import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import koLocale from "date-fns/locale/ko";
@@ -15,12 +15,12 @@ function AddTicketDialog({ onClose, onSuccess, planid }) {
     const [count, setCount] = useState(null)
     const [perCost, setPerCost] = useState(null)
     const [expireDate, setExpireDate] = useState((() => new Date())())
-    const [addTickets, { loading, data, error }] = useMutation(ADD_TICKETS, {
+    const [addTickets, { loading, data, error }] = useMutation(ADD_APPRENTICE_TICKET_TO_PLAN, {
         client,
         fetchPolicy: 'no-cache',
         onCompleted: d => {
             console.log(d)
-            if (d?.add_tickets?.success) {
+            if (d?.add_apprentice_tickets_to_plan?.success) {
                 onSuccess?.()
             }
             else {
@@ -53,7 +53,7 @@ function AddTicketDialog({ onClose, onSuccess, planid }) {
                         횟수
                     </TableCell>
                     <TableCell>
-                        {/* <TextField variant='outlined' value={count} onChange={e => setCount(e.target.value)} /> */}
+
                         <OutlinedInput variant='outlined' value={count} onChange={e => setCount(e.target.value)}
                             endAdornment={<InputAdornment position='end'>회</InputAdornment>}
                         />
@@ -95,10 +95,11 @@ function AddTicketDialog({ onClose, onSuccess, planid }) {
             <Button variant='outlined' onClick={() => onClose()}>취소</Button>
             <Button variant='outlined' disabled={is_submit_disabled()} onClick={() => addTickets({
                 variables: {
-                    planid,
+                    id: planid,
                     addsize: parseInt(count),
                     expire_datetime: DateTime.fromJSDate(expireDate).setZone('utc+9').endOf('day').toHTTP(),
-                    per_ticket_cost: parseInt(perCost)
+                    percost: parseInt(perCost)
+
                 }
             })}>{loading ? <CircularProgress size='20' /> : '생성'}</Button>
         </DialogActions>

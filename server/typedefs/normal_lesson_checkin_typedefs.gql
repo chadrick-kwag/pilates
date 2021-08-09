@@ -1,4 +1,3 @@
-module.exports = `
 
 type Query {
     query_clients_by_phonenumber(phonenumber:String!): SuccessAndClientsResult
@@ -59,4 +58,3 @@ type SuccessAndClientsResult{
     msg: String
     clients: [ClientInfo]
 }
-`

@@ -1,4 +1,3 @@
-module.exports = `
 
 type Query {
     fetch_apprentice_lessons: SuccessAndApprenticeCourseResult
@@ -30,4 +29,3 @@ type Mutation{
     cancel_apprentice_lesson(lessonid:Int!): SuccessResult
     update_apprentice_lesson_overall(lessonid: Int!, ticket_id_arr: [Int!], starttime: String!, duration: Int!): SuccessResult
 }
-`

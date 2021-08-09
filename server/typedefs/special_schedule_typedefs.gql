@@ -1,6 +1,3 @@
-module.exports = `
-
-
 type SpecialSchedule{
     id: Int!
     starttime: String!
@@ -24,4 +21,3 @@ type Mutation{
     change_special_schedule(id: Int!, starttime: String!, endtime: String!, title: String!, memo: String): SuccessResult
     delete_special_schedule(id: Int!): SuccessResult
 }
-`

@@ -4,9 +4,9 @@ import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import koLocale from "date-fns/locale/ko";
 import DateFnsUtils from "@date-io/date-fns";
 import { DateTime } from 'luxon'
-import client from '../../apolloclient'
+import client from '../../../apolloclient'
 import PT from 'prop-types'
-import { UPDATE_EXPDATE_OF_TICKETS } from '../../common/gql_defs'
+import { CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS } from '../../../common/gql_defs'
 import { useMutation } from '@apollo/client'
 
 function ChangeExpireTimeModal({ onClose, onSuccess, ticketIds }) {
@@ -17,12 +17,12 @@ function ChangeExpireTimeModal({ onClose, onSuccess, ticketIds }) {
 
     const [expireDate, setExpireDate] = useState((() => new Date())())
 
-    const [updateExpireDate, { loading, error }] = useMutation(UPDATE_EXPDATE_OF_TICKETS, {
+    const [updateExpireDate, { loading, error }] = useMutation(CHANGE_EXPIRE_TIME_OF_APPRENTICE_TICKETS, {
         client,
         fetchPolicy: 'no-cache',
         onCompleted: d => {
             console.log(d)
-            if (d?.update_expdate_of_tickets?.success) {
+            if (d?.change_expire_time_of_apprentice_tickets?.success) {
                 onSuccess?.()
             }
             else {
@@ -60,8 +60,8 @@ function ChangeExpireTimeModal({ onClose, onSuccess, ticketIds }) {
             <Button varint='outlined' onClick={onClose}>취소</Button>
             <Button varint='outlined' onClick={() => updateExpireDate({
                 variables: {
-                    ticket_id_list: ticketIds,
-                    new_expdate: DateTime.fromJSDate(expireDate).setZone('utc+9').endOf('day').toHTTP()
+                    id_arr: ticketIds,
+                    new_expire_time: DateTime.fromJSDate(expireDate).setZone('utc+9').endOf('day').toHTTP()
                 }
             })}>변경</Button>
         </DialogActions>

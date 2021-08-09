@@ -1,4 +1,3 @@
-module.exports = `
 
 type Query {
     fetch_apprentice_courses: SuccessAndApprenticeCourseResult
@@ -27,4 +26,3 @@ type Mutation{
     create_apprentice_course(name:String!): SuccessResult
     update_apprentice_course(name:String!, id: Int!): SuccessResult
 }
-`
