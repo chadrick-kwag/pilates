@@ -5,9 +5,10 @@ import client from '../../apolloclient'
 import { FETCH_TICKET_AVAILABLE_PLAN_FOR_CLIENTID_AND_LESSONTYPES } from '../../common/gql_defs'
 import DeleteIcon from '@material-ui/icons/Delete';
 import { DateTime } from 'luxon'
+import { useQuery } from '@apollo/client'
 
 import ErrorIcon from '@material-ui/icons/Error';
-
+import PT from 'prop-types'
 
 function AddSlot(props) {
 
@@ -39,24 +40,20 @@ function AddSlot(props) {
 
 
     return <div className='row-gravity-center'>
-        <Select value={selection} onChange={e => setSelection(e.target.value)} >
-            {props.options?.map((d, i) => <MenuItem value={i}>{get_format_of_option(d)}</MenuItem>)}
-        </Select>
+        <Select value={selection}  >
+            {props.options?.map((d, i) => <MenuItem onClick={() => {
 
-        <Button disabled={selection === null} onClick={() => {
-            setSelection(null)
-            props.onDone?.(props.options[selection].tickets[0].id)
-        }}>선택</Button>
+                props.onDone?.(props.options[i].tickets[0].id)
+            }} value={i}>{get_format_of_option(d)}</MenuItem>)}
+        </Select>
 
     </div>
 }
 
 
-export default function SelectPlanAndTicketDialog(props) {
+function SelectPlanAndTicketDialog({ tickets, totalSlotSize, clientid, activityType, groupingType, onClose, onDone }) {
 
-    console.log(props)
-
-    const [tickets, setTickets] = useState(props.tickets) // array of ticket ids
+    const [_tickets, setTickets] = useState(tickets) // array of ticket ids
     const [availableTicketInfo, setAvailableTicketInfo] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -65,14 +62,14 @@ export default function SelectPlanAndTicketDialog(props) {
 
     const generate_empty_slots = () => {
 
-        if (tickets.length < props.totalSlotSize) {
-            const remain_size = props.totalSlotSize - tickets.length
+        if (_tickets.length < totalSlotSize) {
+            const remain_size = totalSlotSize - _tickets.length
             const out = []
             for (let i = 0; i < remain_size; i++) {
                 out.push(<ListItem>
                     <ListItemText>
-                        <AddSlot options={existingTicketsRemovedAvailableTicketInfo} onDone={tid => {
-                            const newarr = [...tickets]
+                        <AddSlot key={i} options={existingTicketsRemovedAvailableTicketInfo} onDone={tid => {
+                            const newarr = [..._tickets]
                             newarr.push(tid)
                             setTickets(newarr)
                         }} />
@@ -91,7 +88,7 @@ export default function SelectPlanAndTicketDialog(props) {
             return
         }
 
-        if (tickets.length === 0) {
+        if (_tickets.length === 0) {
             setExistingTicketsRemovedAvailableTicketInfo(availableTicketInfo)
             return
         }
@@ -103,8 +100,8 @@ export default function SelectPlanAndTicketDialog(props) {
                 const filtered_tickets = []
                 for (let j = 0; j < p.tickets.length; j++) {
                     let match_exist = false
-                    for (let k = 0; k < tickets.length; k++) {
-                        if (tickets[k] === p.tickets[j].id) {
+                    for (let k = 0; k < _tickets.length; k++) {
+                        if (_tickets[k] === p.tickets[j].id) {
                             match_exist = true
                             break
                         }
@@ -118,7 +115,7 @@ export default function SelectPlanAndTicketDialog(props) {
 
 
                 if (filtered_tickets.length > 0) {
-                    const new_plan = {...p}
+                    const new_plan = { ...p }
                     new_plan.tickets = filtered_tickets
                     plan_ticket_info.push(new_plan)
                 }
@@ -132,17 +129,17 @@ export default function SelectPlanAndTicketDialog(props) {
 
 
 
-    }, [availableTicketInfo, tickets])
+    }, [availableTicketInfo, _tickets])
 
     useEffect(() => {
 
         setIsLoading(true)
 
         const _var = {
-            clientid: props.clientid,
-            activity_type: props.activityType,
-            grouping_type: props.groupingType,
-            excluded_ticket_id_arr: props.tickets
+            clientid: clientid,
+            activity_type: activityType,
+            grouping_type: groupingType,
+            excluded_ticket_id_arr: _tickets
         }
 
         console.log(_var)
@@ -170,8 +167,8 @@ export default function SelectPlanAndTicketDialog(props) {
                         const t = d.tickets[j]
 
                         let exists = false
-                        for (let k = 0; k < tickets.length; k++) {
-                            if (tickets[k] === t.id) {
+                        for (let k = 0; k < _tickets.length; k++) {
+                            if (_tickets[k] === t.id) {
                                 exists = true
                                 break
                             }
@@ -216,14 +213,14 @@ export default function SelectPlanAndTicketDialog(props) {
     }, [])
 
     return (
-        <Dialog open={true} onClose={() => props.onClose()}>
+        <Dialog open={true} onClose={() => onClose()}>
             <DialogContent>
                 {isLoading ? <CircularProgress /> :
                     availableTicketInfo === null ? <ErrorIcon /> : <List>
-                        {tickets.map((d, i) => <ListItem>
+                        {_tickets.map((d, i) => <ListItem>
                             <ListItemText>티켓ID: {d}</ListItemText>
                             <DeleteIcon onClick={() => {
-                                const newarr = [...tickets]
+                                const newarr = [..._tickets]
                                 newarr.splice(i, 1)
                                 setTickets(newarr)
                             }} />
@@ -234,9 +231,21 @@ export default function SelectPlanAndTicketDialog(props) {
 
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => props.onClose?.()}>취소</Button>
-                <Button onClick={() => props.onDone?.(tickets)}>완료</Button>
+                <Button onClick={() => onClose?.()}>취소</Button>
+                <Button onClick={() => onDone?.(_tickets)}>완료</Button>
             </DialogActions>
         </Dialog>
     )
 }
+
+SelectPlanAndTicketDialog.propTypes = {
+    tickets: PT.array,
+    totalSlotSize: PT.number,
+    clientid: PT.number,
+    activityType: PT.string,
+    groupingType: PT.string,
+    onClose: PT.func,
+    onDone: PT.func
+}
+
+export default SelectPlanAndTicketDialog
