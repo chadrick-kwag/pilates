@@ -6,8 +6,8 @@ import { withRouter, Switch, Route } from 'react-router-dom'
 
 import CreateClientPage from './CreateClientPage'
 import ListClientPageV2 from './ListClientPage_v2'
-
-
+import ClientDetailView from './ClientDetailView'
+import ClientEditView from './ClientEditView'
 
 
 function ClientManagePage({ history, match }) {
@@ -17,6 +17,12 @@ function ClientManagePage({ history, match }) {
         <Switch>
             <Route path={`${match.url}/create`}>
                 <CreateClientPage onSubmitSuccess={() => history.push(match.url)} />
+            </Route>
+            <Route path={`${match.url}/view/:id`}>
+                <ClientDetailView />
+            </Route>
+            <Route path={`${match.url}/edit/:id`}>
+                <ClientEditView />
             </Route>
             <Route path={match.url}>
                 <div style={{ width: '100%', height: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'column' }}>

@@ -1,4 +1,4 @@
-const pgclient = require('../pgclient')
+const { pool } = require('../pgclient')
 const {
     parse_incoming_date_utc_string,
     ensure_admin_account_id_in_context,
@@ -23,6 +23,19 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 // gather clients registered to lesson
@@ -41,7 +54,7 @@ module.exports = {
                 where A.canceled_time is null
                 order by client.id`, [args.lessonid])
 
-
+                pgclient.release()
                 return {
                     success: true,
                     attendance_info: result.rows
@@ -51,12 +64,26 @@ module.exports = {
 
             }
             catch (e) {
+                pgclient.release()
                 return {
                     success: false
                 }
             }
         },
         query_lessons_with_daterange_sensitive_info_removed: async (parent, args) => {
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
 
             try {
@@ -159,6 +186,7 @@ module.exports = {
                     d['id'] = i
                 })
 
+                pgclient.release()
 
                 return {
                     success: true,
@@ -169,6 +197,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: e.detail
@@ -184,6 +213,20 @@ module.exports = {
 
         },
         query_lesson_detail_with_lessonid: async (parent, args) => {
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 console.log(args)
@@ -235,6 +278,7 @@ module.exports = {
 
 
                 await pgclient.query(`commit`)
+                pgclient.release()
 
                 return {
                     success: true,
@@ -247,6 +291,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: e.detail
@@ -266,6 +311,19 @@ module.exports = {
 
             console.log('query_lessons_with_daterange')
             console.log(args)
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
             try {
                 await pgclient.query('BEGIN')
@@ -366,7 +424,7 @@ module.exports = {
                     d['id'] = i
                 })
 
-
+                pgclient.release()
                 return {
                     success: true,
                     lessons: all_lessons
@@ -377,6 +435,7 @@ module.exports = {
                 console.error(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: e.detail
@@ -406,49 +465,107 @@ module.exports = {
             console.log(start_time)
             console.log(end_time)
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
 
-            let result = await pgclient.query(`WITH B AS (select lesson.id as id
-                , lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type,
-                instructor.id as instructorid, instructor.name as instructorname, instructor.phonenumber as instructorphonenumber
-                            
-                            from lesson
-                inner join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on lesson.id = A.lessonid
-                        left join instructor on lesson.instructorid = instructor.id
-                left join ticket on A.ticketid = ticket.id
-                left join plan on ticket.creator_plan_id = plan.id
-                where plan.clientid = $1
-                            AND lesson.canceled_time is null
-                            AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
-                        ),
-                
-                C AS (select B.id as lessonid, array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
-                from B
-                inner join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on B.id = A.lessonid
-                left join ticket on ticket.id = A.ticketid
-                left join plan on ticket.creator_plan_id = plan.id
-                left join client on plan.clientid = client.id
-                GROUP BY B.id)
-                
-                
-                select B.*, C.client_info_arr from B
-                left join C on B.id = C.lessonid `, [clientid, start_time, end_time]).then(res => {
-                console.log(res.rows)
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+                let result = await pgclient.query(`WITH B AS (select lesson.id as id
+                    , lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type,
+                    instructor.id as instructorid, instructor.name as instructorname, instructor.phonenumber as instructorphonenumber
+                                
+                                from lesson
+                    inner join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on lesson.id = A.lessonid
+                            left join instructor on lesson.instructorid = instructor.id
+                    left join ticket on A.ticketid = ticket.id
+                    left join plan on ticket.creator_plan_id = plan.id
+                    where plan.clientid = $1
+                                AND lesson.canceled_time is null
+                                AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
+                            ),
+                    
+                    C AS (select B.id as lessonid, array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
+                    from B
+                    inner join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on B.id = A.lessonid
+                    left join ticket on ticket.id = A.ticketid
+                    left join plan on ticket.creator_plan_id = plan.id
+                    left join client on plan.clientid = client.id
+                    GROUP BY B.id)
+                    
+                    
+                    select B.*, C.client_info_arr from B
+                    left join C on B.id = C.lessonid `, [clientid, start_time, end_time])
+
+
+                pgclient.release()
 
                 return {
                     success: true,
-                    lessons: res.rows
+                    lessons: result.rows
                 }
-
-            }).catch(e => {
+            } catch (e) {
                 console.log(e)
+
+                pgclient.release()
+
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: e.detail
                 }
-            })
+            }
 
 
-            return result
+            // let result = await pgclient.query(`WITH B AS (select lesson.id as id
+            //     , lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type,
+            //     instructor.id as instructorid, instructor.name as instructorname, instructor.phonenumber as instructorphonenumber
+
+            //                 from lesson
+            //     inner join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on lesson.id = A.lessonid
+            //             left join instructor on lesson.instructorid = instructor.id
+            //     left join ticket on A.ticketid = ticket.id
+            //     left join plan on ticket.creator_plan_id = plan.id
+            //     where plan.clientid = $1
+            //                 AND lesson.canceled_time is null
+            //                 AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
+            //             ),
+
+            //     C AS (select B.id as lessonid, array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
+            //     from B
+            //     inner join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on B.id = A.lessonid
+            //     left join ticket on ticket.id = A.ticketid
+            //     left join plan on ticket.creator_plan_id = plan.id
+            //     left join client on plan.clientid = client.id
+            //     GROUP BY B.id)
+
+
+            //     select B.*, C.client_info_arr from B
+            //     left join C on B.id = C.lessonid `, [clientid, start_time, end_time]).then(res => {
+            //     console.log(res.rows)
+
+            //     return {
+            //         success: true,
+            //         lessons: res.rows
+            //     }
+
+            // }).catch(e => {
+            //     console.log(e)
+            //     return {
+            //         success: false,
+            //         msg: 'query error'
+            //     }
+            // })
+
+
+            // return result
         },
         query_lesson_with_timerange_by_instructorid: async (parent, args) => {
             console.log(args)
@@ -460,45 +577,100 @@ module.exports = {
             start_time = new Date(start_time).getTime() / 1000
             end_time = new Date(end_time).getTime() / 1000
 
-
-            let result = await pgclient.query(`WITH B AS (select  lesson.id as id, instructor.id as instructorid,
-                instructor.name as instructorname, 
-                instructor.phonenumber as instructorphonenumber,
-                lesson.starttime, lesson.endtime,
-                lesson.activity_type,
-                lesson.grouping_type,
-                
-                 count(1) FILTER (where A.id is not null AND A.canceled_time is null) > 0  as valid_assign_exist ,
-                 lesson.canceled_time as lesson_canceled_time,
-                 array_agg(ticket.id) as ticket_id_arr,
-                 array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
-                from lesson 
-                left join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
-                left join ticket on A.ticketid = ticket.id
-                left join plan on ticket.creator_plan_id = plan.id
-                left join client on plan.clientid = client.id
-                left join instructor on lesson.instructorid = instructor.id
-                where lesson.canceled_time is null
-				AND instructor.id = $1
-                 AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
-                    
-                GROUP BY lesson.id, instructor.id)
-                select * from B where valid_assign_exist is true `, [instructorid, start_time, end_time]).then(res => {
-                return {
-                    success: true,
-                    lessons: res.rows
-                }
-            }).catch(e => {
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
                 console.log(e)
+
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: 'pg pool error'
                 }
-            })
+            }
 
-            console.log(result)
+            try {
+                let result = await pgclient.query(`WITH B AS (select  lesson.id as id, instructor.id as instructorid,
+                    instructor.name as instructorname, 
+                    instructor.phonenumber as instructorphonenumber,
+                    lesson.starttime, lesson.endtime,
+                    lesson.activity_type,
+                    lesson.grouping_type,
+                    
+                     count(1) FILTER (where A.id is not null AND A.canceled_time is null) > 0  as valid_assign_exist ,
+                     lesson.canceled_time as lesson_canceled_time,
+                     array_agg(ticket.id) as ticket_id_arr,
+                     array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
+                    from lesson 
+                    left join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
+                    left join ticket on A.ticketid = ticket.id
+                    left join plan on ticket.creator_plan_id = plan.id
+                    left join client on plan.clientid = client.id
+                    left join instructor on lesson.instructorid = instructor.id
+                    where lesson.canceled_time is null
+                    AND instructor.id = $1
+                     AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
+                        
+                    GROUP BY lesson.id, instructor.id)
+                    select * from B where valid_assign_exist is true `, [instructorid, start_time, end_time])
 
-            return result
+                pgclient.release()
+
+                return {
+                    success: true,
+                    lessons: result.rows
+                }
+
+            } catch (e) {
+                console.log(e)
+                pgclient.release()
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
+
+            // let result = await pgclient.query(`WITH B AS (select  lesson.id as id, instructor.id as instructorid,
+            //     instructor.name as instructorname, 
+            //     instructor.phonenumber as instructorphonenumber,
+            //     lesson.starttime, lesson.endtime,
+            //     lesson.activity_type,
+            //     lesson.grouping_type,
+
+            //      count(1) FILTER (where A.id is not null AND A.canceled_time is null) > 0  as valid_assign_exist ,
+            //      lesson.canceled_time as lesson_canceled_time,
+            //      array_agg(ticket.id) as ticket_id_arr,
+            //      array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
+            //     from lesson 
+            //     left join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
+            //     left join ticket on A.ticketid = ticket.id
+            //     left join plan on ticket.creator_plan_id = plan.id
+            //     left join client on plan.clientid = client.id
+            //     left join instructor on lesson.instructorid = instructor.id
+            //     where lesson.canceled_time is null
+            // 	AND instructor.id = $1
+            //      AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
+
+            //     GROUP BY lesson.id, instructor.id)
+            //     select * from B where valid_assign_exist is true `, [instructorid, start_time, end_time]).then(res => {
+            //     return {
+            //         success: true,
+            //         lessons: res.rows
+            //     }
+            // }).catch(e => {
+            //     console.log(e)
+            //     return {
+            //         success: false,
+            //         msg: 'query error'
+            //     }
+            // })
+
+            // console.log(result)
+
+            // return result
         },
         query_lesson_data_of_instructorid: async (parent, args) => {
 
@@ -506,6 +678,19 @@ module.exports = {
 
             console.log('query_lesson_data_of_instructorid')
             console.log(args)
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
             try {
 
@@ -664,7 +849,7 @@ module.exports = {
                 console.log('data')
                 console.log(data)
 
-
+                pgclient.release()
                 return {
                     success: true,
                     lesson_info_arr: data
@@ -675,6 +860,7 @@ module.exports = {
             } catch (e) {
 
                 console.log(e)
+                pgclient.release()
 
                 return {
                     success: false,
@@ -698,6 +884,19 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 await pgclient.query('begin')
@@ -705,6 +904,7 @@ module.exports = {
                 await pgclient.query(`delete from normal_lesson_attendance where lessonid=$1 and clientid=$2`, [args.lessonid, args.clientid])
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -716,6 +916,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
 
@@ -742,6 +943,19 @@ module.exports = {
                 return {
                     success: false,
                     msg: 'not admin'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -778,6 +992,7 @@ module.exports = {
                 await pgclient.query(`insert into normal_lesson_attendance (lessonid, clientid, checkin_time) values ($1, $2, now()) `, [args.lessonid, args.clientid])
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -790,6 +1005,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {
@@ -804,55 +1020,7 @@ module.exports = {
                 }
             }
         },
-        update_lesson_instructor_or_time: async (parent, args) => {
-            
-            
-            console.log('inside update lesson instructor or time')
-            console.log(args)
 
-            // if current time is after lesson's start time, then do not allow change at any circumstance
-            let currdate = (new Date().getTime() / 1000)
-
-            let lesson_startdate = parse_incoming_date_utc_string(args.start_time)
-            let lesson_enddate = parse_incoming_date_utc_string(args.end_time)
-
-            // todo: add check for update req time and lesson's start time and check if penalty is needed or not.
-
-            if (lesson_startdate >= lesson_enddate) {
-                return {
-                    success: false,
-                    msg: 'lesson start time is same or after end time'
-                }
-            }
-
-
-            console.log([args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)])
-
-            let result = await pgclient.query('select * from change_lesson_time_or_instructor($1, $2 ,$3,$4) as (success bool, msg text)', [args.lessonid, args.instructor_id, parse_incoming_date_utc_string(args.start_time), parse_incoming_date_utc_string(args.end_time)]).then(res => {
-                console.log(res)
-                if (res.rowCount > 0) {
-                    return res.rows[0]
-                }
-                else {
-                    return {
-                        success: false,
-                        msg: "query fail"
-                    }
-                }
-            })
-                .catch(e => {
-                    console.log(e)
-
-                    return {
-                        success: false,
-                        msg: 'query error'
-                    }
-                })
-
-            console.log(result)
-
-            return result
-        },
 
         create_lesson: async (parent, args, context) => {
             console.log('inside create_lesson')
@@ -862,6 +1030,19 @@ module.exports = {
                 return {
                     success: false,
                     msg: 'not admin'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -950,6 +1131,7 @@ module.exports = {
 
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -960,13 +1142,11 @@ module.exports = {
                 try {
 
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     console.log(e2)
-                    return {
-                        success: false,
-                        msg: e2.detail
-                    }
+
                 }
 
                 return {
@@ -983,128 +1163,72 @@ module.exports = {
 
             let lessonid = args.lessonid
 
-            let ret = await pgclient.query("update pilates.lesson set cancel_type='BUFFERED_CLIENT_REQ_CANCEL', canceled_time=now() where id=$1", [lessonid]).then(res => {
-                console.log(res)
-
-                if (res.rowCount > 0) {
-                    return {
-                        success: true
-
-                    }
-                }
-
-                return {
-                    success: false,
-                    msg: "query failed"
-                }
-            }).catch(e => {
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
                 console.log(e)
+
                 return {
                     success: false,
-                    msg: "query error"
+                    msg: 'pg pool error'
                 }
-            })
+            }
 
+            try {
+                await pgclient.query('begin')
+                let result = await pgclient.query("update pilates.lesson set cancel_type='BUFFERED_CLIENT_REQ_CANCEL', canceled_time=now() where id=$1", [lessonid])
 
-            console.log(ret)
-
-            return ret
-        },
-        attempt_update_lesson_time: async (parent, args) => {
-            console.log(args)
-
-            // first check if there are any colliding schedules
-            // for checking collision, the instructor should not have overlapping timeslot
-            // also, the client should not have overlapping timeslot as well.
-
-            // get client id and instructor id of lessionid
-
-            let info_res = await pgclient.query('select clientid, instructorid from pilates.lesson where id=$1', [args.lessonid]).then(res => {
-                console.log('search client and instructor id info')
-                console.log(res.rows)
-
-                if (res.rowCount > 0) {
-                    return res.rows[0]
+                await pgclient.query('commit')
+                pgclient.release()
+                return {
+                    success: true
                 }
-                else {
-                    return null
-                }
-            }).catch(e => {
+
+            } catch (e) {
                 console.log(e)
-                return null
-            })
+                try {
 
-            if (info_res == null) {
-                // failed to get basic info of lesson id
+                    await pgclient.query('rollback')
+                    pgclient.release()
+                }
+                catch { }
 
                 return {
                     success: false,
-                    msg: "no lesson with lesson id found"
+                    msg: e.detail
                 }
             }
 
-            let clientid = info_res.clientid
-            let instructorid = info_res.instructorid
+            // let ret = await pgclient.query("update pilates.lesson set cancel_type='BUFFERED_CLIENT_REQ_CANCEL', canceled_time=now() where id=$1", [lessonid]).then(res => {
+            //     console.log(res)
+
+            //     if (res.rowCount > 0) {
+            //         return {
+            //             success: true
+
+            //         }
+            //     }
+
+            //     return {
+            //         success: false,
+            //         msg: "query failed"
+            //     }
+            // }).catch(e => {
+            //     console.log(e)
+            //     return {
+            //         success: false,
+            //         msg: "query error"
+            //     }
+            // })
 
 
-            let start_time = new Date(args.start_time).getTime() / 1000
-            let end_time = new Date(args.end_time).getTime() / 1000
+            // console.log(ret)
 
-
-
-            let overlapping_lessons = await pgclient.query('select * from pilates.lesson where tstzrange(to_timestamp($1), to_timestamp($2)) && tstzrange(lesson.starttime, lesson.endtime) AND (clientid=$3 OR instructorid=$4) AND id!=$5 ', [start_time, end_time, clientid, instructorid, args.lessonid]).then(res => {
-
-                // console.log("overlapping lesson search result")
-                // console.log(res.rows)
-
-                return res.rows
-            })
-                .catch(e => {
-                    console.log(e)
-                    return []
-                })
-
-            if (overlapping_lessons.length == 0) {
-                // there are no overlapping lessons. it is okay to update the lesson
-
-                let update_res = await pgclient.query('update pilates.lesson set starttime=to_timestamp($1), endtime=to_timestamp($2) where id=$3', [start_time, end_time, args.lessonid]).then(res => {
-                    console.log('update row result')
-                    console.log(res.rows)
-
-                    if (res.rowCount > 0) {
-                        return true
-                    }
-                    return false
-                }).catch(e => {
-                    console.log(e)
-                    return false
-                })
-
-                if (update_res) {
-                    return {
-                        success: update_res
-                    }
-                }
-                else {
-                    // when failed
-                    return {
-                        success: update_res,
-                        msg: "update operation failed"
-                    }
-                }
-
-            }
-            else {
-                // there are overlapping lessons. return false
-
-                return {
-                    success: false,
-                    msg: "overlapping lesson exist"
-                }
-            }
-
-
+            // return ret
         },
+
         delete_lesson_with_request_type: async (parent, args) => {
             /* 
             success: Boolean
@@ -1115,6 +1239,19 @@ module.exports = {
             console.log('delete_lesson_with_request_type')
             console.log(args)
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 await pgclient.query(`begin`)
@@ -1124,11 +1261,10 @@ module.exports = {
 
                 if (result.rows.length !== 1) {
 
-                    await pgclient.query('rollback')
-                    return {
-                        success: false,
-                        msg: 'invalid lesson id'
+                    throw {
+                        detail: 'invalid lesson id'
                     }
+
                 }
 
                 // check request type
@@ -1145,6 +1281,7 @@ module.exports = {
                     await pgclient.query(`delete from lesson where id=$1`, [args.lessonid])
 
                     await pgclient.query('commit')
+                    pgclient.release()
                     return {
                         success: true
                     }
@@ -1167,6 +1304,7 @@ module.exports = {
                     await pgclient.query(`update lesson set canceled_time=now(), cancel_type='INSTRUCTOR_REQUEST' where id=$1`, [args.lessonid])
 
                     await pgclient.query('commit')
+                    pgclient.release()
                     return {
                         success: true
                     }
@@ -1181,13 +1319,10 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                 }
                 catch (err) {
                     console.log(err)
-                    return {
-                        success: false,
-                        msg: err.detail
-                    }
                 }
 
                 return {
@@ -1201,179 +1336,66 @@ module.exports = {
 
             // check that ticket's owner matches given client id
 
-            let client_check = await pgclient.query('select subscription.clientid from pilates.subscription_ticket left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id where subscription_ticket.id=$1', [args.ticketid]).then(res => {
-                console.log(res)
-
-                if (res.rowCount == 0) {
-                    return false
-                }
-
-                if (res.rows[0].clientid == args.clientid) {
-                    return true
-                }
-
-                return false
-
-            }).catch(e => {
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
                 console.log(e)
-                return false
-            })
 
-            if (!client_check) {
                 return {
                     success: false,
-                    msg: 'client id and ticket owner does not match'
+                    msg: 'pg pool error'
                 }
             }
-
-            // now create lesson
-
-            console.log(incoming_time_string_to_postgres_epoch_time(args.starttime))
-            console.log(incoming_time_string_to_postgres_epoch_time(args.endtime))
-
-            let res = await pgclient.query('insert into pilates.lesson (clientid, instructorid, starttime, endtime, consuming_client_ss_ticket_id) select $1, $2, to_timestamp($3), to_timestamp($4), $5 where not exists ( select * from pilates.lesson where (lesson.clientid=$1 or lesson.instructorid=$2) and ( tstzrange(to_timestamp($3), to_timestamp($4)) && tstzrange(lesson.starttime, lesson.endtime) ) and canceled_time is null )', [args.clientid, args.instructorid, incoming_time_string_to_postgres_epoch_time(args.starttime), incoming_time_string_to_postgres_epoch_time(args.endtime), args.ticketid]).then(res => {
-                console.log(res)
-
-                if (res.rowCount > 0) {
-                    return true
-                }
-                return false
-            }).catch(e => {
-                console.log(e)
-                return false
-            })
-
-
-            if (res) {
-                return {
-                    success: true,
-
-                }
-
-            }
-            else {
-                return {
-                    success: false,
-                    msg: 'failed to create lesson. possibly time overlap'
-                }
-            }
-
-        },
-        cancel_individual_lesson: async (parent, args) => {
-            console.log('cancel_individual_lesson')
-
-            console.log(args)
-
-
-
-            let result = await pgclient.query(`select * from cancel_individual_lesson($1,$2,$3,$4) as (success bool, warning bool, msg text)`, [args.lessonid, args.clientid, args.reqtype, args.force_penalty]).then(res => {
-                console.log(res)
-
-                if (res.rowCount < 1) {
-                    return {
-                        success: false,
-                        warning: false,
-                        msg: 'no rows'
-                    }
-                }
-                else {
-                    return res.rows[0]
-                }
-            }).catch(e => {
-                console.log(e)
-                return {
-                    success: false,
-                    warning: false,
-                    msg: 'query error'
-                }
-            })
-
-            return result
-        },
-        change_clients_of_lesson: async (parent, args) => {
-            console.log('change_clients_of_lesson')
-            console.log(args)
 
             try {
-                await pgclient.query(`begin`)
 
-                // divide tickets to assign and tickets to release
+                await pgclient.query('begin')
 
-                let result = await pgclient.query(`select distinct on(ticketid) *  from assign_ticket
-                where lessonid=$1
-                order by ticketid, created desc`, [args.lessonid])
+                let client_check = await pgclient.query('select subscription.clientid from pilates.subscription_ticket left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id where subscription_ticket.id=$1', [args.ticketid])
 
-                let existing_assigned_ticket_id_arr = result.rows.map(d => d.ticketid)
-
-                const new_tickets_to_assign_arr = []
-
-
-                let existing_ticket_also_included_in_new_assignment_bool_arr = new Array(existing_assigned_ticket_id_arr.length).fill(false)
-
-                for (let i = 0; i < args.ticketid_arr.length; i++) {
-                    let exists = false;
-                    for (let j = 0; j < existing_assigned_ticket_id_arr.length; j++) {
-                        if (existing_assigned_ticket_id_arr[j] === args.ticketid_arr[i]) {
-                            exists = true;
-                            existing_ticket_also_included_in_new_assignment_bool_arr[j] = true;
-                            break;
-                        }
-
-                    }
-
-                    if (!exists) {
-                        new_tickets_to_assign_arr.push(args.ticketid_arr[i])
+                if (client_check.rowCount === 0) {
+                    throw {
+                        detail: 'invalid ticket id'
                     }
                 }
 
-                let tickets_to_remove_arr = existing_ticket_also_included_in_new_assignment_bool_arr.map((d, i) => {
-                    if (!d) {
-                        return existing_assigned_ticket_id_arr[i]
-                    }
-                })
-
-
-
-                // new tickets to assign, create assignment
-                for (let i = 0; i < new_tickets_to_assign_arr.length; i++) {
-                    await pgclient.query(`insert into assign_ticket (ticketid, lessonid, created) values ($1, $2, now())`, [new_tickets_to_assign_arr[i], args.lessonid])
-                }
-
-
-                // process assignment to remove. since we are assuming admin usage, no penalty removal
-                // remove assign ment of ticket for this lesson
-                for (let i = 0; i < tickets_to_remove_arr.length; i++) {
-                    result = await pgclient.query(`select id from assign_ticket where ticketid=$1 and lessonid=$2`, [tickets_to_remove_arr[i], args.lessonid])
-
-
-                    const id_arr = result.rows.map(d => d.id)
-
-                    // execute remove
-                    for (let i = 0; i < id_arr.length; i++) {
-                        await pgclient.query(`delete from assign_ticket where id=$1`, [id_arr[i]])
+                if (client_check.rows[0] !== args.clientid) {
+                    throw {
+                        detail: 'client id not match'
                     }
                 }
 
 
+                console.log(incoming_time_string_to_postgres_epoch_time(args.starttime))
+                console.log(incoming_time_string_to_postgres_epoch_time(args.endtime))
 
-                await pgclient.query(`commit`)
+                let result = await pgclient.query('insert into pilates.lesson (clientid, instructorid, starttime, endtime, consuming_client_ss_ticket_id) select $1, $2, to_timestamp($3), to_timestamp($4), $5 where not exists ( select * from pilates.lesson where (lesson.clientid=$1 or lesson.instructorid=$2) and ( tstzrange($3, $4) && tstzrange(lesson.starttime, lesson.endtime) ) and canceled_time is null )', [args.clientid, args.instructorid, args.starttime, args.endtime, args.ticketid])
+
+
+                if (result.rowCount === 0) {
+                    throw {
+                        detail: 'insert failed'
+                    }
+                }
+
+
+                await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
                 }
-            }
-            catch (e) {
+
+
+            } catch (e) {
                 console.log(e)
+
                 try {
-                    await pgclient.query('ROLLBACK')
-                }
-                catch (err) {
-                    console.log(err)
-                    return {
-                        success: false,
-                        msg: err.detail
-                    }
-                }
+                    await pgclient.query('rollback')
+                    pgclient.release()
+                } catch { }
 
                 return {
                     success: false,
@@ -1381,8 +1403,154 @@ module.exports = {
                 }
             }
 
+            // let client_check = await pgclient.query('select subscription.clientid from pilates.subscription_ticket left join pilates.subscription on subscription_ticket.creator_subscription_id=subscription.id where subscription_ticket.id=$1', [args.ticketid]).then(res => {
+            //     console.log(res)
+
+            //     if (res.rowCount == 0) {
+            //         return false
+            //     }
+
+            //     if (res.rows[0].clientid == args.clientid) {
+            //         return true
+            //     }
+
+            //     return false
+
+            // }).catch(e => {
+            //     console.log(e)
+            //     return false
+            // })
+
+            // if (!client_check) {
+            //     return {
+            //         success: false,
+            //         msg: 'client id and ticket owner does not match'
+            //     }
+            // }
+
+            // // now create lesson
+
+            // console.log(incoming_time_string_to_postgres_epoch_time(args.starttime))
+            // console.log(incoming_time_string_to_postgres_epoch_time(args.endtime))
+
+            // let res = await pgclient.query('insert into pilates.lesson (clientid, instructorid, starttime, endtime, consuming_client_ss_ticket_id) select $1, $2, to_timestamp($3), to_timestamp($4), $5 where not exists ( select * from pilates.lesson where (lesson.clientid=$1 or lesson.instructorid=$2) and ( tstzrange(to_timestamp($3), to_timestamp($4)) && tstzrange(lesson.starttime, lesson.endtime) ) and canceled_time is null )', [args.clientid, args.instructorid, incoming_time_string_to_postgres_epoch_time(args.starttime), incoming_time_string_to_postgres_epoch_time(args.endtime), args.ticketid]).then(res => {
+            //     console.log(res)
+
+            //     if (res.rowCount > 0) {
+            //         return true
+            //     }
+            //     return false
+            // }).catch(e => {
+            //     console.log(e)
+            //     return false
+            // })
+
+
+            // if (res) {
+            //     return {
+            //         success: true,
+
+            //     }
+
+            // }
+            // else {
+            //     return {
+            //         success: false,
+            //         msg: 'failed to create lesson. possibly time overlap'
+            //     }
+            // }
+
         },
+        cancel_individual_lesson: async (parent, args) => {
+            console.log('cancel_individual_lesson')
+
+            console.log(args)
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+
+                await pgclient.query('begin')
+                let result = await pgclient.query(`select * from cancel_individual_lesson($1,$2,$3,$4) as (success bool, warning bool, msg text)`, [args.lessonid, args.clientid, args.reqtype, args.force_penalty])
+
+                if (result.rowCount) {
+                    throw {
+                        detail: 'no rows affected'
+                    }
+                }
+
+                await pgclient.query('commit')
+                pgclient.release()
+
+                return {
+                    success: true,
+                    warning: false
+                }
+            } catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                    pgclient.release()
+                } catch { }
+
+                return {
+                    success: false,
+                    warning: false,
+                    msg: e.detail
+                }
+            }
+
+            // let result = await pgclient.query(`select * from cancel_individual_lesson($1,$2,$3,$4) as (success bool, warning bool, msg text)`, [args.lessonid, args.clientid, args.reqtype, args.force_penalty]).then(res => {
+            //     console.log(res)
+
+            //     if (res.rowCount < 1) {
+            //         return {
+            //             success: false,
+            //             warning: false,
+            //             msg: 'no rows'
+            //         }
+            //     }
+            //     else {
+            //         return res.rows[0]
+            //     }
+            // }).catch(e => {
+            //     console.log(e)
+            //     return {
+            //         success: false,
+            //         warning: false,
+            //         msg: 'query error'
+            //     }
+            // })
+
+            // return result
+        },
+
         change_lesson_overall: async (parent, args) => {
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
             try {
 
@@ -1561,6 +1729,7 @@ module.exports = {
 
 
                 await pgclient.query('COMMIT')
+                pgclient.release()
 
 
                 return {
@@ -1572,6 +1741,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: e.detail

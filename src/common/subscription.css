@@ -16,6 +16,41 @@ hr {
     width: 50%;
 }
 
+.fwh {
+    width: 100%;
+    height: 100%;
+}
+
+.nowb {
+    word-break: keep-all;
+}
+
+.flexrow{
+    display: flex;
+    flex-direction: row;
+}
+
+.flexcol{
+    display: flex;
+    flex-direction: column;
+}
+
+.justify-center{
+    justify-content: center;
+}
+
+.gap{
+    gap: 0.5rem;
+}
+
+.align-center{
+    align-items: center;
+}
+
+.hover-color:hover{
+    background-color: gray;
+}
+
 .two-time-picker {
     min-width: 800px !important;
 }

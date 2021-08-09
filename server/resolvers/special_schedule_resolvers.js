@@ -1,10 +1,25 @@
 
-const pgclient = require('../pgclient')
+const { pool } = require('../pgclient')
 
 module.exports = {
 
     Query: {
         fetch_special_schedule_by_id: async (parent, args) => {
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 let result = await pgclient.query(`select id, starttime, endtime, title, memo from special_schedule where id=$1`, [args.id])
 
@@ -13,6 +28,7 @@ module.exports = {
                         detail: 'no schedule found'
                     }
                 }
+                pgclient.release()
 
                 return {
                     success: true,
@@ -21,6 +37,7 @@ module.exports = {
             }
             catch (e) {
                 console.log(e)
+                pgclient.release()
                 return {
                     success: false,
                     msg: e.detail
@@ -31,6 +48,20 @@ module.exports = {
 
     Mutation: {
         create_special_schedule: async (parent, args) => {
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 await pgclient.query('begin')
 
@@ -41,6 +72,7 @@ module.exports = {
 
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -50,6 +82,7 @@ module.exports = {
                 try {
 
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {
@@ -68,6 +101,20 @@ module.exports = {
         },
 
         change_special_schedule: async (parent, args) => {
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 await pgclient.query('begin')
@@ -80,6 +127,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -91,6 +139,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {
@@ -106,6 +155,21 @@ module.exports = {
             }
         },
         delete_special_schedule: async (parent, args) => {
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
             try {
                 await pgclient.query('begin')
 
@@ -118,6 +182,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -126,6 +191,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {

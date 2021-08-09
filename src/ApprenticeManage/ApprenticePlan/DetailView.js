@@ -1,68 +1,175 @@
-import React from 'react'
-import { Table, TableCell, TableRow, Button, CircularProgress, DialogActions } from '@material-ui/core'
-import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
-import PhoneIcon from '@material-ui/icons/Phone';
-import ViewTicketTable from './ViewTicketTable'
+import React, { useState, useEffect } from 'react'
+import { Table, TableCell, TableRow, Button, CircularProgress, Checkbox } from '@material-ui/core'
+import client from '../../apolloclient'
+
+import { FETCH_APPRENTICE_PLAN_BY_ID, DELETE_APPRENTICE_PLAN } from '../../common/gql_defs'
+import { DateTime } from 'luxon'
+
+import { useQuery, useMutation } from '@apollo/client'
+import { withRouter } from 'react-router-dom'
+
+function DetailView({ history, match }) {
 
 
-import numeral from 'numeral'
-export default function DetailView(props) {
+    const planid = parseInt(match.params.id)
+
+    const [appInst, setAppInst] = useState(null)
+    const [totalCost, setTotalCost] = useState(null)
+    const [rounds, setRounds] = useState(null)
+    const [created, setCreated] = useState(null)
+    const [activityType, setActivityType] = useState(null)
+    const [groupingType, setGroupingType] = useState(null)
+    const [tickets, setTickets] = useState(null)
 
 
-    return (
-        <div className='col-gravity-center'>
-            <h2>견습강사플랜 상세</h2>
-            <Table>
 
+    const { loading, data, error } = useQuery(FETCH_APPRENTICE_PLAN_BY_ID, {
+        client,
+        fetchPolicy: 'no-cache',
+        variables: {
+            id: planid
+        },
+        onCompleted: d => {
+            console.log(d)
+
+
+            if (d?.fetch_apprentice_plan_by_id?.success) {
+
+                const info = d?.fetch_apprentice_plan_by_id?.plan
+
+                setAppInst({
+                    id: info.apprentice_instructor_id,
+                    name: info.apprentice_instructor_name,
+                    phonenumber: info.apprentice_instructor_phonenumber
+                })
+                setCreated(info.created ?? null)
+                setTotalCost(info.totalcost)
+                setActivityType(info.activity_type)
+                setGroupingType(info.grouping_type)
+                setTickets(info.tickets)
+            }
+
+
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+        }
+    })
+
+
+    const [deletePlan, { loading: deleteloading, error: deleteError }] = useMutation(DELETE_APPRENTICE_PLAN, {
+        client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            console.log(d)
+            if (d.delete_apprentice_plan.success) {
+                history.push('/apprenticeplan')
+            }
+            else {
+                alert('삭제 실패')
+            }
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+
+            alert('삭제 에러')
+        }
+    })
+
+    if (loading) {
+        return <div className="fwh flexrow justify-center align-center">
+            <CircularProgress />
+        </div>
+    }
+
+    if (error || data?.fetch_apprentice_plan_by_id?.success === false) {
+        return <div className="fwh flexrow justify-center align-center">
+            <span>에러</span>
+        </div>
+    }
+
+
+
+    return <div style={{ width: '100%', height: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: '1 1 0', overflow: 'auto' }}>
+            <Table style={{ width: '100%', maxWidth: '100%', overflow: 'auto', flex: '1 1 1px' }}>
                 <TableRow>
-                    <TableCell>견습강사</TableCell>
-                    <TableCell><span>{props.data.appInst.name}(<PhoneIcon fontSize='small' />{props.data.appInst.phonenumber})</span></TableCell>
+                    <TableCell className="nowb">견습강사</TableCell>
+                    <TableCell>{appInst?.name}({appInst?.phonenumber})</TableCell>
                 </TableRow>
                 <TableRow>
-                    <TableCell>수업종류</TableCell>
-                    <TableCell>{activity_type_to_kor[props.data.activityType]}/{grouping_type_to_kor[props.data.groupingType]}</TableCell>
-                </TableRow>
-                <TableRow>
-                    <TableCell>횟수</TableCell>
+                    <TableCell className="nowb">수업종류</TableCell>
                     <TableCell>
-                        {props.data.tickets === null ? null : <span>{props.data.rounds}회</span>}
+                        <span>{activityType}/{groupingType}</span>
                     </TableCell>
                 </TableRow>
                 <TableRow>
-                    <TableCell>총비용</TableCell>
+                    <TableCell className="nowb">횟수</TableCell>
                     <TableCell>
-                        <div className='row-gravity-left children-padding'>
-                            <span>{numeral(props.data.totalCost).format('0,0')}원</span>
-                            {(() => {
-                                if (props.data.totalCost !== null && props.data.tickets !== null) {
-                                    const percost = Math.floor(props.data.totalCost / props.data.tickets.length)
-
-                                    return <span>(회당단가 {numeral(percost).format('0,0')}원)</span>
-                                }
-                            })()}
-                        </div>
-
-
+                        <span>{tickets?.length}회</span>
                     </TableCell>
                 </TableRow>
                 <TableRow>
-                    <TableCell>티켓</TableCell>
+                    <TableCell className="nowb">총비용</TableCell>
                     <TableCell>
-                        {props.data.tickets === null ? <CircularProgress /> :
-                            props.data.tickets.length === 0 ? <span>no tickets</span> :
-                                <ViewTicketTable tickets={props.data.tickets} />}
+                        <span>{totalCost}원</span>
                     </TableCell>
                 </TableRow>
+                <TableRow>
+
+                    <TableCell className="nowb">티켓</TableCell>
+                    <TableCell>
+
+
+                        <Table>
+                            <TableRow>
+
+                                <TableCell className="nowb">
+                                    티켓id
+                                </TableCell>
+                                <TableCell className="nowb">
+                                    만료일
+                                </TableCell>
+                                <TableCell className="nowb">
+                                    소모일
+                                </TableCell>
+                            </TableRow>
+                            {tickets?.map((d, i) => <TableRow>
+
+                                <TableCell>
+                                    {d.id}
+                                </TableCell>
+                                <TableCell>
+                                    {DateTime.fromMillis(parseInt(d.expire_time)).setZone('utc+9').toFormat('y-LL-dd HH:mm')}
+                                </TableCell>
+                                <TableCell>
+                                    {d.consumed_time ? DateTime.fromMillis(parseInt(d.consumed_time)).setZone('utc+9').toFormat('y-LL-dd HH:mm') : '-'}
+                                </TableCell>
+                            </TableRow>)}
+                        </Table>
+
+
+                    </TableCell>
+                </TableRow>
+
             </Table>
 
-            {/* <div className='row-gravity-center'> */}
-            <DialogActions>
-                <Button variant='outlined' color='secondary' onClick={e => props.onCancel?.()}>이전</Button>
-                <Button variant='outlined' onClick={e => props.onEdit?.()}>기본수정</Button>
-                <Button variant='outlined' onClick={e => props.onTicketEdit?.()}>티켓수정</Button>
-            </DialogActions>
-            {/* </div> */}
-
         </div>
-    )
+
+
+
+        <div className="flexrow justify-center align-center" style={{ gap: '0.5rem' }}>
+            <Button variant='outlined' onClick={() => history.goBack()}>이전</Button>
+            <Button variant='outlined' onClick={() => history.push(`/apprenticeplan/edit/${planid}`)}>수정</Button>
+            <Button variant='outlined' onClick={() => deletePlan({
+                variables: {
+                    id: planid
+                }
+            })}>삭제</Button>
+        </div>
+
+    </div>
 }
+
+
+export default withRouter(DetailView)

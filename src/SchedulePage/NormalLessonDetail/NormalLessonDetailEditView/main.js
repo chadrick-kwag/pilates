@@ -158,7 +158,8 @@ function NormalLessonDetailEditView({ lessonid, onEditDone, onCancel }) {
     if (viewMode === 'add_client') {
         return <AddClientView onCancel={() => setViewMode('base')} onDone={d => {
             const _d = d
-            _d.tickets = []
+            _d.ticketid_arr = []
+            _d.clientid = _d.id
             const new_clientsAndTickets = [...clientsAndTickets, _d]
 
             setClientsAndTickets(new_clientsAndTickets)

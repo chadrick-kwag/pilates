@@ -1,4 +1,4 @@
-const pgclient = require('../pgclient')
+const { pool } = require('../pgclient')
 const { DateTime } = require('luxon')
 const { setting } = require('../adminappconfig')
 const randomstring = require("randomstring");
@@ -8,7 +8,7 @@ const { token_cache, add_token, check_token } = require('../checkintokencache')
 module.exports = {
     Query: {
         check_token: async (parent, args, context) => {
-            
+
             try {
 
                 if (!context.checkinAuthorized) {
@@ -45,6 +45,19 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 console.log(args)
@@ -56,6 +69,7 @@ module.exports = {
                 where A.phonenumber = $1`, [args.phonenumber])
 
                 console.log(results)
+                pgclient.release()
 
                 return {
                     success: true,
@@ -64,6 +78,7 @@ module.exports = {
 
             } catch (e) {
                 console.log(e)
+                pgclient.release()
 
                 return {
                     success: false,
@@ -79,6 +94,19 @@ module.exports = {
                 return {
                     success: false,
                     msg: 'invalid token'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -118,6 +146,8 @@ module.exports = {
 
                 console.log(results)
 
+                pgclient.release()
+
                 return {
                     success: true,
                     lessons: results.rows
@@ -125,6 +155,7 @@ module.exports = {
 
             } catch (e) {
                 console.log(e)
+                pgclient.release()
                 return {
                     success: false,
                     msg: e.detail
@@ -171,6 +202,19 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 await pgclient.query('BEGIN')
 
@@ -182,6 +226,7 @@ module.exports = {
                 }
 
                 await pgclient.query('COMMIT')
+                pgclient.release()
 
                 return {
                     success: true
@@ -192,6 +237,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('END')
+                    pgclient.release()
 
                 }
                 catch (e2) {

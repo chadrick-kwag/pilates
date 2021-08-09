@@ -1,0 +1,64 @@
+type Query{
+    
+    fetch_instructors: SuccessAndInstructors
+    
+    search_instructor_with_name(name: String!): [Instructor]
+    fetch_instructor_with_id(id: Int!): ResultInstructor
+    fetch_instructor_level_info: SuccessAndInstructorLevels
+    fetch_instructor_stat: SuccessAndInstructorStatResult
+
+
+    query_instructors_allowed_to_teach_apprentice_with_name(name:String!): SuccessAndInstructors
+}
+
+
+type InstructorStatResult{
+    total_count: Int
+}
+
+type SuccessAndInstructorStatResult{
+    success: Boolean
+    msg: String
+    stat: InstructorStatResult
+}
+
+type InstructorLevel{
+    rank: Int
+    level_string: String
+    id: Int
+    active: Boolean
+    non_group_lesson_pay_percentage: Float
+    group_lesson_perhour_payment: Int
+    group_lesson_perhour_penalized_payment: Int
+}
+
+type SuccessAndInstructorLevels{
+    success: Boolean
+    msg: String
+    info_list: [InstructorLevel]
+}
+
+type SuccessResultWithId{
+    success: Boolean
+    msg: String
+    id: Int
+}
+
+type Mutation {
+    
+    create_instructor(name: String!, phonenumber: String!, email: String, job: String, validation_date: String, memo: String, address: String, birthdate: String, is_apprentice: Boolean, level: Int, gender: String): SuccessResult
+      
+    deleteinstructor(id: Int!): SuccessResult
+    
+    disable_instructor_by_id(id:Int!): SuccessResult
+    able_instructor_by_id(id:Int!): SuccessResult
+    
+    update_instructor(id: Int!, name: String!, phonenumber: String!, birthdate: String, validation_date: String, memo: String, address: String, is_apprentice: Boolean, email: String, job: String, level: Int, gender: String, allow_teach_apprentice: Boolean!): SuccessResult
+
+    update_instructor_level(id:Int!, level_string:String!, active: Boolean!, non_group_lesson_pay_percentage:Float!, group_lesson_perhour_payment: Int!, group_lesson_perhour_penalized_payment: Int!, rank:Int!): SuccessResult
+    
+    add_instructor_level(level_string:String!, active: Boolean!, non_group_lesson_pay_percentage:Float!, group_lesson_perhour_payment: Int!, group_lesson_perhour_penalized_payment: Int!, rank:Int!): SuccessResultWithId
+    
+    delete_instructor_level(id:Int!): SuccessResult
+    
+}

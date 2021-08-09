@@ -1,5 +1,5 @@
 
-const pgclient = require('../pgclient')
+const { pool } = require('../pgclient')
 const {
     parse_incoming_date_utc_string, ensure_admin_account_id_in_context
 } = require('./common')
@@ -8,6 +8,21 @@ module.exports = {
     Query: {
 
         fetch_normal_plan_detail_info: async (parent, args, context) => {
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
             try {
 
 
@@ -60,6 +75,7 @@ module.exports = {
                 _result.totalcost = totalcost
                 _result.tickets = tickets
 
+                pgclient.release()
 
                 return {
                     success: true,
@@ -71,6 +87,7 @@ module.exports = {
 
             } catch (e) {
                 console.log(e)
+                pgclient.release()
 
                 return {
                     success: false,
@@ -86,6 +103,19 @@ module.exports = {
                 return {
                     success: false,
                     msg: 'invalid token'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -126,7 +156,8 @@ module.exports = {
                 }
 
 
-                await pgclient.query(`end`)
+                await pgclient.query(`commit`)
+                pgclient.release()
 
                 return {
                     success: true,
@@ -137,6 +168,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: e.detail
@@ -161,8 +193,21 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
 
-            let result = await pgclient.query(`with A as (select ticket.id as id, plan.created as created_date, ticket.expire_time ,
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+                let result = await pgclient.query(`with A as (select ticket.id as id, plan.created as created_date, ticket.expire_time ,
                     plan.id as planid,
                     CASE
                     WHEN A.id is null THEN null
@@ -191,33 +236,82 @@ module.exports = {
                     left join A on A.planid = plan.id
                     left join person on person.id = client.personid
                     where plan.id = $1
-                    group by plan.id`, [args.id]).then(res => {
-                if (res.rowCount === 1) {
-                    return {
-                        success: true,
-                        subscription_info: res.rows[0]
+                    group by plan.id`, [args.id])
 
-                    }
-
+                pgclient.release()
+                return {
+                    success: true,
+                    subscription_info: result.rows[0]
                 }
-                else {
-                    return {
-                        success: false,
-                        msg: 'row count not 1'
-                    }
-                }
-            }).catch(e => {
+            }
+            catch (e) {
                 console.log(e)
+                pgclient.release()
 
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: e.detail
                 }
-            })
+            }
 
-            console.log(result)
 
-            return result
+            // let result = await pgclient.query(`with A as (select ticket.id as id, plan.created as created_date, ticket.expire_time ,
+            //         plan.id as planid,
+            //         CASE
+            //         WHEN A.id is null THEN null
+            //         WHEN A.id is not null AND A.canceled_time is not null THEN null
+            //         WHEN lesson.canceled_time is not null THEN null
+            //         ELSE lesson.starttime
+            //         END as consumed_date,
+            //         C.created as destroyed_date
+            //         from plan
+            //         left join ticket on ticket.creator_plan_id = plan.id
+            //         left join (select id, created from plan) as C on C.id = ticket.destroyer_plan_id
+            //         left join (select DISTINCT ON(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) as A on A.ticketid = ticket.id
+            //         left join lesson on lesson.id = A.lessonid
+            //         where plan.id = $1 AND ticket.id is not null)
+
+            //         select plan.id, plan.clientid, (array_agg(person.name))[1] as clientname, rounds, totalcost, plan.created, 
+            //         plan.activity_type, plan.grouping_type, plan.coupon_backed ,
+            //         json_agg(json_build_object('id',A.id,
+            //                         'created_date', A.created_date,
+            //                         'expire_time', A.expire_time,
+            //                         'consumed_date', A.consumed_date,
+            //                         'destroyed_date', A.destroyed_date
+            //                         )) as tickets
+            //         from plan
+            //         left join client on plan.clientid=client.id 
+            //         left join A on A.planid = plan.id
+            //         left join person on person.id = client.personid
+            //         where plan.id = $1
+            //         group by plan.id`, [args.id]).then(res => {
+            //     if (res.rowCount === 1) {
+            //         return {
+            //             success: true,
+            //             subscription_info: res.rows[0]
+
+            //         }
+
+            //     }
+            //     else {
+            //         return {
+            //             success: false,
+            //             msg: 'row count not 1'
+            //         }
+            //     }
+            // }).catch(e => {
+            //     console.log(e)
+
+
+            //     return {
+            //         success: false,
+            //         msg: 'query error'
+            //     }
+            // })
+
+            // console.log(result)
+
+            // return result
         },
 
         fetch_tickets_for_subscription_id: async (parent, args, context) => {
@@ -227,6 +321,19 @@ module.exports = {
                 return {
                     success: false,
                     msg: 'invalid token'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -251,6 +358,8 @@ module.exports = {
                 left join plan as C on ticket.creator_plan_id = C.id
                 where ticket.creator_plan_id=$1`, [planid])
 
+                pgclient.release()
+
                 return {
                     success: true,
                     tickets: result.rows
@@ -261,6 +370,7 @@ module.exports = {
             }
             catch (e) {
                 console.log(e)
+                pgclient.release()
                 return {
                     success: false,
                     msg: e.detail
@@ -277,6 +387,19 @@ module.exports = {
                 return {
                     success: false,
                     msg: 'invalid token'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -328,6 +451,8 @@ module.exports = {
 
                 }
 
+                pgclient.release()
+
                 return {
                     success: true,
                     allSubscriptionsWithRemainRounds: plan_arr
@@ -335,6 +460,7 @@ module.exports = {
 
             } catch (e) {
                 console.log(e)
+                pgclient.release()
                 return {
                     success: false,
                     msg: e.detail
@@ -344,11 +470,27 @@ module.exports = {
         },
         query_subscriptions_by_clientid: async (parent, args, context) => {
 
+            console.log('query_subscriptions_by_clientid')
+            console.log(args)
+
 
             if (!ensure_admin_account_id_in_context(context)) {
                 return {
                     success: false,
                     msg: 'invalid token'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -362,6 +504,10 @@ module.exports = {
                 where client.id = $1
                 `, [args.clientid])
 
+                console.log(result)
+
+                pgclient.release()
+
                 return {
                     success: true,
                     subscriptions: result.rows
@@ -369,6 +515,7 @@ module.exports = {
 
             } catch (e) {
                 console.log(e)
+                pgclient.release()
                 return {
                     success: false,
                     msg: e.detail
@@ -389,33 +536,66 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
 
-            let subscriptions = await pgclient.query(`select plan.id, plan.clientid, person.name as clientname, rounds, totalcost, plan.created, plan.activity_type, plan.grouping_type, plan.coupon_backed from plan 
-            left join client on plan.clientid=client.id 
-            left join person on person.id = client.personid
-            where client.name=$1`, [args.clientname])
-                .then(res => {
-                    console.log(res.rows)
-                    return res.rows
-                }).catch(e => {
-                    console.log(e)
-                    return null
-                })
-
-
-            if (subscriptions == null) {
                 return {
                     success: false,
-                    subscriptions: []
+                    msg: 'pg pool error'
                 }
             }
-            else {
+
+            try {
+                let result = await pgclient.query(`select plan.id, plan.clientid, person.name as clientname, rounds, totalcost, plan.created, plan.activity_type, plan.grouping_type, plan.coupon_backed from plan 
+                left join client on plan.clientid=client.id 
+                left join person on person.id = client.personid
+                where person.name=$1`, [args.clientname])
+
+                pgclient.release()
 
                 return {
                     success: true,
-                    subscriptions: subscriptions
+                    subscriptions: result.rows
+                }
+            } catch (e) {
+                console.log(e)
+                pgclient.release()
+
+                return {
+                    success: false
                 }
             }
+
+            // let subscriptions = await pgclient.query(`select plan.id, plan.clientid, person.name as clientname, rounds, totalcost, plan.created, plan.activity_type, plan.grouping_type, plan.coupon_backed from plan 
+            // left join client on plan.clientid=client.id 
+            // left join person on person.id = client.personid
+            // where client.name=$1`, [args.clientname])
+            //     .then(res => {
+            //         console.log(res.rows)
+            //         return res.rows
+            //     }).catch(e => {
+            //         console.log(e)
+            //         return null
+            //     })
+
+
+            // if (subscriptions == null) {
+            //     return {
+            //         success: false,
+            //         subscriptions: []
+            //     }
+            // }
+            // else {
+
+            //     return {
+            //         success: true,
+            //         subscriptions: subscriptions
+            //     }
+            // }
 
 
 
@@ -431,30 +611,63 @@ module.exports = {
                 }
             }
 
-            let subscriptions = await pgclient.query(`select subscription.id, subscription.clientid, person.name as clientname, rounds, totalcost, subscription.created, subscription.activity_type, subscription.grouping_type, subscription.coupon_backed from pilates.subscription 
-            left join pilates.client on subscription.clientid=client.id
-            left join person on person.id = client.personid
-            `).then(res => {
-                return res.rows
-            }).catch(e => {
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
                 console.log(e)
-                return null
-            })
-
-
-            if (subscriptions == null) {
-                return {
-                    success: true,
-                    subscriptions: []
-                }
-            }
-            else {
 
                 return {
-                    success: true,
-                    "subscriptions": subscriptions
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
+
+            try {
+                let result = await pgclient.query(`select subscription.id, subscription.clientid, person.name as clientname, rounds, totalcost, subscription.created, subscription.activity_type, subscription.grouping_type, subscription.coupon_backed from pilates.subscription 
+                left join pilates.client on subscription.clientid=client.id
+                left join person on person.id = client.personid
+                `)
+                pgclient.release()
+                return {
+                    success: true,
+                    subscriptions: result.rows
+
+                }
+            } catch (e) {
+                console.log(e)
+                pgclient.release()
+
+                return {
+                    success: false
+                }
+            }
+
+            // let subscriptions = await pgclient.query(`select subscription.id, subscription.clientid, person.name as clientname, rounds, totalcost, subscription.created, subscription.activity_type, subscription.grouping_type, subscription.coupon_backed from pilates.subscription 
+            // left join pilates.client on subscription.clientid=client.id
+            // left join person on person.id = client.personid
+            // `).then(res => {
+            //     return res.rows
+            // }).catch(e => {
+            //     console.log(e)
+            //     return null
+            // })
+
+
+            // if (subscriptions == null) {
+            //     return {
+            //         success: true,
+            //         subscriptions: []
+            //     }
+            // }
+            // else {
+
+            //     return {
+            //         success: true,
+            //         "subscriptions": subscriptions
+            //     }
+            // }
 
         },
         query_subscriptions_with_remainrounds_for_clientid: async (parent, args, context) => {
@@ -467,39 +680,86 @@ module.exports = {
                 }
             }
 
-            let result = await pgclient.query(`WITH B AS (select plan.id as planid,
-                plan.clientid, person.name as clientname, 
-                person.phonenumber as clientphonenumber, 
-                count(1)::int as total_ticket_count,  
-                count(1) filter(where  ticket.expire_time > now() AND  ( (A.canceled_time is not NULL AND A.id is not NULL) OR A.id is null) AND ticket.destroyer_plan_id is null)  as avail_ticket_count, 
-                array_agg(ticket.id) filter (where  ticket.expire_time > now() AND  ( (A.canceled_time is not NULL AND A.id is not NULL) OR A.id is null) AND ticket.destroyer_plan_id is null) as avail_ticket_id_list 
-                             from plan  
-                            left join client on plan.clientid = client.id  
-                            left join person on person.id = client.personid
-                            left join ticket on plan.id = ticket.creator_plan_id 
-                            left join (select distinct on(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) AS A on A.ticketid = ticket.id 
-                            where clientid = $1 
-                            and activity_type = $2 
-                            and grouping_type = $3 
-                            group by plan.id, plan.clientid, person.name, person.phonenumber 
-                ) 
-                select * from B where avail_ticket_count >0`, [args.clientid, args.activity_type, args.grouping_type]).then(res => {
-
-
-                return {
-                    success: true,
-                    planandtickets: res.rows
-                }
-
-            }).catch(e => {
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
                 console.log(e)
+
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: 'pg pool error'
                 }
-            })
+            }
 
-            return result
+            try {
+                let result = await pgclient.query(`WITH B AS (select plan.id as planid,
+                    plan.clientid, person.name as clientname, 
+                    person.phonenumber as clientphonenumber, 
+                    count(1)::int as total_ticket_count,  
+                    count(1) filter(where  ticket.expire_time > now() AND  ( (A.canceled_time is not NULL AND A.id is not NULL) OR A.id is null) AND ticket.destroyer_plan_id is null)  as avail_ticket_count, 
+                    array_agg(ticket.id) filter (where  ticket.expire_time > now() AND  ( (A.canceled_time is not NULL AND A.id is not NULL) OR A.id is null) AND ticket.destroyer_plan_id is null) as avail_ticket_id_list 
+                                 from plan  
+                                left join client on plan.clientid = client.id  
+                                left join person on person.id = client.personid
+                                left join ticket on plan.id = ticket.creator_plan_id 
+                                left join (select distinct on(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) AS A on A.ticketid = ticket.id 
+                                where clientid = $1 
+                                and activity_type = $2 
+                                and grouping_type = $3 
+                                group by plan.id, plan.clientid, person.name, person.phonenumber 
+                    ) 
+                    select * from B where avail_ticket_count >0`, [args.clientid, args.activity_type, args.grouping_type])
+
+                pgclient.release()
+                return {
+                    success: true,
+                    planandtickets: result.rows
+                }
+            } catch (e) {
+                console.log(e)
+                pgclient.release()
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
+            // let result = await pgclient.query(`WITH B AS (select plan.id as planid,
+            //     plan.clientid, person.name as clientname, 
+            //     person.phonenumber as clientphonenumber, 
+            //     count(1)::int as total_ticket_count,  
+            //     count(1) filter(where  ticket.expire_time > now() AND  ( (A.canceled_time is not NULL AND A.id is not NULL) OR A.id is null) AND ticket.destroyer_plan_id is null)  as avail_ticket_count, 
+            //     array_agg(ticket.id) filter (where  ticket.expire_time > now() AND  ( (A.canceled_time is not NULL AND A.id is not NULL) OR A.id is null) AND ticket.destroyer_plan_id is null) as avail_ticket_id_list 
+            //                  from plan  
+            //                 left join client on plan.clientid = client.id  
+            //                 left join person on person.id = client.personid
+            //                 left join ticket on plan.id = ticket.creator_plan_id 
+            //                 left join (select distinct on(ticketid) * from assign_ticket order by ticketid, assign_ticket.created desc) AS A on A.ticketid = ticket.id 
+            //                 where clientid = $1 
+            //                 and activity_type = $2 
+            //                 and grouping_type = $3 
+            //                 group by plan.id, plan.clientid, person.name, person.phonenumber 
+            //     ) 
+            //     select * from B where avail_ticket_count >0`, [args.clientid, args.activity_type, args.grouping_type]).then(res => {
+
+
+            //     return {
+            //         success: true,
+            //         planandtickets: res.rows
+            //     }
+
+            // }).catch(e => {
+            //     console.log(e)
+            //     return {
+            //         success: false,
+            //         msg: 'query error'
+            //     }
+            // })
+
+            // return result
         },
     },
     Mutation: {
@@ -510,6 +770,19 @@ module.exports = {
                 return {
                     success: false,
                     msg: 'invalid token'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -620,6 +893,7 @@ module.exports = {
 
 
                 await pgclient.query(`commit`)
+                pgclient.release()
 
                 return {
                     success: true
@@ -633,6 +907,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
                 } catch (err) {
                     return {
@@ -647,7 +922,140 @@ module.exports = {
                 }
             }
         },
+        update_normal_plan_types: async (parent, args, context) => {
+
+            console.log('update_normal_plan_types')
+            console.log(args)
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+
+
+                // update types
+
+                // first fetch existing types
+                result = await pgclient.query(`select id, activity_type, grouping_type from plan_type where planid=$1`, [args.planid])
+
+                // split to exiting id that needs to be removed
+                // and new types to be added
+
+
+                const existing_types = result.rows
+
+                const to_remove_id_arr = []
+                const to_add_types = []
+
+                // gather types to add
+                for (let i = 0; i < args.types.length; i++) {
+                    const p = args.types[i]
+
+                    let match_with_exist = false
+
+                    for (let j = 0; j < existing_types.length; j++) {
+                        const a = existing_types[j]
+
+                        if (p.activity_type === a.activity_type && p.grouping_type === a.grouping_type) {
+                            match_with_exist = true
+                            break
+
+                        }
+                    }
+
+                    if (!match_with_exist) {
+                        to_add_types.push(p)
+                    }
+
+
+                }
+
+                // gather from existing to remove
+                for (let i = 0; i < existing_types.length; i++) {
+                    const p = existing_types[i]
+
+                    let match_found = false
+
+                    for (let j = 0; j < args.types.length; j++) {
+                        const a = args.types[j]
+
+                        if (p.activity_type === a.activity_type && p.grouping_type === a.grouping_type) {
+                            match_found = true
+                            break
+                        }
+
+                    }
+
+                    if (!match_found) {
+                        to_remove_id_arr.push(p.id)
+                    }
+                }
+
+
+                // execute removal
+                for (let i = 0; i < to_remove_id_arr.length; i++) {
+                    await pgclient.query(`delete from plan_type where id=$1`, [to_remove_id_arr[i]])
+                }
+
+                // execute adding
+                for (let i = 0; i < to_add_types.length; i++) {
+                    const a = to_add_types[i]
+
+                    await pgclient.query(`insert into plan_type (planid, activity_type, grouping_type) values ($1,$2,$3)`, [args.planid, a.activity_type, a.grouping_type])
+                }
+
+
+                await pgclient.query(`commit`)
+                pgclient.release()
+
+                return {
+                    success: true
+                }
+
+
+            } catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                    pgclient.release()
+
+                }
+                catch { }
+
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+
+            }
+
+
+
+        },
         create_subscription: async (parent, args, context) => {
+
+            console.log('create_subscription')
+            console.log(args)
 
 
             if (!ensure_admin_account_id_in_context(context)) {
@@ -691,6 +1099,21 @@ module.exports = {
                 }
             }
 
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
             try {
 
                 await pgclient.query(`begin`)
@@ -721,6 +1144,7 @@ module.exports = {
 
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -730,6 +1154,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: e.detail
@@ -741,6 +1166,8 @@ module.exports = {
                         msg: err.detail
                     }
                 }
+
+
             }
 
 
@@ -755,19 +1182,32 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 await pgclient.query('begin')
 
-                
+
                 // check admin is core
                 let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
 
-                if(result.rowCount!==1){
+                if (result.rowCount !== 1) {
                     throw "no account"
                 }
 
-                if(!result.rows[0].is_core_admin){
+                if (!result.rows[0].is_core_admin) {
                     throw "not core user"
                 }
 
@@ -821,6 +1261,11 @@ module.exports = {
 
 
                 await pgclient.query('commit')
+                pgclient.release()
+
+                return {
+                    success: true
+                }
 
             }
             catch (e) {
@@ -828,6 +1273,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {
@@ -842,63 +1288,63 @@ module.exports = {
                 }
             }
 
-            let result = await pgclient.query('BEGIN').then(async res => {
+            // let result = await pgclient.query('BEGIN').then(async res => {
 
-                return await pgclient.query(`select count(1) filter(where B.canceled_time is null AND B.created is not null)::int as undelete_count from plan
-                left join ticket on ticket.creator_plan_id = plan.id
-                left join (select DISTINCT ON(ticketid) * from assign_ticket order by ticketid, created desc) as B 
-                on B.ticketid = ticket.id
-                where plan.id = $1;`, [args.id]).then(async res => {
+            //     return await pgclient.query(`select count(1) filter(where B.canceled_time is null AND B.created is not null)::int as undelete_count from plan
+            //     left join ticket on ticket.creator_plan_id = plan.id
+            //     left join (select DISTINCT ON(ticketid) * from assign_ticket order by ticketid, created desc) as B 
+            //     on B.ticketid = ticket.id
+            //     where plan.id = $1;`, [args.id]).then(async res => {
 
-                    let undelete_count = res.rows[0].undelete_count
+            //         let undelete_count = res.rows[0].undelete_count
 
-                    console.log(undelete_count)
+            //         console.log(undelete_count)
 
-                    if (undelete_count > 0) {
-                        return {
-                            success: false,
-                            msg: 'undeletable ticket exist'
-                        }
-                    }
+            //         if (undelete_count > 0) {
+            //             return {
+            //                 success: false,
+            //                 msg: 'undeletable ticket exist'
+            //             }
+            //         }
 
-                    // delete assign tickets that are cancelled
+            //         // delete assign tickets that are cancelled
 
-                    return await pgclient.query(`delete from plan where plan.id=$1`, [args.id]).then(async res => {
-                        return await pgclient.query('COMMIT').then(res => {
-                            return {
-                                success: true
-                            }
-                        })
-                    })
+            //         return await pgclient.query(`delete from plan where plan.id=$1`, [args.id]).then(async res => {
+            //             return await pgclient.query('COMMIT').then(res => {
+            //                 return {
+            //                     success: true
+            //                 }
+            //             })
+            //         })
 
-                })
-            }).catch(async e => {
-                console.log(e)
+            //     })
+            // }).catch(async e => {
+            //     console.log(e)
 
 
-                return await pgclient.query('rollback').then(res => {
+            //     return await pgclient.query('rollback').then(res => {
 
-                    if (e.code === '23503') {
-                        return {
-                            success: false,
-                            msg: 'undeletable connected elements exist'
-                        }
-                    }
+            //         if (e.code === '23503') {
+            //             return {
+            //                 success: false,
+            //                 msg: 'undeletable connected elements exist'
+            //             }
+            //         }
 
-                    return {
-                        success: false,
-                        msg: e.detail
-                    }
-                }).catch(err => {
-                    return {
-                        success: false,
-                        msg: err.detail
-                    }
-                })
+            //         return {
+            //             success: false,
+            //             msg: e.detail
+            //         }
+            //     }).catch(err => {
+            //         return {
+            //             success: false,
+            //             msg: err.detail
+            //         }
+            //     })
 
-            })
+            // })
 
-            return result
+            // return result
 
         },
         transfer_tickets_to_clientid: async (parent, args, context) => {
@@ -911,18 +1357,31 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 await pgclient.query('begin')
 
-                
+
                 // check admin is core
                 let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
 
-                if(result.rowCount!==1){
+                if (result.rowCount !== 1) {
                     throw "no account"
                 }
 
-                if(!result.rows[0].is_core_admin){
+                if (!result.rows[0].is_core_admin) {
                     throw "not core user"
                 }
 
@@ -974,6 +1433,7 @@ module.exports = {
 
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -982,6 +1442,7 @@ module.exports = {
             catch (e) {
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {
@@ -1008,6 +1469,7 @@ module.exports = {
             }
 
             let new_expdate = parse_incoming_date_utc_string(args.new_expdate)
+
             if (args.ticket_id_list.length === 0) {
                 return {
                     success: false,
@@ -1017,28 +1479,52 @@ module.exports = {
 
             let ticket_id_list = args.ticket_id_list.map(a => parseInt(a))
 
-            let ret = await pgclient.query('update ticket set expire_time=to_timestamp($1) where id in (select(unnest(cast($2 as int[]))) )', [new_expdate, ticket_id_list]).then(res => {
-
-                if (res.rowCount > 0) {
-                    return {
-                        success: true
-                    }
-                }
-                else {
-                    return {
-                        success: false,
-                        msg: 'rowcount =0'
-                    }
-                }
-            }).catch(e => {
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
                 console.log(e)
+
                 return {
                     success: false,
-                    msg: 'query error'
+                    msg: 'pg pool error'
                 }
-            })
+            }
 
-            return ret
+            try {
+
+                await pgclient.query('begin')
+                let result = await pgclient.query('update ticket set expire_time=to_timestamp($1) where id in (select(unnest(cast($2 as int[]))) )', [new_expdate, ticket_id_list])
+
+                if (result.rowCount === 0) {
+                    throw {
+                        detail: 'no tickets updated'
+                    }
+                }
+
+
+                await pgclient.query('commit')
+                pgclient.release()
+
+                return {
+                    success: true
+                }
+            } catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                    pgclient.release()
+                }
+                catch { }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
 
         },
         delete_tickets: async (parent, args, context) => {
@@ -1051,18 +1537,31 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 await pgclient.query('begin')
 
-                
+
                 // check admin is core
                 let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
 
-                if(result.rowCount!==1){
+                if (result.rowCount !== 1) {
                     throw "no account"
                 }
 
-                if(!result.rows[0].is_core_admin){
+                if (!result.rows[0].is_core_admin) {
                     throw "not core user"
                 }
 
@@ -1071,6 +1570,7 @@ module.exports = {
                 }
 
                 await pgclient.query(`commit`)
+                pgclient.release()
 
                 return {
                     success: true
@@ -1079,6 +1579,7 @@ module.exports = {
             catch (e) {
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {
@@ -1106,6 +1607,19 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 await pgclient.query('begin')
@@ -1113,11 +1627,11 @@ module.exports = {
                 // check admin is core
                 let result = await pgclient.query(`select is_core_admin from admin_account where id=$1`, [context.account_id])
 
-                if(result.rowCount!==1){
+                if (result.rowCount !== 1) {
                     throw "no account"
                 }
 
-                if(!result.rows[0].is_core_admin){
+                if (!result.rows[0].is_core_admin) {
                     throw "not core user"
                 }
 
@@ -1131,6 +1645,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -1142,6 +1657,7 @@ module.exports = {
                 try {
 
                     await pgclient.query(`rollback`)
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {
@@ -1161,7 +1677,7 @@ module.exports = {
         },
         change_plan_totalcost: async (parent, args, context) => {
 
-            
+
             if (!ensure_admin_account_id_in_context(context)) {
                 return {
                     success: false,
@@ -1169,27 +1685,44 @@ module.exports = {
                 }
             }
 
-            let result = await pgclient.query(`update plan set totalcost=$1 where id = $2`, [args.totalcost, args.planid]).then(res => {
-                if (res.rowCount !== 1) {
-                    return {
-                        success: false,
-                        msg: "rowcount not 1"
-                    }
-                }
-                else {
-                    return {
-                        success: true
-                    }
-                }
-            }).catch(e => {
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
                 console.log(e)
+
                 return {
                     success: false,
-                    msg: "query error"
+                    msg: 'pg pool error'
                 }
-            })
+            }
 
-            return result
+            try {
+                let result = await pgclient.query(`update plan set totalcost=$1 where id = $2`, [args.totalcost, args.planid])
+
+                if (result.rowCount !== 1) {
+                    throw {
+                        detail: 'no plan with id found'
+                    }
+                }
+
+                pgclient.release()
+
+                return {
+                    success: true
+                }
+
+
+            } catch (e) {
+                console.log(e)
+                pgclient.release()
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
         }
     }
 

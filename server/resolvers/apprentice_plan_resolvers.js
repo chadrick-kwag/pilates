@@ -1,13 +1,105 @@
-const pgclient = require('../pgclient')
+const { pool } = require('../pgclient')
 const { ensure_admin_account_id_in_context } = require('./common')
 
 
 module.exports = {
 
     Query: {
+        fetch_apprentice_plan_by_id: async (parent, args, context) => {
+            // fetch plan info and tickets info
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
+            try {
+
+                let result = await pgclient.query(`select apprentice_instructor_plan.id, apprentice_instructor_plan.apprentice_instructor_id, person.name as apprentice_instructor_name, person.phonenumber as apprentice_instructor_phonenumber, apprentice_instructor_plan.activity_type, apprentice_instructor_plan.grouping_type
+                from apprentice_instructor_plan
+                left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id
+                left join person on person.id = apprentice_instructor.personid
+                where apprentice_instructor_plan.id = $1
+                `, [args.id])
+
+                const planinfo = result.rows[0]
+
+                // fetch tickets (gather ticket id, expire time, consumed time, cost)
+                result = await pgclient.query(`with A as (select distinct on(apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc)
+
+
+                select apprentice_ticket.id, apprentice_ticket.expire_time, apprentice_ticket.cost, 
+                apprentice_lesson.starttime as consumed_time 
+                from apprentice_ticket
+                left join (select * from A where A.canceled_time is null) as B on B.apprentice_ticket_id = apprentice_ticket.id
+                left join apprentice_lesson on apprentice_lesson.id = B.apprentice_lesson_id
+                where apprentice_ticket.creator_plan_id = $1
+                `, [args.id])
+
+
+                planinfo.rounds = result.rowCount
+
+                const _rows = result.rows
+
+                planinfo.tickets = _rows
+
+                // get total cost
+                let totalcost = 0
+                for (let i = 0; i < _rows.length; i++) {
+                    totalcost += _rows[i].cost
+                }
+
+                planinfo.totalcost = totalcost
+
+
+                pgclient.release()
+
+                return {
+                    success: true,
+                    plan: planinfo
+                }
+
+
+            } catch (e) {
+                console.log(e)
+                pgclient.release()
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+
+
+            }
+
+        },
         fetch_ticket_avail_plan_and_ticketid_arr_of_apprentice_instructor_and_lesson_type: async (parent, args, context) => {
 
             console.log('fetch_ticket_avail_plan_and_ticketid_arr_of_apprentice_instructor_and_lesson_type')
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
             try {
 
@@ -50,6 +142,7 @@ module.exports = {
                 console.log(output)
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true,
@@ -62,6 +155,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
 
                 }
@@ -80,91 +174,7 @@ module.exports = {
             }
         },
 
-        fetch_apprentice_instructor_plans: async (parent, args, context) => {
 
-
-            if (!ensure_admin_account_id_in_context(context)) {
-
-                return {
-                    success: false,
-                    msg: 'invalid token'
-                }
-            }
-
-            try {
-
-                let res = await pgclient.query(`select apprentice_instructor_plan.id, person.name as apprentice_instructor_name, 
-                apprentice_instructor.id as apprentice_instructor_id,
-                activity_type,
-                grouping_type,
-                apprentice_instructor_plan.created,
-                totalcost,
-                rounds,
-                person.phonenumber as apprentice_instructor_phonenumber
-                from apprentice_instructor_plan
-                left join apprentice_instructor on apprentice_instructor_plan.apprentice_instructor_id = apprentice_instructor.id
-                left join person on person.id = apprentice_instructor.personid
-                `)
-
-                return {
-                    success: true,
-                    plans: res.rows
-                }
-
-            }
-            catch (e) {
-                return {
-                    success: false,
-                    msg: e.detail
-                }
-            }
-
-
-        },
-        fetch_apprentice_plan_by_id: async (parent, args, context) => {
-
-
-
-            if (!ensure_admin_account_id_in_context(context)) {
-
-                return {
-                    success: false,
-                    msg: 'invalid token'
-                }
-            }
-
-
-            try {
-
-                let res = await pgclient.query(`select apprentice_instructor_plan.id as id, person.name as apprentice_instructor_name, person.phonenumber as apprentice_instructor_phonenumber,
-                apprentice_instructor.id as apprentice_instructor_id,
-                activity_type,
-                grouping_type,
-                apprentice_instructor_plan.created,
-                totalcost,
-                rounds
-                from apprentice_instructor_plan
-                left join apprentice_instructor on apprentice_instructor.id = apprentice_instructor_plan.apprentice_instructor_id
-                left join person on person.id = apprentice_instructor.personid
-                where apprentice_instructor_plan.id=$1
-                `, [args.id])
-
-
-
-                return {
-                    success: true,
-                    plans: res.rows
-                }
-            } catch (e) {
-                cosnole.log(e)
-
-                return {
-                    success: false,
-                    msg: e.detail
-                }
-            }
-
-        },
         fetch_apprentice_tickets_of_plan: async (parent, args, context) => {
 
 
@@ -173,6 +183,21 @@ module.exports = {
                 return {
                     success: false,
                     msg: 'invalid token'
+                }
+            }
+
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -191,7 +216,7 @@ module.exports = {
                 left join apprentice_lesson on apprentice_lesson.id = A.apprentice_lesson_id
                 where creator_plan_id = $1`, [args.id])
 
-
+                pgclient.release()
                 return {
                     success: true,
                     tickets: res.rows
@@ -219,6 +244,21 @@ module.exports = {
             }
 
 
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
             try {
 
                 const instid = args.apprentice_instructor_id
@@ -233,12 +273,14 @@ module.exports = {
                 apprentice_instructor_plan.activity_type as activity_type,
                 apprentice_instructor_plan.grouping_type as grouping_type,
                 apprentice_instructor_plan.created as created,
-                apprentice_instructor_plan.totalcost as totalcost
+                count(apprentice_ticket.id) as rounds
                 from apprentice_instructor_plan
                 left join apprentice_instructor on apprentice_instructor_plan.apprentice_instructor_id = apprentice_instructor.id
                 left join person on person.id = apprentice_instructor.personid
+                left join apprentice_ticket on apprentice_ticket.creator_plan_id = apprentice_instructor_plan.id
                 where apprentice_instructor_id=$1
                 and activity_type=$2 and grouping_type=$3
+                group by apprentice_instructor_plan.id, person.name, apprentice_instructor.id, person.phonenumber
                 `, [instid, args.activity_type, args.grouping_type])
 
                 // for each plan, get remain rounds
@@ -247,29 +289,31 @@ module.exports = {
                 for (let i = 0; i < fetched_plans.length; i++) {
                     const p = fetched_plans[i]
 
-                    res = await pgclient.query(`select 
-
-                    count(1) as totalrows,
-                    sum( CASE
-                        WHEN apprentice_ticket.expire_time < now() THEN 0
-                    WHEN A.created is null THEN 1
-                    WHEN A.created is not null AND A.canceled_time is not null THEN 1
+                    res = await pgclient.query(`with A as (select distinct on (apprentice_ticket_id) assign_apprentice_ticket.*, 
+                    apprentice_lesson.canceled_time as lesson_canceled_time 
+                    from assign_apprentice_ticket 
+                    left join apprentice_lesson on apprentice_lesson.id = assign_apprentice_ticket.apprentice_lesson_id
+                    order by apprentice_ticket_id, created desc)
+         
                     
-                    ELSE 0 END) as is_not_consumed
-                    
+                    select *
                     from apprentice_ticket
-                    left join (select DISTINCT ON(apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc) as A
-                    on A.apprentice_ticket_id = apprentice_ticket.id
-                    where apprentice_ticket.creator_plan_id = $1`, [p.id])
+                    left join A on A.apprentice_ticket_id = apprentice_ticket.id
+                    where apprentice_ticket.creator_plan_id = $1
+                    and apprentice_ticket.expire_time > now()
+                    and (case when A.id is null then false when A.canceled_time is not null then false when A.lesson_canceled_time is not null then false
+                    else true end) is false
+                    `, [p.id])
 
-                    const remainrounds = res.rows[0].is_not_consumed
-                    const totalrounds = res.rows[0].totalrows
+                    const remainrounds = res.rowCount
+
                     fetched_plans[i]['remainrounds'] = remainrounds
-                    fetched_plans[i]['rounds'] = totalrounds
+
                 }
 
 
                 await pgclient.query(`commit`)
+                pgclient.release()
 
                 return {
                     success: true,
@@ -281,6 +325,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: e.detail
@@ -307,20 +352,34 @@ module.exports = {
 
 
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
+
             try {
 
-                let res = await pgclient.query(`BEGIN`)
+                await pgclient.query(`BEGIN`)
 
 
                 // get basic plan info of condition
-                res = await pgclient.query(`select apprentice_instructor_plan.id as id, 
+                let res = await pgclient.query(`select apprentice_instructor_plan.id as id, 
                 person.name as apprentice_instructor_name,
                 apprentice_instructor.id as apprentice_instructor_id,
                 person.phonenumber as apprentice_instructor_phonenumber,
                 apprentice_instructor_plan.activity_type as activity_type,
                 apprentice_instructor_plan.grouping_type as grouping_type,
-                apprentice_instructor_plan.created as created,
-                apprentice_instructor_plan.totalcost as totalcost
+                apprentice_instructor_plan.created as created
                 from apprentice_instructor_plan
                 left join apprentice_instructor on apprentice_instructor_plan.apprentice_instructor_id = apprentice_instructor.id
                 left join person on person.id  = apprentice_instructor.personid
@@ -328,35 +387,39 @@ module.exports = {
                 
                 `, [args.appinst_id])
 
-                // for each plan, get remain rounds
+                // for each plan, get remain rounds and total rounds, and totalcost
                 const fetched_plans = res.rows
 
                 for (let i = 0; i < fetched_plans.length; i++) {
                     const p = fetched_plans[i]
 
-                    res = await pgclient.query(`select 
+                    res = await pgclient.query(`with A as (select DISTINCT ON(apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc)
 
+                    select 
                     count(1) as totalrows,
                     sum( CASE
                         WHEN apprentice_ticket.expire_time < now() THEN 0
-                    WHEN A.created is null THEN 1
-                    WHEN A.created is not null AND A.canceled_time is not null THEN 1
+                    WHEN B.created is null THEN 1
+                    WHEN B.created is not null AND B.canceled_time is not null THEN 1
                     
-                    ELSE 0 END) as is_not_consumed
+                    ELSE 0 END) as availcount,
+                    sum(apprentice_ticket.cost) as totalcost
                     
                     from apprentice_ticket
-                    left join (select DISTINCT ON(apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc) as A
-                    on A.apprentice_ticket_id = apprentice_ticket.id
+                    left join (select * from A where canceled_time is null) as B on B.apprentice_ticket_id = apprentice_ticket.id
                     where apprentice_ticket.creator_plan_id = $1`, [p.id])
 
-                    const remainrounds = res.rows[0].is_not_consumed
+                    const remainrounds = res.rows[0].availcount
                     const totalrounds = res.rows[0].totalrows
+                    const totalcost = res.rows[0].totalcost
                     fetched_plans[i]['remainrounds'] = remainrounds
                     fetched_plans[i]['rounds'] = totalrounds
+                    fetched_plans[i].totalcost = totalcost
                 }
 
 
                 await pgclient.query(`commit`)
+                pgclient.release()
 
                 return {
                     success: true,
@@ -367,6 +430,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: e.detail
@@ -383,6 +447,85 @@ module.exports = {
 
     },
     Mutation: {
+        delete_apprentice_plan: async (parent, args, context) => {
+
+            if (!ensure_admin_account_id_in_context(context)) {
+
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+
+                await pgclient.query('begin')
+
+                // check if any tickets are consumed
+                let result = await pgclient.query(`with A as (select distinct on(apprentice_ticket_id) *, apprentice_lesson.canceled_time as lesson_canceled_time,
+                assign_apprentice_ticket.canceled_time as assign_canceled_time
+                from assign_apprentice_ticket 
+                left join apprentice_ticket on apprentice_ticket.id = assign_apprentice_ticket.apprentice_ticket_id
+                left join apprentice_instructor_plan on apprentice_instructor_plan.id = apprentice_ticket.creator_plan_id
+                left join apprentice_lesson on apprentice_lesson.id = assign_apprentice_ticket.apprentice_lesson_id
+                where apprentice_instructor_plan.id = $1
+                order by apprentice_ticket_id, assign_apprentice_ticket.created desc)
+     
+     
+     
+                select * from A
+                where A.assign_canceled_time is null and lesson_canceled_time is null`, [args.id])
+
+                if (result.rowCount > 0) {
+                    throw {
+                        detail: 'consumed ticket exists'
+                    }
+                }
+
+
+                result = await pgclient.query(`delete from apprentice_instructor_plan where id=$1`, [args.id])
+
+                if (result.rowCount !== 1) {
+                    throw {
+                        detail: 'no plan with id'
+                    }
+                }
+
+                await pgclient.query('commit')
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                } catch { }
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+
+
+            }
+        },
         update_totalcost_of_plan: async (parent, args, context) => {
 
 
@@ -394,12 +537,28 @@ module.exports = {
                 }
             }
 
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 await pgclient.query('begin')
 
                 let result = await pgclient.query(`update apprentice_instructor_plan set totalcost=$1 where id=$2`, [args.totalcost, args.id])
 
                 await pgclient.query('commit')
+
+                pgclient.release()
 
                 return {
                     success: true
@@ -439,6 +598,20 @@ module.exports = {
                 }
             }
 
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 await pgclient.query('BEGIN')
 
@@ -453,16 +626,24 @@ module.exports = {
                     throw "not core user"
                 }
 
+                // create plan first and get planid
 
-                res = await pgclient.query(`insert into apprentice_instructor_plan (apprentice_instructor_id, rounds, totalcost, activity_type, grouping_type, created) values ($1, $2, $3, $4, $5, now()) returning id`, [args.apprentice_instructor_id, args.rounds, args.totalcost, args.activity_type, args.grouping_type])
+                res = await pgclient.query(`insert into apprentice_instructor_plan (apprentice_instructor_id, created, activity_type, grouping_type)
+                values ($1, now(), $2, $3) returning id
+                `, [args.apprentice_instructor_id, args.activity_type, args.grouping_type])
 
-                let id = res.rows[0].id
+                const planid = res.rows[0].id
 
-                console.log(`returned id: ${id}`)
+                // create tickets
+                const percost = Math.floor(args.totalcost / args.rounds)
 
-                res = await pgclient.query(`insert into apprentice_ticket (expire_time, creator_plan_id) (select $3, $1 from generate_series(1,$2))`, [id, args.rounds, args.expiretime])
+                for (let i = 0; i < args.rounds; i++) {
+                    await pgclient.query(`insert into apprentice_ticket (expire_time, creator_plan_id, cost) values ($1, $2, $3)`, [args.expiretime, planid, percost])
+                }
+
 
                 await pgclient.query('COMMIT')
+                pgclient.release()
 
                 return {
                     success: true
@@ -473,16 +654,14 @@ module.exports = {
                 console.log(err)
                 try {
                     await pgclient.query('ROLLBACK')
-                    return {
-                        success: false,
-                        msg: err.detail
-                    }
+                    pgclient.release()
+
                 }
-                catch (e) {
-                    return {
-                        success: false,
-                        msg: err.detail
-                    }
+                catch { }
+
+                return {
+                    success: false,
+                    msg: err.detail
                 }
             }
 
@@ -499,9 +678,23 @@ module.exports = {
             }
 
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
             try {
 
-                let res = await pgclient.query('BEGIN')
+                await pgclient.query('BEGIN')
 
 
                 // check admin is core
@@ -516,63 +709,23 @@ module.exports = {
                 }
 
                 // check plan with id exist
-                res = await pgclient.query(`select * from apprentice_instructor_plan where id=$1`, [args.id])
+                result = await pgclient.query(`select * from apprentice_instructor_plan where id=$1`, [args.id])
 
-                if (res.rows.length === 0) {
+                if (result.rows.length === 0) {
                     return {
                         success: false,
                         msg: 'no plan with id found'
                     }
                 }
 
-                console.log('plan exist checked')
-                console.log(`id type: ${typeof (args.id)}`)
-                // get per round cost
-                res = await pgclient.query(`select totalcost/A.count as percost, totalcost from apprentice_instructor_plan 
-                left join (select count(1), $1::int as id from apprentice_ticket where creator_plan_id = $2::int ) as A on A.id = apprentice_instructor_plan.id where apprentice_instructor_plan.id = $3::int`, [args.id, args.id, args.id])
-
-                console.log(res)
-
-                if (res.rows.length !== 1) {
-                    return {
-                        success: false,
-                        msg: 'per ticket cost query fail'
-                    }
+                for (let i = 0; i < args.addsize; i++) {
+                    result = await pgclient.query(`insert into apprentice_ticket (expire_time, creator_plan_id, cost) values ($1, $2, $3)`, [args.expire_datetime, args.id, args.percost])
                 }
 
-                let percost = res.rows[0].percost
-                let totalcost = res.rows[0].totalcost
 
-                console.log(res)
 
-                res = await pgclient.query(`select DISTINCT ON(expire_time) *  from apprentice_ticket where creator_plan_id=$1
-                order by expire_time desc`, [args.id])
-
-                console.log(res)
-
-                let expire_time
-                if (res.rows.length === 0) {
-                    return {
-                        success: false,
-                        msg: 'expire time get fail'
-                    }
-                }
-
-                console.log(res.rows[0].expire_time)
-                expire_time = res.rows[0].expire_time
-
-                console.log('expire_time')
-                console.log(expire_time)
-
-                // insert new tickets
-                res = await pgclient.query(`insert into apprentice_ticket (expire_time, creator_plan_id) (select $1, $2 from generate_series(1,$3))`, [expire_time, args.id, args.amount])
-
-                // update totalcost of plan
-                let newtotalcost = totalcost + args.amount * percost
-
-                res = await pgclient.query(`update apprentice_instructor_plan set totalcost=$1 where id=$2`, [newtotalcost, args.id])
-
-                res = await pgclient.query('COMMIT')
+                await pgclient.query('COMMIT')
+                pgclient.release()
 
                 return {
                     success: true
@@ -582,16 +735,13 @@ module.exports = {
                 console.log(err)
                 try {
                     await pgclient.query('ROLLBACK')
-                    return {
-                        success: false,
-                        msg: err.detail
-                    }
+                    pgclient.release()
+
                 }
-                catch (e) {
-                    return {
-                        success: false,
-                        msg: e.detail
-                    }
+                catch { }
+                return {
+                    success: false,
+                    msg: e.detail
                 }
             }
         },
@@ -607,7 +757,6 @@ module.exports = {
             }
 
 
-
             if (args.id_arr.length === 0) {
                 return {
                     success: false,
@@ -615,8 +764,22 @@ module.exports = {
                 }
             }
 
+
+            let pgclient
             try {
-                let res = await pgclient.query('BEGIN')
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+                await pgclient.query('BEGIN')
 
 
                 // check admin is core
@@ -631,10 +794,11 @@ module.exports = {
                 }
 
                 for (let i = 0; i < args.id_arr.length; i++) {
-                    res = await pgclient.query(`update apprentice_ticket set expire_time=$1 where id=$2`, [args.new_expire_time, args.id_arr[i]])
+                    await pgclient.query(`update apprentice_ticket set expire_time=$1 where id=$2`, [args.new_expire_time, args.id_arr[i]])
                 }
 
-                res = await pgclient.query('COMMIT')
+                await pgclient.query('COMMIT')
+                pgclient.release()
 
                 return {
                     success: true
@@ -645,6 +809,7 @@ module.exports = {
                 console.log(err)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: err.detail
@@ -674,6 +839,20 @@ module.exports = {
                 return {
                     success: false,
                     msg: 'no id given'
+                }
+            }
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -784,6 +963,7 @@ module.exports = {
                 await pgclient.query(`update apprentice_instructor_plan set totalcost = $1 where id=$2`, [reduced_totalcost, planid])
 
                 await pgclient.query('COMMIT')
+                pgclient.release()
 
                 return {
                     success: true
@@ -795,6 +975,7 @@ module.exports = {
                 console.log(err)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: err.detail
@@ -816,6 +997,20 @@ module.exports = {
                 return {
                     success: false,
                     msg: 'invalid token'
+                }
+            }
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -858,37 +1053,36 @@ module.exports = {
                     }
                 }
 
-
-                // get totalcost of plan
-                res = await pgclient.query(`select totalcost from apprentice_instructor_plan where id=$1`, [planid])
-
-                const totalcost = res.rows[0].totalcost
-
-                // get existing ticket size
-                res = await pgclient.query(`select count(1) as count from apprentice_ticket where creator_plan_id=$1`, [planid])
-
-                const ticket_count = res.rows[0].count
-
-                const percost = totalcost / ticket_count
+                // check if tickets are not consumed
+                let consumed_ticket_exist = false
+                for (let tid of args.id_arr) {
+                    result = await pgclient.query(`
+                    with A as (select distinct on (apprentice_ticket_id) * from assign_apprentice_ticket where apprentice_ticket_id=$1 order by apprentice_ticket_id, created desc)
+                    
+                    
+                    select * from A where A.canceled_time is null`, [tid])
 
 
-                for (let i = 0; i < args.id_arr.length; i++) {
-                    res = await pgclient.query(`delete from apprentice_ticket where id=$1`, [args.id_arr[i]])
+                    if (result.rowCount > 0) {
+                        consumed_ticket_exist = true
+                        break
+                    }
+
+                    await pgclient.query(`delete from apprentice_ticket where id = $1`, [tid])
+
+
                 }
 
-                // calculate new totalcost and update it.
-
-                const new_totalcost = totalcost - (args.id_arr.length * percost)
-
-                if (new_totalcost < 0) {
+                if (consumed_ticket_exist) {
                     throw {
-                        detail: 'new totalcost is negative'
+                        detail: 'some tickets are consumed'
                     }
                 }
 
-                await pgclient.query(`update apprentice_instructor_plan set totalcost=$1 where id=$2`, [new_totalcost, planid])
+
 
                 await pgclient.query('COMMIT')
+                pgclient.release()
 
                 return {
                     success: true
@@ -898,6 +1092,7 @@ module.exports = {
                 console.log(err)
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
                     return {
                         success: false,
                         msg: err.detail

@@ -6,70 +6,90 @@ import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import TableHead from '@material-ui/core/TableHead';
 import Grid from '@material-ui/core/Grid';
+import { CircularProgress } from '@material-ui/core';
 
-import CircularProgress from '@material-ui/core/CircularProgress';
 
 
 import client from '../../apolloclient'
 import { FETCH_APPRENTICE_COURSES } from '../../common/gql_defs'
+import { withRouter } from 'react-router-dom'
+import { useQuery } from '@apollo/client'
 
-export default function ListApprenticeCourseComponent(props) {
+function ListApprenticeCourseComponent({ history, match }) {
 
 
     const [courseData, setCourseData] = useState(null)
 
-    useEffect(() => {
-        // fetch data
-
-        client.query({
-            query: FETCH_APPRENTICE_COURSES,
-            fetchPolicy: 'no-cache'
-        }).then(res => {
-            if (res.data.fetch_apprentice_courses.success) {
-                setCourseData(res.data.fetch_apprentice_courses.courses)
+    const { loading, data, error } = useQuery(FETCH_APPRENTICE_COURSES, {
+        client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            console.log(d)
+            if (d.fetch_apprentice_courses.success === false) {
+                alert('데이터 조회 실패')
             }
-            else {
-                alert('fetch fail')
-            }
-        }).catch(e => {
+        },
+        onError: e => {
             console.log(JSON.stringify(e))
-            alert('fetch error')
-        })
-    }, [])
+        }
+
+    })
+
+    if (loading) {
+        return <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <CircularProgress />
+        </div>
+    }
+
+    if (error || data?.fetch_apprentice_courses?.success === false) {
+        return <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <span>에러</span>
+        </div>
+    }
+
+
 
     return (
+        <div style={{ width: '100%', height: '100%' }}>
+            <div>
+                <Grid container>
+                    <Grid item xs={4}>
+                        <Button variant="contained" color='primary' onClick={e => {
+                            history.push(`${match.url}/create`)
 
-        <Grid container>
-            <Grid item xs={4}>
-                <Button variant="contained" color='primary' onClick={e => {
-                    props.onCreateCourse?.()
-                    console.log('clicked')
-                }}>과정생성</Button>
-            </Grid>
-            <Grid item xs={4}>
-                <div className='row-gravity-center'>
-                    <h2>견습과정</h2>
-                </div>
+                        }}>과정생성</Button>
+                    </Grid>
+                    <Grid item xs={4} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
 
-            </Grid>
-            <Grid item xs={4}></Grid>
-            <Grid item xs={12}>
-                {courseData === null ? <CircularProgress /> : <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>
-                                이름
+                        <span style={{ wordBreak: 'keep-all', fontSize: '2rem', fontWeight: 'bold' }}>견습과정</span>
+
+
+                    </Grid>
+                    <Grid item xs={4}></Grid>
+                </Grid>
+            </div>
+
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>
+                            이름
                         </TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {courseData?.map(d => <TableRow><TableCell>{d.name}</TableCell></TableRow>)}
-                    </TableBody>
-                </Table>}
-            </Grid>
 
-        </Grid>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {data?.fetch_apprentice_courses?.courses?.map(d => <TableRow className="hover-color" onClick={() => history.push(`${match.url}/view/${d.id}`)}>
+                        <TableCell>{d.name}</TableCell>
+                    </TableRow>)}
+                </TableBody>
+            </Table>
+
+        </div>
+
 
 
     )
 }
+
+export default withRouter(ListApprenticeCourseComponent)

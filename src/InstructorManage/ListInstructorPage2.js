@@ -151,13 +151,13 @@ function ListInstructorPage({ history }) {
                         <Table>
                             <TableHead style={{ fontWeight: 'bold' }}>
                                 <TableRow>
-                                    <TableCell style={{ fontWeight: 'bold' }}>
+                                    <TableCell style={{ fontWeight: 'bold', wordBreak: 'keep-all' }}>
                                         이름
                                     </TableCell>
-                                    <TableCell style={{ fontWeight: 'bold' }}>
+                                    <TableCell style={{ fontWeight: 'bold', wordBreak: 'keep-all' }}>
                                         연락처
                                     </TableCell>
-                                    <TableCell style={{ fontWeight: 'bold' }}>
+                                    <TableCell style={{ fontWeight: 'bold', wordBreak: 'keep-all' }}>
                                         생성일시
                                     </TableCell>
                                     <TableCell>
@@ -170,7 +170,7 @@ function ListInstructorPage({ history }) {
 
                                 history.push(`/instructormanage/info/${a.id}`)
                             }}>
-                                <TableCell>
+                                <TableCell style={{ wordBreak: 'keep-all' }}>
                                     {a.name}
                                 </TableCell>
                                 <TableCell>

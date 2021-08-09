@@ -1,4 +1,4 @@
-const pgclient = require('../pgclient')
+const { pool } = require('../pgclient')
 const randomstring = require("randomstring");
 const { add_token_for_id,
     remove_token_for_id, get_account_id_for_token } = require('../tokenCache')
@@ -19,6 +19,19 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
 
             try {
 
@@ -31,6 +44,8 @@ module.exports = {
                     throw 'fetch failed'
                 }
 
+                pgclient.release()
+
 
                 return {
                     success: true,
@@ -40,6 +55,7 @@ module.exports = {
             }
             catch (e) {
                 console.log(e)
+                pgclient.release()
 
                 return {
                     success: false,
@@ -57,11 +73,25 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
 
             try {
 
 
                 let result = await pgclient.query(`select id, username, created, is_core_admin from admin_account`)
+                pgclient.release()
 
                 return {
                     success: true,
@@ -70,6 +100,7 @@ module.exports = {
             }
             catch (e) {
                 console.log(e)
+                pgclient.release()
 
                 return {
                     success: false,
@@ -80,10 +111,23 @@ module.exports = {
         check_token_is_core_admin: async (parent, args, context) => {
 
             if (!ensure_admin_account_id_in_context(context)) {
-                
+
                 return {
                     success: false,
                     msg: 'invalid token'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -108,6 +152,8 @@ module.exports = {
                     throw 'no account found'
                 }
 
+                pgclient.release()
+
                 return {
                     success: true,
                     is_core: result.rows[0].is_core_admin
@@ -116,6 +162,7 @@ module.exports = {
 
             } catch (e) {
                 console.log(e)
+                pgclient.release()
                 return {
                     success: false,
                     msg: e.detail
@@ -123,6 +170,19 @@ module.exports = {
             }
         },
         try_login: async (parent, args, context) => {
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
             try {
 
@@ -132,6 +192,8 @@ module.exports = {
                 if (result.rowCount !== 1) {
                     throw "no user found"
                 }
+
+                pgclient.release()
 
                 const user_id = result.rows[0].id
                 const db_pw = result.rows[0].password
@@ -162,6 +224,7 @@ module.exports = {
             catch (e) {
 
                 console.log(e)
+                pgclient.release()
 
                 return {
                     success: false,
@@ -195,9 +258,24 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
                 let result = await pgclient.query(`select id, username, request_time from admin_account_request`)
+
+                pgclient.release()
 
                 return {
                     success: true,
@@ -226,6 +304,19 @@ module.exports = {
 
             const userid = context.account_id
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
                 await pgclient.query('begin')
 
@@ -249,6 +340,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -257,6 +349,7 @@ module.exports = {
             catch (e) {
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
                     return {
                         success: false,
@@ -284,6 +377,19 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
 
@@ -297,6 +403,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -305,6 +412,7 @@ module.exports = {
             catch (e) {
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
                     return {
                         success: false,
@@ -337,6 +445,20 @@ module.exports = {
                 }
             }
 
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
             try {
 
 
@@ -357,6 +479,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 // remove from token cache
                 remove_token_for_id(args.id)
@@ -370,6 +493,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
                     return {
                         success: false,
@@ -396,7 +520,18 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
 
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
             try {
 
@@ -422,6 +557,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -431,6 +567,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {
@@ -452,6 +589,20 @@ module.exports = {
                 return {
                     success: false,
                     msg: 'invalid token'
+                }
+            }
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
                 }
             }
 
@@ -491,6 +642,7 @@ module.exports = {
                 }
 
                 await pgclient.query('COMMIT')
+                pgclient.release()
 
                 return {
                     success: true
@@ -501,6 +653,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
                     return {
                         success: false,
@@ -517,13 +670,18 @@ module.exports = {
         },
         create_account: async (parent, args, context) => {
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
 
-            // if (!ensure_admin_account_id_in_context(context)) {
-            //     return {
-            //         success: false,
-            //         msg: 'invalid token'
-            //     }
-            // }
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
             try {
                 await pgclient.query('BEGIN')
@@ -542,6 +700,7 @@ module.exports = {
                 }
 
                 await pgclient.query('commit')
+                pgclient.release()
 
                 return {
                     success: true
@@ -551,6 +710,7 @@ module.exports = {
                 console.log(e)
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
                 }
                 catch (e2) {
                     return {
@@ -576,6 +736,19 @@ module.exports = {
                 }
             }
 
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
 
 
             try {
@@ -597,6 +770,7 @@ module.exports = {
                 }
 
                 await pgclient.query('COMMIT')
+                pgclient.release()
 
                 return {
                     success: true
@@ -607,6 +781,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('rollback')
+                    pgclient.release()
 
                     return {
                         success: false,
@@ -624,6 +799,20 @@ module.exports = {
         },
         request_admin_account_creation: async (parent, args, context) => {
 
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
 
             try {
 
@@ -649,6 +838,7 @@ module.exports = {
 
 
                 await pgclient.query('COMMIT')
+                pgclient.release()
 
                 return {
                     success: true
@@ -659,6 +849,7 @@ module.exports = {
 
                 try {
                     await pgclient.query('ROLLBACK')
+                    pgclient.release()
 
                     if (e.code === '23505') {
                         return {

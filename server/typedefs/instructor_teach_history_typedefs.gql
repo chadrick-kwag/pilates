@@ -1,0 +1,32 @@
+type Query{
+    query_teach_history_of_instructor_in_timerange(personid: Int!, search_starttime:String!, search_endtime: String!): query_stat_lesson_return
+}
+
+type query_stat_lesson_return {
+    success: Boolean
+    errcode: Int
+    msg: String
+    teach_history_arr: [stat_lesson_info]
+}
+
+
+type consumed_ticket{
+    id: Int 
+    studentpersonid: Int 
+    studentname: String 
+    studentphonenumber: String
+    cost: Int
+}
+
+type stat_lesson_info {
+    id: Int
+    domain: String
+    indomain_id: Int
+    starttime: String
+    endtime: String
+    activity_type: String
+    grouping_type: String
+    canceled_time: String
+    cancel_type: String
+    tickets: [consumed_ticket]
+}

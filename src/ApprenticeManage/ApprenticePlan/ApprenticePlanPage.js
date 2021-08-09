@@ -1,50 +1,28 @@
 import React, { useState } from 'react'
 import ListPlanComponent from './ListPlanComponent'
-import CreateApprenticeComponent from './CreateApprenticePlanComponent'
-import DetailViewComponent from './DetailViewComponent'
+import CreatView from './CreateView/CreatView'
+import DetailView from './DetailView'
+import EditView from './EditView/EditView'
+import { withRouter, Switch, Route } from 'react-router-dom'
+
+function ApprenticePlanPage({ history, match }) {
 
 
+    return <Switch>
+        <Route path={`${match.url}/create`}>
+            <CreatView />
+        </Route>
+        <Route path={`${match.url}/view/:id`}>
+            <DetailView />
+        </Route>
+        <Route path={`${match.url}/edit/:id`}>
+            <EditView />
+        </Route>
+        <Route path={match.url}>
+            <ListPlanComponent />
+        </Route>
+    </Switch>
 
-export default function ApprenticePlanPage(props) {
-
-    const [viewMode, setViewMode] = useState('list')
-    const [viewPlan, setViewPlan] = useState(null)
-
-    const getView = () => {
-
-        if (viewPlan !== null) {
-            console.log(viewPlan)
-            return <DetailViewComponent id={viewPlan.id} onCancel={() => {
-                setViewMode('list')
-                setViewPlan(null)
-            }} />
-        }
-
-        if (viewMode === 'create') {
-            return <CreateApprenticeComponent
-                onCancel={() => setViewMode('list')}
-                onSuccess={() => setViewMode('list')}
-            />
-        }
-        return null
-    }
-
-    return (
-        <>
-            <div style={viewMode === 'list' ? {
-                display: 'inherit'
-            } : {
-                display: 'none'
-            }}>
-                <ListPlanComponent
-                    onCreate={() => setViewMode('create')}
-                    onSelect={d => {
-                        setViewMode('none')
-                        setViewPlan(d)
-                    }}
-                />
-            </div>
-            {getView()}
-        </>
-    )
 }
+
+export default withRouter(ApprenticePlanPage)
