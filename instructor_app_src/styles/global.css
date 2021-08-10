@@ -1,0 +1,32 @@
+.fwh{
+    width: 100%;
+    height: 100%;
+}
+
+.mh-full {
+    max-height: 100%;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-row{
+    flex-direction: row;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.jc {
+    justify-content: center;
+}
+
+.ac {
+    align-items: center;
+}
+
+.gap {
+    gap: 0.5rem;
+}

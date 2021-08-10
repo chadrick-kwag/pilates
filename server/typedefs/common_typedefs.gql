@@ -169,6 +169,7 @@ type LessonClientInfo {
     clientphonenumber: String
     ticketid_arr: [Int]
     checkin_time: String
+    clientpersonid: Int
 }
 
 
