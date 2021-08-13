@@ -1,0 +1,25 @@
+type Query{
+    check_instructor_app_token(token:String!): SimpleResponse
+    try_instructor_app_login(username:String!, password: String!): LoginResponse
+    check_person_and_can_create_instructor_app_account(name:String!, phonenumber: String!): SimpleResponse
+
+}
+
+type Mutation{
+    
+    create_instructor_app_account(username: String!, password: String!, personid: Int!): SimpleResponse
+}
+
+
+type SimpleResponse{
+    success: Boolean!
+    msg: String
+}
+
+
+type LoginResponse{
+    success: Boolean!
+    msg: String
+    token: String,
+    username: String
+}

@@ -6,6 +6,7 @@ type Query{
     fetch_admin_accounts: FetchAdminAccountsResponse
     fetch_admin_account_profile: AdminProfileResponse
 
+
 }
 
 type Mutation{

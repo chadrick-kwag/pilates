@@ -92,3 +92,42 @@ export const QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTOR_PERSONID = gql`
         }
     }
 `
+
+export const CHECK_PERSON_AND_CAN_CREATE_INSTRUCTOR_APP_ACCOUNT = gql`
+query check_person_and_can_create_instructor_app_account($name: String!, $phonenumber: String!){
+    check_person_and_can_create_instructor_app_account(name: $name, phonenumber: $phonenumber){
+        success 
+        msg
+    }
+}
+`
+
+export const CHECK_INSTRUCTOR_APP_TOKEN = gql`
+    query check_instructor_app_token($token:String!){
+        check_instructor_app_token(token:$token){
+            success 
+            msg
+        }
+    }
+`
+
+
+export const TRY_INSTRUCTOR_APP_LOGIN = gql`
+    query try_instructor_app_login($username: String!, $password: String!){
+        try_instructor_app_login(username:$username, password:$password){
+            success 
+            msg 
+            token 
+            username
+        }
+    }
+`
+
+export const CREATE_INSTRUCTOR_APP_ACCOUNT = gql`
+    mutation create_instructor_app_account($username: String!, $password: String!, $personid: Int!){
+        create_instructor_app_account(username: $username, password: $password, personid: $personid){
+            success 
+            msg
+        }
+    }
+`

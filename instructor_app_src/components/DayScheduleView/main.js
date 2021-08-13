@@ -5,6 +5,7 @@ import client from '../../apolloclient'
 import { CircularProgress } from '@material-ui/core'
 
 import { QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTOR_PERSONID } from '../../common/gql_defs'
+import './local.css'
 
 
 const get_sequence_schedules = (schedules) => {
@@ -270,14 +271,14 @@ function Container({ onSlotClicked, targetDate }) {
 
 
     if (loading) {
-        return <div style={{ width: '100%', heigh: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        return <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <CircularProgress />
         </div>
     }
     else {
         if (error) {
-            return <div style={{ width: '100%', heigh: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <span>error</span>
+            return <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <span>에러</span>
             </div>
         }
         else {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button, TextField, Table, TableRow, TableCell } from '@material-ui/core'
 import client from '../apolloclient'
-import { TRY_LOGIN } from '../common/gql_defs'
+import { TRY_INSTRUCTOR_APP_LOGIN } from '../common/gql_defs'
 import { withRouter } from 'react-router-dom'
 
 
@@ -19,7 +19,7 @@ function MainPage({ history }) {
 
     const submit = () => {
         client.query({
-            query: TRY_LOGIN,
+            query: TRY_INSTRUCTOR_APP_LOGIN,
             variables: {
                 username: username,
                 password: password
@@ -27,9 +27,9 @@ function MainPage({ history }) {
             fetchPolicy: 'no-cache'
         }).then(res => {
             console.log(res)
-            if (res.data.try_login.success) {
-                localStorage.setItem('pilates-auth-token', res.data.try_login.token)
-                localStorage.setItem('pilates-username', res.data.try_login.username)
+            if (res.data.try_instructor_app_login.success) {
+                localStorage.setItem('instructor-auth-token', res.data.try_instructor_app_login.token)
+                localStorage.setItem('instructor-username', res.data.try_instructor_app_login.username)
                 history.push('/')
             }
             else {
@@ -44,13 +44,13 @@ function MainPage({ history }) {
     return <div style={{ width: "100%", height: "100%", display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <div>
             <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
-                <span style={{ fontSize: '2.5rem', fontWeight: 'bold', padding: '1rem' }}>아트필라테스 관리자 로그인</span>
+                <span style={{ fontSize: '2.5rem', fontWeight: 'bold', padding: '1rem', wordBreak: 'keep-all' }}>아트필라테스 강사 로그인</span>
             </div>
             <div>
 
                 <Table>
                     <TableRow>
-                        <TableCell style={{whiteSpace: 'nowrap'}}>
+                        <TableCell style={{ whiteSpace: 'nowrap' }}>
                             아이디
                         </TableCell>
                         <TableCell>
@@ -58,7 +58,7 @@ function MainPage({ history }) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell style={{whiteSpace: 'nowrap'}}>
+                        <TableCell style={{ whiteSpace: 'nowrap' }}>
                             비밀번호
                         </TableCell>
                         <TableCell>

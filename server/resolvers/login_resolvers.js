@@ -190,7 +190,8 @@ module.exports = {
                 let result = await pgclient.query(`select id,convert_from(password, 'utf8') as password from admin_account where username=$1`, [args.username])
 
                 if (result.rowCount !== 1) {
-                    throw "no user found"
+
+                    throw { detail: "no user found" }
                 }
 
                 pgclient.release()
@@ -201,9 +202,9 @@ module.exports = {
                 const compare_result = bcrypt.compareSync(args.password, db_pw)
 
                 if (!compare_result) {
-                    return {
-                        success: false,
-                        msg: 'incorrect password'
+
+                    throw {
+                        detail: 'incorrect password'
                     }
                 }
 
@@ -228,7 +229,7 @@ module.exports = {
 
                 return {
                     success: false,
-                    msg: e.details
+                    msg: e.detail
                 }
 
             }
