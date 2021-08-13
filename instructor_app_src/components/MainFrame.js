@@ -1,17 +1,35 @@
 import React, { useState } from 'react'
 import MenuIcon from '@material-ui/icons/Menu';
-import { Drawer, List, ListItem } from '@material-ui/core'
+import { Drawer, List, ListItem, Divider } from '@material-ui/core'
+import { withRouter } from 'react-router-dom'
 
-function MainFrame({ children }) {
+function MainFrame({ history, children }) {
 
     const [shownav, setshownav] = useState(false);
     return (
         <div className='fwh flex mh100'>
             <Drawer anchor='left' open={shownav} onClose={() => setshownav(false)} >
                 <List >
-                    <ListItem button>내 정보</ListItem>
-                    <ListItem button>스케쥴</ListItem>
-                    <ListItem button>수업이력</ListItem>
+                    <ListItem button onClick={() => {
+                        setshownav(false)
+                        history.push('/profile')
+                    }}>내 정보</ListItem>
+                    <ListItem button onClick={() => {
+                        setshownav(false)
+                        history.push('/')
+                    }}>스케쥴</ListItem>
+                    <ListItem button onClick={() => {
+                        setshownav(false)
+                        history.push('/lessonhistory')
+                    }}>수업이력</ListItem>
+
+                    <Divider />
+
+                    <ListItem button onClick={() => {
+                        // remove token
+                        localStorage.removeItem('instructor-auth-token')
+                        history.push('/login')
+                    }}>로그아웃</ListItem>
                 </List>
             </Drawer>
             {(() => {
@@ -30,4 +48,4 @@ function MainFrame({ children }) {
 }
 
 
-export default MainFrame
+export default withRouter(MainFrame)

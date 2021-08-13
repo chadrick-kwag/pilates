@@ -15,19 +15,25 @@ import ScheduleView from './Schedule/index'
 import AuthenticateWrapper from './components/AuthenticateWrapper'
 import LoginPage from './loginPage/main'
 
+import ProfilePage from './Profile/index'
+
 function App({ history }) {
 
     return <Switch>
         <Route path='/login'>
             <LoginPage />
         </Route>
-        <Route path='/'>
-            <AuthenticateWrapper>
-                <MainFrame>
-                    <ScheduleView />
-                </MainFrame>
-            </AuthenticateWrapper>
-        </Route>
+        <AuthenticateWrapper>
+            <MainFrame>
+                <Switch>
+                    <Route path='/profile'>
+                        <ProfilePage />
+                    </Route>
+                    <Route strict path='/'>
+                        <ScheduleView />
+                    </Route></Switch>
+            </MainFrame>
+        </AuthenticateWrapper>
     </Switch>
 
 }

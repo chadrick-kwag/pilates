@@ -131,3 +131,18 @@ export const CREATE_INSTRUCTOR_APP_ACCOUNT = gql`
         }
     }
 `
+
+export const FETCH_INSTRUCTOR_APP_PROFILE = gql`
+    query fetch_instructor_app_profile{
+fetch_instructor_app_profile{
+    
+        success 
+        msg
+        profile {
+            name 
+            phonenumber
+        }
+}
+
+    }
+`

@@ -2,7 +2,7 @@ type Query{
     check_instructor_app_token(token:String!): SimpleResponse
     try_instructor_app_login(username:String!, password: String!): LoginResponse
     check_person_and_can_create_instructor_app_account(name:String!, phonenumber: String!): SimpleResponse
-
+    fetch_instructor_app_profile: ProfileResponse
 }
 
 type Mutation{
@@ -10,6 +10,18 @@ type Mutation{
     create_instructor_app_account(username: String!, password: String!, personid: Int!): SimpleResponse
 }
 
+
+type Profile {
+    name: String 
+    phonenumber: String
+
+}
+
+type ProfileResponse{
+    success: Boolean!
+    msg: String
+    profile: Profile
+}
 
 type SimpleResponse{
     success: Boolean!

@@ -5,6 +5,68 @@ const randomstring = require("randomstring");
 
 module.exports = {
     Query: {
+
+        fetch_instructor_app_profile: async (parent, args, context) => {
+
+            console.log('fetch_instructor_app_profile')
+            console.log(args)
+            console.log(context)
+
+            // check instructor app account token 
+            const instructor_personid = context.instructor_personid
+
+            if (instructor_personid === null || instructor_personid === undefined) {
+                return {
+                    success: false,
+                    msg: 'unauthorized access'
+                }
+            }
+
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+
+                let result = await pgclient.query(`select person.name, person.phonenumber from person where id=$1`, [instructor_personid])
+
+                if (result.rowCount !== 1) {
+                    throw {
+                        detail: 'no instructor found'
+                    }
+                }
+
+                return {
+                    success: true,
+                    profile: {
+                        name: result.rows[0].name,
+                        phonenumber: result.rows[0].phonenumber
+                    }
+                }
+
+            } catch (e) {
+                console.log(e)
+
+                pgclient.release()
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
+
+        },
         check_instructor_app_token: async (parent, args, context) => {
 
             console.log('check_instructor_app_token')
