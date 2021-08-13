@@ -3,6 +3,7 @@ type Query{
     try_instructor_app_login(username:String!, password: String!): LoginResponse
     check_person_and_can_create_instructor_app_account(name:String!, phonenumber: String!): SimpleResponse
     fetch_instructor_app_profile: ProfileResponse
+    fetch_available_create_lesson_types: LessonTypeResponse
 }
 
 type Mutation{
@@ -10,6 +11,12 @@ type Mutation{
     create_instructor_app_account(username: String!, password: String!, personid: Int!): SimpleResponse
 }
 
+
+type LessonTypeResponse{
+    success: Boolean!
+    msg: String 
+    lesson_types: [String]
+}
 
 type Profile {
     name: String 

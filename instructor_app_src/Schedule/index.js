@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-function Index() {
+function Index({history}) {
 
     const classes = useStyles()
     const initdate = new Date()
@@ -58,6 +58,14 @@ function Index() {
                 </Button>
             </div>
             <DayScheduleView targetDate={viewDate} />
+
+            <div className="flex ac jc" style={{position: 'absolute', bottom: '2rem', right: '2rem', width: '40px', height: '40px', backgroundColor: 'black'}}>
+
+                <span style={{color: 'white'}} onClick={()=>{
+                    history.push('/lessoncreate')
+                }}>추가</span>
+
+            </div>
         </div>
     )
 }

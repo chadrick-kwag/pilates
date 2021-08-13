@@ -6,6 +6,83 @@ const randomstring = require("randomstring");
 module.exports = {
     Query: {
 
+        fetch_available_create_lesson_types: async (parent, args, context) => {
+            // check instructor app account
+            const instructor_personid = context.instructor_personid
+
+            if (instructor_personid === null || instructor_personid === undefined) {
+                return {
+                    success: false,
+                    msg: 'unauthorized access'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try{
+                // check if allowed to teach master class
+
+                // fetch instructor id
+                console.log('instructor personid')
+                console.log(instructor_personid)
+                
+                const allowed_types = []
+
+                let result = await pgclient.query(`select id, allow_teach_apprentice from instructor where personid = $1`, [instructor_personid])
+
+                if(result.rowCount===1){
+                    allowed_types.push('normal_lesson')
+
+                    if(result.rows[0].allow_teach_apprentice === true){
+                        allowed_types.push('master_class')
+                    }
+                    
+                }
+
+                // check if apprentice instructor. if so, then allowed to teach apprentice leading class
+
+                result = await pgclient.query(`select id from apprentice_instructor where personid = $1`, [instructor_personid])
+
+                if(result.rowCount===1){
+                    allowed_types.push('apprentice_lesson')
+                }
+
+                pgclient.release()
+
+                console.log('allowed types')
+                console.log(allowed_types)
+
+                return {
+                    success: true,
+                    lesson_types: allowed_types
+                }
+            }
+            catch(e){
+                console.log(e)
+
+                pgclient.release()
+
+                return  {
+                    success: false,
+                    msg: e.detail
+                }
+            
+            }
+
+
+        },
+
         fetch_instructor_app_profile: async (parent, args, context) => {
 
             console.log('fetch_instructor_app_profile')
@@ -108,7 +185,7 @@ module.exports = {
 
             // check if user exists
             try {
-                let result = await pgclient.query(`select id, convert_from(password, 'utf8') as password from instructor_app_account where username=$1`, [args.username])
+                let result = await pgclient.query(`select id, convert_from(password, 'utf8') as password, personid from instructor_app_account where username=$1`, [args.username])
 
                 if (result.rowCount !== 1) {
                     throw {
@@ -118,6 +195,9 @@ module.exports = {
 
                 const answer_password = result.rows[0].password
                 const account_id = result.rows[0].id
+                const personid = result.rows[0].personid
+                
+                
 
 
                 const compare_result = bcrypt.compareSync(args.password, answer_password)
@@ -135,7 +215,7 @@ module.exports = {
                 while (get_instructor_app_personid_for_token(token) !== null) {
                     token = randomstring.generate({ length: 10 })
                 }
-                add_instructor_token_for_personid(token, account_id)
+                add_instructor_token_for_personid(token, personid)
 
                 pgclient.release()
 

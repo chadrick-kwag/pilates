@@ -146,3 +146,13 @@ fetch_instructor_app_profile{
 
     }
 `
+
+export const FETCH_AVAILABLE_CREATE_LESSON_TYPES = gql`
+query fetch_available_create_lesson_types{
+    fetch_available_create_lesson_types{
+        success 
+        msg 
+        lesson_types
+    }
+}
+`

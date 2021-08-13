@@ -16,6 +16,7 @@ import AuthenticateWrapper from './components/AuthenticateWrapper'
 import LoginPage from './loginPage/main'
 
 import ProfilePage from './Profile/index'
+import LessonCreatPage from './CreateLesson/index'
 
 function App({ history }) {
 
@@ -28,6 +29,9 @@ function App({ history }) {
                 <Switch>
                     <Route path='/profile'>
                         <ProfilePage />
+                    </Route>
+                    <Route path='/lessoncreate'>
+                        <LessonCreatPage />
                     </Route>
                     <Route strict path='/'>
                         <ScheduleView />
