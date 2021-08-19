@@ -648,7 +648,6 @@ module.exports = {
                 
                 where lesson.canceled_time is null
                 and person.id = $1
-                and B.id is not null
                 and (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3))
                 
                 group by lesson.id, instructor.id, person.name, person.phonenumber

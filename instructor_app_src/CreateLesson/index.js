@@ -16,9 +16,10 @@ import { FETCH_AVAILABLE_CREATE_LESSON_TYPES, CREATE_LESSON_FROM_INSTRUCTOR_APP 
 import { DateTime } from 'luxon'
 
 function Index({ history }) {
+    const initdate = DateTime.now().setZone('utc+9').plus({hours: 1}).startOf('hour').toJSDate()
 
     const [lessonType, setLessonType] = useState('')
-    const [startTime, setStartTime] = useState(null)
+    const [startTime, setStartTime] = useState(initdate)
     const [duration, setDuration] = useState(1)
     const [activityType, setActivityType] = useState(null)
     const [groupingType, setGroupingType] = useState(null)
@@ -43,6 +44,9 @@ function Index({ history }) {
 
             if (d.create_lesson_from_instructor_app.success === false) {
                 alert('생성 실패')
+            }
+            else{
+                history.push('/')
             }
         },
         onError: e => {
@@ -121,7 +125,7 @@ function Index({ history }) {
                                 onChange={e => setStartTime(e)}
                                 variant='dialog'
                                 style={{ width: '5rem' }}
-                                ampm='false'
+                                ampm={false}
                                 minutesStep={15}
 
                             />
