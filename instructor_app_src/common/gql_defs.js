@@ -156,3 +156,12 @@ query fetch_available_create_lesson_types{
     }
 }
 `
+
+export const CREATE_LESSON_FROM_INSTRUCTOR_APP = gql`
+mutation create_lesson_from_instructor_app($lesson_type: String!, $activity_type: String!, $grouping_type: String!, $start_time: String!, $duration: Int!){
+    create_lesson_from_instructor_app(lesson_type: $lesson_type, activity_type: $activity_type, grouping_type: $grouping_type, start_time: $start_time, duration: $duration){
+        success 
+        msg
+    }
+}
+`

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Grid, Table, TableRow, TableCell, Button, CircularProgress, Select, MenuItem } from '@material-ui/core'
 
-import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import { DatePicker, DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import koLocale from "date-fns/locale/ko";
 import DateFnsUtils from "@date-io/date-fns";
 
@@ -10,9 +10,10 @@ import DateFnsUtils from "@date-io/date-fns";
 import { ACTIVITY_TYPES, GROUPING_TYPES } from '../common/consts'
 
 import client from '../apolloclient'
-import { useQuery } from '@apollo/client'
+import { useMutation, useQuery } from '@apollo/client'
 
-import { FETCH_AVAILABLE_CREATE_LESSON_TYPES } from '../common/gql_defs'
+import { FETCH_AVAILABLE_CREATE_LESSON_TYPES, CREATE_LESSON_FROM_INSTRUCTOR_APP } from '../common/gql_defs'
+import { DateTime } from 'luxon'
 
 function Index({ history }) {
 
@@ -33,6 +34,33 @@ function Index({ history }) {
 
         }
     })
+
+    const [createLesson, { loading: cl_loading, error: cl_error }] = useMutation(CREATE_LESSON_FROM_INSTRUCTOR_APP, {
+        client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            console.log(d)
+
+            if (d.create_lesson_from_instructor_app.success === false) {
+                alert('생성 실패')
+            }
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+        }
+    })
+
+
+    const is_submit_disabled = () => {
+        if (activityType === null || groupingType === null || startTime === null || lessonType === '') return true
+
+        if (duration < 1) {
+            return true
+        }
+
+
+        return false
+    }
 
 
     return (
@@ -86,13 +114,15 @@ function Index({ history }) {
 
                         <MuiPickersUtilsProvider utils={DateFnsUtils} locale={koLocale}>
 
-                            <DatePicker
+                            <DateTimePicker
                                 autoOk
                                 value={startTime}
                                 emptyLabel='날짜를 선택해주세요'
                                 onChange={e => setStartTime(e)}
                                 variant='dialog'
                                 style={{ width: '5rem' }}
+                                ampm='false'
+                                minutesStep={15}
 
                             />
                         </MuiPickersUtilsProvider>
@@ -113,7 +143,21 @@ function Index({ history }) {
                 <Button variant='outlined' onClick={() => {
                     history.goBack()
                 }} >취소</Button>
-                <Button variant='outlined' >생성</Button>
+                <Button variant='outlined' disabled={is_submit_disabled()} onClick={() => {
+                    const _var = {
+                        activity_type: activityType,
+                        grouping_type: groupingType,
+                        start_time: DateTime.fromJSDate(startTime).setZone('utc+9').toHTTP(),
+                        duration: duration,
+                        lesson_type: lessonType
+                    }
+
+                    console.log(_var)
+
+                    createLesson({
+                        variables: _var
+                    })
+                }} >생성</Button>
             </div>
 
         </div>

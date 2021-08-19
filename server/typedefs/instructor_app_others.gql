@@ -1,0 +1,12 @@
+type Mutation{
+
+    create_lesson_from_instructor_app(lesson_type: String!, activity_type: String!, grouping_type: String!, start_time: String!, duration: Int!): SuccessResult
+
+}
+
+
+
+type SuccessResult{
+    success: Boolean!,
+    msg: String
+}
