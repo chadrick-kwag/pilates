@@ -19,6 +19,7 @@ import ProfilePage from './Profile/index'
 import LessonCreatPage from './CreateLesson/index'
 import NormalLessonView from './ViewLesson/NormalLessonView'
 import CreateApprenticeLesson from './CreateLesson/CreateApprenticeLesson'
+import CreateNormalLesson from './CreateLesson/CreateNormalLesson'
 
 export const ScheduleDateContext = React.createContext()
 
@@ -38,7 +39,7 @@ function App({ history }) {
                         <ProfilePage />
                     </Route>
                     <Route path='/lesson/create/normal_lesson'>
-                        <LessonCreatPage />
+                        <CreateNormalLesson />
                     </Route>
                     <Route path='/lesson/create/apprentice_lesson'>
                         <CreateApprenticeLesson />

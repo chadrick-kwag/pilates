@@ -2,6 +2,7 @@ type Mutation{
 
     create_lesson_from_instructor_app(lesson_type: String!, activity_type: String!, grouping_type: String!, start_time: String!, duration: Int!): SuccessResult
     create_apprentice_lesson_from_instructor_app(activity_type: String!, grouping_type: String!, start_time: String!, duration: Int!, ticket_ids: [Int!]): SuccessResult
+    create_normal_lesson_from_instructor_app(activity_type: String!, grouping_type: String!, start_time: String!, duration: Int!): SuccessResult
 
 
 }

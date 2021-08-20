@@ -217,3 +217,12 @@ query fetch_available_apprentice_plans($activity_type: String!, $grouping_type: 
     }
 }
 `
+
+export const CREATE_NORMAL_LESSON_FROM_INSTRUCTOR_APP = gql`
+mutation create_normal_lesson_from_instructor_app($activity_type: String!, $grouping_type: String!, $start_time: String!, $duration: Int!){
+    create_normal_lesson_from_instructor_app(activity_type: $activity_type, grouping_type: $grouping_type, start_time: $start_time, duration: $duration){
+        success 
+        msg
+    }
+}
+`

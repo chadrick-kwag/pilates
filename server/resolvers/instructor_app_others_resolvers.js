@@ -82,6 +82,90 @@ group by apprentice_instructor_plan.id, apprentice_instructor_plan.created`, [in
     },
     Mutation: {
 
+        create_normal_lesson_from_instructor_app: async (parent, args, context) => {
+
+            console.log('create_normal_lesson_from_instructor_app')
+            console.log(args)
+
+            const instructor_personid = context.instructor_personid
+
+            if (instructor_personid === null || instructor_personid === undefined) {
+                return {
+                    success: false,
+                    msg: 'unauthorized access'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+
+            // prepare endtime
+            let start_time = DateTime.fromHTTP(args.start_time)
+            const end_time = start_time.plus({ hours: args.duration })
+
+            try {
+                await pgclient.query('begin')
+                let result = await pgclient.query(`
+                    select lesson.id, lesson.starttime, lesson.endtime from lesson
+                    left join instructor on lesson.instructorid = instructor.id
+                    where lesson.canceled_time is null
+                    and instructor.personid = $1
+                    and ( tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3))
+                    `, [instructor_personid, args.start_time, end_time])
+
+                if (result.rowCount > 0) {
+                    throw {
+                        detail: 'overlapping lesson exist'
+                    }
+                }
+
+                // fetch instructor id
+                result = await pgclient.query(`select id from instructor where personid=$1`, [instructor_personid])
+
+                const instructor_id = result.rows[0].id
+
+                // create normal lesson
+                await pgclient.query(`insert into lesson (instructorid, starttime, endtime, created, activity_type, grouping_type)
+                    values ($1, $2, $3, now(), $4, $5) 
+                    `, [instructor_id, args.start_time, end_time, args.activity_type, args.grouping_type])
+                // 
+                await pgclient.query('commit')
+                pgclient.release()
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+                console.log(e)
+
+                try{
+                    await pgclient.query('rollback')
+                }catch{}
+
+                pgclient.release()
+                
+                return {
+                    sucess: false,
+                    msg: e.detail
+                }
+            }
+
+
+
+        },
+
         create_apprentice_lesson_from_instructor_app: async (parent, args, context) => {
             console.log('create_apprentice_lesson_from_instructor_app')
 
