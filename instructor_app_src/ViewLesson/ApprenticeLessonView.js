@@ -4,7 +4,9 @@ import client from '../apolloclient'
 import { useQuery } from '@apollo/client'
 import { withRouter } from 'react-router-dom'
 import { FETCH_APPRENTICE_LESSON_INFO } from '../common/gql_defs'
-import {DateTime} from 'luxon'
+import { DateTime } from 'luxon'
+
+import { activity_type_to_kor_str, grouping_type_to_kor_str } from '../common/consts'
 
 function ApprenticeLessonView({ history, match }) {
 
@@ -43,14 +45,14 @@ function ApprenticeLessonView({ history, match }) {
 
     const data = fetchedData?.fetch_apprentice_lesson_info?.lesson
 
-    if (data == null){
+    if (data == null) {
         return null
     }
 
     return (
         <div className="fwh flex-col" style={{ maxHeight: '100%' }}>
-            <div className='flex flex-row ac jc' style={{padding: '1rem'}}>
-                <span>수업상세</span>
+            <div className='flex flex-row ac jc vmargin-0.5rem'>
+                <span>견습강사 주도수업</span>
             </div>
             <div>
                 <Table>
@@ -60,7 +62,7 @@ function ApprenticeLessonView({ history, match }) {
                     </TableRow>
                     <TableRow>
                         <TableCell>수업종류</TableCell>
-                        <TableCell>{`일반수업/${data.activity_type}/${data.grouping_type}`}</TableCell>
+                        <TableCell>{`${activity_type_to_kor_str(data.activity_type)}/${grouping_type_to_kor_str(data.grouping_type)}`}</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell>수업일시</TableCell>
@@ -68,7 +70,7 @@ function ApprenticeLessonView({ history, match }) {
                     </TableRow>
                 </Table>
             </div>
-            <div className="flex flex-row jc ac gap" style={{paddingTop: '1rem'}}>
+            <div className="flex flex-row jc ac gap" style={{ paddingTop: '1rem' }}>
                 <Button variant='outlined' onClick={() => history.goBack()}>이전</Button>
                 <Button variant='outlined' onClick={() => history.push(`/lesson/apprenticelesson/edit/${match.params.id}`)}>수정</Button>
             </div>

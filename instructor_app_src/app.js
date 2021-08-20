@@ -22,6 +22,8 @@ import CreateNormalLesson from './CreateLesson/CreateNormalLesson'
 
 import ApprenticeLessonView from './ViewLesson/ApprenticeLessonView'
 
+import EditNormalLesson from './EditLesson/EditNormalLesson'
+
 export const ScheduleDateContext = React.createContext()
 
 function App({ history }) {
@@ -49,7 +51,7 @@ function App({ history }) {
                         <NormalLessonView />
                     </Route>
                     <Route path='/lesson/normal/edit/:id'>
-
+                        <EditNormalLesson />
                     </Route>
                     <Route path='/lesson/apprenticelesson/view/:id'>
                         <ApprenticeLessonView />
