@@ -59,6 +59,9 @@ function Index({history}) {
             </div>
             <DayScheduleView targetDate={scheduleViewDate} onSlotClicked={s=>{
                 console.log(s)
+                if(s.lesson_domain === 'normal_lesson'){
+                    return history.push(`/lesson/normal/view/${s.indomain_id}`)
+                }
             }}/>
 
             <div className="flex ac jc" style={{position: 'absolute', bottom: '2rem', right: '2rem', width: '40px', height: '40px', backgroundColor: 'black'}}>

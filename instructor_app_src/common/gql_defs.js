@@ -165,3 +165,28 @@ mutation create_lesson_from_instructor_app($lesson_type: String!, $activity_type
     }
 }
 `
+
+export const QUERY_LESSON_DETAIL_WITH_LESSONID = gql`
+query query_lesson_detail_with_lessonid($lessonid: Int!){
+    query_lesson_detail_with_lessonid(lessonid: $lessonid){
+        success 
+        msg
+        detail {
+            id 
+            client_info_arr {
+                clientid 
+                clientname 
+                clientphonenumber 
+                checkin_time 
+                clientpersonid 
+            }
+            instructorid 
+            instructorname 
+            starttime 
+            endtime 
+            activity_type 
+            grouping_type
+        }
+    }
+}
+`
