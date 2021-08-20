@@ -16,10 +16,11 @@ import AuthenticateWrapper from './components/AuthenticateWrapper'
 import LoginPage from './loginPage/main'
 
 import ProfilePage from './Profile/index'
-import LessonCreatPage from './CreateLesson/index'
 import NormalLessonView from './ViewLesson/NormalLessonView'
 import CreateApprenticeLesson from './CreateLesson/CreateApprenticeLesson'
 import CreateNormalLesson from './CreateLesson/CreateNormalLesson'
+
+import ApprenticeLessonView from './ViewLesson/ApprenticeLessonView'
 
 export const ScheduleDateContext = React.createContext()
 
@@ -48,6 +49,12 @@ function App({ history }) {
                         <NormalLessonView />
                     </Route>
                     <Route path='/lesson/normal/edit/:id'>
+
+                    </Route>
+                    <Route path='/lesson/apprenticelesson/view/:id'>
+                        <ApprenticeLessonView />
+                    </Route>
+                    <Route path='/lesson/apprenticelesson/edit/:id'>
 
                     </Route>
                     <Route strict path='/'>

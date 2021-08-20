@@ -226,3 +226,25 @@ mutation create_normal_lesson_from_instructor_app($activity_type: String!, $grou
     }
 }
 `
+
+export const FETCH_APPRENTICE_LESSON_INFO = gql`
+query fetch_apprentice_lesson_info($lessonid : Int!){
+    fetch_apprentice_lesson_info(lessonid: $lessonid){
+        success 
+        msg
+        lesson {
+            id 
+            starttime 
+            endtime 
+            apprentice_instructor_id 
+            apprentice_instructor_name 
+            apprentice_instructor_phonenumber 
+            activity_type 
+            grouping_type 
+            
+
+        }
+
+    }
+}
+`

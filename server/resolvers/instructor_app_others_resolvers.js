@@ -2,8 +2,74 @@
 const { _pgclient, pool } = require('../pgclient')
 const { DateTime } = require('luxon')
 
+const {Query: query1} = require('./apprentice_lesson_resolvers')
+
 module.exports = {
     Query: {
+
+        fetch_apprentice_lesson_info: async (parent, args, context) =>{
+
+            const instructor_personid = context.instructor_personid
+
+            if (instructor_personid === null || instructor_personid === undefined) {
+                return {
+                    success: false,
+                    msg: 'unauthorized access'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            // check if query lesson is owned by current instructor
+            try{
+                let result = await pgclient.query(`select * from apprentice_lesson 
+                left join apprentice_instructor  on apprentice_instructor.id = apprentice_lesson.apprentice_instructor_id 
+                where apprentice_instructor.personid = $1 and apprentice_lesson.id = $2
+                `,[instructor_personid, args.lessonid])
+
+                if(result.rowCount < 1){
+
+                    pgclient.release()
+                    return {
+                        success: false,
+                        msg: 'access denied'
+                    }
+                }
+            }
+            catch(e){
+                console.log(e)
+
+
+                pgclient.release()
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
+
+            let result2 = await query1.fetch_apprentice_lesson_by_lessonid(null, args, null)
+
+            console.log('result2')
+            console.log(result2)
+
+            return result2
+
+
+        },
+
         fetch_available_apprentice_plans: async (parent, args, context) => {
 
             const instructor_personid = context.instructor_personid
@@ -81,6 +147,7 @@ group by apprentice_instructor_plan.id, apprentice_instructor_plan.created`, [in
         }
     },
     Mutation: {
+
 
         create_normal_lesson_from_instructor_app: async (parent, args, context) => {
 

@@ -9,6 +9,7 @@ type Mutation{
 
 type Query{
     fetch_available_apprentice_plans(activity_type: String!, grouping_type: String!):  AvailableApprenticePlanResult 
+    fetch_apprentice_lesson_info(lessonid: Int!): fetch_apprentice_lesson_by_lessonid_resp 
 }
 
 type SuccessResult{

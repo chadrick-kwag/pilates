@@ -10,10 +10,10 @@ import koLocale from "date-fns/locale/ko";
 import DateFnsUtils from "@date-io/date-fns";
 
 import { ScheduleDateContext } from '../app'
-import {FETCH_AVAILABLE_CREATE_LESSON_TYPES} from '../common/gql_defs'
-import {useQuery} from '@apollo/client'
+import { FETCH_AVAILABLE_CREATE_LESSON_TYPES } from '../common/gql_defs'
+import { useQuery } from '@apollo/client'
 import client from '../apolloclient'
-import {lesson_type_to_kor_str} from '../common/consts'
+import { lesson_type_to_kor_str } from '../common/consts'
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -36,16 +36,16 @@ function Index({ history }) {
     const [showCreateMenu, setShowCreateMenu] = useState(false)
     const addref = useRef()
 
-    const {loading, data: fetchData, error} = useQuery(FETCH_AVAILABLE_CREATE_LESSON_TYPES,{
+    const { loading, data: fetchData, error } = useQuery(FETCH_AVAILABLE_CREATE_LESSON_TYPES, {
         client,
         fetchPolicy: 'no-cache',
-        onCompleted: d=>{
+        onCompleted: d => {
             console.log(d)
-            if(d?.fetch_available_create_lesson_types?.success === false){
+            if (d?.fetch_available_create_lesson_types?.success === false) {
                 alert('조회 실패')
             }
         },
-        onError: e=>{
+        onError: e => {
             console.log(JSON.stringify(e))
 
         }
@@ -86,6 +86,9 @@ function Index({ history }) {
                 if (s.lesson_domain === 'normal_lesson') {
                     return history.push(`/lesson/normal/view/${s.indomain_id}`)
                 }
+                if (s.lesson_domain === 'apprentice_lesson') {
+                    return history.push(`/lesson/apprenticelesson/view/${s.indomain_id}`)
+                }
             }} />
 
             <div ref={addref} className="flex ac jc" style={{ position: 'absolute', bottom: '2rem', right: '2rem', width: '40px', height: '40px', backgroundColor: 'black' }}>
@@ -104,14 +107,14 @@ function Index({ history }) {
                         horizontal: 'right',
                     }}
                 >
-                    {(()=>{
-                        if(loading) return <ListItem><CircularProgress/></ListItem>
+                    {(() => {
+                        if (loading) return <ListItem><CircularProgress /></ListItem>
 
-                        if(error || fetchData?.fetch_available_create_lesson_types?.success === false){
+                        if (error || fetchData?.fetch_available_create_lesson_types?.success === false) {
                             return <ListItem><span>에러</span></ListItem>
                         }
 
-                        return fetchData?.fetch_available_create_lesson_types?.lesson_types.map(a=><ListItem onClick={()=>{
+                        return fetchData?.fetch_available_create_lesson_types?.lesson_types.map(a => <ListItem onClick={() => {
                             history.push(`/lesson/create/${a}`)
                         }}>{lesson_type_to_kor_str(a)}</ListItem>)
                     })()}
