@@ -18,10 +18,10 @@ function MainFrame({ history, children }) {
                         setshownav(false)
                         history.push('/')
                     }}>스케쥴</ListItem>
-                    <ListItem button onClick={() => {
+                    {/* <ListItem button onClick={() => {
                         setshownav(false)
                         history.push('/lessonhistory')
-                    }}>수업이력</ListItem>
+                    }}>수업이력</ListItem> */}
 
                     <Divider />
 

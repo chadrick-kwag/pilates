@@ -1,5 +1,5 @@
 import ReactDOM from 'react-dom'
-import React from 'react'
+import React, { useState } from 'react'
 import { HashRouter, withRouter, Switch, Route } from 'react-router-dom'
 import './styles/global.css'
 
@@ -18,7 +18,13 @@ import LoginPage from './loginPage/main'
 import ProfilePage from './Profile/index'
 import LessonCreatPage from './CreateLesson/index'
 
+
+export const ScheduleDateContext = React.createContext()
+
 function App({ history }) {
+
+    const initdate = new Date()
+    const [scheduleViewDate, setScheduleViewDate] = useState(initdate)
 
     return <Switch>
         <Route path='/login'>
@@ -34,7 +40,9 @@ function App({ history }) {
                         <LessonCreatPage />
                     </Route>
                     <Route strict path='/'>
-                        <ScheduleView />
+                        <ScheduleDateContext.Provider value={{scheduleViewDate, setScheduleViewDate}}>
+                            <ScheduleView />
+                        </ScheduleDateContext.Provider>
                     </Route></Switch>
             </MainFrame>
         </AuthenticateWrapper>

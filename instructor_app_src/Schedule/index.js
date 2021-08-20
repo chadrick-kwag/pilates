@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { withRouter } from 'react-router-dom'
 import DayScheduleView from '../components/DayScheduleView/main'
 import { Button, TextField } from '@material-ui/core'
@@ -9,7 +9,7 @@ import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import koLocale from "date-fns/locale/ko";
 import DateFnsUtils from "@date-io/date-fns";
 
-
+import {ScheduleDateContext} from '../app'
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -27,14 +27,14 @@ function Index({history}) {
 
     const classes = useStyles()
     const initdate = new Date()
-    const [viewDate, setviewDate] = useState(initdate);
+    const { scheduleViewDate, setScheduleViewDate} = useContext(ScheduleDateContext)
     return (
         <div className='fwh flex flex-col' style={{ maxHeight: '100%' }}>
 
             <div className="flex flex-row jc ac gap"  style={{padding: '0.5rem'}}>
                 <Button variant='outlined' onClick={() => {
-                    const dt = DateTime.fromJSDate(viewDate).setZone('utc+9').minus({ days: 1 })
-                    setviewDate(dt.toJSDate())
+                    const dt = DateTime.fromJSDate(scheduleViewDate).setZone('utc+9').minus({ days: 1 })
+                    setScheduleViewDate(dt.toJSDate())
                 }}>
                     {"<"}
                 </Button>
@@ -42,8 +42,8 @@ function Index({history}) {
 
                     <DatePicker
                         autoOk
-                        value={viewDate}
-                        onChange={e => setviewDate(e)}
+                        value={scheduleViewDate}
+                        onChange={e => setScheduleViewDate(e)}
                         variant='dialog'
                         style={{ width: '5rem' }}
 
@@ -51,13 +51,15 @@ function Index({history}) {
                 </MuiPickersUtilsProvider>
 
                 <Button variant='outlined' onClick={() => {
-                    const dt = DateTime.fromJSDate(viewDate).setZone('utc+9').plus({ days: 1 })
-                    setviewDate(dt.toJSDate())
+                    const dt = DateTime.fromJSDate(scheduleViewDate).setZone('utc+9').plus({ days: 1 })
+                    setScheduleViewDate(dt.toJSDate())
                 }}>
                     {">"}
                 </Button>
             </div>
-            <DayScheduleView targetDate={viewDate} />
+            <DayScheduleView targetDate={scheduleViewDate} onSlotClicked={s=>{
+                console.log(s)
+            }}/>
 
             <div className="flex ac jc" style={{position: 'absolute', bottom: '2rem', right: '2rem', width: '40px', height: '40px', backgroundColor: 'black'}}>
 
