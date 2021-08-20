@@ -190,3 +190,30 @@ query query_lesson_detail_with_lessonid($lessonid: Int!){
     }
 }
 `
+
+export const CREATE_APPRENTICE_LESSON_FROM_INSTRUCTOR_APP = gql`
+mutation create_apprentice_lesson_from_instructor_app($activity_type: String!, $grouping_type: String!, $start_time: String!, $duration: Int!, $ticket_ids: [Int!]){
+    create_apprentice_lesson_from_instructor_app(activity_type: $activity_type, grouping_type: $grouping_type, start_time: $start_time, duration: $duration, ticket_ids: $ticket_ids){
+        success 
+        msg
+    }
+}
+`
+
+export const FETCH_AVAILABLE_APPRENTICE_PLANS = gql`
+query fetch_available_apprentice_plans($activity_type: String!, $grouping_type: String!){
+    fetch_available_apprentice_plans(activity_type: $activity_type, grouping_type: $grouping_type){
+        success 
+        msg 
+        plans {
+            id
+            created
+            tickets {
+                id 
+                expire_time 
+                consumed_time
+            }
+        }
+    }
+}
+`

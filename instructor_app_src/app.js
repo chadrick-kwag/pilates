@@ -18,7 +18,7 @@ import LoginPage from './loginPage/main'
 import ProfilePage from './Profile/index'
 import LessonCreatPage from './CreateLesson/index'
 import NormalLessonView from './ViewLesson/NormalLessonView'
-
+import CreateApprenticeLesson from './CreateLesson/CreateApprenticeLesson'
 
 export const ScheduleDateContext = React.createContext()
 
@@ -37,14 +37,17 @@ function App({ history }) {
                     <Route path='/profile'>
                         <ProfilePage />
                     </Route>
-                    <Route path='/lessoncreate'>
+                    <Route path='/lesson/create/normal_lesson'>
                         <LessonCreatPage />
+                    </Route>
+                    <Route path='/lesson/create/apprentice_lesson'>
+                        <CreateApprenticeLesson />
                     </Route>
                     <Route path='/lesson/normal/view/:id'>
                         <NormalLessonView />
                     </Route>
                     <Route path='/lesson/normal/edit/:id'>
-                    
+
                     </Route>
                     <Route strict path='/'>
                         <ScheduleDateContext.Provider value={{ scheduleViewDate, setScheduleViewDate }}>

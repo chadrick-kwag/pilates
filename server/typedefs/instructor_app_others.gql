@@ -1,12 +1,35 @@
 type Mutation{
 
     create_lesson_from_instructor_app(lesson_type: String!, activity_type: String!, grouping_type: String!, start_time: String!, duration: Int!): SuccessResult
+    create_apprentice_lesson_from_instructor_app(activity_type: String!, grouping_type: String!, start_time: String!, duration: Int!, ticket_ids: [Int!]): SuccessResult
+
 
 }
 
-
+type Query{
+    fetch_available_apprentice_plans(activity_type: String!, grouping_type: String!):  AvailableApprenticePlanResult 
+}
 
 type SuccessResult{
     success: Boolean!,
     msg: String
+}
+
+type ApprenticePlanTicket{
+    id: Int 
+    expire_time: String 
+    consumed_time: String
+}
+
+
+type ApprenticePlanv1{
+    id: Int 
+    created: String
+    tickets: [ApprenticePlanTicket]
+}
+
+type AvailableApprenticePlanResult{
+    success: Boolean!
+    msg: String
+    plans: [ApprenticePlanv1]
 }
