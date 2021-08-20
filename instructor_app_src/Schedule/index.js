@@ -13,6 +13,7 @@ import { ScheduleDateContext } from '../app'
 import {FETCH_AVAILABLE_CREATE_LESSON_TYPES} from '../common/gql_defs'
 import {useQuery} from '@apollo/client'
 import client from '../apolloclient'
+import {lesson_type_to_kor_str} from '../common/consts'
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -112,7 +113,7 @@ function Index({ history }) {
 
                         return fetchData?.fetch_available_create_lesson_types?.lesson_types.map(a=><ListItem onClick={()=>{
                             history.push(`/lesson/create/${a}`)
-                        }}>{a}</ListItem>)
+                        }}>{lesson_type_to_kor_str(a)}</ListItem>)
                     })()}
                 </Popover>
 
