@@ -5,7 +5,7 @@ import { Grid, CircularProgress, Table, TableRow, TableCell, Button, TextField, 
 import { DatePicker, DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import koLocale from "date-fns/locale/ko";
 import DateFnsUtils from "@date-io/date-fns";
-import { QUERY_LESSON_DETAIL_WITH_LESSONID } from '../common/gql_defs'
+import { UPDATE_NORMAL_LESSON_FROM_INSTRUCTOR_APP, QUERY_LESSON_DETAIL_WITH_LESSONID } from '../common/gql_defs'
 
 import { DateTime } from 'luxon'
 
@@ -17,6 +17,24 @@ function EditNormalLesson({ history, match }) {
     const [groupingType, setGroupingType] = useState(null)
     const [startTime, setStartTime] = useState(null)
     const [duration, setDuration] = useState(null)
+
+
+    const [updateInfo, {loading: update_loading, error: update_error}] = useMutation(UPDATE_NORMAL_LESSON_FROM_INSTRUCTOR_APP, {
+        client, 
+        fetchPolicy: 'no-cache',
+        onCompleted: d=>{
+            console.log(d)
+            if(d.update_normal_lesson_from_instructor_app.success === false){
+                alert('변경 실패')
+            }
+            else{
+                history.goBack()
+            }
+        },
+        onError: e=>{
+            console.log(JSON.stringify(e))
+        }
+    })
 
     const { loading, error } = useQuery(QUERY_LESSON_DETAIL_WITH_LESSONID, {
         client,
@@ -52,6 +70,12 @@ function EditNormalLesson({ history, match }) {
             console.log(JSON.stringify(e))
         }
     })
+
+    const handle_submit_button_disabled = ()=>{
+        if(update_loading) return true 
+
+        return false
+    }
 
 
     if (loading) {
@@ -132,7 +156,17 @@ function EditNormalLesson({ history, match }) {
 
             <div className='flex flex-row ac jc gap' style={{ marginTop: '1rem', marginBottom: '1rem' }}>
                 <Button variant='outlined' onClick={() => history.goBack()}>이전</Button>
-                <Button variant='outlined'>변경</Button>
+                <Button variant='outlined' disabled={handle_submit_button_disabled()} onClick={()=>{
+                    updateInfo({
+                        variables: {
+                            activity_type: activityType,
+                            grouping_type : groupingType,
+                            lessonid: parseInt(match.params.id),
+                            start_time: startTime.toUTCString(),
+                            duration: duration
+                        }
+                    })
+                }}>변경</Button>
             </div>
 
         </div>

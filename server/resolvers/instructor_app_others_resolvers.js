@@ -2,12 +2,12 @@
 const { _pgclient, pool } = require('../pgclient')
 const { DateTime } = require('luxon')
 
-const {Query: query1} = require('./apprentice_lesson_resolvers')
+const { Query: query1 } = require('./apprentice_lesson_resolvers')
 
 module.exports = {
     Query: {
 
-        fetch_apprentice_lesson_info: async (parent, args, context) =>{
+        fetch_apprentice_lesson_info: async (parent, args, context) => {
 
             const instructor_personid = context.instructor_personid
 
@@ -32,13 +32,13 @@ module.exports = {
             }
 
             // check if query lesson is owned by current instructor
-            try{
+            try {
                 let result = await pgclient.query(`select * from apprentice_lesson 
                 left join apprentice_instructor  on apprentice_instructor.id = apprentice_lesson.apprentice_instructor_id 
                 where apprentice_instructor.personid = $1 and apprentice_lesson.id = $2
-                `,[instructor_personid, args.lessonid])
+                `, [instructor_personid, args.lessonid])
 
-                if(result.rowCount < 1){
+                if (result.rowCount < 1) {
 
                     pgclient.release()
                     return {
@@ -47,7 +47,7 @@ module.exports = {
                     }
                 }
             }
-            catch(e){
+            catch (e) {
                 console.log(e)
 
 
@@ -148,6 +148,121 @@ group by apprentice_instructor_plan.id, apprentice_instructor_plan.created`, [in
     },
     Mutation: {
 
+        update_normal_lesson_from_instructor_app: async (parent, args, context) => {
+
+            const instructor_personid = context.instructor_personid
+
+            if (instructor_personid === null || instructor_personid === undefined) {
+                return {
+                    success: false,
+                    msg: 'unauthorized access'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+            // prepare endtime
+            let start_time = DateTime.fromHTTP(args.start_time)
+            const end_time = start_time.plus({ hours: args.duration })
+
+            try {
+
+                // check lesson is owned by current instructor
+
+                let result = await pgclient.query(`select * from lesson left join instructor on instructor.id = lesson.instructorid
+                where lesson.id = $1 and instructor.personid = $2
+                `, [args.lessonid, instructor_personid])
+
+                if (result.rowCount < 1) {
+                    throw {
+                        detail: 'access denied'
+                    }
+                }
+
+                // check if any students exist
+                result = await pgclient.query(`with A as (select distinct on (ticketid) * from assign_ticket order by ticketid, created desc)
+                    select * from A where canceled_time is null and lessonid = $1
+                `, [args.lessonid])
+
+                if (result.rowCount > 0) {
+                    throw {
+                        detail: 'student exist. edit denied'
+                    }
+                }
+
+                
+                // check if time overlapping other normal lesson exist. take 'no student' lessons into consideration
+                result = await pgclient.query(`select * from lesson 
+                left join instructor on instructor.id = lesson.instructorid
+                where instructor.personid=$1 
+                
+                and (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3)) 
+                and lesson.id != $4
+                and lesson.canceled_time is null
+                `, [instructor_personid, args.start_time, end_time, args.lessonid])
+
+                if (result.rowCount > 0) {
+                    throw {
+                        detail: 'overlapping normal lesson exist'
+                    }
+                }
+
+                // check any overlapping apprentice lessons exist.
+                result = await pgclient.query(`select * from apprentice_lesson
+                left join apprentice_instructor on apprentice_instructor.id = apprentice_lesson.apprentice_instructor_id
+                where apprentice_instructor.personid = $1
+                and (tstzrange(apprentice_lesson.starttime, apprentice_lesson.endtime) && tstzrange($2, $3)) 
+                and apprentice_lesson.canceled_time is null
+                `, [instructor_personid, args.start_time, end_time])
+
+                if (result.rowCount > 0) {
+                    throw {
+                        detail: 'overlapping apprentice lesson exist'
+                    }
+                }
+
+
+                // update lesson info
+                await pgclient.query(`update lesson set starttime=$1, endtime=$2, activity_type=$3, grouping_type=$4 where lesson.id = $5`, [args.start_time, end_time, args.activity_type, args.grouping_type, args.lessonid])
+
+                await pgclient.query('commit')
+
+                pgclient.release()
+
+                return {
+                    success: true
+                }
+
+
+            } catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                } catch {
+
+                }
+
+                pgclient.release()
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
+        },
+
 
         create_normal_lesson_from_instructor_app: async (parent, args, context) => {
 
@@ -217,12 +332,12 @@ group by apprentice_instructor_plan.id, apprentice_instructor_plan.created`, [in
             } catch (e) {
                 console.log(e)
 
-                try{
+                try {
                     await pgclient.query('rollback')
-                }catch{}
+                } catch { }
 
                 pgclient.release()
-                
+
                 return {
                     sucess: false,
                     msg: e.detail

@@ -248,3 +248,12 @@ query fetch_apprentice_lesson_info($lessonid : Int!){
     }
 }
 `
+
+export const UPDATE_NORMAL_LESSON_FROM_INSTRUCTOR_APP = gql`
+    mutation update_normal_lesson_from_instructor_app($lessonid: Int!, $activity_type: String!, $grouping_type: String!, $start_time: String!, $duration: Int!){
+        update_normal_lesson_from_instructor_app(lessonid: $lessonid, activity_type: $activity_type, grouping_type: $grouping_type, start_time: $start_time, duration: $duration){
+            success 
+            msg
+        }
+    }
+`
