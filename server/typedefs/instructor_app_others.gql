@@ -5,6 +5,8 @@ type Mutation{
     create_normal_lesson_from_instructor_app(activity_type: String!, grouping_type: String!, start_time: String!, duration: Int!): SuccessResult
     update_normal_lesson_from_instructor_app(lessonid: Int!, activity_type: String!, grouping_type: String!, start_time: String!, duration: Int!): SuccessResult
     update_apprentice_lesson_start_time_from_instructor_app(lessonid: Int!, start_time: String!): SuccessResult
+
+    delete_normal_lesson_from_instructor_app(lessonid: Int!): SuccessResult
 }
 
 type Query{

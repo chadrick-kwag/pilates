@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { Chip, CircularProgress, Table, TableRow, TableCell, Button, TextField } from '@material-ui/core'
 import client from '../apolloclient'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import { withRouter } from 'react-router-dom'
-import { QUERY_LESSON_DETAIL_WITH_LESSONID } from '../common/gql_defs'
+import { QUERY_LESSON_DETAIL_WITH_LESSONID, DELETE_NORMAL_LESSON_FROM_INSTRUCTOR_APP } from '../common/gql_defs'
 import { DateTime } from 'luxon'
 import { activity_type_to_kor_str, grouping_type_to_kor_str } from '../common/consts'
 
@@ -23,6 +23,26 @@ function NormalLessonView({ history, match }) {
         },
         onError: e => {
             console.log(JSON.stringify(e))
+        }
+    })
+
+
+    const [requestDelete, { loading: del_loading, error: del_error }] = useMutation(DELETE_NORMAL_LESSON_FROM_INSTRUCTOR_APP, {
+        client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            console.log(d)
+
+            if (d.delete_normal_lesson_from_instructor_app.success === true) {
+                history.goBack()
+            }
+            else {
+                alert('삭제 실패')
+            }
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+            alert('삭제 실패')
         }
     })
 
@@ -89,10 +109,14 @@ function NormalLessonView({ history, match }) {
                     return false
 
                 })()} onClick={() => history.push(`/lesson/normal/edit/${match.params.id}`)}>수정</Button>
-                <Button variant='outlined' onClick={()=>{
+                <Button variant='outlined' onClick={() => {
                     let ret = confirm('삭제하시겠습니까?')
-                    if(ret){
-                         
+                    if (ret) {
+                        requestDelete({
+                            variables: {
+                                lessonid: parseInt(match.params.id)
+                            }
+                        })
                     }
                 }}>삭제</Button>
             </div>

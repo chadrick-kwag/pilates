@@ -266,3 +266,12 @@ export const UPDATE_APPRENTICE_LESSON_START_TIME_FROM_INSTRUCTOR_APP = gql`
         }
     }
 `
+
+export const DELETE_NORMAL_LESSON_FROM_INSTRUCTOR_APP = gql`
+mutation delete_normal_lesson_from_instructor_app($lessonid: Int!){
+    delete_normal_lesson_from_instructor_app(lessonid: $lessonid){
+        success 
+        msg
+    }
+}
+`

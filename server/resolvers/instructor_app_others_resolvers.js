@@ -148,9 +148,88 @@ group by apprentice_instructor_plan.id, apprentice_instructor_plan.created`, [in
     },
     Mutation: {
 
+        delete_normal_lesson_from_instructor_app: async (parent, args, context) => {
+
+            const instructor_personid = context.instructor_personid
+
+            if (instructor_personid === null || instructor_personid === undefined) {
+                return {
+                    success: false,
+                    msg: 'unauthorized access'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+                await pgclient.query('begin')
+                // check lesson is owned by current instructor
+
+                let result = await pgclient.query(`select * from lesson
+                left join instructor on instructor.id = lesson.instructorid
+                where instructor.personid = $1 and lesson.id = $2 
+                `, [instructor_personid, args.lessonid])
+
+                if (result.rowCount < 1) {
+                    throw {
+                        detail: 'access denied'
+                    }
+                }
+
+
+                // check if students exist
+                result = await pgclient.query(`with A as (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc)
+                select * from A
+                where A.canceled_time is null
+                and A.lessonid = $1
+
+                `, [args.lessonid])
+
+                if (result.rowCount > 0) {
+                    throw {
+                        detail: 'students exist'
+                    }
+                }
+
+
+                // all pass. cancel lesson
+                await pgclient.query(`update lesson set canceled_time=now(), cancel_request_personid=$1, cancel_request_role='instructor', cancel_type='INSTRUCTOR_REQUEST' where lesson.id=$2`, [instructor_personid, args.lessonid])
+
+
+                await pgclient.query('commit')
+                pgclient.release()
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                } catch { }
+
+                pgclient.release()
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
+        },
+
         update_apprentice_lesson_start_time_from_instructor_app: async (parent, args, context) => {
-            console.log('update_apprentice_lesson_start_time_from_instructor_app')
-            console.log(args)
 
             const instructor_personid = context.instructor_personid
 
@@ -206,7 +285,7 @@ group by apprentice_instructor_plan.id, apprentice_instructor_plan.created`, [in
                 const end_time = new_st.plus({
                     hours: duration
                 })
- 
+
                 console.log('new end time')
                 console.log(end_time)
 
@@ -257,7 +336,7 @@ group by apprentice_instructor_plan.id, apprentice_instructor_plan.created`, [in
 
                 try {
                     await pgclient.query('rollback')
-                }catch{}
+                } catch { }
 
                 pgclient.release()
 
