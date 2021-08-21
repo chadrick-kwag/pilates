@@ -275,3 +275,12 @@ mutation delete_normal_lesson_from_instructor_app($lessonid: Int!){
     }
 }
 `
+
+export const DELETE_APPRENTICE_LESSON_FROM_INSTRUCTOR_APP = gql`
+mutation delete_apprentice_lesson_from_instructor_app($lessonid: Int!){
+    delete_apprentice_lesson_from_instructor_app(lessonid: $lessonid){
+        success 
+        msg
+    }
+}
+`

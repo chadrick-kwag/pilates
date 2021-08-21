@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { Chip, CircularProgress, Table, TableRow, TableCell, Button, TextField } from '@material-ui/core'
 import client from '../apolloclient'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import { withRouter } from 'react-router-dom'
-import { FETCH_APPRENTICE_LESSON_INFO } from '../common/gql_defs'
+import { DELETE_APPRENTICE_LESSON_FROM_INSTRUCTOR_APP, FETCH_APPRENTICE_LESSON_INFO } from '../common/gql_defs'
 import { DateTime } from 'luxon'
 
 import { activity_type_to_kor_str, grouping_type_to_kor_str } from '../common/consts'
@@ -27,6 +27,31 @@ function ApprenticeLessonView({ history, match }) {
             console.log(JSON.stringify(e))
         }
     })
+
+    const [requestDelete, { loading: del_loading, error: del_error }] = useMutation(DELETE_APPRENTICE_LESSON_FROM_INSTRUCTOR_APP, {
+        client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            console.log(d)
+            if (d.delete_apprentice_lesson_from_instructor_app.success === true) {
+                history.goBack()
+            }
+            else {
+                alert('삭제 실패')
+            }
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+            alert('삭제 에러')
+        }
+    })
+
+
+    const submit_button_disable_handler = () => {
+        if (del_loading) return true
+
+        return false
+    }
 
 
     if (loading) {
@@ -73,7 +98,20 @@ function ApprenticeLessonView({ history, match }) {
             <div className="flex flex-row jc ac gap" style={{ paddingTop: '1rem' }}>
                 <Button variant='outlined' onClick={() => history.goBack()}>이전</Button>
                 <Button variant='outlined' onClick={() => history.push(`/lesson/apprenticelesson/edit/${match.params.id}`)}>수정</Button>
-                <Button variant='outlined' onClick={() => console.log('debug')}>삭제</Button>
+                <Button variant='outlined' disabled={submit_button_disable_handler()} onClick={() => {
+
+                    let ret
+                    ret = confirm('삭제하시겠습니까?')
+
+                    if (ret) {
+
+                        requestDelete({
+                            variables: {
+                                lessonid: parseInt(match.params.id)
+                            }
+                        })
+                    }
+                }}>삭제</Button>
             </div>
 
         </div>

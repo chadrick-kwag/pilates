@@ -148,6 +148,91 @@ group by apprentice_instructor_plan.id, apprentice_instructor_plan.created`, [in
     },
     Mutation: {
 
+        delete_apprentice_lesson_from_instructor_app: async (parent, args, context) => {
+
+            const instructor_personid = context.instructor_personid
+
+            if (instructor_personid === null || instructor_personid === undefined) {
+                return {
+                    success: false,
+                    msg: 'unauthorized access'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+
+                // check current instructor has access
+
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`select * from apprentice_lesson 
+                left join apprentice_instructor on apprentice_instructor.id = apprentice_lesson.apprentice_instructor_id 
+                where apprentice_lesson.id = $1 and apprentice_instructor.personid = $2
+                `, [args.lessonid, instructor_personid])
+
+                if (result.rowCount < 1) {
+                    throw {
+                        detail: 'access denied'
+                    }
+                }
+
+
+                // releaset assigned tickets
+                await pgclient.query(`with A as (select distinct on (apprentice_ticket_id) * from assign_apprentice_ticket order by apprentice_ticket_id, created desc)
+                    update assign_apprentice_ticket set canceled_time = now(), cancel_type = 'INSTRUCTOR_REQUEST' 
+                    from (select * from A where A.apprentice_lesson_id = $1 and canceled_time is null) as B 
+                    where assign_apprentice_ticket.id =B.id
+                    
+                `,[args.lessonid])
+
+
+                // cancel lesson
+
+                await pgclient.query(`update apprentice_lesson set canceled_time = now(), cancel_type = 'INSTRUCTOR_REQUEST', cancel_request_personid = $1
+                , cancel_request_role = 'instructor'
+                where id = $2 
+                `, [instructor_personid, args.lessonid])
+
+
+
+                await pgclient.query('commit')
+                pgclient.release()
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                } catch { }
+
+                pgclient.release()
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
+
+        },
+
         delete_normal_lesson_from_instructor_app: async (parent, args, context) => {
 
             const instructor_personid = context.instructor_personid
