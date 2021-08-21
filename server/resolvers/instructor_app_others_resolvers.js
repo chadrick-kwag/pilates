@@ -148,6 +148,127 @@ group by apprentice_instructor_plan.id, apprentice_instructor_plan.created`, [in
     },
     Mutation: {
 
+        update_apprentice_lesson_start_time_from_instructor_app: async (parent, args, context) => {
+            console.log('update_apprentice_lesson_start_time_from_instructor_app')
+            console.log(args)
+
+            const instructor_personid = context.instructor_personid
+
+            if (instructor_personid === null || instructor_personid === undefined) {
+                return {
+                    success: false,
+                    msg: 'unauthorized access'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+
+                // check if lesson is owned by instructor
+
+                await pgclient.query('begin')
+
+                let result = await pgclient.query(`select starttime, endtime from apprentice_lesson 
+                left join apprentice_instructor on apprentice_instructor.id = apprentice_lesson.apprentice_instructor_id
+                where apprentice_lesson.id = $1 and apprentice_instructor.personid = $2
+                `, [args.lessonid, instructor_personid])
+
+                if (result.rowCount < 1) {
+                    throw {
+                        detail: 'access denied'
+                    }
+                }
+
+                // calculate duration
+                const st = result.rows[0].starttime
+                const et = result.rows[0].endtime
+
+
+                const st_dt = DateTime.fromJSDate(st)
+                const et_dt = DateTime.fromJSDate(et)
+
+
+                const duration = et_dt.diff(st_dt, 'hours').hours
+
+                const new_st = DateTime.fromHTTP(args.start_time)
+                const end_time = new_st.plus({
+                    hours: duration
+                })
+ 
+                console.log('new end time')
+                console.log(end_time)
+
+                // check if overlapping apprentice lesson exist
+
+                result = await pgclient.query(`select * from apprentice_lesson
+                left join apprentice_instructor on apprentice_instructor.id = apprentice_lesson.apprentice_instructor_id
+                where apprentice_lesson.id != $1
+                and (tstzrange(apprentice_lesson.starttime, apprentice_lesson.endtime) && tstzrange($2, $3))
+                and apprentice_lesson.canceled_time is null
+                and apprentice_instructor.personid = $4
+                `, [args.lessonid, args.start_time, end_time, instructor_personid])
+
+                if (result.rowCount > 0) {
+                    throw {
+                        detail: 'overlapping apprentice lesson exist'
+                    }
+                }
+
+
+                // check if overlapping normal lesson exist
+                result = await pgclient.query(`select * from lesson
+                left join instructor on instructor.id = lesson.instructorid
+                where lesson.canceled_time is null
+                and (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($1, $2))
+                and instructor.personid = $3
+                `, [args.start_time, end_time, instructor_personid])
+
+                if (result.rowCount > 0) {
+                    throw {
+                        detail: 'overlapping normal lesson exist'
+                    }
+                }
+
+
+                // update time of lesson
+                await pgclient.query(`update apprentice_lesson set starttime=$1, endtime=$2 where apprentice_lesson.id = $3`, [args.start_time, end_time, args.lessonid])
+
+                await pgclient.query('commit')
+                pgclient.release()
+
+                return {
+                    success: true
+                }
+
+            } catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                }catch{}
+
+                pgclient.release()
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
+        },
+
         update_normal_lesson_from_instructor_app: async (parent, args, context) => {
 
             const instructor_personid = context.instructor_personid
@@ -200,7 +321,7 @@ group by apprentice_instructor_plan.id, apprentice_instructor_plan.created`, [in
                     }
                 }
 
-                
+
                 // check if time overlapping other normal lesson exist. take 'no student' lessons into consideration
                 result = await pgclient.query(`select * from lesson 
                 left join instructor on instructor.id = lesson.instructorid

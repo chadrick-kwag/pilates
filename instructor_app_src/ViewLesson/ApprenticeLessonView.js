@@ -73,6 +73,7 @@ function ApprenticeLessonView({ history, match }) {
             <div className="flex flex-row jc ac gap" style={{ paddingTop: '1rem' }}>
                 <Button variant='outlined' onClick={() => history.goBack()}>이전</Button>
                 <Button variant='outlined' onClick={() => history.push(`/lesson/apprenticelesson/edit/${match.params.id}`)}>수정</Button>
+                <Button variant='outlined' onClick={() => console.log('debug')}>삭제</Button>
             </div>
 
         </div>

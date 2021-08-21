@@ -257,3 +257,12 @@ export const UPDATE_NORMAL_LESSON_FROM_INSTRUCTOR_APP = gql`
         }
     }
 `
+
+export const UPDATE_APPRENTICE_LESSON_START_TIME_FROM_INSTRUCTOR_APP = gql`
+    mutation update_apprentice_lesson_start_time_from_instructor_app($lessonid: Int!, $start_time: String!){
+        update_apprentice_lesson_start_time_from_instructor_app(lessonid: $lessonid, start_time: $start_time){
+            success 
+            msg
+        }
+    }
+`
