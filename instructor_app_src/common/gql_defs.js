@@ -284,3 +284,12 @@ mutation delete_apprentice_lesson_from_instructor_app($lessonid: Int!){
     }
 }
 `
+
+export const CHANGE_PASSWORD_OF_INSTRUCTOR_APP_ACCOUNT = gql`
+mutation change_password_of_instructor_app_account($current_pw: String!, $new_password: String!){
+    change_password_of_instructor_app_account(current_pw: $current_pw, new_password: $new_password){
+        success 
+        msg
+    }
+}
+`

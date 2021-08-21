@@ -30,31 +30,31 @@ module.exports = {
                 }
             }
 
-            try{
+            try {
                 // check if allowed to teach master class
 
                 // fetch instructor id
                 console.log('instructor personid')
                 console.log(instructor_personid)
-                
+
                 const allowed_types = []
 
                 let result = await pgclient.query(`select id, allow_teach_apprentice from instructor where personid = $1`, [instructor_personid])
 
-                if(result.rowCount===1){
+                if (result.rowCount === 1) {
                     allowed_types.push('normal_lesson')
 
-                    if(result.rows[0].allow_teach_apprentice === true){
+                    if (result.rows[0].allow_teach_apprentice === true) {
                         allowed_types.push('master_class')
                     }
-                    
+
                 }
 
                 // check if apprentice instructor. if so, then allowed to teach apprentice leading class
 
                 result = await pgclient.query(`select id from apprentice_instructor where personid = $1`, [instructor_personid])
 
-                if(result.rowCount===1){
+                if (result.rowCount === 1) {
                     allowed_types.push('apprentice_lesson')
                 }
 
@@ -68,16 +68,16 @@ module.exports = {
                     lesson_types: allowed_types
                 }
             }
-            catch(e){
+            catch (e) {
                 console.log(e)
 
                 pgclient.release()
 
-                return  {
+                return {
                     success: false,
                     msg: e.detail
                 }
-            
+
             }
 
 
@@ -196,8 +196,8 @@ module.exports = {
                 const answer_password = result.rows[0].password
                 const account_id = result.rows[0].id
                 const personid = result.rows[0].personid
-                
-                
+
+
 
 
                 const compare_result = bcrypt.compareSync(args.password, answer_password)
@@ -303,6 +303,92 @@ module.exports = {
         }
     },
     Mutation: {
+
+
+        change_password_of_instructor_app_account: async (parent, args, context) => {
+
+            const instructor_personid = context.instructor_personid
+
+            if (instructor_personid === null || instructor_personid === undefined) {
+                return {
+                    success: false,
+                    msg: 'unauthorized access'
+                }
+            }
+
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+                // check if current password is correct 
+
+                await pgclient.query('begin')
+
+
+                let result = await pgclient.query(`select convert_from(password, 'utf8') as password from instructor_app_account where personid=$1`, [instructor_personid])
+
+                if (result.rowCount !== 1) {
+                    throw {
+                        detail: 'no account found'
+                    }
+                }
+
+
+                const existing_password = result.rows[0].password
+                const compare_result = bcrypt.compareSync(args.current_pw, existing_password)
+
+                if (!compare_result) {
+                    throw {
+                        detail: 'incorrect password'
+                    }
+
+                }
+
+                // create new pass word encryption
+
+
+
+                const salt = bcrypt.genSaltSync(10)
+                const encryptpw = bcrypt.hashSync(args.new_password, salt)
+
+                await pgclient.query(`update instructor_app_account set password=$1 where personid=$2`, [encryptpw, instructor_personid])
+
+
+
+                await pgclient.query('commit')
+                pgclient.release()
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                }
+                catch { }
+
+                pgclient.release()
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
+        },
         create_instructor_app_account: async (parent, args, context) => {
 
 

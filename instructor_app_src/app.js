@@ -25,6 +25,8 @@ import ApprenticeLessonView from './ViewLesson/ApprenticeLessonView'
 import EditNormalLesson from './EditLesson/EditNormalLesson'
 import EditApprenticeLesson from './EditLesson/EditApprenticeLesson'
 
+import CreateAccount from './CreateAccount/index'
+
 export const ScheduleDateContext = React.createContext()
 
 function App({ history }) {
@@ -35,6 +37,9 @@ function App({ history }) {
     return <Switch>
         <Route path='/login'>
             <LoginPage />
+        </Route>
+        <Route path='/signup'>
+            <CreateAccount />
         </Route>
         <AuthenticateWrapper>
             <MainFrame>

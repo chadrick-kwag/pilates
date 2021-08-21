@@ -1,11 +1,15 @@
 import React, { useState } from 'react'
-import { Table, TableRow, TableCell, CircularProgress } from '@material-ui/core'
+import { Button, Table, TableRow, TableCell, CircularProgress } from '@material-ui/core'
 import client from '../apolloclient'
 import { useQuery } from '@apollo/client'
 import { FETCH_INSTRUCTOR_APP_PROFILE } from '../common/gql_defs'
 
+import { withRouter, Switch, Route } from 'react-router-dom'
 
-function Index() {
+import ChangePasswordPage from './ChangePasswordPage'
+
+
+function Index({ history, match }) {
 
     const { loading, data, error } = useQuery(FETCH_INSTRUCTOR_APP_PROFILE, {
         client,
@@ -37,21 +41,36 @@ function Index() {
 
     const _data = data.fetch_instructor_app_profile.profile
     return (
-        <div className='fwh' >
-            <Table style={{marginTop: '2rem'}}>
-                <TableRow>
-                    <TableCell>이름</TableCell>
-                    <TableCell>{_data.name}</TableCell>
-                </TableRow>
 
-                <TableRow>
-                    <TableCell>연락처</TableCell>
-                    <TableCell>{_data.phonenumber}</TableCell>
-                </TableRow>
-            </Table>
+        <Switch>
+            <Route path={`${match.url}/changepw`}>
 
-        </div>
+                <ChangePasswordPage />
+            </Route>
+            <Route path={match.url}>
+
+                <div className='fwh' >
+                    <Table style={{ marginTop: '2rem' }}>
+                        <TableRow>
+                            <TableCell>이름</TableCell>
+                            <TableCell>{_data.name}</TableCell>
+                        </TableRow>
+
+                        <TableRow>
+                            <TableCell>연락처</TableCell>
+                            <TableCell>{_data.phonenumber}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell colSpan={2}>
+                                <Button variant='outlined' onClick={() => history.push(`${match.url}/changepw`)}>비밀번호 변경</Button>
+                            </TableCell>
+                        </TableRow>
+                    </Table>
+
+                </div>
+            </Route>
+        </Switch>
     )
 }
 
-export default Index
+export default withRouter(Index)

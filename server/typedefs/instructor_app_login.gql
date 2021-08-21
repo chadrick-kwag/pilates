@@ -9,6 +9,7 @@ type Query{
 type Mutation{
     
     create_instructor_app_account(username: String!, password: String!, personid: Int!): SimpleResponse
+    change_password_of_instructor_app_account(current_pw: String!, new_password: String!): SimpleResponse
 }
 
 
