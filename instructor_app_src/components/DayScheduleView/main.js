@@ -8,6 +8,19 @@ import { QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTOR_PERSONID } from '../../common
 import './local.css'
 
 
+const get_classname_of_slot = (s) =>{
+
+    console.log(s)
+
+    const d= s.lesson_domain
+
+    if(d==='normal_lesson') return 'normal-lesson'
+    if(d === 'apprentice_lesson') return 'apprentice-lesson'
+    if(d === 'master_class') return 'master-lesson'
+
+    return null
+}
+
 const get_sequence_schedules = (schedules) => {
 
 
@@ -236,7 +249,7 @@ function Container({ onSlotClicked, targetDate }) {
                         padding: '3px',
                         boxSizing: 'border-box'
                     }}>
-                        <div className='schedule-slot' style={{ flexGrow: 1, borderRadius: '0.5rem' }} onClick={() => onSlotClicked(s)}>
+                        <div className={`schedule-slot ${get_classname_of_slot(s)}`} style={{ flexGrow: 1, borderRadius: '0.5rem' }} onClick={() => onSlotClicked(s)}>
                             <span>{(() => {
                                 let outstring = s.instructorname + ' 강사'
                                 let clientstring = ""

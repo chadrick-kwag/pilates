@@ -6,3 +6,18 @@
     padding: 0.5rem;
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
 }
+
+.normal-lesson{
+    background-color: blue;
+    color: white;
+}
+
+.apprentice-lesson {
+    background-color: green;
+    color: white;
+}
+
+.master-lesson {
+    background-color: pink;
+    color: black;
+}
