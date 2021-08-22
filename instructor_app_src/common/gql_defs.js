@@ -293,3 +293,12 @@ mutation change_password_of_instructor_app_account($current_pw: String!, $new_pa
     }
 }
 `
+
+export const CHECK_PERSON_CAN_CREATE_INSTRUCTOR_ACCOUNT = gql`
+query check_person_can_create_instructor_account($name: String!, $phonenumber: String!){
+    check_person_can_create_instructor_account(name: $name, phonenumber: $phonenumber){
+        success 
+        msg
+    }
+}
+`

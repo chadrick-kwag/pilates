@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Table, TableRow, TableCell, TextField, Button } from '@material-ui/core'
 import client from '../apolloclient'
+import { CHECK_PERSON_CAN_CREATE_INSTRUCTOR_ACCOUNT } from '../common/gql_defs'
+import { useLazyQuery, useMutation } from '@apollo/client'
 
 
 function CreateAccount({ history }) {
@@ -14,10 +16,34 @@ function CreateAccount({ history }) {
     const [repassword, setrepassword] = useState("");
 
 
+    const [checkPerson, { loading: cp_loading, error: cp_error }] = useLazyQuery(CHECK_PERSON_CAN_CREATE_INSTRUCTOR_ACCOUNT, {
+        client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            console.log(d)
+            if (d.check_person_can_create_instructor_account.success === false) {
+                alert('등록 불가능합니다')
+            }
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+
+        }
+
+    })
+
+
     const submit_disable_handler = () => {
         if (name === "" || phonenumber === "" || username === "" || password === "" || repassword === "") return true
 
         if (password !== repassword) return true
+
+        return false
+    }
+
+
+    const check_person_disable_handler = () => {
+        if (name === "" || phonenumber === "") return true
 
         return false
     }
@@ -36,8 +62,16 @@ function CreateAccount({ history }) {
                     </TableRow>
                     <TableRow>
                         <TableCell>연락처</TableCell>
-                        <TableCell>
+                        <TableCell className='flex flex-row ac jc gap'>
                             <TextField variant='outlined' value={phonenumber} onChange={e => setphonenumber(e.target.value)} />
+                            <Button variant='outlined' disabled={check_person_disable_handler()} onClick={() => {
+                                checkPerson({
+                                    variables: {
+                                        name,
+                                        phonenumber
+                                    }
+                                })
+                            }} style={{margin: '0.3rem'}}>생성가능여부 확인</Button>
                         </TableCell>
                     </TableRow>
                     <TableRow>

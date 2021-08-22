@@ -4,12 +4,14 @@ type Query{
     check_person_and_can_create_instructor_app_account(name:String!, phonenumber: String!): SimpleResponse
     fetch_instructor_app_profile: ProfileResponse
     fetch_available_create_lesson_types: LessonTypeResponse
+    check_person_can_create_instructor_account(name: String!, phonenumber: String!) : SimpleResponse
 }
 
 type Mutation{
-    
     create_instructor_app_account(username: String!, password: String!, personid: Int!): SimpleResponse
     change_password_of_instructor_app_account(current_pw: String!, new_password: String!): SimpleResponse
+    
+    
 }
 
 

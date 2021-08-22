@@ -6,6 +6,96 @@ const randomstring = require("randomstring");
 module.exports = {
     Query: {
 
+        check_person_can_create_instructor_account: async (parent, args, context) => {
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
+
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            console.log(args)
+
+            const inc_name = args.name.trim()
+            const inc_pn = args.phonenumber.trim().replace(/-/g, '')
+
+            console.log(inc_pn)
+
+            try {
+                await pgclient.query('begin')
+
+                // check if person id exist with name and phonenumber, and check if account already created
+
+                let result = await pgclient.query(`select instructor_app_account.id as account_id, person.id as personid from person  
+                left join instructor_app_account on person.id = instructor_app_account.personid
+                where person.name = $1 and person.phonenumber = $2 
+                `, [inc_name, inc_pn])
+
+                if (result.rowCount === 0) {
+                    throw {
+                        detail: 'person not found'
+                    }
+                }
+
+                console.log(result.rows)
+
+                if (result.rows[0].account_id !== null) {
+                    throw {
+                        detail: 'account already exist'
+                    }
+                }
+
+                const personid = result.rows[0].personid
+
+                // check if personid is either instructor/ apprentice instructor
+
+                result = await pgclient.query(`select * from instructor where instructor.personid = $1`, [personid])
+
+                if (result.rowCount === 0) {
+                    // check apprentice instructor
+
+                    result = await pgclient.query(`select * from apprentice_instructor where personid = $1`, [personid])
+
+                    if (result.rowCount === 0) {
+                        throw {
+                            detail: 'person is not any kind of instructor'
+                        }
+                    }
+                }
+
+                await pgclient.query('commit')
+                pgclient.release()
+
+                return {
+                    success: true
+                }
+            }
+            catch (e) {
+                console.log(e)
+
+                try {
+                    await pgclient.query('rollback')
+                } catch { }
+
+
+                pgclient.release()
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+
+            }
+
+
+
+        },
         fetch_available_create_lesson_types: async (parent, args, context) => {
             // check instructor app account
             const instructor_personid = context.instructor_personid
@@ -303,6 +393,7 @@ module.exports = {
         }
     },
     Mutation: {
+
 
 
         change_password_of_instructor_app_account: async (parent, args, context) => {
