@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Table, TableRow, TableCell, TextField, Button } from '@material-ui/core'
 import client from '../apolloclient'
-import { CHECK_PERSON_CAN_CREATE_INSTRUCTOR_ACCOUNT } from '../common/gql_defs'
+import { CREATE_INSTRUCTOR_APP_ACCOUNT, CHECK_PERSON_CAN_CREATE_INSTRUCTOR_ACCOUNT } from '../common/gql_defs'
 import { useLazyQuery, useMutation } from '@apollo/client'
 
 
@@ -16,6 +16,26 @@ function CreateAccount({ history }) {
     const [repassword, setrepassword] = useState("");
 
 
+    const [createAccount, { loading: ca_loading, error: ca_error }] = useMutation(CREATE_INSTRUCTOR_APP_ACCOUNT, {
+        client,
+        fetchPolicy: 'no-cache',
+        onCompleted: d => {
+            console.log(d)
+            if (d.create_instructor_app_account.success === false) {
+                alert('생성 실패')
+            }
+            else {
+                history.push('/login')
+            }
+        },
+        onError: e => {
+            console.log(JSON.stringify(e))
+            alert('생성 에러')
+        }
+
+    })
+
+
     const [checkPerson, { loading: cp_loading, error: cp_error }] = useLazyQuery(CHECK_PERSON_CAN_CREATE_INSTRUCTOR_ACCOUNT, {
         client,
         fetchPolicy: 'no-cache',
@@ -23,6 +43,9 @@ function CreateAccount({ history }) {
             console.log(d)
             if (d.check_person_can_create_instructor_account.success === false) {
                 alert('등록 불가능합니다')
+            }
+            else{
+                alert('생성 가능합니다')
             }
         },
         onError: e => {
@@ -71,7 +94,7 @@ function CreateAccount({ history }) {
                                         phonenumber
                                     }
                                 })
-                            }} style={{margin: '0.3rem'}}>생성가능여부 확인</Button>
+                            }} style={{ margin: '0.3rem' }}>생성가능여부 확인</Button>
                         </TableCell>
                     </TableRow>
                     <TableRow>
@@ -104,7 +127,16 @@ function CreateAccount({ history }) {
 
             <div className='flex flex-row ac jc gap vmargin-0.5rem'>
                 <Button variant='outlined' onClick={() => history.goBack()}>취소</Button>
-                <Button variant='outlined' disabled={submit_disable_handler()} >생성</Button>
+                <Button variant='outlined' disabled={submit_disable_handler()} onClick={() => {
+                    createAccount({
+                        variables: {
+                            name,
+                            phonenumber,
+                            username,
+                            password
+                        }
+                    })
+                }} >생성</Button>
 
 
             </div>

@@ -34,7 +34,7 @@ module.exports = {
 
                 let result = await pgclient.query(`select instructor_app_account.id as account_id, person.id as personid from person  
                 left join instructor_app_account on person.id = instructor_app_account.personid
-                where person.name = $1 and person.phonenumber = $2 
+                where person.name = $1 and replace(person.phonenumber,'-','') = $2 
                 `, [inc_name, inc_pn])
 
                 if (result.rowCount === 0) {
@@ -481,7 +481,8 @@ module.exports = {
 
         },
         create_instructor_app_account: async (parent, args, context) => {
-
+            console.log('create_instructor_app_account')
+            console.log(args)
 
             let pgclient
             try {
@@ -496,25 +497,67 @@ module.exports = {
                 }
             }
 
+
+            const inc_name = args.name.trim()
+            const inc_pn = args.phonenumber.trim().replace(/-/g, '')
+
+            if(inc_name === "" || inc_pn === ""){
+                return {
+                    success: false,
+                    msg: 'invalid name or phonenumber'
+                }
+            }
+
             try {
                 await pgclient.query('begin')
 
-                // check if no account is already creatd for person id
-                let result = await pgclient.query(`select id from instructor_app_account where personid=$1`, [args.personid])
+                // check if person id exist with name and phonenumber, and check if account already created
 
-                if (result.rowCount > 0) {
+                let result = await pgclient.query(`select instructor_app_account.id as account_id, person.id as personid from person  
+                left join instructor_app_account on person.id = instructor_app_account.personid
+                where person.name = $1 and replace(person.phonenumber,'-','') = $2 
+                `, [inc_name, inc_pn])
+
+                if (result.rowCount === 0) {
                     throw {
-                        detail: 'already created'
+                        detail: 'person not found'
+                    }
+                }
+
+                console.log(result.rows)
+
+                if (result.rows[0].account_id !== null) {
+                    throw {
+                        detail: 'account already exist'
+                    }
+                }
+
+                const personid = result.rows[0].personid
+
+                // check if personid is either instructor/ apprentice instructor
+
+                result = await pgclient.query(`select * from instructor where instructor.personid = $1`, [personid])
+
+                if (result.rowCount === 0) {
+                    // check apprentice instructor
+
+                    result = await pgclient.query(`select * from apprentice_instructor where personid = $1`, [personid])
+
+                    if (result.rowCount === 0) {
+                        throw {
+                            detail: 'person is not any kind of instructor'
+                        }
                     }
                 }
 
 
+                // create account
 
-                const salt = bcrypt.genSaltSync(saltrounds)
+                const salt = bcrypt.genSaltSync(10)
                 const encryptpw = bcrypt.hashSync(args.password, salt)
 
 
-                await pgclient.query(`insert into instructor_app_account (username, password, personid) values ($1, $2, $3)`, [args.username, encryptpw, args.personid])
+                await pgclient.query(`insert into instructor_app_account (username, password, personid) values ($1, $2, $3)`, [args.username, encryptpw, personid])
 
                 await pgclient.query('commit')
                 pgclient.release()

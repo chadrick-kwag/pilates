@@ -124,8 +124,8 @@ export const TRY_INSTRUCTOR_APP_LOGIN = gql`
 `
 
 export const CREATE_INSTRUCTOR_APP_ACCOUNT = gql`
-    mutation create_instructor_app_account($username: String!, $password: String!, $personid: Int!){
-        create_instructor_app_account(username: $username, password: $password, personid: $personid){
+    mutation create_instructor_app_account($username: String!, $password: String!, $name: String!, $phonenumber: String! ){
+        create_instructor_app_account(username: $username, password: $password, name: $name, phonenumber: $phonenumber){
             success 
             msg
         }
