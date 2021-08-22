@@ -58,6 +58,7 @@ function Base({ onSuccess, onCancel, history }) {
             console.log(res)
 
             if (res.data.create_subscription.success) {
+                alert('생성되었습니다.')
                 onSuccess?.()
             }
             else {
