@@ -596,6 +596,14 @@ module.exports = {
             console.log('query_lesson_with_timerange_by_instructor_personid')
 
             // TODO: check if instructor user
+            const instructor_personid = context.instructor_personid
+
+            if (instructor_personid === null || instructor_personid === undefined) {
+                return {
+                    success: false,
+                    msg: 'unauthorized access'
+                }
+            }
 
             let pgclient
             try {
@@ -651,11 +659,9 @@ module.exports = {
                 and (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3))
                 
                 group by lesson.id, instructor.id, person.name, person.phonenumber
-                `, [args.personid, args.start_time, args.end_time])
+                `, [instructor_personid, args.start_time, args.end_time])
 
                 const normal_lessons = result.rows
-                console.log("normal_lessons")
-                console.log(normal_lessons)
 
                 // gather apprentice lessons
 
@@ -675,20 +681,10 @@ module.exports = {
                 where person.id = $1
                 and apprentice_lesson.canceled_time is null
                 and (tstzrange(apprentice_lesson.starttime, apprentice_lesson.endtime) && tstzrange($2, $3))
-                `, [args.personid, args.start_time, args.end_time])
+                `, [instructor_personid, args.start_time, args.end_time])
 
                 const apprentice_lessons = result.rows
-
-                console.log('apprentice_lessons')
-                console.log(apprentice_lessons)
-
-
                 const total_lessons = normal_lessons.concat(apprentice_lessons)
-
-                console.log('total_lessons')
-                console.log(total_lessons)
-
-
 
                 await pgclient.query('commit')
                 pgclient.release()

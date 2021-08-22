@@ -66,8 +66,8 @@ export const CHECK_TOKEN = gql`
 
 
 export const QUERY_LESSON_WITH_TIMERANGE_BY_INSTRUCTOR_PERSONID = gql`
-    query query_lesson_with_timerange_by_instructor_personid($personid: Int!, $start_time: String!, $end_time: String!){
-        query_lesson_with_timerange_by_instructor_personid(personid: $personid, start_time: $start_time, end_time: $end_time){
+    query query_lesson_with_timerange_by_instructor_personid( $start_time: String!, $end_time: String!){
+        query_lesson_with_timerange_by_instructor_personid( start_time: $start_time, end_time: $end_time){
             success
             msg
             lessons {

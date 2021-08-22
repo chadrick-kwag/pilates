@@ -104,7 +104,6 @@ const get_y_offset = (start_hour, curr_time, per_hour_height) => {
 function Container({ onSlotClicked, targetDate }) {
 
     const _var = {
-        personid: 102,
         start_time: DateTime.fromJSDate(targetDate).set({ hour: 0, minute: 0, second: 0, millisecond: 0 }),
         end_time: DateTime.fromJSDate(targetDate).set({ hour: 0, minute: 0, second: 0, millisecond: 0 }).plus({ day: 1 }),
     }
