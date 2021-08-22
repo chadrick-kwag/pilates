@@ -91,11 +91,10 @@ function Index({ history }) {
                 }
             }} />
 
-            <div ref={addref} className="flex ac jc" style={{ position: 'absolute', bottom: '2rem', right: '2rem', width: '40px', height: '40px', backgroundColor: 'black' }}>
+            <div ref={addref} className="flex ac jc" style={{ position: 'absolute', bottom: '2rem', right: '2rem', width: '3rem', height: '3rem', backgroundColor: 'black', borderRadius: '1rem' }}>
 
                 <span style={{ color: 'white' }} onClick={() => {
                     setShowCreateMenu(true)
-                    // history.push('/lessoncreate')
                 }}>추가</span>
                 <Popover anchorEl={addref?.current} open={showCreateMenu} onClose={() => setShowCreateMenu(false)}
                     anchorOrigin={{
