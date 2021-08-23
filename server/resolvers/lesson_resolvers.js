@@ -1200,6 +1200,17 @@ module.exports = {
             console.log("delete_lesson")
             console.log(args)
 
+
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
             let lessonid = args.lessonid
 
             let pgclient
@@ -1240,35 +1251,9 @@ module.exports = {
                 }
             }
 
-            // let ret = await pgclient.query("update pilates.lesson set cancel_type='BUFFERED_CLIENT_REQ_CANCEL', canceled_time=now() where id=$1", [lessonid]).then(res => {
-            //     console.log(res)
-
-            //     if (res.rowCount > 0) {
-            //         return {
-            //             success: true
-
-            //         }
-            //     }
-
-            //     return {
-            //         success: false,
-            //         msg: "query failed"
-            //     }
-            // }).catch(e => {
-            //     console.log(e)
-            //     return {
-            //         success: false,
-            //         msg: "query error"
-            //     }
-            // })
-
-
-            // console.log(ret)
-
-            // return ret
         },
 
-        delete_lesson_with_request_type: async (parent, args) => {
+        delete_lesson_with_request_type: async (parent, args, context) => {
             /* 
             success: Boolean
             warning: Boolean
@@ -1277,6 +1262,15 @@ module.exports = {
 
             console.log('delete_lesson_with_request_type')
             console.log(args)
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
 
             let pgclient
             try {
@@ -1310,14 +1304,24 @@ module.exports = {
                 // if req type is 'admin', then remove all ticket assignments, like they never existed
                 // remove lesson too
                 if (args.request_type === 'admin_req') {
+
+                    // fetch admin personid
+                    const admin_account_id = context.account_id
+
+                    
                     // remove assign tickets
                     await pgclient.query(`delete from assign_ticket where lessonid=$1`, [args.lessonid])
 
                     // remove related attendances
                     await pgclient.query(`delete from normal_lesson_attendance where lessonid=$1`, [args.lessonid])
 
+
+                    // cancel lesson
+                    await pgclient.query(`update lesson set canceled_time=now(), cancel_type='ADMIN', cancel_request_personid=$1, cancel_request_role='admin'
+                    where id=$2`, [admin_account_id, args.lessonid])
+
                     // remove lesson
-                    await pgclient.query(`delete from lesson where id=$1`, [args.lessonid])
+                    // await pgclient.query(`delete from lesson where id=$1`, [args.lessonid])
 
                     await pgclient.query('commit')
                     pgclient.release()
@@ -1328,7 +1332,7 @@ module.exports = {
                 else if (args.request_type === 'instructor_req') {
 
                     // if attended client exist, then abort
-                    let result = await pgclient.query(`select id from normal_lesson_attendance where lessonid=$1`, [args.lessonid])
+                    result = await pgclient.query(`select id from normal_lesson_attendance where lessonid=$1`, [args.lessonid])
 
                     if (result.rowCount > 0) {
                         throw {
@@ -1336,11 +1340,19 @@ module.exports = {
                         }
                     }
 
+                    // get instructor person id of current lesson
+                    result = await pgclient.query(`select instructor.personid as personid from lesson
+                    left join instructor on instructor.id = lesson.instructorid
+                    where lesson.id = $1
+                    `,[args.lessonid])
+
+                    const inst_personid = result.rows[0].personid
+
                     // remove assign tickets which are alive
                     await pgclient.query(`delete from assign_ticket where lessonid=$1 and canceled_time is null`, [args.lessonid])
 
                     // do not remove lesson but populate cancel time wth cancel type
-                    await pgclient.query(`update lesson set canceled_time=now(), cancel_type='INSTRUCTOR_REQUEST' where id=$1`, [args.lessonid])
+                    await pgclient.query(`update lesson set canceled_time=now(), cancel_type='INSTRUCTOR_REQUEST', cancel_request_personid=$1, cancel_request_role='instructor' where id=$2`, [inst_personid, args.lessonid])
 
                     await pgclient.query('commit')
                     pgclient.release()
