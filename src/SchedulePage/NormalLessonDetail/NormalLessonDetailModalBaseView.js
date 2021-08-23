@@ -1,6 +1,6 @@
 import React, { useState, createRef } from 'react'
 import { makeStyles } from '@material-ui/core/styles';
-import { Button, Menu, MenuItem, Table, TableRow, TableCell, Chip, Dialog, DialogActions, DialogContent, CircularProgress } from '@material-ui/core'
+import { Button, Menu, MenuItem, Table, TableRow, TableCell, Chip, Dialog, DialogActions, DialogContent, CircularProgress, DialogTitle } from '@material-ui/core'
 
 import { activity_type_to_kor, grouping_type_to_kor } from '../../common/consts'
 import { DateTime } from 'luxon'
@@ -126,6 +126,10 @@ function NormalLessonDetailModalBaseView({ indomain_id, onCloseAndRefresh, onCha
     return (
         <>
             <DialogContent>
+
+                <DialogTitle>
+                    일반수업
+                </DialogTitle>
 
                 <Table>
                     <TableRow>
