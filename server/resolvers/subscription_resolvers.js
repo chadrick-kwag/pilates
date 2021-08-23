@@ -1090,7 +1090,10 @@ module.exports = {
             }
 
             // calculate percost first.
-            const percost = Math.ceil(args.totalcost / args.rounds)
+            const percost = Math.floor(args.totalcost / args.rounds)
+            let remain = args.totalcost - (percost * args.rounds) 
+
+
 
             if (percost <= 0) {
                 return {
@@ -1139,7 +1142,13 @@ module.exports = {
 
                 // create tickets
                 for (let i = 0; i < args.rounds; i++) {
-                    await pgclient.query(`insert into ticket (expire_time, creator_plan_id, cost) values ($1, $2, $3)`, [args.expiredate, created_plan_id, percost])
+                    let cost = percost
+                    if(remain>0){
+                        cost++
+                        remain--
+                    }
+
+                    await pgclient.query(`insert into ticket (expire_time, creator_plan_id, cost) values ($1, $2, $3)`, [args.expiredate, created_plan_id, cost])
                 }
 
 
