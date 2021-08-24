@@ -13,6 +13,7 @@
     "build-admin-app": "webpack -c webpack.config.js --mode=production --progress",
     "build-checkin-app": "webpack -c webpack.checkinapp.config.js --mode=production --progress",
     "build-openschedule-app": "webpack -c webpack.scheduleviewapp.config.js --mode=production --progress",
+    "build-instructor-app": "webpack -c webpack.instructorapp.config.js --mode=production --progress",
     "clean-dist": "rm -rf dist && rm -rf checkin_app_dist",
     "run-puc-server": "nodemon --watch server/puc_server.js server/puc_server.js"
   },

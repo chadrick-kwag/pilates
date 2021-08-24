@@ -80,7 +80,7 @@ module.exports = (env, argv) => {
                 new hwp({
                     template: "./instructor_app_src/template.html",
                     favicon: "./src/assets/favicon.ico",
-                    publicPath: "/instructor_app"
+                    publicPath: "/instructorapp"
                 })
 
             ],

@@ -23,6 +23,10 @@ const SCHEDULE_APP_DIR = path.join(__dirname, '../scheduleview_dist')
 const SCHEDULE_APP_HTML_FILE = path.join(SCHEDULE_APP_DIR, 'index.html')
 
 
+const INSTRUCTOR_APP_DIR = path.join(__dirname, '../instructor_app_dist')
+const INSTRUCTOR_APP_HTML_FILE = path.join(INSTRUCTOR_APP_DIR, 'index.html')
+
+
 
 app.use('/checkin', express.static(CHECKIN_APP_DIR))
 app.get('/checkin', (req, res)=>{
@@ -33,6 +37,11 @@ app.get('/checkin', (req, res)=>{
 app.use('/openschedule',express.static(SCHEDULE_APP_DIR))
 app.get('/openschedule', (req,res)=>{
     res.sendFile(SCHEDULE_APP_HTML_FILE)
+})
+
+app.use('/instructorapp', express.static(INSTRUCTOR_APP_DIR))
+app.get('/instructorapp', (req, res)=>{
+    res.sendFile(INSTRUCTOR_APP_HTML_FILE)
 })
 
 
