@@ -67,6 +67,8 @@ https_server = https.createServer({
 
 https_server.listen({
     port: MAIN_SERVE_PORT
+}, (e)=>{
+    console.log(`serving on port: ${MAIN_SERVE_PORT}`)
 })
 
 // app.listen(MAIN_SERVE_PORT, function () {
