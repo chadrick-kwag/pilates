@@ -1,12 +1,14 @@
 const express = require('express');
 const path = require('path');
-const {MAIN_SERVE_PORT, GRAPHQL_SUBPATH}= require('../config')
+const {MAIN_SERVE_PORT, GRAPHQL_SUBPATH, ssl_cert_path, ssl_key_path}= require('../config')
 const app = express();
 
 // const { ApolloServer } = require('apollo-server-express');
 // const pgclient  = require('./pgclient')
 // const {typeDefs, resolvers} = require('./merged_gql')
 const graphql_server = require('./apolloserver')
+const https = require('https')
+const fs = require('fs')
 
 
 
@@ -57,6 +59,16 @@ console.log(`GRAPHQL_SUBPATH: ${GRAPHQL_SUBPATH}`)
 graphql_server.applyMiddleware({app, path: GRAPHQL_SUBPATH})
 
 
-app.listen(MAIN_SERVE_PORT, function () {
-    console.log('App listening on port: ' + MAIN_SERVE_PORT);
-});
+https_server = https.createServer({
+    key: fs.readFileSync(ssl_key_path),
+    cert: fs.readFileSync(ssl_cert_path)
+}, app)
+
+
+https_server.listen({
+    port: MAIN_SERVE_PORT
+})
+
+// app.listen(MAIN_SERVE_PORT, function () {
+//     console.log('App listening on port: ' + MAIN_SERVE_PORT);
+// });
