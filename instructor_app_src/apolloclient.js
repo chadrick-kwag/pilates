@@ -11,7 +11,7 @@ const cache = new InMemoryCache({
     }
 });
 
-const addr = `http://${location.hostname}:${location.port}${GRAPHQL_SUBPATH}`
+const addr = `${APOLLO_CLIENT_HTTP_TYPE}://${location.hostname}:${location.port}${GRAPHQL_SUBPATH}`
 
 const httplink = createHttpLink({
     uri: addr
