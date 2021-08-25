@@ -1,6 +1,6 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client'
 
-import { GRAPHQL_SUBPATH } from '../config'
+import { GRAPHQL_SUBPATH, APOLLO_CLIENT_HTTP_TYPE } from '../config'
 
 const cache = new InMemoryCache({
     dataIdFromObject: o => {
