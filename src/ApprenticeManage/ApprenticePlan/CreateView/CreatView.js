@@ -81,6 +81,7 @@ function CreatView({ history, match }) {
         onCompleted: d => {
             console.log(d)
             if (d?.create_apprentice_plan?.success) {
+                alert('생성되었습니다')
                 history.push('/apprenticeplan')
             }
             else {

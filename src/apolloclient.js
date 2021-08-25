@@ -1,6 +1,6 @@
 import { ApolloClient, InMemoryCache, createHttpLink, useMutation } from '@apollo/client'
 import { setContext } from '@apollo/client/link/context';
-import { GRAPHQL_SUBPATH } from '../config'
+import { GRAPHQL_SUBPATH, APOLLO_CLIENT_HTTP_TYPE } from '../config'
 
 const cache = new InMemoryCache({
     dataIdFromObject: o => {
@@ -11,7 +11,8 @@ const cache = new InMemoryCache({
     }
 });
 
-const addr = `http://${location.hostname}:${location.port}${GRAPHQL_SUBPATH}`
+const addr = `${APOLLO_CLIENT_HTTP_TYPE}://${location.hostname}:${location.port}${GRAPHQL_SUBPATH}`
+
 
 const httplink = createHttpLink({
     uri: addr

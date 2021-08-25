@@ -31,6 +31,8 @@ const client_typedefs = readFileSync('server/typedefs/client_typedefs.gql').toSt
 const apprentice_course_typedefs = readFileSync('server/typedefs/apprentice_course_typedefs.gql').toString('utf-8')
 const apprentice_instructor_typedefs = readFileSync('server/typedefs/apprentice_instructor_typedefs.gql').toString('utf-8')
 const instructor_teach_history_typedefs = readFileSync('server/typedefs/instructor_teach_history_typedefs.gql').toString('utf-8')
+const instructor_app_login_typedefs = readFileSync('server/typedefs/instructor_app_login.gql').toString('utf-8')
+const instructor_app_others_typedefs = readFileSync('server/typedefs/instructor_app_others.gql').toString('utf-8')
 
 
 
@@ -50,12 +52,14 @@ const adminconfig_resolver = require('./resolvers/adminconfig_resolvers')
 const master_instructor_resolver = require('./resolvers/master_instructor_resolvers')
 const person_resolver = require('./resolvers/person_resolvers')
 const instructor_teach_history_resolver = require('./resolvers/instructor_teach_history_resolver')
+const instructor_app_login_resolver = require('./resolvers/instructor_app_login_resolvers')
+const instructor_app_others_resolver = require('./resolvers/instructor_app_others_resolvers')
 
 
-const typeDefs = mergeTypeDefs([lesson_typedefs, client_typedefs, subscription_typedefs, instructor_typedefs, common_typedefs, apprentice_course_typedefs, apprentice_instructor_typedefs, apprentice_plan_typedefs, apprentice_lesson_typedefs, special_schedule_typedefs, normal_checkin_typedefs, login_typedefs, adminconfig_typedefs, master_instructor_typedefs, person_typedefs, instructor_teach_history_typedefs])
+const typeDefs = mergeTypeDefs([lesson_typedefs, client_typedefs, subscription_typedefs, instructor_typedefs, common_typedefs, apprentice_course_typedefs, apprentice_instructor_typedefs, apprentice_plan_typedefs, apprentice_lesson_typedefs, special_schedule_typedefs, normal_checkin_typedefs, login_typedefs, adminconfig_typedefs, master_instructor_typedefs, person_typedefs, instructor_teach_history_typedefs, instructor_app_login_typedefs, instructor_app_others_typedefs])
 
 
-const resolvers = mergeResolvers([lesson_resolver, client_resolver, subscription_resolver, instructor_resolver, apprentice_course_resolver, apprentice_instructor_resolver, apprentice_plan_resolver, apprentice_lesson_resolver, special_schedule_resolver, normal_checkin_resolver, login_resolver, adminconfig_resolver, master_instructor_resolver, person_resolver, instructor_teach_history_resolver])
+const resolvers = mergeResolvers([lesson_resolver, client_resolver, subscription_resolver, instructor_resolver, apprentice_course_resolver, apprentice_instructor_resolver, apprentice_plan_resolver, apprentice_lesson_resolver, special_schedule_resolver, normal_checkin_resolver, login_resolver, adminconfig_resolver, master_instructor_resolver, person_resolver, instructor_teach_history_resolver, instructor_app_login_resolver,instructor_app_others_resolver])
 
 
 module.exports = {

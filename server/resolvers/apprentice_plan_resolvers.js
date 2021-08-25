@@ -636,9 +636,15 @@ module.exports = {
 
                 // create tickets
                 const percost = Math.floor(args.totalcost / args.rounds)
+                let remain = args.totalcost - (percost * args.rounds)
 
                 for (let i = 0; i < args.rounds; i++) {
-                    await pgclient.query(`insert into apprentice_ticket (expire_time, creator_plan_id, cost) values ($1, $2, $3)`, [args.expiretime, planid, percost])
+                    let cost = percost 
+                    if(remain >0){
+                        cost ++
+                        remain --
+                    }
+                    await pgclient.query(`insert into apprentice_ticket (expire_time, creator_plan_id, cost) values ($1, $2, $3)`, [args.expiretime, planid, cost])
                 }
 
 

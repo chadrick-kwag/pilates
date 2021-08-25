@@ -58,6 +58,7 @@ function Base({ onSuccess, onCancel, history }) {
             console.log(res)
 
             if (res.data.create_subscription.success) {
+                alert('생성되었습니다.')
                 onSuccess?.()
             }
             else {
@@ -230,7 +231,7 @@ function Base({ onSuccess, onCancel, history }) {
                         </TableCell>
                         <TableCell>
                             <div className='children-padding row-gravity-left'>
-                                <Input value={ticketCount} onChange={e => setTicketCount(parseInt(e.target.value))} endAdornment={<InputAdornment position="end">회</InputAdornment>} />
+                                <Input value={ticketCount} onChange={e => setTicketCount( e.target.value === ""? 0 :parseInt(e.target.value))} endAdornment={<InputAdornment position="end">회</InputAdornment>} />
 
                                 {totalCost !== null && (ticketCount !== null && ticketCount > 0) ? <span>회당단가: {numeral(Math.ceil(totalCost / ticketCount)).format('0,0')}원</span> : null}
                             </div>

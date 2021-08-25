@@ -1,0 +1,47 @@
+type Query{
+    check_instructor_app_token(token:String!): SimpleResponse
+    try_instructor_app_login(username:String!, password: String!): LoginResponse
+    check_person_and_can_create_instructor_app_account(name:String!, phonenumber: String!): SimpleResponse
+    fetch_instructor_app_profile: ProfileResponse
+    fetch_available_create_lesson_types: LessonTypeResponse
+    check_person_can_create_instructor_account(name: String!, phonenumber: String!) : SimpleResponse
+}
+
+type Mutation{
+    create_instructor_app_account(username: String!, password: String!, name: String!, phonenumber: String!): SimpleResponse
+    change_password_of_instructor_app_account(current_pw: String!, new_password: String!): SimpleResponse
+    
+    
+}
+
+
+type LessonTypeResponse{
+    success: Boolean!
+    msg: String 
+    lesson_types: [String]
+}
+
+type Profile {
+    name: String 
+    phonenumber: String
+
+}
+
+type ProfileResponse{
+    success: Boolean!
+    msg: String
+    profile: Profile
+}
+
+type SimpleResponse{
+    success: Boolean!
+    msg: String
+}
+
+
+type LoginResponse{
+    success: Boolean!
+    msg: String
+    token: String,
+    username: String
+}

@@ -524,48 +524,6 @@ module.exports = {
             }
 
 
-            // let result = await pgclient.query(`WITH B AS (select lesson.id as id
-            //     , lesson.starttime, lesson.endtime, lesson.activity_type, lesson.grouping_type,
-            //     instructor.id as instructorid, instructor.name as instructorname, instructor.phonenumber as instructorphonenumber
-
-            //                 from lesson
-            //     inner join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on lesson.id = A.lessonid
-            //             left join instructor on lesson.instructorid = instructor.id
-            //     left join ticket on A.ticketid = ticket.id
-            //     left join plan on ticket.creator_plan_id = plan.id
-            //     where plan.clientid = $1
-            //                 AND lesson.canceled_time is null
-            //                 AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
-            //             ),
-
-            //     C AS (select B.id as lessonid, array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
-            //     from B
-            //     inner join (select distinct on(ticketid) * from assign_ticket where canceled_time is null order by ticketid, created desc) as A on B.id = A.lessonid
-            //     left join ticket on ticket.id = A.ticketid
-            //     left join plan on ticket.creator_plan_id = plan.id
-            //     left join client on plan.clientid = client.id
-            //     GROUP BY B.id)
-
-
-            //     select B.*, C.client_info_arr from B
-            //     left join C on B.id = C.lessonid `, [clientid, start_time, end_time]).then(res => {
-            //     console.log(res.rows)
-
-            //     return {
-            //         success: true,
-            //         lessons: res.rows
-            //     }
-
-            // }).catch(e => {
-            //     console.log(e)
-            //     return {
-            //         success: false,
-            //         msg: 'query error'
-            //     }
-            // })
-
-
-            // return result
         },
         query_lesson_with_timerange_by_instructorid: async (parent, args) => {
             console.log(args)
@@ -632,45 +590,126 @@ module.exports = {
                 }
             }
 
+        },
+        query_lesson_with_timerange_by_instructor_personid: async (parent, args, context) => {
 
-            // let result = await pgclient.query(`WITH B AS (select  lesson.id as id, instructor.id as instructorid,
-            //     instructor.name as instructorname, 
-            //     instructor.phonenumber as instructorphonenumber,
-            //     lesson.starttime, lesson.endtime,
-            //     lesson.activity_type,
-            //     lesson.grouping_type,
+            console.log('query_lesson_with_timerange_by_instructor_personid')
 
-            //      count(1) FILTER (where A.id is not null AND A.canceled_time is null) > 0  as valid_assign_exist ,
-            //      lesson.canceled_time as lesson_canceled_time,
-            //      array_agg(ticket.id) as ticket_id_arr,
-            //      array_agg(json_build_object('clientname', client.name ,'clientid', client.id, 'clientphonenumber', client.phonenumber )) as client_info_arr
-            //     from lesson 
-            //     left join (select DISTINCT ON(ticketid) * from assign_ticket ORDER BY ticketid, created desc) AS A on lesson.id = A.lessonid
-            //     left join ticket on A.ticketid = ticket.id
-            //     left join plan on ticket.creator_plan_id = plan.id
-            //     left join client on plan.clientid = client.id
-            //     left join instructor on lesson.instructorid = instructor.id
-            //     where lesson.canceled_time is null
-            // 	AND instructor.id = $1
-            //      AND (tstzrange(lesson.starttime, lesson.endtime) && tstzrange(to_timestamp($2), to_timestamp($3)) )
+            // TODO: check if instructor user
+            const instructor_personid = context.instructor_personid
 
-            //     GROUP BY lesson.id, instructor.id)
-            //     select * from B where valid_assign_exist is true `, [instructorid, start_time, end_time]).then(res => {
-            //     return {
-            //         success: true,
-            //         lessons: res.rows
-            //     }
-            // }).catch(e => {
-            //     console.log(e)
-            //     return {
-            //         success: false,
-            //         msg: 'query error'
-            //     }
-            // })
+            if (instructor_personid === null || instructor_personid === undefined) {
+                return {
+                    success: false,
+                    msg: 'unauthorized access'
+                }
+            }
 
-            // console.log(result)
+            let pgclient
+            try {
+                pgclient = await pool.connect()
+            }
+            catch (e) {
+                console.log(e)
 
-            // return result
+                return {
+                    success: false,
+                    msg: 'pg pool error'
+                }
+            }
+
+            try {
+
+                await pgclient.query('begin')
+
+                // fetch normal lessons
+
+                let result = await pgclient.query(`
+                with A as (select distinct on(ticketid) * from assign_ticket order by ticketid, created desc)
+                
+                select 'normal_lesson' as lesson_domain,
+                lesson.id as indomain_id,
+                instructor.id as instructorid,
+                person.name as instructorname,
+                person.phonenumber as instructorphonenumber,
+                lesson.starttime,
+                lesson.endtime,
+                lesson.activity_type,
+                lesson.grouping_type,
+                array_agg(json_build_object('clientid', client.id,
+                                               'clientname', clientperson.name,
+                                            'clientphonenumber', clientperson.phonenumber,
+                                            'checkin_time', normal_lesson_attendance.checkin_time
+                                           )) as client_info_arr
+                
+                
+                from lesson
+                left join instructor on instructor.id = lesson.instructorid
+                left join person on person.id = instructor.personid
+                left join (select * from A where canceled_time is null) as B on B.lessonid = lesson.id
+                left join ticket on B.ticketid = ticket.id
+                left join plan on ticket.creator_plan_id = plan.id
+                left join client on client.id = plan.clientid
+                left join person as clientperson on clientperson.id = client.personid
+                left join normal_lesson_attendance on normal_lesson_attendance.clientid = client.id and normal_lesson_attendance.lessonid = lesson.id
+                
+                
+                where lesson.canceled_time is null
+                and person.id = $1
+                and (tstzrange(lesson.starttime, lesson.endtime) && tstzrange($2, $3))
+                
+                group by lesson.id, instructor.id, person.name, person.phonenumber
+                `, [instructor_personid, args.start_time, args.end_time])
+
+                const normal_lessons = result.rows
+
+                // gather apprentice lessons
+
+                result = await pgclient.query(`select 'apprentice_lesson' as lesson_domain,
+                apprentice_lesson.id as indomain_id,
+                apprentice_instructor.id as instructorid,
+                person.name as instructorname,
+                person.phonenumber as instructorphonenumber,
+                apprentice_lesson.starttime,
+                apprentice_lesson.endtime,
+                apprentice_lesson.activity_type,
+                apprentice_lesson.grouping_type
+                
+                from apprentice_lesson
+                left join apprentice_instructor on apprentice_instructor.id = apprentice_lesson.apprentice_instructor_id 
+                left join person on person.id  = apprentice_instructor.personid
+                where person.id = $1
+                and apprentice_lesson.canceled_time is null
+                and (tstzrange(apprentice_lesson.starttime, apprentice_lesson.endtime) && tstzrange($2, $3))
+                `, [instructor_personid, args.start_time, args.end_time])
+
+                const apprentice_lessons = result.rows
+                const total_lessons = normal_lessons.concat(apprentice_lessons)
+
+                await pgclient.query('commit')
+                pgclient.release()
+
+
+                return {
+                    success: true,
+                    lessons: total_lessons
+                }
+
+
+            } catch (e) {
+                console.log(e)
+
+
+                await pgclient.query('rollback')
+                pgclient.release()
+
+                return {
+                    success: false,
+                    msg: e.detail
+                }
+            }
+
+
         },
         query_lesson_data_of_instructorid: async (parent, args) => {
 
@@ -1161,6 +1200,17 @@ module.exports = {
             console.log("delete_lesson")
             console.log(args)
 
+
+
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
             let lessonid = args.lessonid
 
             let pgclient
@@ -1201,35 +1251,9 @@ module.exports = {
                 }
             }
 
-            // let ret = await pgclient.query("update pilates.lesson set cancel_type='BUFFERED_CLIENT_REQ_CANCEL', canceled_time=now() where id=$1", [lessonid]).then(res => {
-            //     console.log(res)
-
-            //     if (res.rowCount > 0) {
-            //         return {
-            //             success: true
-
-            //         }
-            //     }
-
-            //     return {
-            //         success: false,
-            //         msg: "query failed"
-            //     }
-            // }).catch(e => {
-            //     console.log(e)
-            //     return {
-            //         success: false,
-            //         msg: "query error"
-            //     }
-            // })
-
-
-            // console.log(ret)
-
-            // return ret
         },
 
-        delete_lesson_with_request_type: async (parent, args) => {
+        delete_lesson_with_request_type: async (parent, args, context) => {
             /* 
             success: Boolean
             warning: Boolean
@@ -1238,6 +1262,15 @@ module.exports = {
 
             console.log('delete_lesson_with_request_type')
             console.log(args)
+
+            if (!ensure_admin_account_id_in_context(context)) {
+                return {
+                    success: false,
+                    msg: 'invalid token'
+                }
+            }
+
+
 
             let pgclient
             try {
@@ -1271,14 +1304,24 @@ module.exports = {
                 // if req type is 'admin', then remove all ticket assignments, like they never existed
                 // remove lesson too
                 if (args.request_type === 'admin_req') {
+
+                    // fetch admin personid
+                    const admin_account_id = context.account_id
+
+                    
                     // remove assign tickets
                     await pgclient.query(`delete from assign_ticket where lessonid=$1`, [args.lessonid])
 
                     // remove related attendances
                     await pgclient.query(`delete from normal_lesson_attendance where lessonid=$1`, [args.lessonid])
 
+
+                    // cancel lesson
+                    await pgclient.query(`update lesson set canceled_time=now(), cancel_type='ADMIN', cancel_request_personid=$1, cancel_request_role='admin'
+                    where id=$2`, [admin_account_id, args.lessonid])
+
                     // remove lesson
-                    await pgclient.query(`delete from lesson where id=$1`, [args.lessonid])
+                    // await pgclient.query(`delete from lesson where id=$1`, [args.lessonid])
 
                     await pgclient.query('commit')
                     pgclient.release()
@@ -1289,7 +1332,7 @@ module.exports = {
                 else if (args.request_type === 'instructor_req') {
 
                     // if attended client exist, then abort
-                    let result = await pgclient.query(`select id from normal_lesson_attendance where lessonid=$1`, [args.lessonid])
+                    result = await pgclient.query(`select id from normal_lesson_attendance where lessonid=$1`, [args.lessonid])
 
                     if (result.rowCount > 0) {
                         throw {
@@ -1297,11 +1340,19 @@ module.exports = {
                         }
                     }
 
+                    // get instructor person id of current lesson
+                    result = await pgclient.query(`select instructor.personid as personid from lesson
+                    left join instructor on instructor.id = lesson.instructorid
+                    where lesson.id = $1
+                    `,[args.lessonid])
+
+                    const inst_personid = result.rows[0].personid
+
                     // remove assign tickets which are alive
                     await pgclient.query(`delete from assign_ticket where lessonid=$1 and canceled_time is null`, [args.lessonid])
 
                     // do not remove lesson but populate cancel time wth cancel type
-                    await pgclient.query(`update lesson set canceled_time=now(), cancel_type='INSTRUCTOR_REQUEST' where id=$1`, [args.lessonid])
+                    await pgclient.query(`update lesson set canceled_time=now(), cancel_type='INSTRUCTOR_REQUEST', cancel_request_personid=$1, cancel_request_role='instructor' where id=$2`, [inst_personid, args.lessonid])
 
                     await pgclient.query('commit')
                     pgclient.release()
